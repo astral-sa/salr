@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<xbl:bindings xmlns:xbl="http://www.mozilla.org/xbl"
+              xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ <xbl:binding id="colorpicker">
+  <xbl:content>
+   <hbox align="center" flex="1">
+    <label xbl:inherits="value=label,disabled" flex="1" control="pickerbutton"/>
+    <spacer flex="1"/>
+    <button class="colorpicker-button" anonid="pickerbutton" id="pickerbutton"
+            oncommand="parentNode.parentNode.showPopup();"
+            xbl:inherits="disabled">
+     <box class="colorpickerthumbnail" anonid="colorpickerthumbnail"/>
+     <image class="colorpickerdroparrow" src="chrome://global/skin/arrow/arrow-dn.gif"/>
+    </button>
+    <popupset>
+     <popup anonid="popupwin">
+      <sacolorpickerwin/>
+     </popup>
+    </popupset>
+   </hbox>
+  </xbl:content>
+  <xbl:implementation>
+<!--
+   <xbl:constructor><![CDATA[
+      //this.initialize();
+   ]]></xbl:constructor>
+-->
+   <xbl:property name="prefName"/>
+   <xbl:property name="value">
+    <xbl:getter><![CDATA[
+       return this.getAttribute("value");
+    ]]></xbl:getter>
+    <xbl:setter><![CDATA[
+       this.setAttribute("value", val);
+       var el = document.getAnonymousElementByAttribute(this,"anonid","colorpickerthumbnail");
+       el.style.backgroundColor = val;
+       if (this.onchange)
+          this.onchange();
+    ]]></xbl:setter>
+   </xbl:property>
+   <xbl:method name="showPopup">
+    <xbl:body><![CDATA[
+     //var pu = document.getAnonymousElementByAttribute(this,"anonid","popupwin");
+     //var pb = document.getAnonymousElementByAttribute(this,"anonid","pickerbutton");
+     //pu.showPopup(pb, -1, -1, "popup", "bottomleft", "topleft");
+     var pobj = new Object();
+     pobj.value = this.value;
+     pobj.accepted = false;
+     window.openDialog("chrome://salastread/content/colorpickerdialog.xul",
+                       "colorpickerdialog",
+                       "chrome",pobj);
+     if (pobj.accepted) {
+        this.value = "#" + pobj.value;
+     }
+    ]]></xbl:body>
+   </xbl:method>
+<!--
+   <xbl:method name="initialize">
+    <xbl:body><![CDATA[
+     this.onchange = null;
+
+     var change = this.getAttribute("onchange");
+     if (change) {
+        try {
+           this.onchange = new Function("event", change);
+        } catch (ex) {
+           // watch out for syntax errors in the function code
+        }
+     }
+    ]]></xbl:body>
+   </xbl:method>
+-->
+  </xbl:implementation>
+  <xbl:handlers>
+  </xbl:handlers>
+ </xbl:binding>
+
+ <xbl:binding id="colorpicker-window">
+  <xbl:content>
+   <!-- <hbox> -->
+    <image src="chrome://salastread/content/hsboverlay.png"
+           class="ssbox-inset cbbox-hsb"
+           onclick="parentNode.imageClick(event);" />
+    <vbox class="ssbox-inset cbbox-hue"
+          anonid="hsbox"
+          onclick="parentNode.hueClick(event);">
+     <image src="chrome://salastread/content/hueselection.png"
+            anonid="huesel"
+            class="cbbox-huesel" />
+       <!--     anonid="huesel"
+            class="cbbox-huesel" /> -->
+    </vbox>
+<!--
+    <image src="chrome://salastread/content/huebar.png" class="box-inset cbbox-hue"/>
+    <vbox>
+     <hbox align="center">
+      <label value="H:" control="hue"/>
+      <textbox id="hue"/>
+     </hbox>
+     <hbox align="center">
+      <label value="S:" control="saturation"/>
+      <textbox id="saturation"/>
+     </hbox>
+     <hbox align="center">
+      <label value="B:" control="brightness"/>
+      <textbox id="brightness"/>
+     </hbox>
+     <separator/>
+     <hbox align="center">
+      <label value="R:" control="red"/>
+      <textbox id="red"/>
+     </hbox>
+     <hbox align="center">
+      <label value="G:" control="green"/>
+      <textbox id="green"/>
+     </hbox>
+     <hbox align="center">
+      <label value="B:" control="blue"/>
+      <textbox id="blue"/>
+     </hbox>
+     <separator/>
+     <hbox align="center">
+      <label value="#" control="hexrgb"/>
+      <textbox id="hexrgb"/>
+     </hbox>
+    </vbox>
+-->
+   <!-- </hbox> -->
+  </xbl:content>
+  <xbl:implementation>
+   <xbl:method name="imageClick">
+    <xbl:parameter name="evt"/>
+    <xbl:body><![CDATA[
+       alert("ii");
+       alert("imageClick: "+evt);
+    ]]></xbl:body>
+   </xbl:method>
+   <xbl:method name="hueClick">
+    <xbl:parameter name="evt"/>
+    <xbl:body><![CDATA[
+       var huesel = document.getAnonymousElementByAttribute(this,"anonid","huesel");
+       var hsbox = document.getAnonymousElementByAttribute(this,"anonid","hsbox");
+       //alert("evt:"+evt.pageY+"\nhsbox:"+hsbox.boxObject.y+"\nhuesel:"+huesel.boxObject.y);
+       huesel.style.marginTop = (evt.screenY - hsbox.boxObject.screenY - 1) + "px";
+       //alert("hh");
+       //alert("hueClick: "+evt);
+    ]]></xbl:body>
+   </xbl:method>
+  </xbl:implementation>
+  <xbl:handlers>
+  </xbl:handlers>
+ </xbl:binding>
+</xbl:bindings>

@@ -1,0 +1,56 @@
+sacolorpicker {
+  -moz-binding: url('chrome://salastread/content/colorpicker.xbl#colorpicker');
+}
+
+sacolorpickerwin {
+  -moz-binding: url('chrome://salastread/content/colorpicker.xbl#colorpicker-window');
+}
+
+.colorpickerthumbnail {
+ background-color: red;
+ border: 1px solid black;
+ width: 25px;
+ height: 15px;
+}
+
+.colorpickerdroparrow {
+ margin: 3px 3px 3px 3px;
+}
+
+.colorpicker-button {
+ -moz-appearance: none;
+ min-width: 0px;
+}
+
+.colorpicker-button[disabled=true] > hbox {
+ padding-left: 1px !important;
+ padding-right: 1px !important;
+}
+
+.colorpicker-button > hbox {
+ padding-left: 1px;
+ padding-right: 1px;
+}
+
+.cbbox-hsb {
+ -moz-box-sizing: content-box;
+ background-color: red;
+ width: 256px;
+ height: 256px;
+ border: 1px solid black;
+ margin: 4px;
+}
+
+.cbbox-hue {
+ -moz-box-sizing: content-box;
+ background-image: url('chrome://salastread/content/huebar.png');
+ width: 19px;
+ height: 256px;
+ border: 1px solid black;
+ margin: 4px;
+}
+
+.cbbox-huesel {
+ width: 19px;
+ height: 1px;
+}

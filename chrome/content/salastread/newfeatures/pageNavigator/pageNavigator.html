@@ -1,0 +1,27 @@
+<html>
+ <head>
+  <link rel="stylesheet" href="../common.css"/>
+ </head>
+ <body>
+  <img src="buttons.png" style="float:right; padding: 5px 5px 5px 5px;"/>
+  <h1>Page Navigator</h1>
+
+  <p>
+  With easy access to every page in a multipaged thread and consistently
+  placed buttons to navigate back and forth, the Page Navigator
+  attaches to the lower-right corner of your browser when you view
+  threads with multiple pages.
+  </p>
+
+  <p>
+  This feature is currently <span id="fStatus">enabled</span>. To
+  <span id="fVerb">disable</span> it, click
+  <a href="javascript:toggleFeature();">here</a>.
+  </p>
+
+  <script language="javascript" src="../togglePref.js"></script>
+  <script>
+var feature_pref = "toggle_enablePageNavigator";
+  </script>
+ </body>
+</html>

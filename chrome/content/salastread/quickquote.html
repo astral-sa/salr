@@ -1,0 +1,90 @@
+<html>
+ <head>
+  <title>Quick Quote</title>
+  <style type="text/css">
+body {
+ background-color: #069;
+ color: #fff;
+ scroll: none;
+ padding: 0px 0px 0px 0px;
+ margin: 0px 0px 0px 0px;
+ font-family: Tahoma, Arial, Helvetica, sans-serif;
+ font-size: 90%;
+}
+.maintable {
+ border-collapse: collapse;
+ width: 100%;
+ height: 100%;
+}
+.titlerow {
+ height: 25px;
+}
+.title {
+ padding-left: 2.5%;
+ font-size: 9pt;
+ font-weight: bold;
+}
+.close {
+ padding-right: 2.5%;
+ font-size: 9pt;
+ font-weight: bold;
+ text-align: right;
+}
+.contentrow {
+}
+.optionrow {
+ height: 40px;
+}
+.options {
+ padding-left: 2.5%;
+ font-size: 10pt;
+}
+label {
+ margin-right: 5px;
+}
+.buttons {
+ padding-right: 2.5%;
+ text-align: right;
+}
+textarea {
+ margin-left: 2.5%;
+ width: 95%;
+ height: 100%;
+}
+  </style>
+ </head>
+ <body>
+
+<table class="maintable">
+ <tr class="titlerow">
+  <td class="title">Quick Quote</td>
+  <td class="close">Close</td>
+ </tr>
+ <tr class="contentrow">
+  <td colspan="2">
+   <textarea></textarea>
+  </td>
+ </tr>
+ <tr class="optionrow">
+  <td class="options">
+   <input type="checkbox" id="parseurl"/>
+   <label for="parseurl">Parse URLs</label>
+
+   <input type="checkbox" id="subscribe"/>
+   <label for="subscribe">Subscribe</label>
+
+   <input type="checkbox" id="disablesmilies"/>
+   <label for="disablesmilies">Disable Smilies</label>
+
+   <input type="checkbox" id="signature"/>
+   <label for="signature">Show Signature</label>
+  </td>
+  <td class="buttons">
+   <input type="submit" value="Preview Reply"/>
+   <input type="submit" value="Submit Reply"/>
+  </td>
+ </tr>
+</table>
+
+ </body>
+</html>

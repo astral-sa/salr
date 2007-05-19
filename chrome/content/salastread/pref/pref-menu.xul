@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      onload="initSettings('SA Forum Menu Settings');menuInit();">
+
+ <script language="JavaScript" src="chrome://salastread/content/utilfunctions.js" />
+
+ <script language="JavaScript" src="chrome://salastread/content/pref/pref-common.js" />
+ <script language="JavaScript" src="chrome://salastread/content/pref/pref-menu.js" />
+
+ <!-- <description>woof woof</description> -->
+ <checkbox id="toggle_showSAForumMenu"
+           label="Show SA Forum Quick Jump menu"
+           salastread_requiremenurebuild="yes" 
+           oncommand="cbSet()" />
+
+ <checkbox id="toggle_nestSAForumMenu"
+           label="Use submenus for forum categories"
+           salastread_requiremenurebuild="yes" 
+           oncommand="cbSet()" />
+
+ <checkbox id="toggle_useSAForumMenuBackground"
+           label="Use SA Grenade background on Quick Jump menu"
+           salastread_requiremenurebuild="yes" 
+           oncommand="cbSet()" />
+
+ <checkbox id="toggle_hideOtherSAMenus"
+           label="Hide any other SA menus installed by other extensions"
+           salastread_requiremenurebuild="yes" 
+           oncommand="cbSet()" />
+
+ <groupbox id="pinGroup">
+  <caption label="Forum Settings"/>
+  <hbox>
+   <vbox flex="1">
+    <label value="Unpinned Forums"/>
+    <listbox flex="1" id="unpinned_forums">
+    </listbox>
+   </vbox>
+   <vbox align="center">
+    <spacer flex="1"/>
+    <button id="pinButton" label="Pin &gt;"
+            oncommand="pinClick()" />
+    <button id="unpinButton" label="&lt; Unpin"
+            oncommand="unPinClick()" />
+    <separator/>
+    <button id="moveUpButton" label="Move Up" disabled="true"
+            oncommand="moveClick(false)" />
+    <button id="moveDownButton" label="Move Down" disabled="true"
+            oncommand="moveClick(true)" />
+    <separator/>
+    <button id="addSeparatorButton" label="Add Sep &gt;"
+            oncommand="addSepClick()" />
+    <button id="addURLButton" label="Add URL &gt;"
+            oncommand="addURLClick()" />
+    <button id="addStarMenuButton" label="Add Star Menu &gt;"
+            oncommand="addStarMenuClick()" />
+    <spacer flex="1"/>
+   </vbox>
+   <vbox flex="1">
+    <label value="Pinned Forums"/>
+    <listbox flex="1" id="pinned_forums" onselect="pinnedSelect()">
+    </listbox>
+   </vbox>
+  </hbox>
+ </groupbox>
+
+</page>

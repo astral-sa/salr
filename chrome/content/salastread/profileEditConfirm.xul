@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/profileEditConfirm.css" type="text/css"?>
+
+<dialog id="SALR_ProfileEditConfirm"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        style="width: 450px; height: 250px;"
+        buttons="accept,cancel"
+        onload="onLoad();"
+        ondialogaccept="confirmIdentity();"
+        ondialogcancel="cancelChange();"
+        title="SALR - Identity Confirmation Request">
+
+ <script language="JavaScript" src="chrome://salastread/content/profileEditConfirm.js" />
+
+ <description>
+  A web site is trying to add a piece of information to your SA Forum profile
+  to verify your identity. If you would like to allow this, confirm the
+  profile change by entering the letters from the image below, then click
+  the "Confirm Identity" button.  If you do not wish to allow your identity to be
+  verified, click the "Cancel" button.
+ </description>
+
+ <hbox id="captchaImageContainer">
+  <spacer flex="1"/>
+  <html:iframe id="captchaImage" style="width:375px;height:60px;" src="chrome://salastread/content/profileEditConfirmImageLoader.html" />
+  <spacer flex="1"/>
+ </hbox>
+
+ <hbox>
+  <spacer flex="1"/>
+  <label value="Enter the text from the image above:" control="tbCaptchaText"/>
+  <textbox id="tbCaptchaText"/>
+  <spacer flex="1"/>
+ </hbox>
+ <hbox>
+  <spacer flex="1"/>
+  <button label="Load Another Image" oncommand="loadAnotherCaptcha();"/>
+  <spacer flex="1"/>
+ </hbox>
+
+ <spacer flex="1"/>
+
+<!--
+ <hbox>
+  <spacer flex="1"/>
+  <button label="Cancel" oncommand="cancelChange();" id="btnCancel" />
+  <button label="Confirm Identity" oncommand="confirmIdentity();" id="btnConfirmIdentity" />
+ </hbox>
+-->
+
+</dialog>

@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/test.css" type="text/css"?>
+
+<page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      onload="initSettings('General Settings');generalInit();">
+
+ <script language="JavaScript" src="chrome://salastread/content/pref/pref-common.js" />
+ <script language="JavaScript" src="chrome://salastread/content/pref/pref-general.js" />
+
+ <!-- <description>woof woof</description> -->
+ <groupbox>
+  <caption label="Thread Command Icons"/>
+
+  <vbox>
+   <checkbox id="toggle_showGoToLastIcon" 
+             label="Show 'Go To Last Post' icon"
+             oncommand="cbSet()"/>
+   <vbox style="margin-left: 20px">
+    <hbox align="center" flex="1">
+     <label value="Icon URL:" control="xxx"/>
+     <textbox id="url_goToLastReadPost" flex="1"/>
+     <button id="defaulturl_goToLastReadPost" label="Default" />
+    </hbox>
+    <checkbox id="toggle_alwaysShowGoToLastIcon"
+              label="Always show 'Go To Last Post' icon, even if no new posts in thread"/>
+   </vbox>
+   <checkbox id="toggle_showUnvisitIcon" 
+             label="Show 'Mark Thread Unvisited' icon"
+             oncommand="cbSet()" />
+   <vbox style="margin-left: 20px">
+    <hbox align="center" flex="1">
+     <label value="Icon URL:" control="yyy"/>
+     <textbox id="url_markThreadUnvisited" flex="1"/>
+     <button id="defaulturl_markThreadUnvisited" label="Default" />
+    </hbox>
+   </vbox>
+  </vbox>
+ </groupbox>
+
+ <groupbox>
+  <caption label="Thread Options"/>
+  <vbox>
+   <checkbox id="toggle_reanchorThreadOnLoad"
+             label="Reanchor threads to targetted post after all images have loaded" />
+   <checkbox id="toggle_removePageTitlePrefix"
+             label="Move 'The Awful Forums' prefix to end of page titles" />
+<!--
+   <checkbox id="toggle_convertTextToImage"
+             label="Convert links to images to inline images in posts" />
+   <vbox style="margin-left: 20px">
+     <checkbox id="toggle_shrinkTextToImages"
+               label="Scale converted images to max width of 600 pixels" />
+     <hbox>
+      <description>Don't convert if:</description>
+      <checkbox id="toggle_dontTextToImageIfMayBeNws" style="margin-left: 20px"
+                label="Post may be NWS" />
+      <checkbox id="toggle_dontTextToImageInSpoilers" style="margin-left: 20px"
+                label="Link is spoiler" />
+     </hbox>
+   </vbox>
+   <checkbox id="toggle_thumbnailQuotedImagesInThreads"
+             label="Turn images quoted by other users into thumbnails" />
+-->
+<!--
+   <checkbox id="toggle_insertPostTargetLink"
+             label="Add a &quot;#&quot; link with a direct link to every post" />
+-->
+   <checkbox id="toggle_insertPostLastMarkLink"
+             label="Add a &quot;&lt;&quot; link to reset the last post of each thread" />
+<!--
+   <checkbox id="toggle_useQuickQuote"
+             label="Use 'Quick Quote' and 'Quick Reply' buttons"
+             oncommand="cbSet()" />
+   <vbox id="qqtoggles" style="margin-left: 20px">
+    <checkbox id="toggle_quickQuoteSubscribeDefault"
+              label="Default 'Subscribe' to checked" />
+    <checkbox id="toggle_quickQuoteSignatureDefault"
+              label="Default 'Show Signature' to checked (for first post in thread only)" />
+   </vbox>
+-->
+   <checkbox id="toggle_enablePageNavigator"
+             label="Add a page navigator to the lower-right corner of the browser" />
+   <checkbox id="toggle_gestureEnable"
+             label="Allow mouse gestures to navigate around threads and forums" />
+   <checkbox id="toggle_scrollPostEnable"
+             label="Use scroll position to set last-read post (might slow browsing)" />
+  </vbox>
+ </groupbox>
+ <checkbox id="toggle_removeHeaderAndFooter"
+           label="Hide Forum Header and Footer" />
+ <checkbox id="toggle_resizeCustomTitleText"
+           label="Shrink Large Custom Title Texts" />
+ <checkbox id="toggle_contextMenuOnBottom"
+           label="Put the SALR context submenu on the bottom of the context menu instead of the top" />
+ <checkbox id="toggle_hideSignature"
+           label="Hide user signatures in posts" />
+ <checkbox id="toggle_hideTitle"
+           label="Hide custom titles in posts" />
+ <checkbox id="toggle_suppressErrors"
+           label="Don't display error popup messages" />
+
+<!--
+ <groupbox>
+  <caption label="File Locations"/>
+  <grid flex="1">
+   <columns>
+    <column/>
+    <column flex="1"/>
+    <column/>
+   </columns>
+   <rows>
+    <row align="center">
+     <label value="Thread Data File:" control="string_persistStoragePath"/>
+     <textbox id="string_persistStoragePath" 
+              salastread_requirefirefoxrestart="yes"
+              flex="1"/>
+     <button id="defaultstring_persistStoragePath" label="Default" />
+    </row>
+    <row align="center">
+     <label value="Forum Data File:" control="string_forumListStoragePath"/>
+     <textbox id="string_forumListStoragePath"
+              salastread_requirefirefoxrestart="yes"
+              flex="1"/>
+     <button id="defaultstring_forumListStoragePath" label="Default" />
+    </row>
+   </rows>
+  </grid>
+ </groupbox>
+-->
+
+</page>

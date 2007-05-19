@@ -1,0 +1,73 @@
+.somethingawfulforum_usernameOP {
+ color: #04b !important;
+}
+
+.somethingawfulforum_usernameOP:after {
+ content: "Thread Poster";
+ display: block;
+ font-size: x-small;
+ font-weight: bold;
+ color: #04b;
+}
+
+.somethingawfulforum_usernameMODERATOR,
+a.somethingawfulforum_userlinkMODERATOR {
+ color: #b40 !important;
+ font-weight: bold;
+}
+
+.somethingawfulforum_usernameMODERATOR:after {
+ content: "Forum Moderator";
+ display: block;
+ font-size: x-small;
+ font-weight: bold;
+ color: #b40;
+}
+
+.somethingawfulforum_usernameADMIN {
+ color: #4b0 !important;
+ font-weight: bold;
+}
+
+.somethingawfulforum_usernameADMIN:after {
+ content: "Forum Administrator";
+ display: block;
+ font-size: x-small;
+ font-weight: bold;
+ color: #4b0;
+}
+
+.salastread_forum174 .somethingawfulforum_usernameADMIN {
+ color: #00f !important;
+ font-weight: bold;
+}
+.salastread_forum174 .somethingawfulforum_usernameADMIN:after {
+ content: "BYOB Superstar";
+ display: block;
+ font-size: x-small;
+ font-weight: bold;
+ color: #00f;
+}
+
+.somethingawfulforum_username_biznatchio,
+a.somethingawfulforum_userlink_biznatchio,
+.salastread_forum174 .somethingawfulforum_username_biznatchio {
+ color: red !important;
+ font-weight: bold;
+}
+
+.somethingawfulforum_username_biznatchio:after {
+ content: "SALR Author";
+ display: block;
+ font-size: x-small;
+ font-weight: bold;
+ color: red;
+}
+
+.salastread_forum174 .somethingawfulforum_username_biznatchio:after {
+ content: "what do i type here";
+ display: block;
+ font-size: x-small;
+ font-weight: bold;
+ color: red;
+}

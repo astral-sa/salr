@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/pref.css" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/colorpicker.css" type="text/css"?>
+
+<page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      onload="initSettings('Color Settings');initColors();">
+
+ <script language="JavaScript" src="chrome://salastread/content/pref/pref-common.js" />
+ <script language="JavaScript" src="chrome://salastread/content/pref/pref-color.js" />
+
+ <hbox align="center"> 
+ <label value="Change/view color settings for:" control="forumtype"/>
+ <menulist id="forumtype" oncommand="loadColors(isDropDownFYAD(),isDropDownHighlights())">
+  <menupopup>
+   <menuitem label="Non-FYAD"/>
+   <menuitem label="FYAD"/>
+  </menupopup>
+ </menulist>
+ <menulist id="ishighlights" oncommand="loadColors(isDropDownFYAD(),isDropDownHighlights())">
+  <menupopup>
+   <menuitem label="Base Color"/>
+   <menuitem label="Gradient Highlight Color"/>
+  </menupopup>
+ </menulist>
+ </hbox>
+
+ <hbox>
+  <vbox flex="1">
+  <groupbox>
+   <caption label="Thread Colors"/>
+   <sacolorpicker flex="1" label="Unread (light)" id="cp_unreadLight" onchange="colorChanged(this);"/>
+   <sacolorpicker flex="1" label="Unread (dark)" id="cp_unreadDark" onchange="colorChanged(this);"/>
+   <sacolorpicker flex="1" label="Read with new (light)" id="cp_readWithNewLight" onchange="colorChanged(this);"/>
+   <sacolorpicker flex="1" label="Read with new (dark)" id="cp_readWithNewDark" onchange="colorChanged(this);"/>
+   <sacolorpicker flex="1" label="Read (light)" id="cp_readLight" onchange="colorChanged(this);"/>
+   <sacolorpicker flex="1" label="Read (dark)" id="cp_readDark" onchange="colorChanged(this);"/>
+   <!--
+   <hbox align="center">
+    <sacolorpicker label="Unread thread (light)" />
+    <label value="Unread thread (light)" flex="1"/>
+    <button>
+     <box style="background-color: red; border: 1px solid black; width: 25px; height: 15px"/>
+     <image src="chrome://global/skin/arrow/arrow-dn.gif"/>
+    </button>
+   </hbox>
+   -->
+  </groupbox>
+  </vbox>
+  <vbox flex="1">
+  <groupbox>
+   <caption label="Post Colors"/>
+   <sacolorpicker flex="1" label="Unread (light)" id="cp_unseenPostLight" onchange="colorChanged(this);"/>
+   <sacolorpicker flex="1" label="Unread (dark)" id="cp_unseenPostDark" onchange="colorChanged(this);"/>
+   <sacolorpicker flex="1" label="Read (light)" id="cp_seenPostLight" onchange="colorChanged(this);"/>
+   <sacolorpicker flex="1" label="Read (dark)" id="cp_seenPostDark" onchange="colorChanged(this);"/>
+  </groupbox>
+  <groupbox>
+   <caption label="Posted in Thread"/>
+   <sacolorpicker flex="1" label="Posted in Thread" id="cp_postedInThreadRe" onchange="colorChanged(this);"/>
+  </groupbox>
+  </vbox>
+ </hbox>
+
+ <hbox>
+  <button label="Load Default Colors" oncommand="loadDefaultColors()"/>
+  <spacer flex="1"/>
+<!--
+  <button disabled="true" label="Setup User Highlighting..." oncommand="setupUserHighlighting()"/>
+-->
+ </hbox>
+ <spacer flex="4"/>
+ <checkbox id="toggle_dontHighlightThreads"
+           label="Don't perform color highlighting on thread lists"/>
+ <checkbox id="toggle_dontHighlightPosts"
+           label="Don't perform color highlighting on posts in a thread"/>
+ <checkbox id="toggle_props"
+           label="Highlight interesting and important usernames"/>
+ <checkbox id="toggle_disableGradients"
+           label="Disable all color gradients"/>
+
+</page>

@@ -1,0 +1,19 @@
+#SALR_UpdateIconLink
+{
+   display: block;
+   position: fixed;
+   right: 5px;
+   bottom: 5px;
+}
+
+#SALR_UpdateIconLink > img
+{
+   width: 35px;
+   height: 33px;
+   border: none;
+}
+
+.SALR_ThreadRow_Ignored
+{
+   display: none;
+}

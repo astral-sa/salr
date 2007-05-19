@@ -1,0 +1,15 @@
+.salastread_showhideheaderbutton {
+ position: absolute;
+ top: 0px;
+ right: 0px;
+ font-family: Tahoma, Arial, Helvetica, sans-serif;
+ font-size: 8.5pt;
+ padding: 2px;
+ margin: 3px;
+ display: block;
+ cursor: pointer;
+ border: 2px outset rgb(0,102,153);
+ background-color: rgb(0,102,153);
+ color: rgb(255, 255, 255);
+ z-index: 1000;
+}

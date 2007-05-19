@@ -1,0 +1,66 @@
+.listBox {
+  -moz-appearance: listbox;
+  margin: 2px 4px;
+  border: 2px solid;
+  -moz-border-top-colors: ThreeDShadow ThreeDDarkShadow;
+  -moz-border-right-colors: ThreeDHighlight ThreeDLightShadow;
+  -moz-border-bottom-colors: ThreeDHighlight ThreeDLightShadow;
+  -moz-border-left-colors: ThreeDShadow ThreeDDarkShadow;
+  background-color: -moz-Field;
+}
+
+.buttonBox {
+  margin: 0px 5px 0px 0px !important;
+}
+
+.buttonBoxButton {
+  -moz-appearance: none;
+  border: 1px solid transparent;
+  background-color: transparent;
+  margin-left: 1px;
+  margin-right: 1px;
+  list-style-image: url("chrome://salastread/content/pref-icons.png")
+}
+
+.buttonBoxButton > .button-box {
+  border: none !important;
+}
+
+.buttonBoxButton > .button-box > .button-icon {
+  width: 32px;
+  height: 32px;
+  -moz-image-region: rect(0px, 128px, 32px, 96px);
+}
+
+.buttonBoxButton:hover, .buttonBoxButton:focus {
+  border: 1px solid;
+  -moz-border-left-colors: #98B4E2;
+  -moz-border-top-colors: #98B4E2;
+  -moz-border-right-colors: #98B4E2;
+  -moz-border-bottom-colors: #98B4E2;
+  background-color: #E0E8F6;
+}
+
+.buttonBoxButton[checked="true"] {
+  border: 1px solid;
+  -moz-border-left-colors: #316AC5;
+  -moz-border-top-colors: #316AC5;
+  -moz-border-right-colors: #316AC5;
+  -moz-border-bottom-colors: #316AC5;
+  background-color: #C1D2EE;
+}
+
+#catGeneralButton .button-icon    {-moz-image-region: rect(0px, 32px,  32px, 0px  ) !important}
+#catColorButton .button-icon      {-moz-image-region: rect(0px, 64px,  32px, 32px ) !important}
+#catMenuButton .button-icon       {-moz-image-region: rect(0px, 96px,  32px, 64px ) !important}
+#catQuickReplyButton .button-icon {-moz-image-region: rect(0px, 160px, 32px, 128px ) !important}
+#catFilesButton .button-icon      {-moz-image-region: rect(0px, 192px, 32px, 160px) !important}
+#catImagesButton .button-icon     {-moz-image-region: rect(0px, 224px, 32px, 192px) !important}
+#catIgnoredButton .button-icon    {-moz-image-region: rect(0px, 256px, 32px, 224px) !important}
+
+#catDownloadsButton {-moz-image-region: rect(0px, 128px, 32px, 96px)}
+#catThemesButton    {-moz-image-region: rect(0px, 160px, 32px, 128px)}
+#catExtButton       {-moz-image-region: rect(0px, 192px, 32px, 160px)}
+#catAdvancedButton  {-moz-image-region: rect(0px, 224px, 32px, 192px)}
+
+

@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://salastread/content/salastread.css" type="text/css"?>
+
+<overlay id="salastreadOverlay"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  
+  <script type="application/x-javascript"
+    src="chrome://salastread/content/utilfunctions.js"/>
+  <script type="application/x-javascript"
+    src="chrome://salastread/content/pngmaker.js"/>
+  <script type="application/x-javascript"
+    src="chrome://salastread/content/FTPSendReceive.js"/>
+<!--
+  <script type="application/x-javascript"
+    src="chrome://salastread/content/timemanager.js"/>
+-->
+  <script type="application/x-javascript"
+    src="chrome://salastread/content/salastreadOverlay.js"/>
+
+<!-- in dev
+  <script type="application/x-javascript"
+    src="chrome://salastread/content/MethodDelegate.js"/>
+  <script type="application/x-javascript"
+    src="chrome://salastread/content/SALRCore.js"/>
+-->
+
+<!-- created dynamically now
+  <menubar id="main-menubar">
+   <menu insertafter="bookmarks-menu" id="menu_SAforums"
+         label="SA" accesskey="S" style="display: none">
+    <menupopup id="menupopup_SAforums" class="lastread_menu">
+    </menupopup>
+   </menu>
+  </menubar>
+-->
+
+  <statusbar id="status-bar">
+   <statusbarpanel insertafter="security-button" id="somethingawful-button" style="display: none;">
+    <image src="chrome://salastread/content/sa.png" width="16" height="16"
+           title="Something Awful"/>
+   </statusbarpanel>
+  </statusbar>
+
+  <popup id="contentAreaContextMenu">
+   <menu label="SA Last Read Options" id="salastread-context-menu"
+         image="chrome://salastread/content/sa.png"
+         class="menuitem-iconic salastread_context_menu" position="1">
+    <menupopup id="salastread-context-menupopup">
+     <menuitem id="salastread-context-ignorethread" label="Ignore This Thread" accesskey="i" oncommand="SALR_IgnoreThread();" />
+     <menuitem id="salastread-context-starthread" label="Star This Thread" accesskey="s" oncommand="SALR_StarThread();" />
+     <!--
+     <menuitem id="salastread-context-threadwatch" label="ThreadWatch..." accesskey="w" oncommand="SALR_ThreadWatch();" />
+     -->
+    </menupopup>
+   </menu>
+   <menuseparator id="salastread-context-menuseparator" position="2"/>
+  </popup>
+  
+</overlay>
