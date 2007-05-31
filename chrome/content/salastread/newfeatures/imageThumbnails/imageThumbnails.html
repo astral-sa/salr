@@ -1,0 +1,27 @@
+<html>
+ <head>
+  <link rel="stylesheet" href="../common.css"/>
+ </head>
+ <body>
+  <img src="chrome://salastread/skin/scale_image.png" style="float:right; padding: 5px 5px 5px 5px;"/>
+  <h1>Image Thumbnailing</h1>
+
+  <p>
+  All large images posted to the forum can be automatically scaled down
+  to a reasonable size, and easily expanded to their original, full
+  dimensions with a click on the thumbnail control that appears when you
+  mouse over a scaled image.
+  </p>
+
+  <p>
+  This feature is currently <span id="fStatus">enabled</span>. To
+  <span id="fVerb">disable</span> it, click
+  <a href="javascript:toggleFeature();">here</a>.
+  </p>
+
+  <script language="javascript" src="../togglePref.js"></script>
+  <script>
+var feature_pref = "toggle_thumbnailAllImages";
+  </script>
+ </body>
+</html>

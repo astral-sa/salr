@@ -1,0 +1,17 @@
+.salastread_pagenavigator {
+	position:fixed;
+	right:0;
+	bottom:0;
+	background-color:#069;
+	padding:4px;
+}
+
+.salastread_pagenavigator img {
+	border:0;
+	vertical-align:bottom;
+}
+
+.salastread_pagenavigator img.disab {
+ opacity: 0.5;
+ cursor: default !important;
+}

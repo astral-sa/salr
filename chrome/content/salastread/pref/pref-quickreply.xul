@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	
+	<prefpane id="quickreply">
+		<preferences>
+			<preference id="useQuickQuote" 					 name="extensions.salastread.useQuickQuote" 				  type="bool"/>
+			
+			<preference id="quickQuoteSubscribeDefault" 	 name="extensions.salastread.quickQuoteSubscribeDefault" 	  type="bool"/>
+			<preference id="quickQuoteSignatureDefault" 	 name="extensions.salastread.quickQuoteSignatureDefault" 	  type="bool"/>
+			<preference id="quickQuoteDisableSmiliesDefault" name="extensions.salastread.quickQuoteDisableSmiliesDefault" type="bool"/>
+			<preference id="quickQuoteSwapPostPreview" 		 name="extensions.salastread.quickQuoteSwapPostPreview" 	  type="bool"/>
+			<preference id="quickQuoteLivePreview" 			 name="extensions.salastread.quickQuoteLivePreview" 		  type="bool"/>
+		</preferences>
+		
+		<groupbox>
+			<caption label="Quick Reply Options"/>
+			<vbox>
+				<checkbox preference="useQuickQuote" label="Use 'Quick Quote' and 'Quick Reply' buttons"/>
+				<vbox id="qqtoggles" style="margin-left: 20px">
+					<checkbox preference="quickQuoteSubscribeDefault" 		label="Default 'Subscribe' to checked" />
+					<checkbox preference="quickQuoteSignatureDefault" 		label="Default 'Show Signature' to checked (for first post in thread only)" />
+					<checkbox preference="quickQuoteDisableSmiliesDefault" 	label="Default 'Disable Smilies' to checked" />
+					<checkbox preference="quickQuoteSwapPostPreview" 		label="Swap position of 'Submit Reply' and 'Preview Reply' buttons" />
+					<checkbox preference="quickQuoteLivePreview" 			label="Enable live preview in quick reply window" />
+				</vbox>
+			</vbox>
+		</groupbox>	
+	</prefpane>
+</overlay>

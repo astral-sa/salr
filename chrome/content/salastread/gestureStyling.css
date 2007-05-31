@@ -1,0 +1,10 @@
+.salastread_gesturenav {
+ position: fixed;
+ width: 77px;
+ height: 77px;
+ z-index: 999999;
+}
+
+.salastread_gesturenav.disab {
+ opacity: 0.33;
+}

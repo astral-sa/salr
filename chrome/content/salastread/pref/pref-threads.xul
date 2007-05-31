@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	
+	<prefpane id="threads">
+		<preferences>
+			<preference id="reanchorThreadOnLoad" 	name="extensions.salastread.reanchorThreadOnLoad" 	type="bool"/>
+			<preference id="insertPostLastMarkLink" name="extensions.salastread.insertPostLastMarkLink" type="bool"/>
+			<preference id="hideEditButtons" 		name="extensions.salastread.hideEditButtons" 		type="bool"/>
+			<preference id="hideReportButtons" 		name="extensions.salastread.hideReportButtons" 		type="bool"/>
+			<preference id="enableVideoEmbedder" 	name="extensions.salastread.enableVideoEmbedder" 	type="bool"/>
+			
+			<preference id="resizeCustomTitleText" 	name="extensions.salastread.resizeCustomTitleText" 	type="bool"/>
+		</preferences>
+		
+		<groupbox>
+		<caption label="Thread Options"/>
+			<vbox>
+				<checkbox preference="reanchorThreadOnLoad" 	label="Reanchor threads to targetted post after all images have loaded" />
+				<checkbox preference="insertPostLastMarkLink" 	label="Add a &quot;&lt;&quot; link to reset the last post of each thread" />
+				<checkbox preference="hideEditButtons" 			label="Hide edit buttons for posts from users other than yourself" />
+				<checkbox preference="hideReportButtons" 		label="Hide the report button on your own posts" />
+				<checkbox preference="enableVideoEmbedder" 		label="Enable converting of video links to embedded video" />
+			</vbox>
+		</groupbox>
+
+		<groupbox>
+		<caption label="User Display Options"/>
+			<vbox>
+				<checkbox preference="resizeCustomTitleText"	label="Shrink Large Custom Title Texts" />
+			</vbox>
+		</groupbox>
+	</prefpane>
+</overlay>

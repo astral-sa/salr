@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/pref/pref-about.css" type="text/css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-about.js"/>
+	
+	<prefpane id="about" onpaneload="aboutInit()">
+		<preferences>
+			<preference id="timeSpentOnForums" name="extensions.salastread.timeSpentOnForums" type="int"/>
+		</preferences>
+		
+		<vbox id="mainabout" flex="1">
+			<hbox>
+				<spacer flex="1"/>
+				<image src="chrome://salastread/skin/salastread-large.png"/>
+				<spacer style="width: 15px;"/>
+				<vbox>
+					<spacer flex="1"/>
+					<text value="SA Last Read" style="font-weight: bold; font-size: 120%"/>
+					<text value="Version 1.99.*"/>
+					<separator class="thin"/>
+					<hbox>
+						<text value="Created by: " style="font-weight: bold"/>
+						<text value="Tim Fries (biznatchio)"/>
+					</hbox>
+					<hbox>
+						<text value="Current Developers: " style="font-weight: bold"/>
+						<text value="duz, Tivac"/>
+					</hbox>
+					<hbox>
+						<text value="Contributors: " style="font-weight: bold"/>
+						<vbox>
+							<text value="uncut product, 8ender, LonelyKing,"/>
+							<text value="Sebbe, Pahalial, ctz, Defiler, Shii,"/>
+							<text value="cheesypeanut"/>
+						</vbox>
+					</hbox>
+					<spacer flex="1"/>
+				</vbox>
+				<spacer flex="1"/>
+			</hbox>
+
+			<spacer flex="1"/>
+
+			<hbox flex="8">
+				<spacer flex="2"/>
+				<hbox class="sunkenframe" flex="96">
+					<iframe src="chrome://salastread/content/changelog.html" flex="1"/>
+				</hbox>
+				<spacer flex="2"/>
+			</hbox>
+
+			<hbox style="margin-bottom: 5px; margin-top: 5px;">
+				<spacer flex="1"/>
+				<text value="Time you've spent on the forums: " style="font-weight: bold;"/>
+				<text id="timespent" value="unknown" />
+				<spacer flex="1"/>
+			</hbox>
+		</vbox>
+	</prefpane>
+</overlay>

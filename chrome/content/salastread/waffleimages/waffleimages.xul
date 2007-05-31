@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/waffleimages/waffleimages.css" type="text/css"?>
+
+<window id="salastread_waffleimages"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        style="width: 350px; height: 200px; padding: 7px; margin: 7px;"
+        title="WaffleImages Image Upload">
+
+ <script language="JavaScript" src="chrome://salastread/content/utilfunctions.js" />
+ <script language="JavaScript" src="chrome://salastread/content/waffleimages/waffleimages.js" />
+
+ <vbox flex="1">
+  <hbox align="center" class="headerrow">
+   <!-- <image src="chrome://salastread/content/waffleimages/waffleimages.jpg"/> -->
+   <label class="titlelabel" value="WaffleImages Image Upload"/>
+  </hbox>
+  <description>
+   You can select an image from your hard drive
+   to upload and host through the
+   WaffleImages.com image hosting service. An [IMG] tag will automatically be added to your post.
+  </description>
+  <description>
+   See www.waffleimages.com for more information.
+  </description>
+  <spacer flex="1"/>
+  <hbox>
+   <spacer flex="1"/>
+   <button id="choosebtn" label="Choose an Image..." onclick="chooseImage();"/>
+   <button label="Cancel" onclick="window.close();"/>
+   <spacer flex="1"/>
+  </hbox>
+  <spacer flex="1"/>
+ </vbox>
+
+ <html:form class="uploaderform" id="uploaderform" method="post"
+            action="http://waffleimages.com/upload"
+            enctype="multipart/form-data" target="submitframe"> 
+  <html:input type="hidden" name="mode" value="file"/>
+  <html:input type="file" name="file" id="userfile[1]" />
+  <html:input type="hidden" name="tg_format" value="xml" />
+  <html:input type="hidden" name="client" value="Firefox SALR 1.15.1912" />
+  <html:submit value="Host"/>
+ </html:form>
+<!--
+ <html:img id="imgTag" src="about:blank" style="position:absolute;left:0;top:0;visibility:hidden"/>
+-->
+ 
+ <box id="sfcontainer">
+ <html:iframe name="submitframe" id="submitframe" />
+ </box>
+
+</window>

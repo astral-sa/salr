@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-general.js"/>
+
+	<prefpane id="general" onpaneload="initGeneral()">
+	<preferences>
+		<preference id="removeHeaderAndFooter" 	name="extensions.salastread.removeHeaderAndFooter" 	type="bool"/>
+		<preference id="removePageTitlePrefix" 	name="extensions.salastread.removePageTitlePrefix" 	type="bool"/>
+		<preference id="enablePageNavigator"	name="extensions.salastread.enablePageNavigator" 	type="bool"/>
+		<preference id="enableForumNavigator"	name="extensions.salastread.enableForumNavigator" 	type="bool"/>
+		<preference id="gestureEnable" 			name="extensions.salastread.gestureEnable" 			type="bool"/>
+		<preference id="showSAToolsMenu" 		name="extensions.salastread.showSAToolsMenu" 		type="bool"/>
+		
+		<preference id="showGoToLastIcon"			name="extensions.salastread.showGoToLastIcon" 		type="bool"/>
+		<preference id="goToLastReadPost"			name="extensions.salastread.goToLastReadPost" 		type="string"/>
+		<preference id="alwaysShowGoToLastIcon"		name="extensions.salastread.alwaysShowGoToLastIcon" type="bool"/>
+		<preference id="showUnvisitIcon"			name="extensions.salastread.showUnvisitIcon" 		type="bool"/>
+		<preference id="markThreadUnvisited"		name="extensions.salastread.markThreadUnvisited" 	type="string"/>
+		
+		<preference id="suppressErrors"			name="extensions.salastread.suppressErrors" 		type="bool"/>		
+    </preferences>
+
+	<groupbox>
+	<caption label="General Options" />
+	<vbox>
+		<checkbox preference="removeHeaderAndFooter" label="Hide Forum Header and Footer" />
+		<checkbox preference="removePageTitlePrefix" label="Remove 'The Something Awful Forums' from page titles" />
+		<checkbox preference="enablePageNavigator" 	 label="Add a page navigator to the lower-right corner of the browser" />
+		<checkbox preference="enableForumNavigator"  label="Add a forum navigator to the lower-right corner of the browser" />
+		<checkbox preference="gestureEnable" 		 label="Allow mouse gestures to navigate around threads and forums" />
+		<checkbox preference="showSAToolsMenu" 		 label="Add 'SALR Config' item to the tools menu" />
+	</vbox>
+	</groupbox>
+	
+	<groupbox>
+		<caption label="Thread Command Icons"/>
+		
+		<vbox>
+			<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Show 'Go To Last Post' icon" oncommand="toggleLastReadIcon()"/>
+			<vbox style="margin-left: 20px">
+				<hbox align="center" flex="1">
+					<label value="Icon URL:" control="lastReadPostIcon"/>
+					<textbox id="lastReadIcon" preference="goToLastReadPost" flex="1"/>
+					<button id="lastReadIconDefault" label="Default"  onclick="lastReadIconDefault()"/>
+				</hbox>
+				<checkbox id="alwayShowLastReadIcon" preference="alwaysShowGoToLastIcon" label="Always show 'Go To Last Post' icon, even if no new posts in thread"/>
+			</vbox>
+			
+			<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Show 'Mark Thread Unvisited' icon" oncommand="toggleUnvisitIcon()" />
+			
+			<vbox style="margin-left: 20px">
+				
+				<hbox align="center" flex="1">
+					<label value="Icon URL:" control="unvisitThreadIcon"/>
+					<textbox id="unvisitIcon" preference="markThreadUnvisited" flex="1"/>
+					<button id="unvisitIconDefault" label="Default" onclick="unvisitIconDefault()"/>
+				</hbox>
+				
+			</vbox>
+			
+		</vbox>
+	</groupbox>
+	
+	<groupbox>
+		<caption label="Debugging Info"/>
+		<checkbox preference="suppressErrors" label="Don't display error popup messages" />
+	</groupbox>
+	</prefpane>
+</overlay>

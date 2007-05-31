@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-menu.js"/>
+
+	<prefpane id="menu" onpaneload="menuInit()">
+		
+		<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-menu.js"/>
+	
+		<preferences>
+			<preference id="showSAForumMenu" 			name="extensions.salastread.showSAForumMenu" 			type="bool"/>
+			<preference id="nestSAForumMenu" 			name="extensions.salastread.nestSAForumMenu" 			type="bool"/>
+			<preference id="useSAForumMenuBackground" 	name="extensions.salastread.useSAForumMenuBackground" 	type="bool"/>
+			<preference id="hideOtherSAMenus" 			name="extensions.salastread.hideOtherSAMenus" 			type="bool"/>
+			
+			<preference id="enableContextMenu" 			name="extensions.salastread.enableContextMenu" 			type="bool"/>
+			<preference id="contextMenuOnBottom" 		name="extensions.salastread.contextMenuOnBottom" 		type="bool"/>
+			
+			<preference id="menuPinnedForums"			name="extensions.salastread.menuPinnedForums"			type="string"/>
+		</preferences>
+		
+		<groupbox id="toolbarGroup">
+			<caption label="Toolbar Menu Settings"/>
+			<checkbox id="showSaMenu"	preference="showSAForumMenu" 			label="Show SA Forum Quick Jump menu"/>
+			
+			<vbox style="margin-left: 10px">
+				<checkbox id="nestSaMenu"	preference="nestSAForumMenu" 			label="Use submenus for forum categories"/>
+				<checkbox preference="useSAForumMenuBackground" label="Use SA Grenade background on Quick Jump menu"/>		
+				<checkbox preference="hideOtherSAMenus" 		label="Hide any other SA menus installed by other extensions"/>
+
+				
+				<hbox>
+					<vbox flex="1">
+						<label value="Unpinned Forums"/>
+						<listbox flex="1" id="unpinned_forums">
+						</listbox>
+					</vbox>
+					
+					<vbox align="center">
+						<spacer flex="1"/>
+						<button id="pinButton" label="Pin &gt;" oncommand="pinClick()" />
+						<button id="unpinButton" label="&lt; Unpin" oncommand="unPinClick()" />
+						<separator/>
+						<button id="moveUpButton" label="Move Up" disabled="true" oncommand="moveClick(false)" />
+						<button id="moveDownButton" label="Move Down" disabled="true" oncommand="moveClick(true)" />
+						<separator/>
+						<button id="addSeparatorButton" label="Add Sep &gt;" oncommand="addSepClick()" />
+						<button id="addURLButton" label="Add URL &gt;" oncommand="addURLClick()" />
+						<button id="addStarMenuButton" label="Add Star Menu &gt;" oncommand="addStarMenuClick()" />
+						<spacer flex="1"/>
+					</vbox>
+					
+					<vbox flex="1">
+						<label value="Pinned Forums"/>
+						<listbox flex="1" id="pinned_forums" onselect="pinnedSelect()">
+						</listbox>
+					</vbox>
+				</hbox>
+			</vbox>
+		</groupbox>
+		
+		<groupbox id="contextGroup">
+			<caption label="Context Submenu Settings"/>
+			<checkbox preference="enableContextMenu" label="Show context submenu" />
+			<checkbox preference="contextMenuOnBottom" label="Put the context submenu on the bottom of the context menu instead of the top"/>
+		</groupbox>
+	
+	</prefpane>
+</overlay>

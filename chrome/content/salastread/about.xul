@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<window class="dialog" id="salastread-about-window"
+	title="SA Last Read - About"
+	orient="vertical"
+	autostretch="always"
+	onload="sizeToContent()"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script type="application/x-javascript"><![CDATA[
+
+function showChangeLog() {
+	window.open("chrome://salastread/content/changelog.xul", "changelog", "chrome");
+}
+
+]]></script>
+
+<groupbox align="center" orient="horizontal">
+	<vbox>
+		<text value="SALastRead" style="font-weight: bold; font-size: x-large;"/>
+		<text value="TODO: Update this dynamically"/>
+		<separator class="thin"/>
+		<text value="Created By:" style="font-weight: bold;"/>
+		<text value="Tim Fries (biznatchio)" class="url" onclick="window.open('http://www.evercrest.com'); window.close();"/>
+		<separator class="thin"/>
+		<text value="Icon Design:" style="font-weight: bold;"/>
+		<text value="Joseph Wain (uncut product)"/>
+		<text value="8ender"/>
+		<separator class="thin"/>
+		<text value="Thanks to:" style="font-weight: bold;"/>
+		<text value="LonelyKing"/>
+		<text value="Sebbe"/>
+		<text value="Pahalial"/>
+		<text value="ctz"/>
+		<text value="Defiler"/>
+		<text value="Shii"/>
+		<text value="cheesypeanut"/>
+		<text value="Ben Dusinberre (duz)"/>
+		<text value="cygnustm"/>
+		<text value="alex.vidal"/>
+		<text value="Pat Cavit (tivac)"/>
+	</vbox>
+	<spring flex="1"/>
+	<image src="chrome://salastread/content/salastread-large.png"/>
+</groupbox>
+<hbox>
+	<spacer flex="1"/>
+	<button label="Changelog" oncommand="showChangeLog();"/>
+	<button label="Close" oncommand="window.close();"/>
+</hbox>
+</window>

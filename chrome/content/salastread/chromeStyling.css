@@ -1,0 +1,34 @@
+menupopup.lastread_menu
+{
+    background-color: #fff;
+	background-image: url("chrome://salastread/skin/ps-sa-tag.jpg") !important;
+	background-repeat: no-repeat;
+}
+
+menuitem.lastread_menu_frontpage {
+ font-weight: bold;
+}
+
+menu.salastread_context_menu
+{
+	background-image: url("chrome://salastread/skin/sa.png");
+	background-repeat: no-repeat;
+	background-position: 1px 1px;
+	background-attachment: scroll;
+	font-weight: bold;
+}
+
+menuitem.lastread_menu_sub
+{
+   font-weight: bold;
+}
+
+menuitem.lastread_menu_sub\-sub
+{
+   padding-left: 15px;
+}
+
+menuitem.lastread_menu_sub\-sub\-sub
+{
+   padding-left: 30px;
+}

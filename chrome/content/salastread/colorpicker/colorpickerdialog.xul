@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/colorpicker/colorpickerdialog.css" type="text/css"?>
+
+<dialog id="salastread-colorpickerdialog"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        onload="grabArguments();sizeToContent();"
+        ondialogaccept="return acceptIt();"
+        title="Color Picker">
+
+	<script language="JavaScript" src="chrome://salastread/content/colorpicker/colorpickerdialog.js" />
+
+	<hbox>
+		<stack class="box-inset cbbox-hsb" id="selbox" onclick="imageClick(event);">
+			<image src="chrome://salastread/content/colorpicker/hsboverlay.png" 	onclick="imageClick(event);"/>
+			<image src="chrome://salastread/content/colorpicker/colorselection.png" onclick="imageClick(event);" id="colorselection" class="cbbox-colorselection"/>
+		</stack>
+		<vbox class="box-inset cbbox-hue" id="hsbox" onclick="hueClick(event);">
+			<image src="chrome://salastread/content/colorpicker/hueselection.png" id="huesel" class="cbbox-huesel" />
+		</vbox>
+		
+		<vbox>
+			<groupbox>
+				<caption label="HSB Color"/>
+				
+				<hbox flex="1">
+					<spacer flex="1"/>
+					<grid>
+						<columns>
+							<column/>
+							<column/>
+						</columns>
+						<rows>
+							<row align="center">
+								<label value="H:" control="hue"/>
+								<textbox class="digentry" id="hue" onchange="hueChanged(this.value)"/>
+							</row>
+							<row align="center">
+								<label value="S:" control="saturation"/>
+								<textbox class="digentry" id="saturation" onchange="saturationChanged(this.value,true)"/>
+							</row>
+							<row align="center">
+								<label value="B:" control="brightness"/>
+								<textbox class="digentry" id="brightness" onchange="brightnessChanged(this.value,true)"/>
+							</row>
+						</rows>
+					</grid>
+					<spacer flex="1"/>
+				</hbox>
+			</groupbox>
+			
+			<groupbox>
+				<caption label="HTML Color"/>
+				<hbox flex="1">
+					<spacer flex="1"/>
+					<hbox align="center">
+						<label value="#" control="hexrgb"/>
+						<textbox class="hexentry" id="hexrgb" onchange="hexChanged(this.value)"/>
+					</hbox>
+					<spacer flex="1"/>
+				</hbox>
+			</groupbox>
+		</vbox>
+			
+		<vbox>
+			<groupbox>
+				<caption label="RGB Color"/>
+				<hbox flex="1">
+					<spacer flex="1"/>
+					<grid>
+						<columns>
+							<column/>
+							<column/>
+						</columns>
+						<rows>
+							<row align="center">
+								<label value="R:" control="red"/>
+								<textbox class="digentry" id="red" onchange="redChanged(this.value, true)"/>
+							</row>
+							<row align="center">
+								<label value="G:" control="green"/>
+								<textbox class="digentry" id="green" onchange="greenChanged(this.value, true)"/>
+							</row>
+							<row align="center">
+								<label value="B:" control="blue"/>
+								<textbox class="digentry" id="blue" onchange="blueChanged(this.value, true)"/>
+							</row>
+						</rows>
+					</grid>
+					<spacer flex="1"/>
+				</hbox>
+			</groupbox>
+			<groupbox>
+				<caption label="Sample"/>
+				<box id="sampleNail" style="width: 100%; height: 50px; border: 1px solid black; background: #f00;"/>
+			</groupbox>
+		</vbox>
+	</hbox>
+</dialog>

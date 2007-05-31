@@ -1,0 +1,10 @@
+/* little yellow popups when you reset your last read post */
+.SALR_yellowPopup {
+	position: absolute;
+	border: 1px solid black;
+	background-color: yellow;
+	color: black;
+	padding: 2px 2px 2px 2px;
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size: small;
+}
