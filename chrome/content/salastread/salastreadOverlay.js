@@ -92,7 +92,7 @@ function SALR_menuItemGoTo(event, url, target) {
 }
 
 function grabForumList(doc, selectnode) {
-	var rowList = persistObject.selectNodes(doc, doc, "//table[@id='forums']//tr");      
+	var rowList = persistObject.selectNodes(doc, doc, "//table[@id='forums']//tr");
    var oDomParser = new DOMParser();
    var forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
    var targetEl = forumsDoc.documentElement;
@@ -107,12 +107,12 @@ function grabForumList(doc, selectnode) {
 
 
    for (var i=0; i<rowList.length; i++) {
-      
+
       var thisRow = rowList[i];
-      var firstEl = persistObject.selectSingleNode(doc, thisRow, "th[@class='category'] | td[@class='title']");      
+      var firstEl = persistObject.selectSingleNode(doc, thisRow, "th[@class='category'] | td[@class='title']");
 
       var cssClass = firstEl.getAttribute("class")
-      
+
       if(cssClass == "category") {
          var catLink = persistObject.selectSingleNode(doc,firstEl,"a");
          var catTitle = catLink.firstChild.nodeValue;
@@ -133,7 +133,7 @@ function grabForumList(doc, selectnode) {
       }
       else if(cssClass == "title")
       {
-         
+
          var forumLink = persistObject.selectSingleNode(doc,firstEl,"a");
          var forumTitle = forumLink.firstChild.nodeValue;
          var forumUrl = forumLink.getAttribute("href")
@@ -143,7 +143,7 @@ function grabForumList(doc, selectnode) {
 
          var subForums = persistObject.selectNodes(doc,firstEl,"div[@class='subforums']/a")
          for(var j=0; j<subForums.length; j++) {
-            
+
             var subForumLink = subForums[j];
             var subForumTitle = subForumLink.firstChild.nodeValue;
             var subForumUrl = subForumLink.getAttribute("href")
@@ -160,7 +160,7 @@ function grabForumList(doc, selectnode) {
    if ( persistObject.getPreference('showSAForumMenu') ) {
       buildSAForumMenu();
    }
-   
+
 
 
 }
@@ -175,7 +175,7 @@ function addUtilItem(name,id,forumsDoc) {
 }
 
 function addForumToForums(name,id,depth,oldForumXml,container,forumsDoc) {
-   
+
    var fel = forumsDoc.createElement("forum");
    fel.setAttribute("id", id);
    fel.setAttribute("name",name);
@@ -1357,7 +1357,7 @@ function handleShowThread(doc) {
 				posterColor = persistObject.getPosterColor(posterId);
 				posterBG = persistObject.getPosterBackground(posterId);
 			}
-			userPosterNote = persistObject.getPosterNotes(posterId);			
+			userPosterNote = persistObject.getPosterNotes(posterId);
 			if (persistObject.getPreference("highlightUsernames") && posterColor != false)
 			{
 				userNameBox.style.color = posterColor;
@@ -2327,7 +2327,7 @@ try
 		showErrors = persistObject.getPreference('suppressErrors');
 		// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 		var buildNum = parseInt(persistObject.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
-		if (buildNum <= 70418) { // Put the latest build number to need an SQL patch here
+		if (buildNum <= 70531) { // Put the latest build number to need an SQL patch here
 			needToShowChangeLog = true;
 		}
 	}

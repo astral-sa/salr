@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.070530');
+pref('extensions.salastread.currentVersion', '1.99.070531');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -112,7 +112,6 @@ pref('extensions.salastread.showSAToolsMenu', false);
 
 //FILE SETTINGS
 pref('extensions.salastread.databaseStoragePath', '%profile%salastread.sqlite');
-pref('extensions.salastread.persistStoragePath', '%profile%salastread.xml');
 pref('extensions.salastread.forumListStoragePath', '%profile%saforumlist.xml');
 pref('extensions.salastread.remoteSyncStorageUrl', 'ftp://username:password@example.com/.salastread.syncdata');
 pref('extensions.salastread.useRemoteSyncStorage', false);

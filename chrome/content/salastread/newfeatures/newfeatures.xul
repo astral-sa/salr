@@ -12,12 +12,13 @@
 		<image src="chrome://salastread/skin/salastread-head.png" />
 		<separator/>
 		<html:h1>Hi.  I'm not done yet.</html:h1>
-		<html:h2>If you're seeing this, I'm either transfering your settings or patching your database</html:h2>
+		<html:h2>If you're seeing this, I'm either transfering your settings or patching your database.</html:h2>
+		<html:h3>Feel free to click the close button below.</html:h3>
 		<hbox>
-			<button label="Show Changelog" id="btnToggle" oncommand="toggleMode();" />
+			<button label="Show Changelog" id="btnToggle" />
 			<spacer flex="1"/>
-			<button label="&lt; Previous" id="btnPrev" oncommand="changeFeature(-1);" />
-			<button label="Next &gt;" id="btnNext" oncommand="changeFeature(1);" />
+			<button label="&lt; Previous" id="btnPrev" />
+			<button label="Next &gt;" id="btnNext" />
 			<spacer style="width: 15px" />
 			<button label="Close" oncommand="window.close();" />
 		</hbox>

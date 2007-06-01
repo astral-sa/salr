@@ -186,10 +186,6 @@ salrPersistObject.prototype = {
 
    get storeFileName() { return this._fn; },
 
-   get storedbFileName() { return this._dbfn; },
-
-   get SALRversion() { return this.getPreference('currentVersion'); },
-
    get xmlDoc()
    {
       if ( this._xmlDoc != null )
@@ -637,11 +633,6 @@ salrPersistObject.prototype = {
          } else {
             this._dbfn = this.getPreference('databaseStoragePath');
          }
-         if ( this.getPreference('persistStoragePath').indexOf("%profile%")==0 ) {
-            this._fn = GetUserProfileDirectory( this.getPreference('persistStoragePath').substring(9), this._isWindows );
-         } else {
-            this._fn = this.getPreference('persistStoragePath');
-         }
          if ( this.getPreference('forumListStoragePath').indexOf("%profile%")==0 ) {
             this._flfn = GetUserProfileDirectory( this.getPreference('forumListStoragePath').substring(9), this._isWindows );
          } else {
@@ -740,6 +731,10 @@ salrPersistObject.prototype = {
 	return result;
 	},
 
+	get storedbFileName() { return this._dbfn; },
+
+	get SALRversion() { return this.getPreference("currentVersion"); },
+
 	//
 	// Here begins new functions for the 2.0 rewrite
 	//
@@ -777,17 +772,20 @@ salrPersistObject.prototype = {
 		var storageService = Components.classes["@mozilla.org/storage/service;1"]
 			.getService(Components.interfaces.mozIStorageService);
 		var mDBConn = storageService.openDatabase(file);
-		if (!mDBConn.tableExists('threaddata'))
+		if (!mDBConn.tableExists("threaddata"))
 		{
 			mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, lastpostid INTEGER, lastviewdt INTEGER, op INTEGER, title VARCHAR(161), lastreplyct INTEGER, posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, options INTEGER)");
+			this.prepopulateDB("threaddata");
 		}
-		if (!mDBConn.tableExists('userdata'))
+		if (!mDBConn.tableExists("userdata"))
 		{
 			mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT)");
+			this.prepopulateDB("userdata");
 		}
-		if (!mDBConn.tableExists('posticons'))
+		if (!mDBConn.tableExists("posticons"))
 		{
 			mDBConn.executeSimpleSQL("CREATE TABLE `posticons` (iconnumber INTEGER PRIMARY KEY, filename VARCHAR(50))");
+			this.prepopulateDB("posticons");
 		}
 		return mDBConn;
 	},
@@ -1112,7 +1110,7 @@ salrPersistObject.prototype = {
 		}
 		return false;
 	},
-	
+
 	// Updates a user's name in the DB
 	// @param: (int) User ID, (string) Username
 	// @return: nothing
@@ -1287,14 +1285,14 @@ salrPersistObject.prototype = {
 		}
 		return result;
 	},
-	
+
 	// checks to see if the userid has any custom coloring defined
 	// @param: (int) User Id
 	// @returns: (object) Object contained userid and username
 	isPosterColored: function(userid)
 	{
 		var user = false;
-		
+
 		var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
 			statement.bindInt32Parameter(0, userid);
 		if (statement.executeStep()) {
@@ -1303,10 +1301,10 @@ salrPersistObject.prototype = {
 			user.username = statement.getString(1);
 		}
 		statement.reset();
-		
+
 		return user;
 	},
-	
+
 	// Fetches all users that have custom colors defined
 	// @param: nothing
 	// @returns: array of user ids
@@ -1324,7 +1322,7 @@ salrPersistObject.prototype = {
 		} finally {
 			statement.reset();
 		}
-		
+
 		return users;
 	},
 
@@ -1347,7 +1345,7 @@ salrPersistObject.prototype = {
 		statement.reset();
 		return usercolor;
 	},
-	
+
 	// Sets the foreground color for a user
 	// @param: (int) User ID, (string) HTML Color code
 	// @returns: nothing
@@ -1378,7 +1376,7 @@ salrPersistObject.prototype = {
 		statement.reset();
 		return userbgcolor;
 	},
-	
+
 	// Sets the background color for a user
 	// @param: (int) User ID, (string) HTML Color code
 	// @returns: nothing
@@ -2241,6 +2239,18 @@ salrPersistObject.prototype = {
 		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `lastviewdt` < ?1 AND `star` != 1");
 		statement.bindStringParameter(0,expireWhen);
 		statement.execute();
+	},
+
+	prepopulateDB: function(dbtable)
+	{
+		switch (dbtable)
+		{
+			case "userdata":
+				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('81482', 'duz', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer')");
+				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('33775', 'Tivac', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer')");
+				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('20065', 'biznatchio', 0, 0, '#4400bb', 0, 0, 'SALR Creator')");
+				break;
+		}
 	}
 
 	// Don't forget the trailing comma when adding a new function/property
