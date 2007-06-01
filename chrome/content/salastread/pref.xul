@@ -46,7 +46,7 @@
 	
 	<prefpane	id="users"
 				label="Users"
-				image="chrome://salastread/content/pref/images/general.png"
+				image="chrome://salastread/content/pref/images/users.png"
 				src="chrome://salastread/content/pref/pref-users.xul"/>
 
 	<prefpane 	id="files" 
