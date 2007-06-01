@@ -439,6 +439,7 @@ function SALR_LaunchPinHelper() {
 
 // Do anything needed to the subscribed threads list
 function handleSubscriptions(doc) {
+
 	var cpusernav = persistObject.selectSingleNode(doc, doc, "//ul[contains(@id,'usercpnav')]");
 	if (!cpusernav) {
 		return;
@@ -459,14 +460,13 @@ function handleSubscriptions(doc) {
 	var readDark = persistObject.getPreference("readDark");
 	var postedInThreadRe = persistObject.getPreference("postedInThreadRe");
 
-	var subTable = persistObject.selectSingleNode(doc, doc, "//table[contains(@class,'standard')]");
+	var subTable = persistObject.selectSingleNode(doc, doc, "//table[contains(@class,'standard')][.//th/b[contains(text(),'Thread')]]");
 	var threadlist = persistObject.selectNodes(doc, subTable, "TBODY/TR");
 	var starredthreads = persistObject.starList, ignoredthreads = persistObject.ignoreList;
 
 	for (i in threadlist)
 	{
 		var thread = threadlist[i];
-
 		if (thread.getElementsByTagName('th').length)
 		{
 			// It's part of the header or footer so drop out
