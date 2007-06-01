@@ -7,8 +7,8 @@
 		
 		<xbl:content>
 			<hbox align="center" flex="1">
-				<label xbl:inherits="value=label,disabled" flex="1" control="pickerbutton"/>
 				<spacer flex="1"/>
+				<label xbl:inherits="value=label,disabled" control="pickerbutton"/>
 				<button class="colorpicker-button" anonid="pickerbutton" id="pickerbutton"
 						oncommand="parentNode.parentNode.showPopup();"
 						xbl:inherits="disabled">
@@ -25,15 +25,8 @@
 		</xbl:content>
 		
 		<xbl:implementation>
-			<xbl:constructor>
-				var value = this.getAttribute("value");
-				if(value) {
-					var el = document.getAnonymousElementByAttribute(this, "anonid", "colorpickerthumbnail");
-						el.style.backgroundColor = value;
-				}
-			</xbl:constructor>			
-			
 			<xbl:property name="prefName"/>
+			
 			<xbl:property name="value">
 				<xbl:getter>
 					return this.getAttribute("value");
@@ -42,7 +35,12 @@
 				<xbl:setter>
 					this.setAttribute("value", val);
 					var el = document.getAnonymousElementByAttribute(this, "anonid", "colorpickerthumbnail");
+					if(val != 0) {
 						el.style.backgroundColor = val;
+					} else {
+						el.style.backgroundColor = 'transparent';
+					}
+					
 					if (this.onchange) { this.onchange(); }
 				</xbl:setter>
 			</xbl:property>
@@ -65,40 +63,46 @@
 	
 	</xbl:binding>
 
- <xbl:binding id="colorpicker-window">
-  <xbl:content>
-    <image src="chrome://salastread/content/colorpicker/hsboverlay.png"
-           class="ssbox-inset cbbox-hsb"
-           onclick="parentNode.imageClick(event);" />
-    <vbox class="ssbox-inset cbbox-hue"
-          anonid="hsbox"
-          onclick="parentNode.hueClick(event);">
-     <image src="chrome://salastread/content/colorpicker/hueselection.png"
-            anonid="huesel"
-            class="cbbox-huesel" />
-    </vbox>
-  </xbl:content>
-  <xbl:implementation>
-   <xbl:method name="imageClick">
-    <xbl:parameter name="evt"/>
-    <xbl:body><![CDATA[
-       alert("ii");
-       alert("imageClick: "+evt);
-    ]]></xbl:body>
-   </xbl:method>
-   <xbl:method name="hueClick">
-    <xbl:parameter name="evt"/>
-    <xbl:body><![CDATA[
-       var huesel = document.getAnonymousElementByAttribute(this,"anonid","huesel");
-       var hsbox = document.getAnonymousElementByAttribute(this,"anonid","hsbox");
-       //alert("evt:"+evt.pageY+"\nhsbox:"+hsbox.boxObject.y+"\nhuesel:"+huesel.boxObject.y);
-       huesel.style.marginTop = (evt.screenY - hsbox.boxObject.screenY - 1) + "px";
-       //alert("hh");
-       //alert("hueClick: "+evt);
-    ]]></xbl:body>
-   </xbl:method>
-  </xbl:implementation>
-  <xbl:handlers>
-  </xbl:handlers>
- </xbl:binding>
+	<xbl:binding id="colorpicker-window">
+		<xbl:content>
+			<image 	src="chrome://salastread/content/colorpicker/hsboverlay.png"
+					class="ssbox-inset cbbox-hsb"
+					onclick="parentNode.imageClick(event);" />
+			
+			<vbox 	class="ssbox-inset cbbox-hue"
+					anonid="hsbox"
+					onclick="parentNode.hueClick(event);">
+			
+			<image 	src="chrome://salastread/content/colorpicker/hueselection.png"
+					anonid="huesel"
+					class="cbbox-huesel" />
+			</vbox>
+		</xbl:content>
+		
+		<xbl:implementation>
+			
+			<xbl:method name="imageClick">
+				<xbl:parameter name="evt"/>
+				
+				<xbl:body>
+					alert("ii");
+					alert("imageClick: "+evt);
+				</xbl:body>
+			</xbl:method>
+			
+			<xbl:method name="hueClick">
+				<xbl:parameter name="evt"/>
+				<xbl:body>
+					var huesel = document.getAnonymousElementByAttribute(this, "anonid", "huesel");
+					var hsbox = document.getAnonymousElementByAttribute(this, "anonid", "hsbox");
+					huesel.style.marginTop = (evt.screenY - hsbox.boxObject.screenY - 1) + "px";
+				</xbl:body>
+			</xbl:method>
+			
+		</xbl:implementation>
+		
+		<xbl:handlers>
+		</xbl:handlers>
+	</xbl:binding>
+	
 </xbl:bindings>

@@ -4,8 +4,11 @@
 
 <dialog id="salastread-colorpickerdialog"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        onload="grabArguments();sizeToContent();"
+        buttons="accept,cancel,extra2"
+		onload="grabArguments();sizeToContent();"
         ondialogaccept="return acceptIt();"
+		buttonlabelextra2="Transparent"
+		ondialogextra2="return transparentClick();"
         title="Color Picker">
 
 	<script language="JavaScript" src="chrome://salastread/content/colorpicker/colorpickerdialog.js" />
