@@ -13,9 +13,14 @@
 			<preference id="highlightUsernames" name="extensions.salastread.highlightUsernames" type="bool"/>
 			
 			<!-- User Colors -->
-			<preference id="adminColor" name="extensions.salastread.adminColor" type="string"/>
-			<preference id="modColor" 	name="extensions.salastread.modColor" 	type="string"/>
-			<preference id="opColor" 	name="extensions.salastread.opColor" 	type="string"/>
+			<preference id="adminColor" 		name="extensions.salastread.adminColor" 		type="string"/>
+			<preference id="adminBackground" 	name="extensions.salastread.adminBackground" 	type="string"/>
+			
+			<preference id="modColor" 			name="extensions.salastread.modColor" 			type="string"/>
+			<preference id="modBackground" 		name="extensions.salastread.modBackground" 		type="string"/>
+			
+			<preference id="opColor" 			name="extensions.salastread.opColor" 			type="string"/>
+			<preference id="opBackground" 		name="extensions.salastread.opBackground" 		type="string"/>
 		</preferences>
 		
 		<checkbox preference="highlightUsernames" label="Highlight interesting and important usernames"/>
@@ -23,29 +28,43 @@
 		<groupbox>
 			<caption label="Special User Highlighting Colors" />
 			<grid>
-				<columns>
-					<column/>
-					<column/>
-				</columns>
 				<rows>
-					<row align="end">
-						<sacolorpicker label="Admin Color:" preference-editable="true" preference="adminColor"/>
-					</row>
-					<row align="end">
-						<sacolorpicker label="Mod Color:" preference-editable="true" preference="modColor"/>
-					</row>
-					<row align="end">
-						<sacolorpicker label="OP Color:" preference-editable="true" preference="opColor"/>
-					</row>
+					<row />
+					<row />
 				</rows>
+				<columns>
+					<column>
+						<sacolorpicker label="Admin Color:" preference-editable="true" preference="adminColor"/>
+						<sacolorpicker label="Admin Background:" preference-editable="true" preference="adminBackground"/>
+					</column>
+					<column>
+						<sacolorpicker label="Mod Color:" preference-editable="true" preference="modColor"/>
+						<sacolorpicker label="Mod Background:" preference-editable="true" preference="modBackground"/>
+					</column>
+					<column>
+						<sacolorpicker label="OP Color:" preference-editable="true" preference="opColor"/>
+						<sacolorpicker label="OP Background:" preference-editable="true" preference="opBackground"/>
+					</column>
+				</columns>
 			</grid>			
 		</groupbox>
 		
 		<groupbox>
-			<caption label="Custom User Highlighting Colors" />
+			<caption label="Custom User Highlighting and Notes" />
 			
 			<hbox>
-				<listbox id="userColoring" context="colorPopup" seltype="multiple">
+				<listbox id="userColoring" context="colorPopup" seltype="multiple" flex="1">
+					<listcols>
+						<listcol/>
+						<listcol/>
+						<listcol flex="1"/>
+					</listcols>
+					
+					<listhead>
+						<listheader label="User ID"/>
+						<listheader label="User Name" />
+						<listheader label="Note" />
+					</listhead>
 				</listbox>
 				
 				<vbox>
@@ -61,6 +80,8 @@
 			<popup id="colorPopup">
 				<menuitem label="Foreground Color" accesskey="f" oncommand="changeColor('color');"/>
 				<menuitem label="Background Color" accesskey="b" oncommand="changeColor('backgroundColor');"/>
+				<menuseparator />
+				<menuitem label="User Note" accesskey="n" oncommand="editNote();"/>
 			</popup>
 		</popupset>
 	

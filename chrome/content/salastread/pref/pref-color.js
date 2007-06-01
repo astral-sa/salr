@@ -13,7 +13,11 @@ function loadColors() {
 		var td = tds[i];
 		var pref = document.getElementById(td.className + forum);
 		if(pref) {
-			td.style.backgroundColor = pref.value;
+			if(pref.value == 0) {
+				td.style.backgroundColor = "transparent";
+			} else {
+				td.style.backgroundColor = pref.value;
+			}
 		}
 	}
 }
@@ -51,7 +55,7 @@ function editColor(event, targetEl) {
 	
 		window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "chrome", obj);
 		if(obj.accepted) {
-			pref.value = '#' + obj.value;
+			pref.value = obj.value;
 			loadColors();
 		}
 	}

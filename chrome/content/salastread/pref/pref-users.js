@@ -14,42 +14,74 @@ function initUsers() {
 	
 	//add users and their custom colors to the listbox
 	for(var i = 0; i < users.length; i++) {
-		var id = users[i].userid;
-		var name = users[i].username;
-		var color = persistObject.getPosterColor(id);
-		var bgColor = persistObject.getPosterBackground(id);
-	
-		addListUser(listBox, name, id, color, bgColor);
+		addListUser(listBox, users[i].userid, users[i].username);
 	}
 }
 
 //add a user to the list box with proper coloring
-function addListUser(listBox, name, id, color, bgColor) {
-	var li = listBox.appendItem(name, id);
-	if(color) { li.style.color = color; }
-	if(bgColor) { li.style.backgroundColor = bgColor; }	
+function addListUser(listBox, id, name) {
+	var color = persistObject.getPosterColor(id);
+	var bgColor = persistObject.getPosterBackground(id);
+	var notes = persistObject.getPosterNotes(id);
+
+	if(bgColor == 0) { bgColor = "transparent"; }
+	if(color == 0) { color = "black"; }
+	if(!name) { name = "Unknown"; }
+	
+	var li = document.createElement("listitem");
+		li.setAttribute("value", id);
+	
+	var idCell = document.createElement("listcell");
+		idCell.setAttribute("label", id);
+	
+	var nameCell = document.createElement("listcell");
+		nameCell.setAttribute("label", name);
+		nameCell.style.color = color;
+		nameCell.style.backgroundColor = bgColor;
+
+	var noteCell = document.createElement("listcell");
+		noteCell.setAttribute("label", notes);
+	
+	li.appendChild(idCell);
+	li.appendChild(nameCell);
+	li.appendChild(noteCell);
+	
+	listBox.appendChild(li);
 }
 
 //bring up the color picker and save/apply the new color
 function changeColor(type) {
 	var li = document.getElementById("userColoring").selectedItem;
+	if(!li) { return; }
 	
 	var obj = {};
 	
 	if(type === "color") {
-		obj.value = li.style.color;
+		obj.value = li.childNodes[1].style.color;
 	} else {
-		obj.value = li.style.backgroundColor;
+		obj.value = li.childNodes[1].style.backgroundColor;
 	}
 	
 	window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "chrome", obj);
 	
 	if(obj.accepted) {
-		if(type === "color") { 
-			li.style.color = obj.value; 
+		var value = obj.value;
+		
+		if(type === "color") {
+			if(value == 0) {
+				value = "black";
+			}
+			
+			li.childNodes[1].style.color = value;
+			
 			persistObject.setPosterColor(li.value, obj.value);
 		} else { 
-			li.style.backgroundColor = obj.value; 
+			if(value == 0) {
+				value = "transparent";
+			}
+			
+			li.childNodes[1].style.backgroundColor = value;
+			
 			persistObject.setPosterBackground(li.value, obj.value);
 		}
 	}
@@ -71,10 +103,11 @@ function addUser() {
 		persistObject.setPosterColor(text.value, "#000000");
 		
 		var listBox = document.getElementById("userColoring");
-		addListUser(listBox, text.value, text.value, persistObject.getPosterColor(text.value), '');
+		addListUser(listBox, text.value, null);
 	}
 }
 
+//remove a user from the list box and reset their coloring to transparent
 function deleteUser() {
 	var listbox = document.getElementById("userColoring");
 	var items = listbox.selectedItems;
@@ -85,5 +118,25 @@ function deleteUser() {
 		persistObject.setPosterColor(userid, "0");
 		persistObject.setPosterBackground(userid, "0");
 		listbox.removeItemAt(listbox.getIndexOfItem(items[i]));
+	}
+}
+
+//Add/edit a note for a user
+function editNote() {
+	var li = document.getElementById("userColoring").selectedItem;
+	if(!li) { return; }
+	
+	//get prompt set up
+	var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+					.getService(Components.interfaces.nsIPromptService);
+	
+	var text = {value : persistObject.getPosterNotes(li.value)};
+	var check = {value : false};
+	var result = prompts.prompt(null, "User Note", "Edit the note to appear for this user", text, null, check);
+	
+	if(text.value) {
+		persistObject.setPosterNotes(li.value, text.value);
+		
+		li.childNodes[2].setAttribute("label", text.value);
 	}
 }
