@@ -1121,7 +1121,33 @@ salrPersistObject.prototype = {
 			statement.bindInt32Parameter(1, userid);
 			statement.execute();
 	},
-
+	
+	// Checks to see if the DB already knows about a user
+	// @param: (int) User ID
+	// @return: (bool) if user is in DB
+	userExists: function(userid)
+	{
+		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `userid` = ?1");
+			statement.bindInt32Parameter(0, userid);
+			
+		var founduser = statement.executeStep();
+		statement.reset();
+		
+		return founduser;
+	},
+	
+	// Adds a user to the DB
+	// @param: (int) User ID
+	// @return: nothing
+	addUser: function(userid)
+	{
+		if(!this.userExists(userid)) {
+			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES (?1, null, 0, 0, 0, 0, 0, null)");
+				statement.bindInt32Parameter(0, userid);
+				statement.execute();
+		}
+	},
+	
 	// Adds/updates a user as a mod
 	// @param: (int) User ID, (string) Username
 	// @return: nothing
@@ -1291,18 +1317,22 @@ salrPersistObject.prototype = {
 	// @returns: (object) Object contained userid and username
 	isPosterColored: function(userid)
 	{
-		var user = false;
+		if(this.userExists(userid))
+		{
+			var user = false;
+			
+			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
+				statement.bindInt32Parameter(0, userid);
+			if (statement.executeStep()) 
+			{
+				user = {};
+				user.userid = statement.getInt32(0);
+				user.username = statement.getString(1);
+			}
+			statement.reset();
 
-		var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
-			statement.bindInt32Parameter(0, userid);
-		if (statement.executeStep()) {
-			user = {};
-			user.userid = statement.getInt32(0);
-			user.username = statement.getString(1);
+			return user;
 		}
-		statement.reset();
-
-		return user;
 	},
 
 	// Fetches all users that have custom colors defined
@@ -1331,18 +1361,18 @@ salrPersistObject.prototype = {
 	// @returns: (string) Hex Colorcode to color user, or (bool) false if not found
 	getPosterColor: function(userid)
 	{
-		var usercolor;
-		var statement = this.database.createStatement("SELECT `color` FROM `userdata` WHERE `userid` = ?1");
-		statement.bindInt32Parameter(0,userid);
-		if (statement.executeStep())
+		var usercolor = false;
+		if(this.userExists(userid))
 		{
-			usercolor = statement.getString(0);
+			var statement = this.database.createStatement("SELECT `color` FROM `userdata` WHERE `userid` = ?1");
+			statement.bindInt32Parameter(0,userid);
+			if (statement.executeStep())
+			{
+				usercolor = statement.getString(0);
+			}
+			statement.reset();
 		}
-		else
-		{
-			usercolor = false;
-		}
-		statement.reset();
+		
 		return usercolor;
 	},
 
@@ -1351,10 +1381,13 @@ salrPersistObject.prototype = {
 	// @returns: nothing
 	setPosterColor : function(userid, color)
 	{
-		var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
-			statement.bindStringParameter(0, color);
-			statement.bindInt32Parameter(1, userid);
-			statement.execute();
+		if(this.userExists(userid))
+		{
+			var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
+				statement.bindStringParameter(0, color);
+				statement.bindInt32Parameter(1, userid);
+				statement.execute();
+		}
 	},
 
 	// Fetches the user's background color code from the database
@@ -1362,18 +1395,18 @@ salrPersistObject.prototype = {
 	// @returns: (string) Hex Colorcode to color user, or (bool) false if not found
 	getPosterBackground: function(userid)
 	{
-		var userbgcolor;
-		var statement = this.database.createStatement("SELECT `background` FROM `userdata` WHERE `userid` = ?1");
-		statement.bindInt32Parameter(0,userid);
-		if (statement.executeStep())
+		var userbgcolor = false;
+		if(this.userExists(userid))
 		{
-			userbgcolor = statement.getString(0);
+			var statement = this.database.createStatement("SELECT `background` FROM `userdata` WHERE `userid` = ?1");
+			statement.bindInt32Parameter(0,userid);
+			if (statement.executeStep())
+			{
+				userbgcolor = statement.getString(0);
+			}
+			statement.reset();
 		}
-		else
-		{
-			userbgcolor = false;
-		}
-		statement.reset();
+		
 		return userbgcolor;
 	},
 
@@ -1382,10 +1415,13 @@ salrPersistObject.prototype = {
 	// @returns: nothing
 	setPosterBackground : function(userid, color)
 	{
-		var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
-			statement.bindStringParameter(0, color);
-			statement.bindInt32Parameter(1, userid);
-			statement.execute();
+		if(this.userExists(userid))
+		{
+			var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
+				statement.bindStringParameter(0, color);
+				statement.bindInt32Parameter(1, userid);
+				statement.execute();
+		}
 	},
 
 	// Fetches the user's notes from the database
@@ -1393,19 +1429,36 @@ salrPersistObject.prototype = {
 	// @returns: (string) Notes about the user, or (bool) false if not found
 	getPosterNotes: function(userid)
 	{
-		var usernotes;
-		var statement = this.database.createStatement("SELECT `notes` FROM `userdata` WHERE `userid` = ?1");
-		statement.bindInt32Parameter(0,userid);
-		if (statement.executeStep())
+		var usernotes = false;
+		if(this.userExists(userid))
 		{
-			usernotes = statement.getString(0);
+			var statement = this.database.createStatement("SELECT `notes` FROM `userdata` WHERE `userid` = ?1");
+			statement.bindInt32Parameter(0,userid);
+			if (statement.executeStep())
+			{
+				usernotes = statement.getString(0);
+			}
+			statement.reset();
 		}
-		else
-		{
-			usernotes = false;
-		}
-		statement.reset();
 		return usernotes;
+	},
+	
+	// Sets the notes for that user in the database
+	// @param: (int) User ID, (string) Note
+	// @return: nothing
+	setPosterNotes: function(userid, note)
+	{
+		if(this.userExists(userid))
+		{
+				var statement = this.database.createStatement("UPDATE `userdata` SET `notes` = ?1 WHERE `userid` = ?2");
+					statement.bindStringParameter(0, note);
+					statement.bindInt32Parameter(1, userid);
+					statement.execute();
+					statement.reset();
+		} else {
+			this.addUser(userid);
+			this.setPosterNotes(userid, note);
+		}
 	},
 
 	// Get the Post ID of the last read post
