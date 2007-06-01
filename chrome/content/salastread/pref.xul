@@ -43,6 +43,11 @@
 				label="Menus" 
 				image="chrome://salastread/content/pref/images/samenu.png"
 				src="chrome://salastread/content/pref/pref-menu.xul"/>
+	
+	<prefpane	id="users"
+				label="Users"
+				image="chrome://salastread/content/pref/images/general.png"
+				src="chrome://salastread/content/pref/pref-users.xul"/>
 
 	<prefpane 	id="files" 
 				label="Files" 

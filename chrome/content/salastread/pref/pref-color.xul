@@ -9,11 +9,6 @@
 		<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-color.js"/>
 
 		<preferences>
-			<!-- User Colors -->
-			<preference id="adminColor" name="extensions.salastread.adminColor" type="string"/>
-			<preference id="modColor" 	name="extensions.salastread.modColor" 	type="string"/>
-			<preference id="opColor" 	name="extensions.salastread.opColor" 	type="string"/>
-			
 			<!-- General Colors -->
 			<preference id="videoEmbedderBG" name="extensions.salastread.readLight" type="string"/>
 			
@@ -131,33 +126,6 @@
 			</hbox>
 		</groupbox>
 		
-		<groupbox>
-			<caption label="User Highlighting Colors" />
-			
-			<checkbox id="userHighlighting" preference="highlightUsernames" label="Highlight interesting and important usernames" oncommand="toggleUserHighlighting()"/>
-
-			<grid>
-				<columns>
-					<column/>
-					<column/>
-				</columns>
-				<rows>
-					<row align="center">
-						<label value="Admin Color:" control="adminColorPicker"/>
-						<textbox id="adminColorPicker" preference="adminColor"/>
-					</row>
-					<row align="center">
-						<label value="Mod Color:" control="modColorPicker"/>
-						<textbox id="modColorPicker" preference="modColor"/>
-					</row>
-					<row align="center">
-						<label value="OP Color:" control="opColorPicker"/>
-						<textbox id="opColorPicker" preference="opColor"/>
-					</row>
-				</rows>
-			</grid>			
-		</groupbox>
-			
 		<popupset>
 			<popup id="gradientSelectorPopup" position="at_pointer">
 				<menuitem label="Top Gradient Color" accesskey="t" oncommand="choseTopOrBottom(true);"/>

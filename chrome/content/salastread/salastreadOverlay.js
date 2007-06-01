@@ -1348,17 +1348,16 @@ function handleShowThread(doc) {
 					persistObject.removeAdmin(posterId);
 				}
 			}
-			userPosterColor = persistObject.getPosterColor(posterId);
-			userPosterBG = persistObject.getPosterBackground(posterId);
-			userPosterNote = persistObject.getPosterNotes(posterId);
-			if (userPosterColor != false)
+			var dbUser = persistObject.isPosterColored(posterId);
+			if(dbUser)
 			{
-				posterColor = userPosterColor;
+				if(!dbUser.username) {
+					persistObject.setUserName(posterId, posterName);
+				}
+				posterColor = persistObject.getPosterColor(posterId);
+				posterBG = persistObject.getPosterBackground(posterId);
 			}
-			if (userPosterBG != false)
-			{
-				posterBG = userPosterBG;
-			}
+			userPosterNote = persistObject.getPosterNotes(posterId);			
 			if (persistObject.getPreference("highlightUsernames") && posterColor != false)
 			{
 				userNameBox.style.color = posterColor;

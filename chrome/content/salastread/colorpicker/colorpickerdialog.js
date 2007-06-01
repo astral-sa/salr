@@ -6,28 +6,34 @@ var internalSat = 50;
 var internalBri = 50;
 
 function grabArguments() {
-   if (window.arguments && window.arguments[0]) {
-      var inhex = window.arguments[0].value;
-      if (inhex.substring(0,1)=="#") {
-         inhex = inhex.substring(1);
-      }
+	if (window.arguments && window.arguments[0]) {
+		var inhex = window.arguments[0].value;
+		if (inhex.indexOf("#") > -1) {
+			inhex = inhex.substring(1);
+		}
+		
+		if(inhex.indexOf("rgb") > -1) {
+			inhex = inhex.replace(/(rgb|\(|\))/g, "");
+			inhex = inhex.split(", ");
+			inhex = rgbToHex(inhex);
+		}
 
-      if ( ! window.arguments[0].isGradient ) {
-         if ( window.arguments[0].otherColor ) {
-            document.getElementById("sampleNail").style.backgroundImage = GradientURLFromColor( window.arguments[0].otherColor, 50 );
-            document.getElementById("sampleNail").style.backgroundRepeat = "repeat-x";
-         } else {
-            document.getElementById("sampleNail").style.backgroundImage = "";
-         }
-      } else {
-         document.getElementById("sampleNail").style.backgroundImage = "";
-         if ( window.arguments[0].otherColor ) {
-            document.getElementById("sampleNail").style.backgroundColor = window.arguments[0].otherColor;
-         }
-      }
+		if ( ! window.arguments[0].isGradient ) {
+			if ( window.arguments[0].otherColor ) {
+				document.getElementById("sampleNail").style.backgroundImage = GradientURLFromColor( window.arguments[0].otherColor, 50 );
+				document.getElementById("sampleNail").style.backgroundRepeat = "repeat-x";
+			} else {
+				document.getElementById("sampleNail").style.backgroundImage = "";
+			}
+		} else {
+			document.getElementById("sampleNail").style.backgroundImage = "";
+			if ( window.arguments[0].otherColor ) {
+				document.getElementById("sampleNail").style.backgroundColor = window.arguments[0].otherColor;
+			}
+		}
 
-      hexChanged(inhex);
-   }
+		hexChanged(inhex);
+	}
 }
 
 function imageClick(evt) {
@@ -167,7 +173,7 @@ function updateFromHSB() {
 	document.getElementById("blue").value = rgb[2];
 	document.getElementById("hexrgb").value = rgbToHex(rgb);
 	if (window.arguments && window.arguments[0]) {
-		window.arguments[0].value = rgbToHex(rgb);
+		window.arguments[0].value = '#' + rgbToHex(rgb);
 		updateThumbnail( rgbToHex(rgb) );
 	}
 }
@@ -265,19 +271,23 @@ function parseHex(hb) {
 }
 
 function hexChanged(hex) {
-	document.getElementById("hexrgb").value = hex;
 	if (window.arguments && window.arguments[0]) {
-		window.arguments[0].value = hex;
+		window.arguments[0].value = '#' + hex;
+		
+		if(hex.indexOf("rgb") > -1) {
+			hex = rgbToHex(hex);
+		}
+		
 		updateThumbnail(hex);
 	}
 	
 	try {
-		var hexred = parseHex(hex.substring(0,2));
-		var hexgreen = parseHex(hex.substring(2,4));
-		var hexblue = parseHex(hex.substring(4,6));
-		redChanged(hexred,false);
-		greenChanged(hexgreen,false);
-		blueChanged(hexblue,false);
+		var hexred = parseHex(hex.substring(0, 2));
+		var hexgreen = parseHex(hex.substring(2, 4));
+		var hexblue = parseHex(hex.substring(4, 6));
+		redChanged(hexred, false);
+		greenChanged(hexgreen, false);
+		blueChanged(hexblue, false);
 		updateRGB();
 	} catch (er) {}
 }
@@ -337,38 +347,20 @@ function MAX() {
 	return max;
 }
 
-function MIN() {
-	var min = 255;
-	for(var i = 0; i < arguments.length; i++) {
-		if(arguments[i] < min) {
-			min = arguments[i];
-		}
-	}
-	return min;
-}
-function MAX() {
-	var max = 0;
-	for(var i = 0; i < arguments.length; i++) {
-		if(arguments[i] > max) {
-			max = arguments[i];
-		}
-	}
-	return max;
-}
 function RGBtoHSB(r,g,b) {
 	r /= 255;
 	g /= 255;
 	b /= 255;
 	var min, max, delta;
 	var hsv = new Array(3);
-	min = MIN(r,g,b);
-	max = MAX(r,g,b);
+	min = MIN(r, g, b);
+	max = MAX(r, g, b);
 	
 	hsv[2] = max;
 	delta = max - min;
 	
 	if (max != 0) {
-		hsv[1] = delta/max;
+		hsv[1] = delta / max;
 	} else {
 		hsv[1] = .005;
 		hsv[0] = 0;
@@ -382,20 +374,20 @@ function RGBtoHSB(r,g,b) {
 	}
 	
 	if (r == max) {
-		hsv[0] = (g-b)/delta;
+		hsv[0] = (g - b) / delta;
 	} else if(g == max) {
-		hsv[0] = 2+(b-r)/delta;
+		hsv[0] = 2 + (b - r) / delta;
 	} else {
-		hsv[0] = 4+(r-g)/delta;
+		hsv[0] = 4 + (r - g) / delta;
 	}
 	
 	hsv[0] *= 60;
 	
-	if(hsv[0]<0) {
+	if(hsv[0] < 0) {
 		hsv[0] += 360;
 	}
 	
-	if(hsv[0]>=360) {
+	if(hsv[0] >= 360) {
 		hsv[0] -= 360;
 	}
 	return hsv;

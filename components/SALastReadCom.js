@@ -1112,6 +1112,17 @@ salrPersistObject.prototype = {
 		}
 		return false;
 	},
+	
+	// Updates a user's name in the DB
+	// @param: (int) User ID, (string) Username
+	// @return: nothing
+	setUserName: function(userid, username)
+	{
+		var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1 WHERE `userid` = ?2");
+			statement.bindStringParameter(0, username);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
+	},
 
 	// Adds/updates a user as a mod
 	// @param: (int) User ID, (string) Username
@@ -1276,6 +1287,46 @@ salrPersistObject.prototype = {
 		}
 		return result;
 	},
+	
+	// checks to see if the userid has any custom coloring defined
+	// @param: (int) User Id
+	// @returns: (object) Object contained userid and username
+	isPosterColored: function(userid)
+	{
+		var user = false;
+		
+		var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
+			statement.bindInt32Parameter(0, userid);
+		if (statement.executeStep()) {
+			user = {};
+			user.userid = statement.getInt32(0);
+			user.username = statement.getString(1);
+		}
+		statement.reset();
+		
+		return user;
+	},
+	
+	// Fetches all users that have custom colors defined
+	// @param: nothing
+	// @returns: array of user ids
+	getColoredPosters : function()
+	{
+		var users = [];
+		try {
+			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `color` != 0 OR `background` != 0");
+			while (statement.executeStep()) {
+				var user = {};
+					user.userid = statement.getInt32(0);
+					user.username = statement.getString(1);
+				users.push(user);
+			}
+		} finally {
+			statement.reset();
+		}
+		
+		return users;
+	},
 
 	// Fetches the user's color code from the database
 	// @param: (int) User ID
@@ -1296,6 +1347,17 @@ salrPersistObject.prototype = {
 		statement.reset();
 		return usercolor;
 	},
+	
+	// Sets the foreground color for a user
+	// @param: (int) User ID, (string) HTML Color code
+	// @returns: nothing
+	setPosterColor : function(userid, color)
+	{
+		var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
+			statement.bindStringParameter(0, color);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
+	},
 
 	// Fetches the user's background color code from the database
 	// @param: (int) User ID
@@ -1315,6 +1377,17 @@ salrPersistObject.prototype = {
 		}
 		statement.reset();
 		return userbgcolor;
+	},
+	
+	// Sets the background color for a user
+	// @param: (int) User ID, (string) HTML Color code
+	// @returns: nothing
+	setPosterBackground : function(userid, color)
+	{
+		var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
+			statement.bindStringParameter(0, color);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
 	},
 
 	// Fetches the user's notes from the database

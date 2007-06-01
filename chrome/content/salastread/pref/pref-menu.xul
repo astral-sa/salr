@@ -7,8 +7,6 @@
 
 	<prefpane id="menu" onpaneload="menuInit()">
 		
-		<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-menu.js"/>
-	
 		<preferences>
 			<preference id="showSAForumMenu" 			name="extensions.salastread.showSAForumMenu" 			type="bool"/>
 			<preference id="nestSAForumMenu" 			name="extensions.salastread.nestSAForumMenu" 			type="bool"/>

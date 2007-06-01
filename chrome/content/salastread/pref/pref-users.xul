@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/pref/pref-users.css" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/colorpicker/colorpicker.css" type="text/css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-users.js"/>
+
+	<prefpane id="users" onpaneload="initUsers()">
+		
+		<preferences>
+			<preference id="highlightUsernames" name="extensions.salastread.highlightUsernames" type="bool"/>
+			
+			<!-- User Colors -->
+			<preference id="adminColor" name="extensions.salastread.adminColor" type="string"/>
+			<preference id="modColor" 	name="extensions.salastread.modColor" 	type="string"/>
+			<preference id="opColor" 	name="extensions.salastread.opColor" 	type="string"/>
+		</preferences>
+		
+		<checkbox preference="highlightUsernames" label="Highlight interesting and important usernames"/>
+		
+		<groupbox>
+			<caption label="Special User Highlighting Colors" />
+			<grid>
+				<columns>
+					<column/>
+					<column/>
+				</columns>
+				<rows>
+					<row align="end">
+						<sacolorpicker label="Admin Color:" preference-editable="true" preference="adminColor"/>
+					</row>
+					<row align="end">
+						<sacolorpicker label="Mod Color:" preference-editable="true" preference="modColor"/>
+					</row>
+					<row align="end">
+						<sacolorpicker label="OP Color:" preference-editable="true" preference="opColor"/>
+					</row>
+				</rows>
+			</grid>			
+		</groupbox>
+		
+		<groupbox>
+			<caption label="Custom User Highlighting Colors" />
+			
+			<hbox>
+				<listbox id="userColoring" context="colorPopup" seltype="multiple">
+				</listbox>
+				
+				<vbox>
+					<button label="Add User" align="start" oncommand="addUser();"/>
+					<spacer flex="1"/>
+					<button label="Delete User" align="end" oncommand="deleteUser();"/>
+				</vbox>
+			</hbox>
+			
+		</groupbox>
+		
+		<popupset>
+			<popup id="colorPopup">
+				<menuitem label="Foreground Color" accesskey="f" oncommand="changeColor('color');"/>
+				<menuitem label="Background Color" accesskey="b" oncommand="changeColor('backgroundColor');"/>
+			</popup>
+		</popupset>
+	
+	</prefpane>
+</overlay>
