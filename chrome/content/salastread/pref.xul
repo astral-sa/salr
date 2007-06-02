@@ -7,8 +7,6 @@
 			type="prefwindow"
 			xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script type="application/x-javascript" src="chrome://salastread/content/pref.js"/>
-
 	<prefpane 	id="general" 
 				label="General" 
 				image="chrome://salastread/content/pref/images/general.png" 
@@ -58,5 +56,8 @@
 				label="About" 
 				image="chrome://salastread/content/pref/images/about.png"
 				src="chrome://salastread/content/pref/pref-about.xul"/>
+
+	<!-- according to docs anything not a prefpane should come last to avoid weird behavior.  Go figure. -->
+	<script type="application/x-javascript" src="chrome://salastread/content/pref.js"/>
 
 </prefwindow>
