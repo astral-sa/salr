@@ -128,344 +128,305 @@ salrPersistObject.prototype = {
    get pref() { return Components.classes["@mozilla.org/preferences-service;1"].
                    getService(Components.interfaces.nsIPrefBranch); },
 
-   /*
-   SET_toggle_thumbnailAllImages: function(value) {
-      if(!("@mozilla.org/content/style-sheet-service;1" in Components.classes))
-         return;
+	get xmlDoc()
+	{
+		if (this._xmlDoc != null)
+		{
+			return this._xmlDoc;
+		}
+		
+		return;
+		// Does not return anything (undefined) if _xmlDoc is null
+	},
+	set xmlDoc(value) { this._xmlDoc = value; },
 
-      var sss = Components.classes["@mozilla.org/content/style-sheet-service;1"]
-                 .getService(Components.interfaces.nsIStyleSheetService);
-      var ios = Components.classes["@mozilla.org/network/io-service;1"]
-                 .getService(Components.interfaces.nsIIOService);
-      var uri = ios.newURI("chrome://salastread/content/thumbnail-images.css", null, null);
-      if (value) {
-         if(!sss.sheetRegistered(uri, sss.USER_SHEET)) {
-            sss.loadAndRegisterSheet(uri, sss.USER_SHEET);
-         }
-      } else {
-         if(sss.sheetRegistered(uri, sss.USER_SHEET)) {
-            sss.unregisterSheet(uri, sss.USER_SHEET);
-         }
-      }
-   },
-   */
+	get forumListXml() { return this._forumListXml; },
+	set forumListXml(value) {
+		this._forumListXml = value;
+		var oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
+						.createInstance(Components.interfaces.nsIDOMSerializer);
+		var xmlstr = oXmlSer.serializeToString(this._forumListXml);
+		SaveFile(this._flfn, xmlstr);
+	},
 
-   get xmlDoc()
-   {
-      if ( this._xmlDoc != null )
-      {
-         return this._xmlDoc;
-      }
-      return;
-      // Does not return anything (undefined) if _xmlDoc is null
-   },
-   set xmlDoc(value) { this._xmlDoc = value; },
+	get gotForumList() { return this._gotForumList; },
+	set gotForumList(value) { this._gotForumList = value; },
 
-   get forumListXml() { return this._forumListXml; },
-   set forumListXml(value) {
-      this._forumListXml = value;
-      var oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"].
-                          createInstance(Components.interfaces.nsIDOMSerializer);
-      var xmlstr = oXmlSer.serializeToString(this._forumListXml);
-      //SaveFile(GetUserProfileDirectory("saforumlist.xml", this._isWindows), xmlstr);
-      SaveFile(this._flfn, xmlstr);
-   },
+	_TimeManager: null,
+	get TimeManager() { return this._TimeManager; },
+	set TimeManager(value) {
+		if (this._TimeManager == null) {
+			this._TimeManager = value;
+		}
+	},
 
-   get gotForumList() { return this._gotForumList; },
-   set gotForumList(value) { this._gotForumList = value; },
+	AttachShutdownObserver: function()
+	{
+		var that = this;
+		var observer = {
+			observe: function(subject,topic,data) {
+				that.FirefoxShuttingDown(subject, topic, data);
+				that._syncTransferObject = null;
+			}
+		};
+		var observerService = Components.classes["@mozilla.org/observer-service;1"]
+								.getService(Components.interfaces.nsIObserverService);
+		observerService.addObserver(observer, "quit-application", false);
+		this._nextSyncTime = new Date();
+	},
 
-   _TimeManager: null,
-   get TimeManager() { return this._TimeManager; },
-   set TimeManager(value) {
-      if ( this._TimeManager == null ) {
-         this._TimeManager = value;
-      }
-   },
+	FirefoxShuttingDown: function(subject, topic, data)
+	{
+		if (this.getPreference('useRemoteSyncStorage')) {
+			var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
+						.getService(Components.interfaces.nsIWindowWatcher);
+			var features = "centerscreen,chrome,dialog,modal,titlebar,minimizable=no,resizable=no,close=no";
+			var res = ww.openWindow(ww.activeWindow, "chrome://salastread/content/syncTransfer.xul", "_blank", features, null);
+		}
+	},
 
-   AttachShutdownObserver: function()
-   {
-      var that = this;
-      var observer = {
-         observe: function(subject,topic,data) {
-            that.FirefoxShuttingDown(subject, topic, data);
-            that._syncTransferObject = null;
-         }
-      };
-      var observerService = Components.classes["@mozilla.org/observer-service;1"]
-                               .getService(Components.interfaces.nsIObserverService);
-      observerService.addObserver(observer, "quit-application", false);
-      this._nextSyncTime = new Date();
-   },
+	SYNC_INTERVAL: (1000 * 60 * 30),      // 30 minutes
+	SYNC_INTERVAL_VARY: (1000 * 60 * 5),  // +/- 5 minutes
+	_nextSyncTime: null,
+	_syncTransferObject: null,
+	_syncWorking: false,
+	_additionalSyncCallbacks: null,
 
-   FirefoxShuttingDown: function(subject, topic, data)
-   {
-      if ( this.getPreference('useRemoteSyncStorage') ) {
-         var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
-                     .getService(Components.interfaces.nsIWindowWatcher);
-         var res = ww.openWindow(ww.activeWindow,
-                        "chrome://salastread/content/syncTransfer.xul", "_blank",
-                        "centerscreen,chrome,dialog,modal,titlebar,minimizable=no,resizable=no,close=no", null);
-      }
-      //this.PerformRemoteSync(false, true, null);
-   },
+	SetSyncTransferObject: function(o)
+	{
+		this._syncTransferObject = o;
+		o.Components = Components;
+	},
 
-   SYNC_INTERVAL: (1000*60*30),      // 30 minutes
-   SYNC_INTERVAL_VARY: (1000*60*5),  // +/- 5 minutes
-   _nextSyncTime: null,
-   _syncTransferObject: null,
-   _syncWorking: false,
-   _additionalSyncCallbacks: null,
+	PerformRemoteSync: function(force, syncCallback, trace)
+	{
+		var res = {bad:false, msg:"no result"};
+		if (this._syncWorking) {
+			this._additionalSyncCallbacks.push(syncCallback);
+			return { bad : false, msg : "already syncing" };
+		}
+		if (!force) {
+			var now = new Date();
+			if ( now < this._nextSyncTime ) { 
+				return { bad : false, msg : "not time to sync yet" }; 
+			}
+		}
+		try
+		{
+			if (this.getPreference('useRemoteSyncStorage')) {
+				this._DoAsynchronousSync(syncCallback, trace);
+				res = { bad : false, msg : "syncing..." };
+			} else {
+				res = { bad : false, msg : "sync not enabled" };
+			}
+		}
+		catch (err) {
+			res = { bad : true, msg : "error: " + err };
+		}
+		this.GenerateNextSyncTime();
+		return res;
+	},
 
-   SetSyncTransferObject: function(o)
-   {
-      this._syncTransferObject = o;
-      o.Components = Components;
-   },
+	_syncTrace: null,
 
-   PerformRemoteSync: function(force, syncCallback, trace)
-   {
-      var res = {bad:false, msg:"no result"};
-      if (this._syncWorking) {
-         this._additionalSyncCallbacks.push(syncCallback);
-         return {bad:false, msg:"already syncing"};
-      }
-      if (!force) {
-         var now = new Date();
-         if ( now < this._nextSyncTime ) { return {bad:false, msg:"not time to sync yet"}; }
-      }
-      try
-      {
-         if (this.getPreference('useRemoteSyncStorage')) {
-            this._DoAsynchronousSync(syncCallback, trace);
-            res = {bad:false, msg:"syncing..."};
-         } else {
-            res = {bad:false, msg:"sync not enabled"};
-         }
-      }
-      catch (err) {
-         res = {bad:true, msg:"error: "+err};
-      }
-      this.GenerateNextSyncTime();
-      return res;
-   },
+	_DoAsynchronousSync: function(syncCallback, trace)
+	{
+		this._syncWorking = true;
+		this._additionalSyncCallbacks = new Array();
+		this._additionalSyncCallbacks.push(syncCallback);
+		var that = this;
+		var sto = this._syncTransferObject;
+		this._syncTrace = trace;
+		trace("Getting remote file...");
+		sto.getFile(this.getPreference('remoteSyncStorageUrl'), this._dbfn, function(status) { that._AsyncSync1(status); });
+	},
 
-   _syncTrace: null,
+	_AsyncComplete: function(status)
+	{
+		for (var i=0; i<this._additionalSyncCallbacks.length; i++) {
+			try { 
+				this._additionalSyncCallbacks[i](status); 
+			} catch(err) { }
+		}
+		this._syncWorking = false;
+		this._additionalSyncCallbacks = null;
+		this._syncTrace = null;
+	},
 
-   _DoAsynchronousSync: function(syncCallback, trace)
-   {
-      this._syncWorking = true;
-      this._additionalSyncCallbacks = new Array();
-      this._additionalSyncCallbacks.push(syncCallback);
-      var that = this;
-      var sto = this._syncTransferObject;
-      this._syncTrace = trace;
-      trace("Getting remote file...");
-      sto.getFile(this.getPreference('remoteSyncStorageUrl'), this._dbfn, function(status) { that._AsyncSync1(status); });
-   },
+	_AsyncSync1: function(status)
+	{
+		var sto = this._syncTransferObject;
+		var trace = this._syncTrace;
+		sto.reset();
+		if (status!=0) {
+			trace("Failed to get remote file.");
+		}
+		trace("Merging data...");
+		this.LoadXML(true);
+		trace("Saving data...");
+		this.SaveXML();
+		trace("Uploading remote file...");
+		var that = this;
+		sto.sendFile(this.getPreference('remoteSyncStorageUrl'), this._fn, function(istatus) { that._AsyncSync2(istatus); });
+	},
 
-   _AsyncComplete: function(status)
-   {
-      for (var i=0; i<this._additionalSyncCallbacks.length; i++) {
-         try { this._additionalSyncCallbacks[i](status); } catch(err) { }
-      }
-      this._syncWorking = false;
-      this._additionalSyncCallbacks = null;
-      this._syncTrace = null;
-   },
+	_AsyncSync2: function(istatus)
+	{
+		var sto = this._syncTransferObject;
+		var trace = this._syncTrace;
+		sto.reset();
+		if (istatus!=0) {
+			trace("Upload failed.");
+			this._AsyncComplete(2);
+			return;
+		}
+		trace("Complete.");
+		this._AsyncComplete(0);
+		return;
+	},
 
-   _AsyncSync1: function(status)
-   {
-      var sto = this._syncTransferObject;
-      var trace = this._syncTrace;
-      sto.reset();
-      if (status!=0) {
-         trace("Failed to get remote file.");
-         //this._AsyncComplete(1);
-         //return;
-      }
-      trace("Merging data...");
-      this.LoadXML(true);
-      trace("Saving data...");
-      this.SaveXML();
-      trace("Uploading remote file...");
-      var that = this;
-      sto.sendFile(this.getPreference('remoteSyncStorageUrl'), this._fn, function(istatus) { that._AsyncSync2(istatus); });
-   },
+	GenerateNextSyncTime: function()
+	{
+		var d = new Date();
+		var nt = d.getTime();
+		var varyTime = Math.floor( this.SYNC_INTERVAL_VARY * ((Math.random()-0.5)*2) );
+		nt += this.SYNC_INTERVAL + varyTime;
+		d.setTime(nt);
+		this._nextSyncTime = d;
+	},
 
-   _AsyncSync2: function(istatus)
-   {
-      var sto = this._syncTransferObject;
-      var trace = this._syncTrace;
-      sto.reset();
-      if (istatus!=0) {
-         trace("Upload failed.");
-         this._AsyncComplete(2);
-         return;
-      }
-      trace("Complete.");
-      this._AsyncComplete(0);
-      return;
-   },
+	SetXML: function(xmlstr)
+	{
+		var oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
+							.createInstance(Components.interfaces.nsIDOMParser);
+		try {
+			this.xmlDoc = oDomParser.parseFromString(xmlstr, "text/xml");
+		} catch (e) {
+			throw e + "\n" + xmlstr;
+		}
+	},
 
-   GenerateNextSyncTime: function()
-   {
-      var d = new Date();
-      var nt = d.getTime();
-      var varyTime = Math.floor( this.SYNC_INTERVAL_VARY * ((Math.random()-0.5)*2) );
-      nt += this.SYNC_INTERVAL + varyTime;
-      d.setTime(nt);
-      this._nextSyncTime = d;
-   },
+	LoadForumListXML: function()
+	{
+		try {
+			var pxml = ReadFile(this._flfn);
+			if (typeof(pxml) != "undefined")
+			{
+				if (pxml) {
+					var oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
+										.createInstance(Components.interfaces.nsIDOMParser);
+					try {
+						this._forumListXml = oDomParser.parseFromString(pxml, "text/xml");
+					} catch (e) {
+						this._forumListXml = null;
+					}
+				} else 	{
+					this._forumListXml = null;
+				}
+			} else {
+				this._forumListXml = null;
+			}
+		} catch(e) { 
+			this._forumListXml = null; 
+		}
+	},
 
-   SetXML: function(xmlstr)
-   {
-      var oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].
-                          createInstance(Components.interfaces.nsIDOMParser);
-      //var oDomParser = new DOMParser();
-      try {
-         this.xmlDoc = oDomParser.parseFromString(xmlstr, "text/xml");
-      }
-      catch (e) {
-         throw e + "\n" + xmlstr;
-      }
-   },
+	InitializeEmptySALRXML: function(merge)
+	{
+		if (!merge || this.xmlDoc==null) {
+			this.SetXML("<?xml version=\"1.0\"?>\n<salastread>\n</salastread>");
+		}
+	},
 
-   LoadForumListXML: function()
-   {
-      try{
-      //var pxml = ReadFile(GetUserProfileDirectory("saforumlist.xml",this._isWindows));
-      var pxml = ReadFile(this._flfn);
-      if (typeof(pxml) != "undefined")
-      {
-         if (pxml)
-         {
-            var oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].
-                                createInstance(Components.interfaces.nsIDOMParser);
-            try {
-               this._forumListXml = oDomParser.parseFromString(pxml, "text/xml");
-            }
-            catch (e) {
-               this._forumListXml = null;
-            }
-         }
-         else
-         {
-            this._forumListXml = null;
-         }
-      }
-      else
-      {
-         this._forumListXml = null;
-      }
-      } catch(e) { this._forumListXml = null; }
-   },
-
-   InitializeEmptySALRXML: function(merge)
-   {
-      if (!merge || this.xmlDoc==null)
-         this.SetXML("<?xml version=\"1.0\"?>\n<salastread>\n</salastread>");
-   },
-
-   SaveXML: function()
-   {
-/*
-      var oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"].
-                          createInstance(Components.interfaces.nsIDOMSerializer);
-      //var oXmlSer = new XMLSerializer();
-      var xmlstr = oXmlSer.serializeToString(this.xmlDoc);
-      SaveFile(this.storeFileName, xmlstr);
-*/
-
-	this.SaveTimerValue();
-
-	/* THIS FUNCTION DOESN'T EXIST ANY MORE
-	this.SaveThreadDataV2();
-	*/
-   },
+	SaveXML: function()
+	{
+		this.SaveTimerValue();
+	},
 
 
-   ProfileInit: function(isWindows)
-   {
-      if (this._profileInitialized)
-         return;
-      this._profileInitialized = true;
-      this._isWindows = isWindows;
-      try {
-         this.AttachShutdownObserver();
-         //this.LoadPrefs();
-         if ( this.getPreference('databaseStoragePath').indexOf("%profile%")==0 ) {
-            this._dbfn = this.GetUserProfileDirectory(this.getPreference('databaseStoragePath').substring(9), this._isWindows );
-         } else {
-            this._dbfn = this.getPreference('databaseStoragePath');
-         }
-         if ( this.getPreference('forumListStoragePath').indexOf("%profile%")==0 ) {
-            this._flfn = this.GetUserProfileDirectory( this.getPreference('forumListStoragePath').substring(9), this._isWindows );
-         } else {
-            this._flfn = this.getPreference('forumListStoragePath');
-         }
-         this.LoadForumListXML();
+	ProfileInit: function(isWindows)
+	{
+		if (this._profileInitialized) {
+			return;
+		}
+		this._profileInitialized = true;
+		this._isWindows = isWindows;
+		try {
+			this.AttachShutdownObserver();
+			if ( this.getPreference('databaseStoragePath').indexOf("%profile%")==0 ) {
+				this._dbfn = this.GetUserProfileDirectory(this.getPreference('databaseStoragePath').substring(9), this._isWindows );
+			} else {
+				this._dbfn = this.getPreference('databaseStoragePath');
+			}
+			
+			if ( this.getPreference('forumListStoragePath').indexOf("%profile%")==0 ) {
+				this._flfn = this.GetUserProfileDirectory( this.getPreference('forumListStoragePath').substring(9), this._isWindows );
+			} else {
+				this._flfn = this.getPreference('forumListStoragePath');
+			}
+			this.LoadForumListXML();
 
-         // Get Timer Value
-         try { this._TimerValue = this.getPreference("timeSpentOnForums"); } catch(xx) { }
-         if ( ! this._TimerValue ) {
-            this._TimerValue = 0;
-         }
-         this._TimerValueSaveAt = this._TimerValue + 60;
-         this._TimerValueLoaded = true;
-      }
-      catch (e) {
-         this._starterr = e + "\nLine: " + e.lineNumber;
-      }
-   },
+			// Get Timer Value
+			try { this._TimerValue = this.getPreference("timeSpentOnForums"); } catch(xx) { }
+			if ( ! this._TimerValue ) {
+				this._TimerValue = 0;
+			}
+			this._TimerValueSaveAt = this._TimerValue + 60;
+			this._TimerValueLoaded = true;
+		} catch (e) {
+			this._starterr = e + "\nLine: " + e.lineNumber;
+		}
+	},
 
-   _profileInitialized: false,
-   _gotForumList: false,
-   _forumListXml: null,
-   _flfn: null,
-   _xmlDoc: null,
+	_profileInitialized: false,
+	_gotForumList: false,
+	_forumListXml: null,
+	_flfn: null,
+	_xmlDoc: null,
 
-   EscapeMenuURL: function(murl)
-   {
-      var res = murl.replace("&","&amp;");
-      return res.replace(",","&comma;");
-   },
+	EscapeMenuURL: function(murl)
+	{
+		var res = murl.replace("&","&amp;");
+		return res.replace(",","&comma;");
+	},
 
-   UnescapeMenuURL: function(murl)
-   {
-      var res = murl.replace("&comma;",",");
-      return res.replace("&amp;","&");
-   },
+	UnescapeMenuURL: function(murl)
+	{
+		var res = murl.replace("&comma;",",");
+		return res.replace("&amp;","&");
+	},
 
-   _TimerValue: 0,
-   _TimerValueSaveAt: 0,
-   _TimerValueLoaded: false,
-   _LastTimerPing: 0,
+	_TimerValue: 0,
+	_TimerValueSaveAt: 0,
+	_TimerValueLoaded: false,
+	_LastTimerPing: 0,
 
-   PingTimer: function()
-   {
-      var nowtime = (new Date()).getTime();
-      if ( this._LastTimerPing < nowtime-1000 ) {
-         this._TimerValue++;
-         this._LastTimerPing = nowtime;
-         if ( this._TimerValue >= this._TimerValueSaveAt ) {
-            this.SaveTimerValue();
-         }
-      }
-   },
+	PingTimer: function()
+	{
+		var nowtime = (new Date()).getTime();
+		if ( this._LastTimerPing < nowtime-1000 ) {
+			this._TimerValue++;
+			this._LastTimerPing = nowtime;
+			if ( this._TimerValue >= this._TimerValueSaveAt ) {
+				this.SaveTimerValue();
+			}
+		}
+	},
 
-   IsDebugEnabled: function() {
-      return this.IsDevelopmentRelease;
-   },
+	IsDebugEnabled: function() {
+		return this.IsDevelopmentRelease;
+	},
 
-   // XPCOM Glue stuff
-   QueryInterface: function(iid)
-   {
-      if (!iid.equals(nsISupports))
-         throw Components.results.NS_ERROR_NO_INTERFACE;
-      return this;
-   },
+	// XPCOM Glue stuff
+	QueryInterface: function(iid)
+	{
+		if (!iid.equals(nsISupports)) {
+			throw Components.results.NS_ERROR_NO_INTERFACE;
+		}
+		return this;
+	},
 
-   get wrappedJSObject() { return this; },
+	get wrappedJSObject() { return this; },
 
 	//
 	// Here begins functions that do not need to be rewriten for 2.0
