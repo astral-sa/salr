@@ -1081,41 +1081,16 @@ function handleShowIndex(doc) {
 	persistObject.gotForumList = true;
 }
 
-function handleProfile(doc) {
-	//find username/profile
-	var emailLink = persistObject.selectSingleNode(doc, doc, "//table[contains(@id,'main_full')]//tr/td/a[contains(@href, 'mailform')]");
-
-	var username = emailLink.innerHTML.replace("Click here to email ", "");
-	var userid = emailLink.href.match(/userid=(\d+)/)[1];
-
-	//find our row
-	var td = persistObject.selectSingleNode(doc, doc, "//table[contains(@id,'main_full')]//td[@colspan=2]");
-
-	//create button object to insert
-	var button = doc.createElement("button");
-		button.innerHTML = "Add User to SALR"
-
-		//set up the actual addition here
-		button.onclick = function() {
-			var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
-							.getService(Components.interfaces.nsIPromptService);
-			var result = prompts.confirm(window, "Add User", "Add this user to your list of highlighted users?");
-
-			//get userid/name, add them to DB
-			if(result) {
-				persistObject.addUser(userid, username);
-				persistObject.setPosterNotes(userid, "New User");
-
-				SALR_runConfig("users");
-			}
-		};
-		//set up all the fiddily style rules
-		button.style.marginLeft  = "auto";
-		button.style.marginRight = "auto";
-		button.style.display 	 = "block";
-
-	//add to document
-	td.insertBefore(button, td.firstChild);
+//add a user to the highlighting/note section by clicking on a post link
+function addHighlightedUser(e) {
+	e.stopPropagation();
+	e.preventDefault();
+	
+	var link = e.originalTarget;
+	var userid = link.id.split("_")[1];
+	var username = link.href.split("#")[1];
+	
+	SALR_runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
 }
 
 function handleShowThread(doc) {
@@ -1280,7 +1255,7 @@ function handleShowThread(doc) {
 		var postlist = persistObject.selectNodes(doc, doc, "//table[contains(@id,'post')]");
 		var postcount = (perpage * (curPage - 1)) + postlist.length;
 
-		var curPostId, colorDark = true, colorOfPost, postIdLink, resetLink, profileLink, posterId, postbody, f;
+		var curPostId, colorDark = true, colorOfPost, postIdLink, resetLink, profileLink, posterId, postbody, f, linksUL, storeUserLink;
 		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton, reportbutton;
 		var userPosterColor, userPosterBG, userPosterNote;
 
@@ -1290,7 +1265,20 @@ function handleShowThread(doc) {
 		var useQuickQuote = persistObject.getPreference('useQuickQuote');
 		var insertPostLastMarkLink = persistObject.getPreference("insertPostLastMarkLink");
 		var insertPostTargetLink = persistObject.getPreference("insertPostTargetLink");
-
+		var highlightUsernames = persistObject.getPreference("highlightUsernames");
+		var dontHighlightPosts = persistObject.getPreference("dontHighlightPosts");
+		var resizeCustomTitleText = persistObject.getPreference("resizeCustomTitleText");
+		//post colors
+		var seenPostDark = persistObject.getPreference("seenPostDark");
+		var seenPostLight = persistObject.getPreference("seenPostLight");
+		//standard user colors
+		var modColor = persistObject.getPreference("modColor");
+		var modBackground = persistObject.getPreference("modBackground");
+		var adminColor = persistObject.getPreference("adminColor");
+		var adminBackground = persistObject.getPreference("adminBackground");
+		var opColor = persistObject.getPreference("opColor");
+		var opBackground = persistObject.getPreference("opBackground");
+		
 		doc.postlinks = new Array;
 
 		// Loop through each post
@@ -1318,7 +1306,7 @@ function handleShowThread(doc) {
 			}
 			titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
 
-			if (titleBox && persistObject.getPreference("resizeCustomTitleText"))
+			if (titleBox && resizeCustomTitleText)
 			{
 				// Adds a scrollbar if they have a really wide custom title
 				titleBox.style.overflow = "auto";
@@ -1353,16 +1341,16 @@ function handleShowThread(doc) {
 			posterNote = false;
 			if (posterId == threadOP)
 			{
-				posterColor = persistObject.getPreference("opColor");
-				posterBG =  persistObject.getPreference("opBackground");
+				posterColor = opColor;
+				posterBG =  opBackground;
 				posterNote = "Thread Poster";
 			}
 			if (persistObject.isMod(posterId))
 			{
 				if(posterImg == 'Moderator')
 				{
-					posterColor = persistObject.getPreference("modColor");
-					posterBG =  persistObject.getPreference("modBackground");
+					posterColor = modColor;
+					posterBG =  modBackground;
 					posterNote = "Forum Moderator";
 				}
 				else
@@ -1374,8 +1362,8 @@ function handleShowThread(doc) {
 			{
 				if(posterImg == "Admin")
 				{
-					posterColor = persistObject.getPreference("adminColor");
-					posterBG =  persistObject.getPreference("adminBackground");
+					posterColor = adminColor;
+					posterBG =  adminBackground;
 					posterNote = "Forum Administrator";
 				}
 				else
@@ -1393,7 +1381,7 @@ function handleShowThread(doc) {
 				posterBG = persistObject.getPosterBackground(posterId);
 			}
 			userPosterNote = persistObject.getPosterNotes(posterId);
-			if (persistObject.getPreference("highlightUsernames") && posterColor != false)
+			if (highlightUsernames && posterColor != false)
 			{
 				userNameBox.style.color = posterColor;
 			}
@@ -1415,7 +1403,7 @@ function handleShowThread(doc) {
 				newNoteBox.textContent = userPosterNote;
 				userNameBox.appendChild(newNoteBox);
 			}
-			if (!persistObject.getPreference("dontHighlightPosts"))
+			if (!dontHighlightPosts)
 			{
 				if (posterBG != false)
 				{
@@ -1425,11 +1413,11 @@ function handleShowThread(doc) {
 				{
 					if (colorDark)
 					{
-						posterBG = persistObject.getPreference("seenPostDark");
+						posterBG = seenPostDark;
 					}
 					else
 					{
-						posterBG = persistObject.getPreference("seenPostLight");
+						posterBG = seenPostLight;
 					}
 					persistObject.colorPost(doc, post, posterBG, forumid);
 				}
@@ -1499,6 +1487,21 @@ function handleShowThread(doc) {
 					}
 				}
 			}
+			//add user coloring/note links			
+			if(highlightUsernames) {
+				var ul = profileLink.parentNode.parentNode;
+				var li = doc.createElement("li");
+				
+				var a = doc.createElement("a");
+					a.id = curPostId + "_" + posterId;
+					a.href ="#" + posterName;
+					//a.style.textDecoration = "underline";
+					//a.style.cursor = "pointer";
+					a.innerHTML = "Add Coloring/Note";
+					a.onclick = addHighlightedUser;
+				li.appendChild(a);
+				ul.appendChild(li);
+			}
 
 			postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
 			persistObject.convertSpecialLinks(postbody, doc);
@@ -1551,10 +1554,9 @@ function handleSupport(doc)
 	var newLink = doc.createElement('a');
 	emptyP.appendChild(newLink);
 	emptyP.style.textAlign = "center";
-	newLink.href = "https://salr.bountysource.com/development";
+	newLink.href = "http://code.google.com/p/salr/issues/list";
 	newLink.innerHTML = "Click here to report a problem with SA Last Read instead";
 	var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
-	supportTable.parentNode.style.textAlign = "center";
 	supportTable.parentNode.replaceChild(newImg, supportTable);
 	newImg.parentNode.appendChild(newText);
 	newImg.parentNode.appendChild(emptyP);
@@ -1805,15 +1807,15 @@ function reanchorThreadToLink(doc) {
 	}
 }
 
-function SALR_runConfig(page) {
+function SALR_runConfig(page, args) {
 	//check a pref so the dialog has the proper constructor arguments
 	var pref = Components.classes["@mozilla.org/preferences-service;1"]
 				.getService(Components.interfaces.nsIPrefBranch);
 
     var instantApply = pref.getBoolPref("browser.preferences.instantApply");
 	var features = "chrome,titlebar,toolbar,centerscreen" + (instantApply ? ",dialog=no" : ",modal");
-
-	openDialog("chrome://salastread/content/pref.xul", "Preferences", features, page);
+	
+	openDialog("chrome://salastread/content/pref.xul", "Preferences", features, page, { "args" : args });
 }
 
 function handleEditPost(e) {
@@ -2140,10 +2142,8 @@ function salastread_windowOnLoad(e) {
 						handleSubscriptions(doc);
 					} else if (location.href.search(/supportmail\.php/) > -1) {
 						handleSupport(doc);
-					} else if ( location.href.indexOf("member.php") != -1) {
-						handleProfile(doc);
 					}
-
+					
 					var hcliresult = handleConfigLinkInsertion(e);
 					handleBodyClassing(e);
 
