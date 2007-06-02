@@ -1070,18 +1070,53 @@ function attachQuickQuoteHandler(threadid,doc,quotebutton,postername,hasQuote,po
 
 var SALR_debugLog = new Array();
 function addInternalDebugLog(msg) {
-   SALR_debugLog.push( (new Date()).toString() +": "+msg );
-   if ( SALR_debugLog.length > 10 ) {
-      SALR_debugLog.shift();
-   }
+	SALR_debugLog.push( (new Date()).toString() +": "+msg );
+	if ( SALR_debugLog.length > 10 ) {
+		SALR_debugLog.shift();
+	}
 }
 
 function handleShowIndex(doc) {
 	grabForumList(doc, null);
 	persistObject.gotForumList = true;
-
 }
 
+function handleProfile(doc) {
+	//find username/profile
+	var emailLink = persistObject.selectSingleNode(doc, doc, "//table[contains(@id,'main_full')]//tr/td/a[contains(@href, 'mailform')]");
+	
+	var username = emailLink.innerHTML.replace("Click here to email ", "");
+	var userid = emailLink.href.match(/userid=(\d+)/)[1];
+	
+	//find our row
+	var td = persistObject.selectSingleNode(doc, doc, "//table[contains(@id,'main_full')]//td[@colspan=2]");
+	
+	//create button object to insert
+	var button = doc.createElement("button");
+		button.innerHTML = "Add User to SALR"
+		
+		//set up the actual addition here
+		button.onclick = function() {
+			var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+							.getService(Components.interfaces.nsIPromptService);			
+			var result = prompts.confirm(window, "Add User", "Add this user to your list of highlighted users?");
+			
+			//get userid/name, add them to DB
+			if(result) {
+				persistObject.addUser(userid, username);
+				persistObject.setPosterNotes(userid, "New User");
+
+				SALR_runConfig("users");
+			}
+		};
+		//set up all the fiddily style rules
+		button.style.marginLeft  = "auto";
+		button.style.marginRight = "auto";
+		button.style.display 	 = "block";
+		
+	//add to document
+	td.insertBefore(button, td.firstChild);
+}
 
 function handleShowThread(doc) {
 	var failed, i, e;	// Little variables that'll get reused
@@ -2104,7 +2139,10 @@ function salastread_windowOnLoad(e) {
 						handleSubscriptions(doc);
 					} else if (location.href.search(/supportmail\.php/) > -1) {
 						handleSupport(doc);
+					} else if ( location.href.indexOf("member.php") != -1) {
+						handleProfile(doc);
 					}
+					
 					var hcliresult = handleConfigLinkInsertion(e);
 					handleBodyClassing(e);
 
