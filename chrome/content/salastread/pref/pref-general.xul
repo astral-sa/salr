@@ -13,14 +13,15 @@
 		<preference id="enableForumNavigator"	name="extensions.salastread.enableForumNavigator" 	type="bool"/>
 		<preference id="gestureEnable" 			name="extensions.salastread.gestureEnable" 			type="bool"/>
 		<preference id="showSAToolsMenu" 		name="extensions.salastread.showSAToolsMenu" 		type="bool"/>
-		
+
 		<preference id="showGoToLastIcon"			name="extensions.salastread.showGoToLastIcon" 		type="bool"/>
 		<preference id="goToLastReadPost"			name="extensions.salastread.goToLastReadPost" 		type="string"/>
 		<preference id="alwaysShowGoToLastIcon"		name="extensions.salastread.alwaysShowGoToLastIcon" type="bool"/>
 		<preference id="showUnvisitIcon"			name="extensions.salastread.showUnvisitIcon" 		type="bool"/>
 		<preference id="markThreadUnvisited"		name="extensions.salastread.markThreadUnvisited" 	type="string"/>
-		
-		<preference id="suppressErrors"			name="extensions.salastread.suppressErrors" 		type="bool"/>		
+		<preference id="enableThreadRating" name="extensions.salastread.enableThreadRating" type="bool" />
+
+		<preference id="suppressErrors"			name="extensions.salastread.suppressErrors" 		type="bool"/>
     </preferences>
 
 	<groupbox>
@@ -32,12 +33,13 @@
 		<checkbox preference="enableForumNavigator"  label="Add a forum navigator to the lower-right corner of the browser" />
 		<checkbox preference="gestureEnable" 		 label="Allow mouse gestures to navigate around threads and forums" />
 		<checkbox preference="showSAToolsMenu" 		 label="Add 'SALR Config' item to the tools menu" />
+		<checkbox preference="enableThreadRating" label="Use SALR style thread rating"  />
 	</vbox>
 	</groupbox>
-	
+
 	<groupbox>
 		<caption label="Thread Command Icons"/>
-		
+
 		<vbox>
 			<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Show 'Go To Last Post' icon" oncommand="toggleLastReadIcon()"/>
 			<vbox style="margin-left: 20px">
@@ -48,22 +50,22 @@
 				</hbox>
 				<checkbox id="alwayShowLastReadIcon" preference="alwaysShowGoToLastIcon" label="Always show 'Go To Last Post' icon, even if no new posts in thread"/>
 			</vbox>
-			
+
 			<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Show 'Mark Thread Unvisited' icon" oncommand="toggleUnvisitIcon()" />
-			
+
 			<vbox style="margin-left: 20px">
-				
+
 				<hbox align="center" flex="1">
 					<label value="Icon URL:" control="unvisitThreadIcon"/>
 					<textbox id="unvisitIcon" preference="markThreadUnvisited" flex="1"/>
 					<button id="unvisitIconDefault" label="Default" onclick="unvisitIconDefault()"/>
 				</hbox>
-				
+
 			</vbox>
-			
+
 		</vbox>
 	</groupbox>
-	
+
 	<groupbox>
 		<caption label="Debugging Info"/>
 		<checkbox preference="suppressErrors" label="Don't display error popup messages" />

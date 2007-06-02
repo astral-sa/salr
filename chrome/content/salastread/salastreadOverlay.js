@@ -1085,11 +1085,11 @@ function handleShowIndex(doc) {
 function addHighlightedUser(e) {
 	e.stopPropagation();
 	e.preventDefault();
-	
+
 	var link = e.originalTarget;
 	var userid = link.id.split("_")[1];
 	var username = link.href.split("#")[1];
-	
+
 	SALR_runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
 }
 
@@ -1227,6 +1227,11 @@ function handleShowThread(doc) {
 			var threadClosed = true;
 		}
 
+		// draw the new rate thread box
+		var rateThread = persistObject.selectSingleNode(doc,doc,"//DIV[contains(@class,'threadrate')]");
+		if ( rateThread )
+			SALR_drawNewRateThreadBox(doc,rateThread,threadid);
+
 		// Replace post button
 		if (persistObject.getPreference("useQuickQuote") && !inGasChamber)
 		{
@@ -1278,7 +1283,7 @@ function handleShowThread(doc) {
 		var adminBackground = persistObject.getPreference("adminBackground");
 		var opColor = persistObject.getPreference("opColor");
 		var opBackground = persistObject.getPreference("opBackground");
-		
+
 		doc.postlinks = new Array;
 
 		// Loop through each post
@@ -1487,11 +1492,11 @@ function handleShowThread(doc) {
 					}
 				}
 			}
-			//add user coloring/note links			
+			//add user coloring/note links
 			if(highlightUsernames) {
 				var ul = profileLink.parentNode.parentNode;
 				var li = doc.createElement("li");
-				
+
 				var a = doc.createElement("a");
 					a.id = curPostId + "_" + posterId;
 					a.href ="#" + posterName;
@@ -1533,6 +1538,145 @@ function handleShowThread(doc) {
 	}
 }
 
+/**
+ * replaces the standard rate thread box with a new one
+ * This will be called when a thread page is displayed but
+ * if perf('enableThreadRating') is false it will not draw the rating box.
+ * @author camalot
+ * @param {Object} doc the doc object
+ * @param {Element} container the container of the rate box
+ * @param {int} threadId the id of the thread
+ */
+function SALR_drawNewRateThreadBox ( doc, container, threadId ) {
+	if ( persistObject.getPreference("enableThreadRating") ) {
+		// var threadTitle = SALR_getPageTitle(doc);
+		// build the html for the rating box
+		if ( container ) {
+			container.innerHTML = "";
+			container.className += " salrRateThread";
+			// create the "rate thread" label
+			var div = doc.createElement('div');
+			div.setAttribute("class","salrRateThreadlabel");
+			div.innerHTML = "Rate Thread:";
+		  container.appendChild(div);
+
+		  var form = doc.createElement("form");
+		  form.setAttribute("id","rateform");
+		  form.setAttribute("action","threadrate.php");
+		  form.setAttribute("method","post");
+		  form.setAttribute("name","rateform");
+
+		  var rateImage = doc.createElement("img");
+		  rateImage.setAttribute("src","chrome://salastread/skin/blank.png");
+		  rateImage.setAttribute("id","salrRateImage");
+		  rateImage.setAttribute("class","salrratingstars salrstars0");
+		  rateImage.setAttribute("title","This thread means nothing to me.");
+		  rateImage.addEventListener("mousemove", function(evt) { SALR_ThreadRateMM(rateImage,evt); }, true);
+			rateImage.addEventListener("mouseout", function(evt) { SALR_ThreadRateMM(rateImage,null); }, true);
+			rateImage.addEventListener("click", function(evt) { SALR_ThreadRateSubmit(doc); }, true);
+
+			form.appendChild(rateImage);
+
+			var diggAnchor = doc.createElement("a");
+			diggAnchor.setAttribute("href","http://digg.com/submit?phase=2&url="+doc.location.href);
+
+			var diggImage = doc.createElement("img");
+			diggImage.setAttribute("class","salrdigg");
+			diggImage.setAttribute("src","chrome://salastread/skin/blank.png");
+			diggImage.setAttribute("title","digg this thread!");
+			diggImage.setAttribute("id","salrdiggbutton");
+			diggImage.addEventListener("mousemove", function (evt) { SALR_ThreadRateMM(rateImage,evt); }, true);
+			diggImage.addEventListener("mouseout",function(evt) { SALR_ThreadRateMM(rateImage,null); }, true);
+			diggAnchor.appendChild(diggImage);
+
+			form.appendChild(diggAnchor);
+
+			var input = doc.createElement("input");
+			input.setAttribute("type","hidden");
+			input.setAttribute("id","salrRatingValue");
+			input.setAttribute("name","vote");
+			input.setAttribute("value","0");
+			form.appendChild(input);
+
+			input = doc.createElement("input");
+			input.setAttribute("type","hidden");
+			input.setAttribute("name","threadid");
+			input.setAttribute("value",threadId);
+			form.appendChild(input);
+
+		  container.appendChild(form);
+		}
+	}
+}
+
+/**
+ * Array of strings to set the title of the rate image.
+ * @author camalot
+ * @type {String[]}
+ */
+var salrRatingTitles = [ "This thread means nothing to me.", "This thread sucks ass.",
+												 "This is not a good thread.", "This is a mediocre thread.",
+												 "This is a somewhat entertaining thread.", "Excellent thread!" ];
+/**
+ * Handles the mouse move event of the rate thread image
+ * @param {Element} obj the image element
+ * @param {Event} evt The event object
+ * @author camalot
+ */
+function SALR_ThreadRateMM(obj, evt) {
+  var rateIndex = 0;
+  if ( evt ) {
+  	// find the position of the mouse in the element
+  	var mouseX = (evt.clientX - obj.offsetLeft);
+  	// get the rating index based on the position
+  	rateIndex = SALR_ThreadRateGetRateIndex(mouseX);
+  } else
+    var rateIndex = 0;
+  // set the image info
+  SALR_ThreadRateSetRateImageInfo ( obj, rateIndex );
+}
+/**
+ * Handles the click event of the rate thread image
+ * @param {Object} doc The document object.
+ * @author camalot
+ */
+function SALR_ThreadRateSubmit ( doc ) {
+	var rateForm = doc.getElementById("rateform");
+	if ( rateForm )
+		rateForm.submit();
+}
+/**
+ * Sets the value of the rating to a hidden field and changes the css class of the image.
+ * @param {Element} obj The image element
+ * @param {int} index The rating value which is also the index of the title in the array and part of the css class
+ * @author camalot
+ */
+function SALR_ThreadRateSetRateImageInfo ( obj, index ) {
+  if ( obj ) {
+  	var doc = obj.ownerDocument;
+    obj.className = "salrratingstars salrstars" + index;
+    obj.title = salrRatingTitles[index];
+    var valField = doc.getElementById("salrRatingValue");
+    if ( valField )
+    	valField.value = index;
+  }
+}
+/**
+ * gets the rating index based on the X position of the mouse
+ * @param {int} x The mouse x position
+ * @return 0 - 5 for the rating value
+ * @type {int}
+ * @author camalot
+ */
+function SALR_ThreadRateGetRateIndex(x) {
+  if ( x > 2 && x < 20 ) return 1;
+  else if  ( x > 19 && x < 38 ) return 2;
+  else if ( x > 37 && x < 56 ) return 3;
+  else if ( x > 55 && x < 74 ) return 4;
+  else if ( x > 73 && x < 141 ) return 5;
+  else return 0;
+}
+
 function handleSupport(doc)
 {
 	if (doc.getElementById('content') == null)
@@ -1554,7 +1698,7 @@ function handleSupport(doc)
 	var newLink = doc.createElement('a');
 	emptyP.appendChild(newLink);
 	emptyP.style.textAlign = "center";
-	newLink.href = "http://code.google.com/p/salr/issues/list";
+	newLink.href = "https://salr.bountysource.com/development";
 	newLink.innerHTML = "Click here to report a problem with SA Last Read instead";
 	var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
 	supportTable.parentNode.replaceChild(newImg, supportTable);
@@ -1814,7 +1958,7 @@ function SALR_runConfig(page, args) {
 
     var instantApply = pref.getBoolPref("browser.preferences.instantApply");
 	var features = "chrome,titlebar,toolbar,centerscreen" + (instantApply ? ",dialog=no" : ",modal");
-	
+
 	openDialog("chrome://salastread/content/pref.xul", "Preferences", features, page, { "args" : args });
 }
 
@@ -2122,6 +2266,9 @@ function salastread_windowOnLoad(e) {
 					//insert content CSS
 					SALR_insertCSS("chrome://salastread/content/contentStyling.css", doc);
 
+					// insert thread rate box css
+  				SALR_insertCSS("chrome://salastread/content/threadRate.css",doc);
+
 					// why the FUCK doesn't this work?
 					var hresult = 0;
 					if ( location.href.indexOf("forumdisplay.php?") != -1 ) {
@@ -2143,7 +2290,7 @@ function salastread_windowOnLoad(e) {
 					} else if (location.href.search(/supportmail\.php/) > -1) {
 						handleSupport(doc);
 					}
-					
+
 					var hcliresult = handleConfigLinkInsertion(e);
 					handleBodyClassing(e);
 

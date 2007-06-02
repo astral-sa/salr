@@ -30,7 +30,7 @@ pref('extensions.salastread.enableForumNavigator', true);
 pref('extensions.salastread.gestureEnable', false);
 pref('extensions.salastread.suppressErrors', true);
 pref('extensions.salastread.gestureButton', 2);
-
+pref('extensions.salastread.enableThreadRating', true);
 
 //IMAGE HANDLING
 

@@ -1,0 +1,22 @@
+.salrstars0 { background-image:url(chrome://salastread/skin/0stars.png); }
+.salrstars1 { background-image:url(chrome://salastread/skin/1stars.png); }
+.salrstars2 { background-image:url(chrome://salastread/skin/2stars.png); }
+.salrstars3 { background-image:url(chrome://salastread/skin/3stars.png); }
+.salrstars4 { background-image:url(chrome://salastread/skin/4stars.png); }
+.salrstars5 { background-image:url(chrome://salastread/skin/5stars.png); }
+.salrratingstars { width:93px; }
+.salrdigg { background-image:url(chrome://salastread/skin/digg.png); width:48px; }
+.salrdigg:hover { background-image:url(chrome://salastread/skin/diggon.png); }
+#rateform { margin:0px; display:inline; }
+.salrRateThread { margin-bottom:4px; }
+.salrRateThread img {
+	background-position:0px 0px;
+	background-repeat:no-repeat;
+	position:relative;
+	left:0px;
+	height:32px;
+	cursor:pointer;
+	vertical-align:middle;
+	border:0px;
+}
+.salrRateThreadlabel { margin-right:2px; display:inline; }
