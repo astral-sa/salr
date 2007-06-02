@@ -7,12 +7,11 @@ http://72.14.203.104/search?q=cache:ETk4wCjR99wJ:www.koders.com/javascript/fidB3
 
 */
 
-// SALR's FTP Library
-function SALR_FTPTransferObject() {
+function FTPTransferObject() {
 	this.Components = Components;
 }
 
-SALR_FTPTransferObject.prototype = {
+FTPTransferObject.prototype = {
 	Components: null,
 
 	// what is a channel?
