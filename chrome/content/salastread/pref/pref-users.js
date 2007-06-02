@@ -7,7 +7,7 @@ function initUsers() {
 	persistObject = persistObject.wrappedJSObject;
 	
 	//get usernames/ids
-	var users = persistObject.getColoredPosters();
+	var users = persistObject.getCustomizedPosters();
 	
 	//get listbox so we can add users
 	var listBox = document.getElementById("userColoring");
@@ -53,13 +53,14 @@ function addListUser(listBox, id, name) {
 function changeColor(type) {
 	var li = document.getElementById("userColoring").selectedItem;
 	if(!li) { return; }
+	var userid = li.value;
 	
 	var obj = {};
 	
 	if(type === "color") {
-		obj.value = li.childNodes[1].style.color;
+		obj.value = persistObject.getPosterColor(userid);
 	} else {
-		obj.value = li.childNodes[1].style.backgroundColor;
+		obj.value = persistObject.getPosterBackground(userid);
 	}
 	
 	window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "chrome", obj);
@@ -100,7 +101,7 @@ function addUser() {
 	//only accepts integers right now
 	if(!isNaN(text.value)) {
 		persistObject.addUser(text.value);
-		persistObject.setPosterColor(text.value, "#000000");
+		persistObject.setPosterNotes(text.value, "New User");
 		
 		var listBox = document.getElementById("userColoring");
 		addListUser(listBox, text.value, null);
@@ -134,7 +135,7 @@ function editNote() {
 	var check = {value : false};
 	var result = prompts.prompt(null, "User Note", "Edit the note to appear for this user", text, null, check);
 	
-	if(text.value) {
+	if(result) {
 		persistObject.setPosterNotes(li.value, text.value);
 		
 		li.childNodes[2].setAttribute("label", text.value);
