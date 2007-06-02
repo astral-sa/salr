@@ -102,45 +102,75 @@ function importOldData()
 	try // Wrap the whole thing in a try/catch incase something messes up, it can still transfer the prefs
 	{
 		var olddata = persistObject.pref.getCharPref("salastread.string.persistStoragePath");
-		var file = Components.classes["@mozilla.org/file/local;1"]
-			.createInstance(Components.interfaces.nsILocalFile);
-		file.initWithPath(olddata);
+		if (olddata.indexOf("%profile%") == 0)
+		{
+			var file = Components.classes["@mozilla.org/file/directory_service;1"]
+                     .getService(Components.interfaces.nsIProperties)
+                     .get("ProfD", Components.interfaces.nsIFile);
+      file.append(olddata.replace("%profile%",""));
+		}
+		else
+		{
+			var file = Components.classes["@mozilla.org/file/local;1"]
+				.createInstance(Components.interfaces.nsILocalFile);
+			file.initWithPath(olddata);
+		}
 		if (file.exists() == false)
 		{
-			throw(null); // Drop out
+			throw(olddata); // Drop out
 		}
 		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
 			.createInstance(Components.interfaces.nsIFileInputStream);
 		istream.init(file, 0x01, 0444, 0);
 		istream.QueryInterface(Components.interfaces.nsILineInputStream);
-		var hasmore, line = {}, processingdata = false, myattrs, i, adata;
+		var hasmore, processingdata = false, myattrs, i, adata, threaddata = [], statement, timeArray, realLastviewdt;
 		do
 		{
+			var line = {};
 			hasmore = istream.readLine(line); // Returns false if it is the last line
 			line = line.value;
 			if (processingdata)
 			{
 				myattrs = line.split("&");
-				for (i=0; i<myattrs.length; i++)
+				for each (anAttr in myattrs)
 				{
-					adata = myattrs[i].split("=");
-					if (adata.length==2) {
-						var thisName = unescape(adata[0]);
-						var thisValue = unescape(adata[1]);
-						newEl.setAttribute(thisName, thisValue);
-						if (thisName=="ignore") {
+					adata = anAttr.split("=");
+					if (adata.length==2)
+					{
+						threaddata[unescape(adata[0])] = unescape(adata[1]);
+						if (unescape(adata[0])=="ignore") {
 							if (thisValue=="true") {
-								thisValue="1";
+								threaddata[unescape(adata[0])]="1";
 							}
 						}
-						if (thisName=="id") {
-							elOk = true;
-							elId = thisValue;
-						}
-						if (thisName=="lastpostid") {
-							elLpId = Number(thisValue);
-						}
 					}
+					else
+					{
+						threaddata[unescape(adata[0])] = null;
+					}
+				}
+				if (threaddata['id'] != undefined)
+				{
+					timeArray = threaddata['lastviewdt'].match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/);
+					if (timeArray != null)
+					{
+						realLastviewdt = Math.floor(Date.UTC(Math.floor(timeArray[1]),Math.floor(timeArray[2]),Math.floor(timeArray[3]),Math.floor(timeArray[4]),Math.floor(timeArray[5]))/1000);
+					}
+					else
+					{
+						realLastviewdt = persistObject.currentTimeStamp;
+					}
+					statement = persistObject.database.createStatement("INSERT INTO `threaddata` (`id`, `lastpostid`, `lastviewdt`, `op`, `title`, `lastreplyct`, `posted`, `ignore`, `star`, `options`) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, null)");
+					statement.bindInt32Parameter(0,threaddata['id']);
+					statement.bindInt32Parameter(1,threaddata['lastpostid']);
+					statement.bindStringParameter(2,realLastviewdt);
+					statement.bindInt32Parameter(3,threaddata['op']);
+					statement.bindStringParameter(4,threaddata['title']);
+					statement.bindInt32Parameter(5,threaddata['lastreplyct']);
+					statement.bindInt32Parameter(6,(threaddata['posted']==1?1:0));
+					statement.bindInt32Parameter(7,(threaddata['ignore']==1?1:0));
+					statement.bindInt32Parameter(8,(threaddata['star']==1?1:0));
+					statement.execute();
 				}
 			}
 			if (line == "SALR Thread Data v2")
@@ -148,7 +178,8 @@ function importOldData()
 				processingdata = true;
 			}
 		} while (hasmore);
-	} catch(e) {}
+		istream.close();
+	} catch(e) { dump(e); }
 	try // These have to be in a try/catch so that it doesn't bomb out if one is missing for some reason
 	{
 		persistObject.setPreference("postedInThreadRe", persistObject.pref.getCharPref("salastread.color.postedInThreadRe"));

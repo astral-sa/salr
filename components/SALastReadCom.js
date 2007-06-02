@@ -63,40 +63,6 @@ const SALR_CONTRACTID = "@evercrest.com/salastread/persist-object;1";
 const SALR_CID = Components.ID("{f5d9093b-8210-4a26-89ba-4c987de04efc}");
 const nsISupports = Components.interfaces.nsISupports;
 
-function GetUserProfileDirectory(fn,isWindows)
-{
-   const DIR_SERVICE = new Components.Constructor("@mozilla.org/file/directory_service;1", "nsIProperties");
-   var path;
-   try {
-      //var dirService = Components.classes["@mozilla.org/file/directory_service;1"].
-      //                    createInstance(Components.interfaces.nsIProperties);
-      //path = dirService.get("ProfD", Components.interfaces.nsIFile).path;
-      path = (new DIR_SERVICE()).get("ProfD", Components.interfaces.nsIFile).path;
-   } catch (e) {
-      //alert ("salastread error: Failure in GetUserProfileDirectory: "+e);
-      throw e;
-      return null;
-   }
-   if (path) {
-      if (fn) {
-         if (path.search(/\\/) != -1) {
-            path = path + "\\";
-         } else {
-            path = path + "/";
-         }
-         path = path + fn;
-      }
-      return path;
-   } else {
-      //alert ("salastread error: Failed to GetUserProfileDirectory");
-      if (isWindows) {
-         return "C:\\"+fn;
-      } else {
-         return "~/"+fn;
-      }
-   }
-}
-
 function ReadFile(fn)
 {
 //   try {
@@ -183,8 +149,6 @@ salrPersistObject.prototype = {
       }
    },
    */
-
-   get storeFileName() { return this._fn; },
 
    get xmlDoc()
    {
@@ -396,33 +360,6 @@ salrPersistObject.prototype = {
       } catch(e) { this._forumListXml = null; }
    },
 
-   LoadXML: function(merge)
-   {
-      this.LoadThreadDataV2(merge);
-   },
-
-   LoadXMLLegacy: function()
-   {
-      var pxml = ReadFile(this.storeFileName);
-      if (typeof(pxml) != "undefined")
-      {
-         if (pxml)
-         {
-            this.SetXML(pxml);
-         }
-         else
-         {
-            this.InitializeEmptySALRXML();
-            this.SaveXML();
-         }
-      }
-      else
-      {
-         this._starterr = "loadxml couldn't readfile";
-         this.xmlDoc = null;
-      }
-   },
-
    InitializeEmptySALRXML: function(merge)
    {
       if (!merge || this.xmlDoc==null)
@@ -446,178 +383,6 @@ salrPersistObject.prototype = {
 	*/
    },
 
-   THREADDATA_FILE_HEADER_V2: "SALR Thread Data v2",
-
-   LoadThreadDataV2: function(merge)
-   {
-
-      var fn = this.storedbFileName;
-      var file = Components.classes["@mozilla.org/file/local;1"]
-            .createInstance(Components.interfaces.nsILocalFile);
-      file.initWithPath(fn);
-      if ( file.exists() == false ) {
-         try {
-            file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 420);
-         }
-         catch (ex) {
-            throw "file.create error ("+ex.name+") on "+fn;
-         }
-         //console.log("The SALastRead extension is initializing a new database. You should only see this once.");
-      }
-      var storageService = Components.classes["@mozilla.org/storage/service;1"]
-                                     .getService(Components.interfaces.mozIStorageService);
-      var mDBConn = storageService.openDatabase(file);
-
-      if (!mDBConn.tableExists('threaddata'))
-      {
-
-      var processingdata = false;
-
-      // Initialize the empty document...
-      this.InitializeEmptySALRXML(merge);
-
-      var fn = this.storeFileName; // + ".txt";
-      var file = Components.classes["@mozilla.org/file/local;1"]
-            .createInstance(Components.interfaces.nsILocalFile);
-      file.initWithPath(fn);
-      if ( file.exists() == false ) {
-         this.SaveXML();
-         return;
-      }
-
-      // See: http://kb.mozillazine.org/File_IO
-      var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
-                        .createInstance(Components.interfaces.nsIFileInputStream);
-      istream.init(file, 0x01, 0444, 0);
-      istream.QueryInterface(Components.interfaces.nsILineInputStream);
-
-      var hasmore;
-      do {
-         var line = {};
-
-         hasmore = istream.readLine(line);
-         line = line.value;
-
-         if ( line == this.THREADDATA_FILE_HEADER_V2 ) {
-            processingdata = true;
-         }
-         else if ( processingdata ) {
-            var newEl = this.xmlDoc.createElement("thread");
-            var elOk = false;
-            var elId = null;
-            var elLpId = 0;
-            var myattrs = line.split("&");
-            for (var x=0; x<myattrs.length; x++) {
-               var adata = myattrs[x].split("=");
-               if (adata.length==2) {
-                  var thisName = unescape(adata[0]);
-                  var thisValue = unescape(adata[1]);
-                  newEl.setAttribute(thisName, thisValue);
-                    if (thisName=="ignore") {
-                      if (thisValue=="true") {
-                        thisValue="1";
-                      }
-                    }
-                  if (thisName=="id") {
-                     elOk = true;
-                     elId = thisValue;
-                  }
-                  if (thisName=="lastpostid") {
-                     elLpId = Number(thisValue);
-                  }
-               }
-            }
-            if (elOk) {
-               var doAppend = true;
-               if (merge) {
-                  var curEl = this.selectSingleNode(this.xmlDoc, this.xmlDoc.documentElement, "thread[@id='"+elId+"']");
-                  if (curEl) {
-                     if ( Number(curEl.getAttribute("lastpostid")) > elLpId ) {
-                        // In-memory data is newer than data from file, keep the in-memory data
-                        doAppend = false;
-                     } else {
-                        // File data is newer than in-memory data, update the in-memory data
-                        // TODO: merge in op/title data from curEl to newEl if it doesn't have it maybe?
-                        curEl.parentNode.removeChild(curEl);
-                        doAppend = true;
-                     }
-                  } else {
-                     doAppend = true;
-                  }
-               }
-                if (doAppend) {
-                  this.xmlDoc.documentElement.appendChild(newEl);
-            }
-         }
-          }
-
-        // hasmore = false;
-      } while (hasmore);
-
-      istream.close();
-
-      if (!processingdata) {
-         // Couldn't recognize the data in the file. Try the legacy XML loader.
-         this.LoadXMLLegacy();
-      }
-
-      } else {
-
-        // Initialize the empty document...
-        this.InitializeEmptySALRXML(merge);
-
-        var statement = mDBConn.createStatement("SELECT * FROM `threaddata`");
-        while (statement.executeStep()) {
-          var newEl = this.xmlDoc.createElement("thread");
-          var elOk = false;
-          var elId = null;
-          var elLpId = 0;
-          for (var x=0; x<statement.columnCount; x++) {
-            if (!statement.getIsNull(x)) {
-              var thisName = statement.getColumnName(x);
-              var thisValue = statement.getString(x);
-              newEl.setAttribute(thisName, thisValue);
-              if (thisName=="ignore") {
-                if (thisValue=="true") {
-                  thisValue="1";
-                }
-              }
-              if (thisName=="id") {
-                elOk = true;
-                elId = thisValue;
-              }
-              if (thisName=="lastpostid") {
-                elLpId = Number(thisValue);
-              }
-            }
-          }
-          if (elOk) {
-            var doAppend = true;
-            if (merge) {
-              var curEl = this.selectSingleNode(this.xmlDoc, this.xmlDoc.documentElement, "thread[@id='"+elId+"']");
-              if (curEl) {
-                if ( Number(curEl.getAttribute("lastpostid")) > elLpId ) {
-                  // In-memory data is newer than data from file, keep the in-memory data
-                  doAppend = false;
-                } else {
-                  // File data is newer than in-memory data, update the in-memory data
-                  // TODO: merge in op/title data from curEl to newEl if it doesn't have it maybe?
-                  curEl.parentNode.removeChild(curEl);
-                  doAppend = true;
-                }
-              } else {
-                doAppend = true;
-              }
-            }
-            if (doAppend) {
-              this.xmlDoc.documentElement.appendChild(newEl);
-            }
-          }
-        }
-        statement.reset();
-      }
-
-   },
 
    ProfileInit: function(isWindows)
    {
@@ -629,16 +394,15 @@ salrPersistObject.prototype = {
          this.AttachShutdownObserver();
          //this.LoadPrefs();
          if ( this.getPreference('databaseStoragePath').indexOf("%profile%")==0 ) {
-            this._dbfn = GetUserProfileDirectory(this.getPreference('databaseStoragePath').substring(9), this._isWindows );
+            this._dbfn = this.GetUserProfileDirectory(this.getPreference('databaseStoragePath').substring(9), this._isWindows );
          } else {
             this._dbfn = this.getPreference('databaseStoragePath');
          }
          if ( this.getPreference('forumListStoragePath').indexOf("%profile%")==0 ) {
-            this._flfn = GetUserProfileDirectory( this.getPreference('forumListStoragePath').substring(9), this._isWindows );
+            this._flfn = this.GetUserProfileDirectory( this.getPreference('forumListStoragePath').substring(9), this._isWindows );
          } else {
             this._flfn = this.getPreference('forumListStoragePath');
          }
-         this.LoadXML();
          this.LoadForumListXML();
 
          // Get Timer Value
@@ -657,7 +421,6 @@ salrPersistObject.prototype = {
    _profileInitialized: false,
    _gotForumList: false,
    _forumListXml: null,
-   _fn: null,
    _flfn: null,
    _xmlDoc: null,
 
@@ -734,6 +497,36 @@ salrPersistObject.prototype = {
 	get storedbFileName() { return this._dbfn; },
 
 	get SALRversion() { return this.getPreference("currentVersion"); },
+
+	// C&P from old code, needs to be audited
+	GetUserProfileDirectory: function(fn,isWindows)
+	{
+		const DIR_SERVICE = new Components.Constructor("@mozilla.org/file/directory_service;1", "nsIProperties");
+		var path;
+		try {
+			path = (new DIR_SERVICE()).get("ProfD", Components.interfaces.nsIFile).path;
+		} catch (e) {
+			throw e;
+			return null;
+		}
+		if (path) {
+			if (fn) {
+				 if (path.search(/\\/) != -1) {
+						path = path + "\\";
+				 } else {
+						path = path + "/";
+				 }
+				 path = path + fn;
+			}
+			return path;
+		} else {
+			if (isWindows) {
+				 return "C:\\"+fn;
+			} else {
+				 return "~/"+fn;
+			}
+		}
+	},
 
 	//
 	// Here begins new functions for the 2.0 rewrite
@@ -1121,37 +914,36 @@ salrPersistObject.prototype = {
 			statement.bindInt32Parameter(1, userid);
 			statement.execute();
 	},
-	
+
 	// Checks to see if the DB already knows about a user
 	// @param: (int) User ID
 	// @return: (bool) if user is in DB
 	userExists: function(userid)
 	{
 		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `userid` = ?1");
-			statement.bindInt32Parameter(0, userid);
-			
+		statement.bindInt32Parameter(0, userid);
 		var founduser = statement.executeStep();
 		statement.reset();
-		
 		return founduser;
 	},
-	
+
 	// Adds a user to the DB
 	// @param: (int) User ID
 	// @return: nothing
 	addUser: function(userid, username)
 	{
-		if(!this.userExists(userid)) {
+		if(!this.userExists(userid))
+		{
 			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES (?1, null, 0, 0, 0, 0, 0, null)");
-				statement.bindInt32Parameter(0, userid);
-				statement.execute();
-				
-			if(username) {
+			statement.bindInt32Parameter(0, userid);
+			statement.execute();
+			if(username)
+			{
 				this.setUserName(userid, username);
 			}
 		}
 	},
-	
+
 	// Adds/updates a user as a mod
 	// @param: (int) User ID, (string) Username
 	// @return: nothing
@@ -1323,19 +1115,19 @@ salrPersistObject.prototype = {
 	{
 		if(this.userExists(userid))
 		{
-			var user = false;
-			
-			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
-				statement.bindInt32Parameter(0, userid);
-			if (statement.executeStep()) 
-			{
-				user = {};
-				user.userid = statement.getInt32(0);
-				user.username = statement.getString(1);
-			}
-			statement.reset();
+		var user = false;
 
-			return user;
+		var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
+			statement.bindInt32Parameter(0, userid);
+			if (statement.executeStep())
+			{
+			user = {};
+			user.userid = statement.getInt32(0);
+			user.username = statement.getString(1);
+		}
+		statement.reset();
+
+		return user;
 		}
 	},
 
@@ -1368,15 +1160,15 @@ salrPersistObject.prototype = {
 		var usercolor = false;
 		if(this.userExists(userid))
 		{
-			var statement = this.database.createStatement("SELECT `color` FROM `userdata` WHERE `userid` = ?1");
-			statement.bindInt32Parameter(0,userid);
-			if (statement.executeStep())
-			{
-				usercolor = statement.getString(0);
-			}
-			statement.reset();
+		var statement = this.database.createStatement("SELECT `color` FROM `userdata` WHERE `userid` = ?1");
+		statement.bindInt32Parameter(0,userid);
+		if (statement.executeStep())
+		{
+			usercolor = statement.getString(0);
 		}
-		
+		statement.reset();
+		}
+
 		return usercolor;
 	},
 
@@ -1387,10 +1179,10 @@ salrPersistObject.prototype = {
 	{
 		if(this.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
-				statement.bindStringParameter(0, color);
-				statement.bindInt32Parameter(1, userid);
-				statement.execute();
+		var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
+			statement.bindStringParameter(0, color);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
 		}
 	},
 
@@ -1402,15 +1194,15 @@ salrPersistObject.prototype = {
 		var userbgcolor = false;
 		if(this.userExists(userid))
 		{
-			var statement = this.database.createStatement("SELECT `background` FROM `userdata` WHERE `userid` = ?1");
-			statement.bindInt32Parameter(0,userid);
-			if (statement.executeStep())
-			{
-				userbgcolor = statement.getString(0);
-			}
-			statement.reset();
+		var statement = this.database.createStatement("SELECT `background` FROM `userdata` WHERE `userid` = ?1");
+		statement.bindInt32Parameter(0,userid);
+		if (statement.executeStep())
+		{
+			userbgcolor = statement.getString(0);
 		}
-		
+		statement.reset();
+		}
+
 		return userbgcolor;
 	},
 
@@ -1421,10 +1213,10 @@ salrPersistObject.prototype = {
 	{
 		if(this.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
-				statement.bindStringParameter(0, color);
-				statement.bindInt32Parameter(1, userid);
-				statement.execute();
+		var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
+			statement.bindStringParameter(0, color);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
 		}
 	},
 
@@ -1436,17 +1228,17 @@ salrPersistObject.prototype = {
 		var usernotes = false;
 		if(this.userExists(userid))
 		{
-			var statement = this.database.createStatement("SELECT `notes` FROM `userdata` WHERE `userid` = ?1");
-			statement.bindInt32Parameter(0,userid);
-			if (statement.executeStep())
-			{
-				usernotes = statement.getString(0);
-			}
-			statement.reset();
+		var statement = this.database.createStatement("SELECT `notes` FROM `userdata` WHERE `userid` = ?1");
+		statement.bindInt32Parameter(0,userid);
+		if (statement.executeStep())
+		{
+			usernotes = statement.getString(0);
+		}
+		statement.reset();
 		}
 		return usernotes;
 	},
-	
+
 	// Sets the notes for that user in the database
 	// @param: (int) User ID, (string) Note
 	// @return: nothing
@@ -1902,7 +1694,7 @@ salrPersistObject.prototype = {
 			var cell = cells[i];
 				cell.style.backgroundImage = "url('chrome://salastread/skin/gradient.png')";
 				cell.style.backgroundRepeat = "repeat-x";
-				cell.style.backgroundPosition = "bottom left";
+				cell.style.backgroundPosition = "center left";
 		}
 	},
 
