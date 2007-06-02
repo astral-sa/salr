@@ -8,8 +8,6 @@ var internalBri = 50;
 
 //WINDOW HANDLING FUNCTIONS
 function grabArguments() {
-	//Components.utils.reportError(acceptDialog());
-	
 	if (window.arguments && window.arguments[0]) {
 		var inhex = window.arguments[0].value;
 		
