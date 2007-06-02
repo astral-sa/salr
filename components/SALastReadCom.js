@@ -1604,8 +1604,8 @@ salrPersistObject.prototype = {
 	},
 
 	// Colors the post passed to it
-	// @param:
-	// @return:
+	// @param: (html doc) document, (htmlTableElement) post table, (string) color to use for the post
+	// @return: nothing
 	colorPost: function(doc, post, colorToUse)
 	{
 		var userInfoBox = this.selectSingleNode(doc, post, "TBODY/TR/TD[contains(@class,'userinfo')]");
