@@ -1502,22 +1502,29 @@ function handleShowThread(doc) {
 					persistObject.addMod(posterId, posterName);
 				}
 			}
+			
+			posterBG 	= false;
+			posterNote 	= false;
 			posterColor = false;
-			posterBG = false;
-			posterNote = false;
+			
+			//apply this to every post
+			post.className += " salrPoster" + posterId;
+			
 			if (posterId == threadOP)
 			{
 				posterColor = opColor;
-				posterBG =  opBackground;
-				posterNote = "Thread Poster";
+				posterBG 	= opBackground;
+				posterNote 	= "Thread Poster";
+				post.className += " salrThreadOP";
 			}
 			if (persistObject.isMod(posterId))
 			{
 				if(posterImg == 'Moderator')
 				{
 					posterColor = modColor;
-					posterBG =  modBackground;
-					posterNote = "Forum Moderator";
+					posterBG 	= modBackground;
+					posterNote 	= "Forum Moderator";
+					post.className += " salrForumMod";
 				}
 				else
 				{
@@ -1529,8 +1536,9 @@ function handleShowThread(doc) {
 				if(posterImg == "Admin")
 				{
 					posterColor = adminColor;
-					posterBG =  adminBackground;
-					posterNote = "Forum Administrator";
+					posterBG 	= adminBackground;
+					posterNote 	= "Forum Administrator";
+					post.className += " salrForumAdmin";
 				}
 				else
 				{
@@ -1544,8 +1552,9 @@ function handleShowThread(doc) {
 					persistObject.setUserName(posterId, posterName);
 				}
 				posterColor = persistObject.getPosterColor(posterId);
-				posterBG = persistObject.getPosterBackground(posterId);
+				posterBG 	= persistObject.getPosterBackground(posterId);
 			}
+
 			userPosterNote = persistObject.getPosterNotes(posterId);
 			if (highlightUsernames && posterColor != false)
 			{
