@@ -1139,12 +1139,16 @@ salrPersistObject.prototype = {
 	// Adds a user to the DB
 	// @param: (int) User ID
 	// @return: nothing
-	addUser: function(userid)
+	addUser: function(userid, username)
 	{
 		if(!this.userExists(userid)) {
 			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES (?1, null, 0, 0, 0, 0, 0, null)");
 				statement.bindInt32Parameter(0, userid);
 				statement.execute();
+				
+			if(username) {
+				this.setUserName(userid, username);
+			}
 		}
 	},
 	
@@ -1335,14 +1339,14 @@ salrPersistObject.prototype = {
 		}
 	},
 
-	// Fetches all users that have custom colors defined
+	// Fetches all users that have custom colors or a note defined
 	// @param: nothing
 	// @returns: array of user ids
-	getColoredPosters : function()
+	getCustomizedPosters : function()
 	{
 		var users = [];
 		try {
-			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `color` != 0 OR `background` != 0");
+			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `color` != 0 OR `background` != 0 OR notes IS NOT NULL");
 			while (statement.executeStep()) {
 				var user = {};
 					user.userid = statement.getInt32(0);
