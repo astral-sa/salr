@@ -91,20 +91,135 @@ function SALR_menuItemGoTo(event, url, target) {
 	}
 }
 
+function grabForumsFromForumDisplay(doc,id) {
+
+   try{      
+      var oldForumXml = persistObject.forumListXml
+      if(!oldForumXml)return
+      
+      var newForumXml = oldForumXml.cloneNode(true)
+
+      var parentEl
+
+      var breadcrumbs = persistObject.selectNodes(doc,doc,"//div[@class='breadcrumbs']//a[contains(@href,'forumdisplay.php')]")
+      for(var i=0;i<breadcrumbs.length;i++) {
+         var crumb = breadcrumbs[i]
+
+         var forumTitle = crumb.firstChild.nodeValue;
+         var forumId = crumb.getAttribute("href").match(/forumid=(\d+)/)[1];
+
+         var forumEl
+         if(i==0) {
+            forumEl = persistObject.selectSingleNode(newForumXml,newForumXml,"//cat[@id='" + forumId + "']")
+         }else {
+            forumEl = persistObject.selectSingleNode(newForumXml,newForumXml,"//forum[@id='" + forumId + "']")
+         }
+
+         if(!forumEl) {
+            if(i==0) {
+               //crazy shit must have gone down. fuck this
+               return
+            }
+
+            forumEl = newForumXml.createElement("forum");
+            parentEl.appendChild(forumEl)
+            newForumXml.documentElement.insertBefore(newForumXml.createTextNode("\n"), forumEl);
+
+         }
+
+         forumEl.setAttribute("id", forumId);
+         forumEl.setAttribute("name", forumTitle);
+   
+         parentEl = forumEl
+      }
+
+      if(!parentEl)return
+
+      var forumEl = persistObject.selectSingleNode(newForumXml,newForumXml,"//forum[@id='" + id + "']")
+      if(!forumEl) {
+         forumEl = newForumXml.createElement("forum")
+         parentEl.appendChild(forumEl)
+         newForumXml.documentElement.insertBefore(newForumXml.createTextNode("\n"), forumEl);
+      }
+      var forumTitle = document.title.split(" - ")[1]
+      
+      forumEl.setAttribute("id", id);
+      forumEl.setAttribute("name", forumTitle);
+
+
+
+      var oldSubForums = Array()
+      var len = forumEl.childNodes.length
+      for(var i=0;i<len;i++) {
+         var el = forumEl.childNodes[0]
+         if(el.nodeName == "forum") {
+            var elId = el.getAttribute("id")
+            oldSubForums[elId] = el
+         }
+         forumEl.removeChild(el)
+      }
+
+
+      
+
+      var subForums = persistObject.selectNodes(doc,doc,"//table[@id='subforums']//a[contains(@href,'forumdisplay.php')]")
+      for(var i=0;i<subForums.length;i++) {
+         var subForum = subForums[i]
+         var subForumTitle = subForum.firstChild.nodeValue;
+         if(subForum.firstChild.firstChild) {
+            subForumTitle = subForum.firstChild.firstChild.nodeValue
+         }
+
+         var subForumId = subForum.getAttribute("href").match(/forumid=(\d+)/)[1];
+         
+         var subForumEl = oldSubForums[subForumId]
+         if(!subForumEl) {
+            subForumEl = newForumXml.createElement("forum");
+         }
+
+         forumEl.appendChild(newForumXml.createTextNode("\n"))
+         forumEl.appendChild(subForumEl)
+
+
+         subForumEl.setAttribute("id", subForumId);
+         subForumEl.setAttribute("name", subForumTitle);
+
+      }
+
+
+      persistObject.forumListXml = newForumXml
+   }
+   catch (e){
+      alert(e)
+   }
+}
+
+
+
 function grabForumList(doc, selectnode) {
-	var rowList = persistObject.selectNodes(doc, doc, "//table[@id='forums']//tr");
+try
+{
+   
+   var rowList = persistObject.selectNodes(doc, doc, "//table[@id='forums']//tr");
    var oDomParser = new DOMParser();
    var forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
    var targetEl = forumsDoc.documentElement;
    var oldForumXml = persistObject.forumListXml;
 
-   //Nowhere to grab these guys from anymore
-   addUtilItem("Private Messages","pm",forumsDoc)
-   addUtilItem("User Control Panel","cp",forumsDoc)
-   addUtilItem("Search Forums","search",forumsDoc)
-   addUtilItem("Forums Home","home",forumsDoc)
-   addUtilItem("Leper's Colony","lc",forumsDoc)
+   var utilsEl = forumsDoc.createElement("utils")
+   forumsDoc.documentElement.appendChild(utilsEl)
+   forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), utilsEl);
 
+   //Nowhere to grab these guys from anymore
+   addUtilItem("Private Messages","pm",forumsDoc,utilsEl)
+   addUtilItem("User Control Panel","cp",forumsDoc,utilsEl)
+   addUtilItem("Search Forums","search",forumsDoc,utilsEl)
+   addUtilItem("Forums Home","home",forumsDoc,utilsEl)
+   addUtilItem("Leper's Colony","lc",forumsDoc,utilsEl)
+
+   var forumsEl = forumsDoc.createElement("forums")
+   forumsDoc.documentElement.appendChild(forumsEl)
+   forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), forumsEl);
 
    for (var i=0; i<rowList.length; i++) {
 
@@ -126,8 +241,8 @@ function grabForumList(doc, selectnode) {
 
          fel.setAttribute("id", catId);
          fel.setAttribute("name", catTitle);
-         forumsDoc.documentElement.appendChild(fel);
-         forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), fel);
+         forumsEl.appendChild(fel);
+         forumsEl.insertBefore(forumsDoc.createTextNode("\n"), fel);
 
 
       }
@@ -139,9 +254,8 @@ function grabForumList(doc, selectnode) {
          var forumUrl = forumLink.getAttribute("href")
          var forumId = forumUrl.match(/forumid=(\d+)/)[1];
 
-         addForumToForums(forumTitle,forumId,1,oldForumXml,targetEl,forumsDoc)
-
          var subForums = persistObject.selectNodes(doc,firstEl,"div[@class='subforums']/a")
+         var forumEl =  addForumToForums(forumTitle,forumId,1,oldForumXml,targetEl,forumsDoc,subForums.length == 0)
          for(var j=0; j<subForums.length; j++) {
 
             var subForumLink = subForums[j];
@@ -149,11 +263,9 @@ function grabForumList(doc, selectnode) {
             var subForumUrl = subForumLink.getAttribute("href")
             var subForumId = subForumUrl.match(/forumid=(\d+)/)[1];
 
-            addForumToForums(subForumTitle,subForumId,2,oldForumXml,targetEl,forumsDoc)
+            addForumToForums(subForumTitle,subForumId,2,oldForumXml,forumEl,forumsDoc,true)
          }
-
       }
-
    }
 
    persistObject.forumListXml = forumsDoc;
@@ -162,19 +274,24 @@ function grabForumList(doc, selectnode) {
    }
 
 
+}
+catch (e)
+{
+   alert(e)
+}
 
 }
 
-function addUtilItem(name,id,forumsDoc) {
+function addUtilItem(name,id,forumsDoc,utilsEl) {
    var fel = forumsDoc.createElement("util")
    fel.setAttribute("name",name)
    fel.setAttribute("id", id)
 
-   forumsDoc.documentElement.appendChild(fel);
-   forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), fel);
+   utilsEl.appendChild(fel);
+   utilsEl.insertBefore(forumsDoc.createTextNode("\n"), fel);
 }
 
-function addForumToForums(name,id,depth,oldForumXml,container,forumsDoc) {
+function addForumToForums(name,id,depth,oldForumXml,container,forumsDoc,fillInDescendants) {
 
    var fel = forumsDoc.createElement("forum");
    fel.setAttribute("id", id);
@@ -184,45 +301,76 @@ function addForumToForums(name,id,depth,oldForumXml,container,forumsDoc) {
    if ( oldForumXml ) {
       var oldEl = persistObject.selectSingleNode(oldForumXml, oldForumXml, "//forum[@id='"+id+"']");
       if (oldEl) {
-         if ( oldEl.hasAttribute("mods") ) {
-            fel.setAttribute("mods", oldEl.getAttribute("mods"));
-         }
-         if ( oldEl.hasAttribute("modnames") ) {
-            fel.setAttribute("modnames", oldEl.getAttribute("modnames"));
+         if(fillInDescendants) {
+            for(var i = 0;i<oldEl.childNodes.length;i++) {
+               fel.appendChild(oldEl.childNodes[i].cloneNode(true))
+            }
          }
       }
    }
 
-   var catname = "sub"
-   for(var i=1; i < depth;i++) {
-      catname += "-sub"
-   }
-   fel.setAttribute("cat", catname);
 
    container.appendChild(fel);
    container.insertBefore(forumsDoc.createTextNode("\n"), fel);
+
+   return fel
 }
 
+
+
 function populateForumMenuFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements) {
-	var wasutil = 0;
-	for(var i = 0; i < src.childNodes.length; i++) {
+   populateForumMenuUtilsFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements)
+   
+   var forums
+   for(var i = 0; i < src.childNodes.length; i++) {
+      if(src.childNodes[i].nodeName == "forums")forums = src.childNodes[i]
+   }
+
+   if(!forums)return
+      
+   populateForumMenuForumsFrom(nested_menus, target, forums, pinnedForumNumbers, pinnedForumElements,0)
+}
+
+function populateForumMenuUtilsFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements) {
+   var utils
+   for(var i = 0; i < src.childNodes.length; i++) {
+      if(src.childNodes[i].nodeName == "utils")utils = src.childNodes[i]
+   }
+
+   if(!utils)return
+
+   src = utils
+   for(var i = 0; i < src.childNodes.length; i++) {
 		var thisforum = src.childNodes[i];
 
-		if (thisforum.nodeName=="util") {
-			wasutil = 1;
-		}
+      if(thisforum.nodeName == "util") {
+         var menuel = document.createElement("menuitem");
+            menuel.setAttribute("label", thisforum.getAttribute("name"));
+            menuel.setAttribute("forumnum", thisforum.getAttribute("id"));
+            menuel.setAttribute("onclick", "SALR_menuItemCommand(event,this,'click');");
+            menuel.setAttribute("oncommand", "SALR_menuItemCommand(event,this,'command');");
 
-		else if (wasutil && thisforum.nodeType == 1) {
-			if(nested_menus) {
-				target.appendChild(document.createElement("menuseparator"));
-			}
-			wasutil = 0;
-		}
+
+         //TODO: access keys
+         target.appendChild(menuel);
+      }	
+	}
+   target.appendChild(document.createElement("menuseparator"));
+}
+
+function populateForumMenuForumsFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements,depth) {
+   var first = true
+   for(var i = 0; i < src.childNodes.length; i++) {
+		var thisforum = src.childNodes[i];
 
 		if(thisforum.nodeName == "cat") {
 			if(!nested_menus) {
-				target.appendChild(document.createElement("menuseparator"));
-				populateForumMenuFrom(nested_menus,target,thisforum,pinnedForumNumbers,pinnedForumElements);
+            if(!first) {
+   				target.appendChild(document.createElement("menuseparator"));
+            } else  {
+               first = false
+            }
+				populateForumMenuForumsFrom(nested_menus,target,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
 			} else {
 				var submenu = document.createElement("menu");
 					submenu.setAttribute("label", thisforum.getAttribute("name"));
@@ -233,20 +381,25 @@ function populateForumMenuFrom(nested_menus, target, src, pinnedForumNumbers, pi
 				}
 
 				submenu.appendChild(submenupopup);
-				populateForumMenuFrom(nested_menus,submenupopup,thisforum,pinnedForumNumbers,pinnedForumElements);
+				populateForumMenuForumsFrom(nested_menus,submenupopup,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
 				target.appendChild(submenu);
 			}
-		} else if(thisforum.nodeName == "forum" || thisforum.nodeName == "util") {
+		} else if(thisforum.nodeName == "forum" ) {
 			var menuel = document.createElement("menuitem");
-				menuel.setAttribute("label", thisforum.getAttribute("name"));
-				menuel.setAttribute("forumnum", thisforum.getAttribute("id"));
-				menuel.setAttribute("onclick", "SALR_menuItemCommand(event,this,'click');");
-				menuel.setAttribute("oncommand", "SALR_menuItemCommand(event,this,'command');");
+         menuel.setAttribute("label", thisforum.getAttribute("name"));
+         menuel.setAttribute("forumnum", thisforum.getAttribute("id"));
+         menuel.setAttribute("onclick", "SALR_menuItemCommand(event,this,'click');");
+         menuel.setAttribute("oncommand", "SALR_menuItemCommand(event,this,'command');");
 
-			if(thisforum.getAttribute("cat") && thisforum.getAttribute("cat").substring(0, 3) == "sub") {
-				menuel.setAttribute("class", "lastread_menu_" + thisforum.getAttribute("cat"));
-			}
+         var cssClass = ""
+         for(var j=1;j<=depth;j++) {
+            cssClass += "sub"
+            if(j!=depth)cssClass += "-"
+         }
 
+         if(cssClass != "") {
+            menuel.setAttribute("class", "lastread_menu_" + cssClass);
+         }
 			//TODO: access keys
 			target.appendChild(menuel);
 			if(nested_menus) {
@@ -257,6 +410,8 @@ function populateForumMenuFrom(nested_menus, target, src, pinnedForumNumbers, pi
 					}
 				}
 			}
+
+   		populateForumMenuForumsFrom(nested_menus,target,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
 		}
 	}
 }
@@ -567,6 +722,12 @@ function handleForumDisplay(doc)
 	var inDump = persistObject.inDump(forumid);
 	var inAskTell = persistObject.inAskTell(forumid);
 	var inGasChamber = persistObject.inGasChamber(forumid);
+      
+   grabForumsFromForumDisplay(doc,forumid)
+
+   if (doc.getElementById('forum') == null) {
+      return
+   }
 
 	if (!inFYAD || persistObject.getPreference("enableFYAD")) {
 		var ourTransaction = false;
@@ -2272,10 +2433,8 @@ function salastread_windowOnLoad(e) {
 					// why the FUCK doesn't this work?
 					var hresult = 0;
 					if ( location.href.indexOf("forumdisplay.php?") != -1 ) {
-						if (doc.getElementById('forum') != null) {
-							// Only do if there is a list of posts
-							handleForumDisplay(doc);
-						}
+						handleForumDisplay(doc);
+						
 					} else if ( location.href.indexOf("showthread.php?") != -1) {
 						handleShowThread(doc);
 					} else if ( location.href.indexOf("index.php") != -1) {
