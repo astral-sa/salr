@@ -16,6 +16,20 @@ function initUsers() {
 	for(var i = 0; i < users.length; i++) {
 		addListUser(listBox, users[i].userid, users[i].username);
 	}
+	
+	if("arguments" in window && window.arguments.length > 0) {
+		if(window.arguments[1].args.action == "addUser") {
+			var userid = window.arguments[1].args.userid;
+			var username = window.arguments[1].args.username;
+		
+			if(!persistObject.userExists(userid)) {
+				persistObject.addUser(userid, username);
+				addListUser(listBox, userid, username);
+			} else if(!persistObject.getPosterColor(userid) && !persistObject.getPosterBackground(userid) && !persistObject.getPosterNotes(userid)) {
+				addListUser(listBox, userid, username);
+			}
+		}
+	}	
 }
 
 //add a user to the list box with proper coloring
@@ -27,6 +41,7 @@ function addListUser(listBox, id, name) {
 	if(bgColor == 0) { bgColor = "transparent"; }
 	if(color == 0) { color = "black"; }
 	if(!name) { name = "Unknown"; }
+	if(!notes) { notes = ""; }
 	
 	var li = document.createElement("listitem");
 		li.setAttribute("value", id);
@@ -118,6 +133,8 @@ function deleteUser() {
 		
 		persistObject.setPosterColor(userid, "0");
 		persistObject.setPosterBackground(userid, "0");
+		persistObject.setPosterNotes(userid, "");
+		
 		listbox.removeItemAt(listbox.getIndexOfItem(items[i]));
 	}
 }
