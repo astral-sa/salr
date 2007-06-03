@@ -19,7 +19,6 @@
 		<preference id="alwaysShowGoToLastIcon"		name="extensions.salastread.alwaysShowGoToLastIcon" type="bool"/>
 		<preference id="showUnvisitIcon"			name="extensions.salastread.showUnvisitIcon" 		type="bool"/>
 		<preference id="markThreadUnvisited"		name="extensions.salastread.markThreadUnvisited" 	type="string"/>
-		<preference id="enableThreadRating" name="extensions.salastread.enableThreadRating" type="bool" />
 
 		<preference id="suppressErrors"			name="extensions.salastread.suppressErrors" 		type="bool"/>
     </preferences>
@@ -33,7 +32,6 @@
 		<checkbox preference="enableForumNavigator"  label="Add a forum navigator to the lower-right corner of the browser" />
 		<checkbox preference="gestureEnable" 		 label="Allow mouse gestures to navigate around threads and forums" />
 		<checkbox preference="showSAToolsMenu" 		 label="Add 'SALR Config' item to the tools menu" />
-		<checkbox preference="enableThreadRating" label="Use SALR style thread rating"  />
 	</vbox>
 	</groupbox>
 
