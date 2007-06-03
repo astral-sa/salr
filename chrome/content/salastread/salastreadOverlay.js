@@ -1367,7 +1367,7 @@ function handleShowThread(doc) {
 		var threadOP = persistObject.GetOPFromData(threadid);
 		if (!threadOP && curPage == 1)
 		{
-			var opInfo = persistObject.selectSingleNode(doc, doc, "//TABLE[contains(@class,'post')]//A[contains(@href,'action=getinfo&userid=')]");
+			var opInfo = persistObject.selectSingleNode(doc, doc, "//TABLE[contains(@class,'post')]//TD[contains(@class,'postlink')]//A[contains(@href,'action=getinfo&userid=')]");
 			if (opInfo)
 			{
 				persistObject.StoreOPData(threadid, opInfo.href.match(/userid=(\d+)/)[1]);
