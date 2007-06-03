@@ -21,9 +21,16 @@
 			
 			<preference id="opColor" 			name="extensions.salastread.opColor" 			type="string"/>
 			<preference id="opBackground" 		name="extensions.salastread.opBackground" 		type="string"/>
+			
+			<!-- Various and Sundry Options -->
+			<preference id="dontBoldNames" 		name="extensions.salastread.dontBoldNames" 		type="bool"/>
 		</preferences>
 		
-		<checkbox preference="highlightUsernames" label="Highlight interesting and important usernames"/>
+		<groupbox>
+			<caption label="Username Display Options"/>
+			<checkbox preference="highlightUsernames" label="Highlight interesting and important usernames"/>
+			<checkbox preference="dontBoldNames" label="Don't make highlighted usernames bold"/>
+		</groupbox>
 		
 		<groupbox>
 			<caption label="Special User Highlighting Colors" />
