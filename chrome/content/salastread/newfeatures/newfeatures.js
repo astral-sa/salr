@@ -164,9 +164,9 @@ function importOldData()
 					statement.bindInt32Parameter(0,threaddata['id']);
 					statement.bindInt32Parameter(1,threaddata['lastpostid']);
 					statement.bindStringParameter(2,realLastviewdt);
-					statement.bindInt32Parameter(3,threaddata['op']);
+					statement.bindInt32Parameter(3,(threaddata['op']!=undefined?threaddata['op']:null));
 					statement.bindStringParameter(4,threaddata['title']);
-					statement.bindInt32Parameter(5,threaddata['lastreplyct']);
+					statement.bindInt32Parameter(5,(threaddata['lastreplyct']!=undefined?threaddata['lastreplyct']:0));
 					statement.bindInt32Parameter(6,(threaddata['posted']==1?1:0));
 					statement.bindInt32Parameter(7,(threaddata['ignore']==1?1:0));
 					statement.bindInt32Parameter(8,(threaddata['star']==1?1:0));
