@@ -65,56 +65,42 @@ const nsISupports = Components.interfaces.nsISupports;
 
 function ReadFile(fn)
 {
-//   try {
-//      netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-//   } catch (e) {
-//      return null;
-//   }
-   var file = Components.classes["@mozilla.org/file/local;1"]
-         .createInstance(Components.interfaces.nsILocalFile);
-   try {
-   file.initWithPath(fn);
-   }
-   catch (e) {
-      throw e + "\n" + fn;
-   }
-   if (file.exists() == false) {
-      return "";
-   }
-   var is = Components.classes["@mozilla.org/network/file-input-stream;1"]
-         .createInstance(Components.interfaces.nsIFileInputStream);
-   is.init(file, 0x01, 00004, null);
-   var sis = Components.classes["@mozilla.org/scriptableinputstream;1"]
-         .createInstance(Components.interfaces.nsIScriptableInputStream);
-   sis.init(is);
-   return sis.read( sis.available() );
+	var file = Components.classes["@mozilla.org/file/local;1"]
+				.createInstance(Components.interfaces.nsILocalFile);
+	try {
+		file.initWithPath(fn);
+	} catch (e) {
+		throw e + "\n" + fn;
+	}
+	if (file.exists() == false) {
+		return "";
+	}
+	var is = Components.classes["@mozilla.org/network/file-input-stream;1"]
+				.createInstance(Components.interfaces.nsIFileInputStream);
+	is.init(file, 0x01, 00004, null);
+	var sis = Components.classes["@mozilla.org/scriptableinputstream;1"]
+				.createInstance(Components.interfaces.nsIScriptableInputStream);
+	sis.init(is);
+	return sis.read( sis.available() );
 }
 
 function SaveFile(fn, fdata)
 {
-//   try {
-//      netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-//   } catch (e) {
-//      //alert("The SALastRead failed to save settings because permission was denied.");
-//      return null;
-//   }
-   var file = Components.classes["@mozilla.org/file/local;1"]
-         .createInstance(Components.interfaces.nsILocalFile);
-   file.initWithPath(fn);
-   if ( file.exists() == false ) {
-      try {
-         file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 420);
-      }
-      catch (ex) {
-         throw "file.create error ("+ex.name+") on "+fn;
-      }
-      //alert("The SALastRead extension is initializing a new settings file. You should only see this once, after you first install the extension.");
-   }
-   var outputStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
-         .createInstance(Components.interfaces.nsIFileOutputStream);
-   outputStream.init(file, 0x04 | 0x08 | 0x20, 420, 0);
-   var result = outputStream.write( fdata, fdata.length );
-   outputStream.close();
+	var file = Components.classes["@mozilla.org/file/local;1"]
+				.createInstance(Components.interfaces.nsILocalFile);
+	file.initWithPath(fn);
+	if ( file.exists() == false ) {
+		try {
+			file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 420);
+		} catch (ex) {
+			throw "file.create error ("+ex.name+") on "+fn;
+		}
+	}
+	var outputStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
+						.createInstance(Components.interfaces.nsIFileOutputStream);
+	outputStream.init(file, 0x04 | 0x08 | 0x20, 420, 0);
+	var result = outputStream.write( fdata, fdata.length );
+	outputStream.close();
 }
 
 // The PersistObject defintion itself
@@ -125,8 +111,10 @@ function salrPersistObject()
 salrPersistObject.prototype = {
 	// This property is superseded by .preferences, do not use for new code
 	// this property has been left in for legacy compatability
-   get pref() { return Components.classes["@mozilla.org/preferences-service;1"].
-                   getService(Components.interfaces.nsIPrefBranch); },
+	get pref() { 
+		return Components.classes["@mozilla.org/preferences-service;1"]
+				.getService(Components.interfaces.nsIPrefBranch); 
+	},
 
 	get xmlDoc()
 	{
@@ -185,43 +173,36 @@ salrPersistObject.prototype = {
 		}
 	},
 
-	SYNC_INTERVAL: (1000 * 60 * 30),      // 30 minutes
-	SYNC_INTERVAL_VARY: (1000 * 60 * 5),  // +/- 5 minutes
-	_nextSyncTime: null,
 	_syncTransferObject: null,
 	_syncWorking: false,
-	_additionalSyncCallbacks: null,
-
-	SetSyncTransferObject: function(o)
-	{
-		this._syncTransferObject = o;
-		o.Components = Components;
-	},
 
 	PerformRemoteSync: function(force, syncCallback, trace)
 	{
-		var res = {bad:false, msg:"no result"};
+		var res = { "bad" : false, "msg" : "no result" };
 		if (this._syncWorking) {
 			this._additionalSyncCallbacks.push(syncCallback);
-			return { bad : false, msg : "already syncing" };
+			res.msg = "already syncing";
+			return res;
 		}
 		if (!force) {
 			var now = new Date();
 			if ( now < this._nextSyncTime ) { 
-				return { bad : false, msg : "not time to sync yet" }; 
+				res.msg = "not time to sync yet";
+				return res; 
 			}
 		}
 		try
 		{
 			if (this.getPreference('useRemoteSyncStorage')) {
 				this._DoAsynchronousSync(syncCallback, trace);
-				res = { bad : false, msg : "syncing..." };
+				res.msg = "syncing...";
 			} else {
-				res = { bad : false, msg : "sync not enabled" };
+				res.msg = "sync not enabled";
 			}
 		}
 		catch (err) {
-			res = { bad : true, msg : "error: " + err };
+			res.bad = true;
+			res.msg = "error: " + err;
 		}
 		this.GenerateNextSyncTime();
 		return res;
@@ -258,7 +239,7 @@ salrPersistObject.prototype = {
 		var sto = this._syncTransferObject;
 		var trace = this._syncTrace;
 		sto.reset();
-		if (status!=0) {
+		if (status != 0) {
 			trace("Failed to get remote file.");
 		}
 		trace("Merging data...");
