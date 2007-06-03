@@ -5,7 +5,7 @@
 .salrstars4 { background-image:url(chrome://salastread/skin/4stars.png); }
 .salrstars5 { background-image:url(chrome://salastread/skin/5stars.png); }
 .salrratingstars { width:93px; }
-.salrdigg { background-image:url(chrome://salastread/skin/digg.png); width:48px; }
+.salrdigg { background-image:url(chrome://salastread/skin/digg.png); width:35px; }
 .salrdigg:hover { background-image:url(chrome://salastread/skin/diggon.png); }
 #rateform { margin:0px; display:inline; }
 .salrRateThread { margin-bottom:4px; }
@@ -14,7 +14,7 @@
 	background-repeat:no-repeat;
 	position:relative;
 	left:0px;
-	height:32px;
+	height:20px;
 	cursor:pointer;
 	vertical-align:middle;
 	border:0px;

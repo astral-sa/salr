@@ -93,10 +93,10 @@ function SALR_menuItemGoTo(event, url, target) {
 
 function grabForumsFromForumDisplay(doc,id) {
 
-   try{      
+   try{
       var oldForumXml = persistObject.forumListXml
       if(!oldForumXml)return
-      
+
       var newForumXml = oldForumXml.cloneNode(true)
 
       var parentEl
@@ -129,7 +129,7 @@ function grabForumsFromForumDisplay(doc,id) {
 
          forumEl.setAttribute("id", forumId);
          forumEl.setAttribute("name", forumTitle);
-   
+
          parentEl = forumEl
       }
 
@@ -142,7 +142,7 @@ function grabForumsFromForumDisplay(doc,id) {
          newForumXml.documentElement.insertBefore(newForumXml.createTextNode("\n"), forumEl);
       }
       var forumTitle = document.title.split(" - ")[1]
-      
+
       forumEl.setAttribute("id", id);
       forumEl.setAttribute("name", forumTitle);
 
@@ -160,7 +160,7 @@ function grabForumsFromForumDisplay(doc,id) {
       }
 
 
-      
+
 
       var subForums = persistObject.selectNodes(doc,doc,"//table[@id='subforums']//a[contains(@href,'forumdisplay.php')]")
       for(var i=0;i<subForums.length;i++) {
@@ -171,7 +171,7 @@ function grabForumsFromForumDisplay(doc,id) {
          }
 
          var subForumId = subForum.getAttribute("href").match(/forumid=(\d+)/)[1];
-         
+
          var subForumEl = oldSubForums[subForumId]
          if(!subForumEl) {
             subForumEl = newForumXml.createElement("forum");
@@ -199,7 +199,7 @@ function grabForumsFromForumDisplay(doc,id) {
 function grabForumList(doc, selectnode) {
 try
 {
-   
+
    var rowList = persistObject.selectNodes(doc, doc, "//table[@id='forums']//tr");
    var oDomParser = new DOMParser();
    var forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
@@ -320,14 +320,14 @@ function addForumToForums(name,id,depth,oldForumXml,container,forumsDoc,fillInDe
 
 function populateForumMenuFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements) {
    populateForumMenuUtilsFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements)
-   
+
    var forums
    for(var i = 0; i < src.childNodes.length; i++) {
       if(src.childNodes[i].nodeName == "forums")forums = src.childNodes[i]
    }
 
    if(!forums)return
-      
+
    populateForumMenuForumsFrom(nested_menus, target, forums, pinnedForumNumbers, pinnedForumElements,0)
 }
 
@@ -353,7 +353,7 @@ function populateForumMenuUtilsFrom(nested_menus, target, src, pinnedForumNumber
 
          //TODO: access keys
          target.appendChild(menuel);
-      }	
+      }
 	}
    target.appendChild(document.createElement("menuseparator"));
 }
@@ -722,7 +722,7 @@ function handleForumDisplay(doc)
 	var inDump = persistObject.inDump(forumid);
 	var inAskTell = persistObject.inAskTell(forumid);
 	var inGasChamber = persistObject.inGasChamber(forumid);
-      
+
    grabForumsFromForumDisplay(doc,forumid)
 
    if (doc.getElementById('forum') == null) {
@@ -1719,7 +1719,6 @@ function handleShowThread(doc) {
  */
 function SALR_drawNewRateThreadBox ( doc, container, threadId ) {
 	if ( persistObject.getPreference("enableThreadRating") ) {
-		// var threadTitle = SALR_getPageTitle(doc);
 		// build the html for the rating box
 		if ( container ) {
 			container.innerHTML = "";
@@ -1843,7 +1842,7 @@ function SALR_ThreadRateGetRateIndex(x) {
   else if  ( x > 19 && x < 38 ) return 2;
   else if ( x > 37 && x < 56 ) return 3;
   else if ( x > 55 && x < 74 ) return 4;
-  else if ( x > 73 && x < 141 ) return 5;
+  else if ( x > 73 && x < 129 ) return 5;
   else return 0;
 }
 
@@ -2443,7 +2442,7 @@ function salastread_windowOnLoad(e) {
 					var hresult = 0;
 					if ( location.href.indexOf("forumdisplay.php?") != -1 ) {
 						handleForumDisplay(doc);
-						
+
 					} else if ( location.href.indexOf("showthread.php?") != -1) {
 						handleShowThread(doc);
 					} else if ( location.href.indexOf("index.php") != -1) {
