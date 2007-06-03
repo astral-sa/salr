@@ -25,7 +25,7 @@ function initUsers() {
 			if(!persistObject.userExists(userid)) {
 				persistObject.addUser(userid, username);
 				addListUser(listBox, userid, username);
-			} else if(!persistObject.getPosterColor(userid) && !persistObject.getPosterBackground(userid) && !persistObject.getPosterNotes(userid)) {
+			} else if(!persistObject.isPosterColored(userid) && !persistObject.getPosterNotes(userid)) {
 				addListUser(listBox, userid, username);
 			}
 		}
