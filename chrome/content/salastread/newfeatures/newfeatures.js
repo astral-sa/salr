@@ -149,11 +149,12 @@ function importOldData()
 						threaddata[unescape(adata[0])] = null;
 					}
 				}
+				dump (threaddata);
 				if (threaddata['id'] != undefined)
 				{
-					timeArray = threaddata['lastviewdt'].match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/);
-					if (timeArray != null)
+					if (threaddata['lastviewdt'] != undefined)
 					{
+						timeArray = threaddata['lastviewdt'].match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/);
 						realLastviewdt = Math.floor(Date.UTC(Math.floor(timeArray[1]),Math.floor(timeArray[2]),Math.floor(timeArray[3]),Math.floor(timeArray[4]),Math.floor(timeArray[5]))/1000);
 					}
 					else
@@ -164,7 +165,7 @@ function importOldData()
 					statement.bindInt32Parameter(0,threaddata['id']);
 					statement.bindInt32Parameter(1,threaddata['lastpostid']);
 					statement.bindStringParameter(2,realLastviewdt);
-					statement.bindInt32Parameter(3,(threaddata['op']!=undefined?threaddata['op']:null));
+					statement.bindInt32Parameter(3,(threaddata['op']!=undefined?threaddata['op']:-1));
 					statement.bindStringParameter(4,threaddata['title']);
 					statement.bindInt32Parameter(5,(threaddata['lastreplyct']!=undefined?threaddata['lastreplyct']:0));
 					statement.bindInt32Parameter(6,(threaddata['posted']==1?1:0));
@@ -322,5 +323,5 @@ function importOldData()
 		persistObject.pref.deleteBranch("salastread.toggle.hideSignature");
 		persistObject.pref.deleteBranch("salastread.toggle.hideTitle");
 		persistObject.pref.deleteBranch("salastread.toggle.removeTargetNewFromTorrentLinks");
-	} catch(e) {}
+	} catch(e) { dump(e); }
 }
