@@ -123,10 +123,10 @@ function importOldData()
 			.createInstance(Components.interfaces.nsIFileInputStream);
 		istream.init(file, 0x01, 0444, 0);
 		istream.QueryInterface(Components.interfaces.nsILineInputStream);
-		var hasmore, processingdata = false, myattrs, i, adata, threaddata = [], statement, timeArray, realLastviewdt;
+		var hasmore, processingdata = false, myattrs, i, adata, statement, timeArray, realLastviewdt;
 		do
 		{
-			var line = {};
+			var line = {}, threaddata = [];
 			hasmore = istream.readLine(line); // Returns false if it is the last line
 			line = line.value;
 			if (processingdata)
