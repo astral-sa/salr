@@ -141,7 +141,10 @@ function grabForumsFromForumDisplay(doc,id) {
          parentEl.appendChild(forumEl)
          newForumXml.documentElement.insertBefore(newForumXml.createTextNode("\n"), forumEl);
       }
-      var forumTitle = document.title.split(" - ")[1]
+
+
+      var forumTitle = breadcrumbs[breadcrumbs.length-1].nextSibling.nodeValue.substring(3)
+
 
       forumEl.setAttribute("id", id);
       forumEl.setAttribute("name", forumTitle);
