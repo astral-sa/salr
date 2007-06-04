@@ -149,7 +149,6 @@ function importOldData()
 						threaddata[unescape(adata[0])] = null;
 					}
 				}
-				dump (threaddata);
 				if (threaddata['id'] != undefined)
 				{
 					if (threaddata['lastviewdt'] != undefined)
