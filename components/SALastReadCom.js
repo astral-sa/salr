@@ -7,13 +7,6 @@ function SALR_vidClick(e)
 
 	var link = e.target;
 
-	//if they click again hide the video
-	var video = link.parentNode.getElementsByTagName('embed')[0];
-	if(video && video.className == 'salr_video') {
-			link.parentNode.Child(link.nextSibling);
-			return;
-	}
-
 	//figure out the video type
 	var videoId, videoSrc;
 	var videoIdSearch = link.href.match(/^http\:\/\/(www\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
@@ -28,32 +21,42 @@ function SALR_vidClick(e)
 		videoId = videoIdSearch[2];
 		videoSrc = "google";
 	}
+	
+	//if they click again hide the video
+	var video = link.nextSibling.firstChild;
+	if(video && video.className == 'salr_video') {
+			link.parentNode.removeChild(link.nextSibling);
+			return;
+	}
 
+
+	
 	//create the embedded elements (p containing video for linebreaky goodness)
 	var doc = e.originalTarget.ownerDocument;
-	var pEl = doc.createElement("p");
-	var embedEl = doc.createElement("EMBED");
-		embedEl.setAttribute('width', 450);
-		embedEl.setAttribute('height', 370);
-		embedEl.setAttribute('type', "application/x-shockwave-flash");
-		embedEl.setAttribute('class', 'salr_video');
+	var p = doc.createElement("p");
+	var embed = doc.createElement("EMBED");
+		embed.setAttribute('width', 450);
+		embed.setAttribute('height', 370);
+		embed.setAttribute('type', "application/x-shockwave-flash");
+		embed.setAttribute('class', 'salr_video');
+		embed.setAttribute('id', videoId);
 	switch (videoSrc)
 	{
 		case "google":
-			embedEl.setAttribute('flashvars', '');
-			embedEl.setAttribute('src', 'http://video.google.com/googleplayer.swf?docId=' + videoId + '&hl=en');
+			embed.setAttribute('flashvars', '');
+			embed.setAttribute('src', 'http://video.google.com/googleplayer.swf?docId=' + videoId + '&hl=en');
 			break;
 		case "youtube":
-			embedEl.setAttribute('quality',"high");
-			embedEl.setAttribute('bgcolor',"#FFFFFF");
-			embedEl.setAttribute('wmode', "transparent");
-			embedEl.setAttribute('src', "http://www.youtube.com/v/" + videoId);
+			embed.setAttribute('quality',"high");
+			embed.setAttribute('bgcolor',"#FFFFFF");
+			embed.setAttribute('wmode', "transparent");
+			embed.setAttribute('src', "http://www.youtube.com/v/" + videoId);
 			break;
 	}
-	pEl.appendChild(embedEl);
+	p.appendChild(embed);
 
 	//inserts video after the link
-	link.parentNode.insertBefore(pEl, link.nextSibling);
+	link.parentNode.insertBefore(p, link.nextSibling);
 
 	//this.insertRemoveLink(link, embedEl);
 	//link.parentNode.removeChild(link);
