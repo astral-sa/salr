@@ -13,6 +13,7 @@
 		<preference id="enableForumNavigator"	name="extensions.salastread.enableForumNavigator" 	type="bool"/>
 		<preference id="gestureEnable" 			name="extensions.salastread.gestureEnable" 			type="bool"/>
 		<preference id="showSAToolsMenu" 		name="extensions.salastread.showSAToolsMenu" 		type="bool"/>
+		<preference id="newPostCountUseOneLine" name="extensions.salastread.newPostCountUseOneLine" type="bool" inverted="true"/>
 
 		<preference id="showGoToLastIcon"			name="extensions.salastread.showGoToLastIcon" 		type="bool"/>
 		<preference id="goToLastReadPost"			name="extensions.salastread.goToLastReadPost" 		type="string"/>
@@ -26,12 +27,13 @@
 	<groupbox>
 	<caption label="General Options" />
 	<vbox>
-		<checkbox preference="removeHeaderAndFooter" label="Hide Forum Header and Footer" />
-		<checkbox preference="removePageTitlePrefix" label="Remove 'The Something Awful Forums' from page titles" />
-		<checkbox preference="enablePageNavigator" 	 label="Add a page navigator to the lower-right corner of the browser" />
-		<checkbox preference="enableForumNavigator"  label="Add a forum navigator to the lower-right corner of the browser" />
-		<checkbox preference="gestureEnable" 		 label="Allow mouse gestures to navigate around threads and forums" />
-		<checkbox preference="showSAToolsMenu" 		 label="Add 'SALR Config' item to the tools menu" />
+		<checkbox preference="removeHeaderAndFooter" 	label="Hide Forum Header and Footer" />
+		<checkbox preference="newPostCountUseOneLine" 	label="Show the new post count on a new line" />
+		<checkbox preference="removePageTitlePrefix" 	label="Remove 'The Something Awful Forums' from page titles" />
+		<checkbox preference="enablePageNavigator" 	 	label="Add a page navigator to the lower-right corner of the browser" />
+		<checkbox preference="enableForumNavigator"  	label="Add a forum navigator to the lower-right corner of the browser" />
+		<checkbox preference="gestureEnable" 		 	label="Allow mouse gestures to navigate around threads and forums" />
+		<checkbox preference="showSAToolsMenu" 		 	label="Add 'SALR Config' item to the tools menu" />
 	</vbox>
 	</groupbox>
 
