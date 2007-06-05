@@ -637,7 +637,7 @@ function handleSubscriptions(doc) {
 	var readDark = persistObject.getPreference("readDark");
 	var postedInThreadRe = persistObject.getPreference("postedInThreadRe");
 
-	var subTable = persistObject.selectSingleNode(doc, doc, "//table[contains(@class,'standard')][.//th/b[contains(text(),'Thread')]]");
+	var subTable = persistObject.selectSingleNode(doc, doc, "//table[contains(@id,'forum')]");
 	var threadlist = persistObject.selectNodes(doc, subTable, "TBODY/TR");
 	var starredthreads = persistObject.starList, ignoredthreads = persistObject.ignoreList;
 
@@ -809,7 +809,6 @@ function handleForumDisplay(doc)
 				}
 			}
 		}
-
 
 		//get preferences once
 		var dontHighlightThreads = persistObject.getPreference("dontHighlightThreads");
@@ -2474,7 +2473,7 @@ function salastread_windowOnLoad(e) {
 						handleNewReply(e);
 					} else if ( location.href.indexOf("editpost.php") != -1) {
 						handleEditPost(e);
-					} else if ( location.href.indexOf("member2.php") != -1 ||
+					} else if ( location.href.indexOf("bookmarkthreads.php") != -1 ||
 								location.href.indexOf("usercp.php") != -1) {
 						handleSubscriptions(doc);
 					} else if (location.href.search(/supportmail\.php/) > -1) {
