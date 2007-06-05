@@ -114,7 +114,7 @@ function addUser() {
 	var result = prompts.prompt(null, "Add User Coloring", "Please enter the user's SA Forums ID\n\nTheir username will be picked up while browsing the forums", text, null, check);
 	
 	//only accepts integers right now
-	if(!isNaN(text.value)) {
+	if(result && !isNaN(text.value)) {
 		persistObject.addUser(text.value);
 		persistObject.setPosterNotes(text.value, "New User");
 		
