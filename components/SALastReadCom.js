@@ -1659,9 +1659,14 @@ salrPersistObject.prototype = {
 	{
 		var lpGo = doc.createElement("a");
 		var lastPostID = this.getLastPostID(threadId);
-		// uses the forum built in "new post" link
-		lpGo.setAttribute("href","showthread.php?threadid=" + threadId + "&goto=newpost");
-		lpGo.setAttribute("id", "jumptolast_"+threadId);
+		if (lrCount % this.getPreference("postsPerPage") == 0 || lastPostID == 0)
+		{
+			lpGo.setAttribute("href", "/showthread.php?threadid=" + threadId + "&pagenumber=" + parseInt(lrCount/this.getPreference("postsPerPage")+1,10));
+		}
+		else
+		{
+			lpGo.setAttribute("href", "/showthread.php?postid=" + lastPostID + "#post" + lastPostID);
+		}		lpGo.setAttribute("id", "jumptolast_"+threadId);
 		var unreadCount = this.getThreadUnreadPostCount(doc, titleBox);
 		lpGo.setAttribute("title", unreadCount.toString() +  " unread posts");
 		lpIcon = doc.createElement("img");
@@ -1706,7 +1711,6 @@ salrPersistObject.prototype = {
 		unvisitIcon.style.marginRight = "3px";
 		unvisitIcon.style.border = "none";
 		unvisitIcon.style.cursor = "pointer";
-		//unvisitIcon.addEventListener("click", this.removeThread, false);
 		titleBox.insertBefore(unvisitIcon, titleBox.firstChild);
 		return unvisitIcon;
 	},

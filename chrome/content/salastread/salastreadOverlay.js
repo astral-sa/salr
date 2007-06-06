@@ -804,15 +804,15 @@ function handleForumDisplay(doc)
 				}
 				if (showUnvisitIcon && swapIconOrder)
 				{
-					persistObject.insertUnreadIcon(doc, threadTitleLinks, threadId).addEventListener("click", removeThread, false);
+					persistObject.insertUnreadIcon(doc, threadTitleBox, threadId).addEventListener("click", removeThread, false);
 				}
 				if ((showGoToLastIcon && ((threadRe+1) > threadLRCount)) || alwaysShowGoToLastIcon)
 				{
-					persistObject.insertLastIcon(doc, threadTitleLinks, threadId, parseInt(threadLRCount));
+					persistObject.insertLastIcon(doc, threadTitleBox, threadId, parseInt(threadLRCount));
 				}
 				if (showUnvisitIcon && !swapIconOrder)
 				{
-					persistObject.insertUnreadIcon(doc, threadTitleLinks, threadId).addEventListener("click", removeThread, false);
+					persistObject.insertUnreadIcon(doc, threadTitleBox, threadId).addEventListener("click", removeThread, false);
 				}
 			}
 			if (threadDetails['star'])
