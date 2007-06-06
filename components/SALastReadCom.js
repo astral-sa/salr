@@ -1660,10 +1660,10 @@ salrPersistObject.prototype = {
 		var lpGo = doc.createElement("a");
 		var lastPostID = this.getLastPostID(threadId);
 		// uses the forum built in "new post" link
-	  lpGo.setAttribute("href","showthread.php?threadid=" + threadId + "&goto=newpost");
+		lpGo.setAttribute("href","showthread.php?threadid=" + threadId + "&goto=newpost");
 		lpGo.setAttribute("id", "jumptolast_"+threadId);
 		var unreadCount = this.getThreadUnreadPostCount(doc, titleBox);
-		lpGo.setAttribute("title",unreadCount.toString() +  " unread posts");
+		lpGo.setAttribute("title", unreadCount.toString() +  " unread posts");
 		lpIcon = doc.createElement("img");
 		lpIcon.setAttribute("src", this.getPreference("goToLastReadPost"));
 		lpIcon.style.cssFloat = "right";
@@ -1674,22 +1674,23 @@ salrPersistObject.prototype = {
 		titleBox.insertBefore(lpGo, titleBox.firstChild);
 	},
 
-	/**
-	 * gets the unread posts count for a thread using the built in forum data.
-	 * @param {Object} doc the document object
-	 * @param {Object} titleBox this is the title box element.
-	 * @author camalot
-	 * @return the number of unread posts
-	 * @type {int}
-	 */
-	getThreadUnreadPostCount: function ( doc, titleBox ) {
-  /* div[contains(@class,'title_rel')]/div[contains(@class,'title_links')]/ */
-	var newPostsBox = this.selectSingleNode(doc,titleBox, "div[contains(@class,'newposts')]");
-	var retNewPostCount = 0;
-	if ( newPostsBox ) {
-	  var countElement = this.selectSingleNode(doc,newPostsBox,"a/b");
-    try { retNewPostCount = parseInt(countElement.innerHTML); } catch ( e ) { }
-	}
+	//gets the unread posts count for a thread using the built in forum data.
+	//@param: document object, title box dom element
+	//@return: int number of unread posts
+	getThreadUnreadPostCount: function ( doc, titleBox ) 
+	{
+		var newPostsBox = this.selectSingleNode(doc,titleBox, "div[contains(@class,'newposts')]");
+		var retNewPostCount = 0;
+		
+		if ( newPostsBox ) 
+		{
+			var countElement = this.selectSingleNode(doc,newPostsBox,"a/b");
+			try 
+			{
+				retNewPostCount = parseInt(countElement.innerHTML); 
+			} catch (e) { }
+		}
+		
 		return retNewPostCount;
 	},
 
