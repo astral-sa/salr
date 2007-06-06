@@ -21,7 +21,7 @@ function SALR_vidClick(e)
 		videoId = videoIdSearch[2];
 		videoSrc = "google";
 	}
-	
+
 	//if they click again hide the video
 	var video = link.nextSibling.firstChild;
 	if(video && video.className == 'salr_video') {
@@ -30,7 +30,7 @@ function SALR_vidClick(e)
 	}
 
 
-	
+
 	//create the embedded elements (p containing video for linebreaky goodness)
 	var doc = e.originalTarget.ownerDocument;
 	var p = doc.createElement("p");
@@ -114,9 +114,9 @@ function salrPersistObject()
 salrPersistObject.prototype = {
 	// This property is superseded by .preferences, do not use for new code
 	// this property has been left in for legacy compatability
-	get pref() { 
+	get pref() {
 		return Components.classes["@mozilla.org/preferences-service;1"]
-				.getService(Components.interfaces.nsIPrefBranch); 
+				.getService(Components.interfaces.nsIPrefBranch);
 	},
 
 	get xmlDoc()
@@ -125,7 +125,7 @@ salrPersistObject.prototype = {
 		{
 			return this._xmlDoc;
 		}
-		
+
 		return;
 		// Does not return anything (undefined) if _xmlDoc is null
 	},
@@ -189,9 +189,9 @@ salrPersistObject.prototype = {
 		}
 		if (!force) {
 			var now = new Date();
-			if ( now < this._nextSyncTime ) { 
+			if ( now < this._nextSyncTime ) {
 				res.msg = "not time to sync yet";
-				return res; 
+				return res;
 			}
 		}
 		try
@@ -228,8 +228,8 @@ salrPersistObject.prototype = {
 	_AsyncComplete: function(status)
 	{
 		for (var i=0; i<this._additionalSyncCallbacks.length; i++) {
-			try { 
-				this._additionalSyncCallbacks[i](status); 
+			try {
+				this._additionalSyncCallbacks[i](status);
 			} catch(err) { }
 		}
 		this._syncWorking = false;
@@ -310,8 +310,8 @@ salrPersistObject.prototype = {
 			} else {
 				this._forumListXml = null;
 			}
-		} catch(e) { 
-			this._forumListXml = null; 
+		} catch(e) {
+			this._forumListXml = null;
 		}
 	},
 
@@ -342,7 +342,7 @@ salrPersistObject.prototype = {
 			} else {
 				this._dbfn = this.getPreference('databaseStoragePath');
 			}
-			
+
 			if ( this.getPreference('forumListStoragePath').indexOf("%profile%")==0 ) {
 				this._flfn = this.GetUserProfileDirectory( this.getPreference('forumListStoragePath').substring(9), this._isWindows );
 			} else {
@@ -1059,7 +1059,7 @@ salrPersistObject.prototype = {
 	isPosterColored: function(userid)
 	{
 		var user = false;
-		
+
 		if(this.userExists(userid))
 		{
 			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
@@ -1072,7 +1072,7 @@ salrPersistObject.prototype = {
 			}
 			statement.reset();
 		}
-		
+
 		return user;
 	},
 
@@ -1659,15 +1659,11 @@ salrPersistObject.prototype = {
 	{
 		var lpGo = doc.createElement("a");
 		var lastPostID = this.getLastPostID(threadId);
-		if (lrCount % this.getPreference("postsPerPage") == 0 || lastPostID == 0)
-		{
-			lpGo.setAttribute("href", "/showthread.php?threadid=" + threadId + "&pagenumber=" + parseInt(lrCount/this.getPreference("postsPerPage")+1,10));
-		}
-		else
-		{
-			lpGo.setAttribute("href", "/showthread.php?postid=" + lastPostID + "#post" + lastPostID);
-		}
+		// uses the forum built in "new post" link
+	  lpGo.setAttribute("href","showthread.php?threadid=" + threadId + "&goto=newpost");
 		lpGo.setAttribute("id", "jumptolast_"+threadId);
+		var unreadCount = this.getThreadUnreadPostCount(doc, titleBox);
+		lpGo.setAttribute("title",unreadCount.toString() +  " unread posts");
 		lpIcon = doc.createElement("img");
 		lpIcon.setAttribute("src", this.getPreference("goToLastReadPost"));
 		lpIcon.style.cssFloat = "right";
@@ -1676,6 +1672,25 @@ salrPersistObject.prototype = {
 		lpIcon.style.border = "none";
 		lpGo.appendChild(lpIcon);
 		titleBox.insertBefore(lpGo, titleBox.firstChild);
+	},
+
+	/**
+	 * gets the unread posts count for a thread using the built in forum data.
+	 * @param {Object} doc the document object
+	 * @param {Object} titleBox this is the title box element.
+	 * @author camalot
+	 * @return the number of unread posts
+	 * @type {int}
+	 */
+	getThreadUnreadPostCount: function ( doc, titleBox ) {
+  /* div[contains(@class,'title_rel')]/div[contains(@class,'title_links')]/ */
+	var newPostsBox = this.selectSingleNode(doc,titleBox, "div[contains(@class,'newposts')]");
+	var retNewPostCount = 0;
+	if ( newPostsBox ) {
+	  var countElement = this.selectSingleNode(doc,newPostsBox,"a/b");
+    try { retNewPostCount = parseInt(countElement.innerHTML); } catch ( e ) { }
+	}
+		return retNewPostCount;
 	},
 
 	// Inserts the unread icon

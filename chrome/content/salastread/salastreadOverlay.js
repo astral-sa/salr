@@ -116,7 +116,7 @@ function addForums(forumsDoc,rowList,index,parentEl,depth) {
    var thisEl = rowList[index]
    var forumTitle = thisEl.firstChild.nodeValue
    var forumId = thisEl.getAttribute("value")
-   
+
    forumId = parseInt(forumId)
    if(isNaN(forumId) ||  forumId  < 0 )return index+1
 
@@ -173,7 +173,7 @@ function populateForumMenuUtilsFrom(target) {
    addUtilItem(target,"Search Forums","search")
    addUtilItem(target,"Forums Home","home")
    addUtilItem(target,"Leper's Colony","lc")
-   
+
    target.appendChild(document.createElement("menuseparator"));
 }
 
@@ -653,6 +653,7 @@ function handleForumDisplay(doc)
 		// We'll need lots of variables for this
 		var threadIconBox, threadTitleBox, threadAuthorBox, threadRepliesBox;
 		var threadTitle, threadId, threadOPId, threadRe, threadDetails;
+		var threadTitleLinks;
 		var threadLRCount, posterColor, posterBG, unvistIcon, lpIcon, lastPostID;
 		var userPosterNote;
 		var starredthreads = persistObject.starList, ignoredthreads = persistObject.ignoreList;
@@ -666,6 +667,7 @@ function handleForumDisplay(doc)
 			var thread = threadlist[i];
 
 			threadTitleBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
+			threadTitleLinks = persistObject.selectSingleNode(doc,threadTitleBox,"div[contains(@class,'title_rel')]/div[contains(@class,'title_links')]");
 			if (threadTitleBox.getElementsByTagName('a')[0].className.search(/announcement/i) > -1)
 			{
 				// It's an announcement so skip the rest
@@ -690,7 +692,9 @@ function handleForumDisplay(doc)
 
 			threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
 			threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
-			threadLRCount = threadDetails['lastreplyct'];
+		  threadLRCount = threadDetails['lastreplyct'];
+		  // this will use the forums built in "unread" thread count
+			//threadLRCount = persistObject.getThreadUnreadPostCount(doc,threadTitleLinks);
 			threadRe = parseInt(threadRepliesBox.getElementsByTagName('a')[0].innerHTML);
 			threadOPId = parseInt(threadAuthorBox.getElementsByTagName('a')[0].href.match(/userid=(\d+)/i)[1]);
 			posterColor = false;
@@ -779,20 +783,20 @@ function handleForumDisplay(doc)
 				}
 				if (showUnvisitIcon && swapIconOrder)
 				{
-					persistObject.insertUnreadIcon(doc, threadTitleBox, threadId).addEventListener("click", removeThread, false);
+					persistObject.insertUnreadIcon(doc, threadTitleLinks, threadId).addEventListener("click", removeThread, false);
 				}
 				if ((showGoToLastIcon && ((threadRe+1) > threadLRCount)) || alwaysShowGoToLastIcon)
 				{
-					persistObject.insertLastIcon(doc, threadTitleBox, threadId, parseInt(threadLRCount));
+					persistObject.insertLastIcon(doc, threadTitleLinks, threadId, parseInt(threadLRCount));
 				}
 				if (showUnvisitIcon && !swapIconOrder)
 				{
-					persistObject.insertUnreadIcon(doc, threadTitleBox, threadId).addEventListener("click", removeThread, false);
+					persistObject.insertUnreadIcon(doc, threadTitleLinks, threadId).addEventListener("click", removeThread, false);
 				}
 			}
 			if (threadDetails['star'])
 			{
-				persistObject.insertStar(doc, threadTitleBox);
+				persistObject.insertStar(doc, threadTitleLinks);
 			}
 			if (highlightUsernames)
 			{
@@ -1335,14 +1339,14 @@ function handleShowThread(doc) {
 					persistObject.addMod(posterId, posterName);
 				}
 			}
-			
+
 			posterBG 	= false;
 			posterNote 	= false;
 			posterColor = false;
-			
+
 			//apply this to every post
 			post.className += " salrPoster" + posterId;
-			
+
 			if (posterId == threadOP)
 			{
 				posterColor = opColor;
@@ -2278,7 +2282,7 @@ function salastread_windowOnLoad(e) {
 
 					} else if ( location.href.indexOf("showthread.php?") != -1) {
 						handleShowThread(doc);
-					//} else if ( location.href.indexOf("index.php") != -1 || 
+					//} else if ( location.href.indexOf("index.php") != -1 ||
                //   location.href.match( /^http:\/\/forums?\.somethingawful\.com\/$/i ) ) {
 					//	handleShowIndex(doc)
 					} else if ( location.href.indexOf("newreply.php") != -1) {
