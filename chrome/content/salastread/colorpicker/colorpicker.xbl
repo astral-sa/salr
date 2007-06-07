@@ -50,7 +50,7 @@
 					var pobj = new Object();
 						pobj.value = this.value;
 						pobj.accepted = false;
-					window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "chrome",pobj);
+					window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "modal,chrome",pobj);
 					if (pobj.accepted) {
 						this.value = pobj.value;
 					}

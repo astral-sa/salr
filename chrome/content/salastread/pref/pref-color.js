@@ -53,7 +53,7 @@ function editColor(event, targetEl) {
 		var obj = {};
 			obj.value = pref.value;
 	
-		window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "chrome", obj);
+		window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "modal,chrome", obj);
 		if(obj.accepted) {
 			pref.value = obj.value;
 			loadColors();

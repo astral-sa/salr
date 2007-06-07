@@ -22,13 +22,3 @@ menuitem.lastread_menu_sub
 {
    font-weight: bold;
 }
-
-menuitem.lastread_menu_sub\-sub
-{
-   padding-left: 15px;
-}
-
-menuitem.lastread_menu_sub\-sub\-sub
-{
-   padding-left: 30px;
-}

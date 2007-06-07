@@ -78,7 +78,7 @@ function changeColor(type) {
 		obj.value = persistObject.getPosterBackground(userid);
 	}
 	
-	window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "chrome", obj);
+	window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "modal,chrome", obj);
 	
 	if(obj.accepted) {
 		var value = obj.value;
