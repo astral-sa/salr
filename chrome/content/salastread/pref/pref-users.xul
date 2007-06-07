@@ -22,13 +22,15 @@
 			<preference id="opBackground" 		name="extensions.salastread.opBackground" 		type="string"/>
 			
 			<!-- Various and Sundry Options -->
-			<preference id="dontBoldNames" 		name="extensions.salastread.dontBoldNames" 		type="bool"/>
+			<preference id="dontBoldNames" 			name="extensions.salastread.dontBoldNames" 			type="bool"/>
+			<preference id="resizeCustomTitleText" 	name="extensions.salastread.resizeCustomTitleText" 	type="bool"/>
 		</preferences>
 		
 		<groupbox>
-			<caption label="Username Display Options"/>
-			<checkbox preference="highlightUsernames" label="Highlight interesting and important usernames"/>
-			<checkbox preference="dontBoldNames" label="Don't make highlighted usernames bold"/>
+			<caption label="User Display Options"/>
+			<checkbox preference="resizeCustomTitleText"	label="Shrink Large Custom Title Texts" />
+			<checkbox preference="highlightUsernames" 		label="Highlight interesting and important usernames"/>
+			<checkbox preference="dontBoldNames" 			label="Don't make highlighted usernames bold"/>
 		</groupbox>
 		
 		<groupbox>

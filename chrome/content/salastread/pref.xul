@@ -12,6 +12,16 @@
 				image="chrome://salastread/content/pref/images/general.png" 
 				src="chrome://salastread/content/pref/pref-general.xul"/>
 
+	<prefpane 	id="forums" 
+				label="Forums" 
+				image="chrome://salastread/content/pref/images/files.png"
+				src="chrome://salastread/content/pref/pref-forums.xul"/>
+	
+	<prefpane 	id="threads" 
+				label="Threads" 
+				image="chrome://salastread/content/pref/images/threads.png"
+				src="chrome://salastread/content/pref/pref-threads.xul"/>
+
 	<prefpane 	id="images" 
 				label="Images" 
 				image="chrome://salastread/content/pref/images/images.png"
@@ -32,11 +42,6 @@
 				image="chrome://salastread/content/pref/images/colors.png"
 				src="chrome://salastread/content/pref/pref-color.xul"/>
 
-	<prefpane 	id="threads" 
-				label="Threads" 
-				image="chrome://salastread/content/pref/images/threads.png"
-				src="chrome://salastread/content/pref/pref-threads.xul"/>
-
 	<prefpane 	id="menu" 
 				label="Menus" 
 				image="chrome://salastread/content/pref/images/samenu.png"
@@ -46,11 +51,6 @@
 				label="Users"
 				image="chrome://salastread/content/pref/images/users.png"
 				src="chrome://salastread/content/pref/pref-users.xul"/>
-
-	<prefpane 	id="files" 
-				label="Files" 
-				image="chrome://salastread/content/pref/images/files.png"
-				src="chrome://salastread/content/pref/pref-files.xul"/>
 
 	<prefpane 	id="about" 
 				label="About" 

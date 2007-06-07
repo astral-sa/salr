@@ -3,7 +3,7 @@ pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
 pref('extensions.salastread.userId', 0);
-pref('extensions.salastread.disableNewReCount', false);
+pref('extensions.salastread.disableNewReCount', true);
 pref('extensions.salastread.newPostCountUseOneLine', false);
 
 //VIDEO EMBEDDER
@@ -14,11 +14,14 @@ pref('extensions.salastread.videoEmbedderBG', '#ffcccc');
 //
 //GENERAL SETTINGS PAGE
 
+//USE SALR ICONS INSTEAD OF FORUMS ICONS
+	pref('extensions.salastread.showSALRIcons', true);
+
 	//THREAD COMMAND ICONS
 pref('extensions.salastread.showGoToLastIcon', true);
 pref('extensions.salastread.goToLastReadPost', 'chrome://salastread/skin/lastpost.png');
 pref('extensions.salastread.alwaysShowGoToLastIcon', false);
-pref('extensions.salastread.showUnvisitIcon', true);
+pref('extensions.salastread.showUnvisitIcon', false);
 pref('extensions.salastread.markThreadUnvisited', 'chrome://salastread/skin/unvisit.png');
 pref('extensions.salastread.swapIconOrder', false);
 
@@ -116,7 +119,6 @@ pref('extensions.salastread.forumListStoragePath', '%profile%saforumlist.xml');
 pref('extensions.salastread.remoteSyncStorageUrl', 'ftp://username:password@example.com/.salastread.syncdata');
 pref('extensions.salastread.useRemoteSyncStorage', false);
 pref('extensions.salastread.expireMinAge', 7);
-
 
 //OTHER RANDOM OPTIONS
 pref('extensions.salastread.timeSpentOnForums', 0);

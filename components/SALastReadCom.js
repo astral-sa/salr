@@ -29,8 +29,6 @@ function SALR_vidClick(e)
 			return;
 	}
 
-
-
 	//create the embedded elements (p containing video for linebreaky goodness)
 	var doc = e.originalTarget.ownerDocument;
 	var p = doc.createElement("p");
@@ -57,9 +55,6 @@ function SALR_vidClick(e)
 
 	//inserts video after the link
 	link.parentNode.insertBefore(p, link.nextSibling);
-
-	//this.insertRemoveLink(link, embedEl);
-	//link.parentNode.removeChild(link);
 }
 
 const SALR_CONTRACTID = "@evercrest.com/salastread/persist-object;1";
@@ -151,134 +146,6 @@ salrPersistObject.prototype = {
 		}
 	},
 
-	AttachShutdownObserver: function()
-	{
-		var that = this;
-		var observer = {
-			observe: function(subject,topic,data) {
-				that.FirefoxShuttingDown(subject, topic, data);
-				that._syncTransferObject = null;
-			}
-		};
-		var observerService = Components.classes["@mozilla.org/observer-service;1"]
-								.getService(Components.interfaces.nsIObserverService);
-		observerService.addObserver(observer, "quit-application", false);
-		this._nextSyncTime = new Date();
-	},
-
-	FirefoxShuttingDown: function(subject, topic, data)
-	{
-		if (this.getPreference('useRemoteSyncStorage')) {
-			var ww = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
-						.getService(Components.interfaces.nsIWindowWatcher);
-			var features = "centerscreen,chrome,dialog,modal,titlebar,minimizable=no,resizable=no,close=no";
-			var res = ww.openWindow(ww.activeWindow, "chrome://salastread/content/syncTransfer.xul", "_blank", features, null);
-		}
-	},
-
-	_syncTransferObject: null,
-	_syncWorking: false,
-
-	PerformRemoteSync: function(force, syncCallback, trace)
-	{
-		var res = { "bad" : false, "msg" : "no result" };
-		if (this._syncWorking) {
-			this._additionalSyncCallbacks.push(syncCallback);
-			res.msg = "already syncing";
-			return res;
-		}
-		if (!force) {
-			var now = new Date();
-			if ( now < this._nextSyncTime ) {
-				res.msg = "not time to sync yet";
-				return res;
-			}
-		}
-		try
-		{
-			if (this.getPreference('useRemoteSyncStorage')) {
-				this._DoAsynchronousSync(syncCallback, trace);
-				res.msg = "syncing...";
-			} else {
-				res.msg = "sync not enabled";
-			}
-		}
-		catch (err) {
-			res.bad = true;
-			res.msg = "error: " + err;
-		}
-		this.GenerateNextSyncTime();
-		return res;
-	},
-
-	_syncTrace: null,
-
-	_DoAsynchronousSync: function(syncCallback, trace)
-	{
-		this._syncWorking = true;
-		this._additionalSyncCallbacks = new Array();
-		this._additionalSyncCallbacks.push(syncCallback);
-		var that = this;
-		var sto = this._syncTransferObject;
-		this._syncTrace = trace;
-		trace("Getting remote file...");
-		sto.getFile(this.getPreference('remoteSyncStorageUrl'), this._dbfn, function(status) { that._AsyncSync1(status); });
-	},
-
-	_AsyncComplete: function(status)
-	{
-		for (var i=0; i<this._additionalSyncCallbacks.length; i++) {
-			try {
-				this._additionalSyncCallbacks[i](status);
-			} catch(err) { }
-		}
-		this._syncWorking = false;
-		this._additionalSyncCallbacks = null;
-		this._syncTrace = null;
-	},
-
-	_AsyncSync1: function(status)
-	{
-		var sto = this._syncTransferObject;
-		var trace = this._syncTrace;
-		sto.reset();
-		if (status != 0) {
-			trace("Failed to get remote file.");
-		}
-		trace("Merging data...");
-		this.LoadXML(true);
-		trace("Saving data...");
-		this.SaveXML();
-		trace("Uploading remote file...");
-		var that = this;
-		sto.sendFile(this.getPreference('remoteSyncStorageUrl'), this._fn, function(istatus) { that._AsyncSync2(istatus); });
-	},
-
-	_AsyncSync2: function(istatus)
-	{
-		var sto = this._syncTransferObject;
-		var trace = this._syncTrace;
-		sto.reset();
-		if (istatus!=0) {
-			trace("Upload failed.");
-			this._AsyncComplete(2);
-			return;
-		}
-		trace("Complete.");
-		this._AsyncComplete(0);
-		return;
-	},
-
-	GenerateNextSyncTime: function()
-	{
-		var d = new Date();
-		var nt = d.getTime();
-		var varyTime = Math.floor( this.SYNC_INTERVAL_VARY * ((Math.random()-0.5)*2) );
-		nt += this.SYNC_INTERVAL + varyTime;
-		d.setTime(nt);
-		this._nextSyncTime = d;
-	},
-
 	SetXML: function(xmlstr)
 	{
 		var oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
@@ -336,7 +203,6 @@ salrPersistObject.prototype = {
 		this._profileInitialized = true;
 		this._isWindows = isWindows;
 		try {
-			this.AttachShutdownObserver();
 			if ( this.getPreference('databaseStoragePath').indexOf("%profile%")==0 ) {
 				this._dbfn = this.GetUserProfileDirectory(this.getPreference('databaseStoragePath').substring(9), this._isWindows );
 			} else {
@@ -628,7 +494,7 @@ salrPersistObject.prototype = {
 					results[statement.getColumnName(i)] = true;
 				}
 			}
-/*
+			/*
 			results['lastpostid']
 			results['lastviewdt']
 			results['op']
@@ -644,7 +510,7 @@ salrPersistObject.prototype = {
 			results['color']
 			results['background']
 			results['status']
-*/
+			*/
 			statement.reset();
 			return results;
 		}
@@ -1653,30 +1519,25 @@ salrPersistObject.prototype = {
 	},
 
 	// Inserts the jump to last read post icon
-	// @param: doc, TD
+	// @param: doc, div, thread ID, last read Count
 	// @return: nothing
-	insertLastIcon: function(doc, titleBox, threadId, lrCount)
+	insertLastIcon: function(doc, newPosts, link)
 	{
-		var lpGo = doc.createElement("a");
-		var lastPostID = this.getLastPostID(threadId);
-		if (lrCount % this.getPreference("postsPerPage") == 0 || lastPostID == 0)
+		if(link)
 		{
-			lpGo.setAttribute("href", "/showthread.php?threadid=" + threadId + "&pagenumber=" + parseInt(lrCount/this.getPreference("postsPerPage")+1,10));
+			var lpGo = doc.createElement("a");
+				lpGo.setAttribute("title", link.firstChild.innerHTML +  " unread posts");
+				lpGo.setAttribute("href", link.href);
+				
+			var lpIcon = doc.createElement("img");
+				lpIcon.setAttribute("src", this.getPreference("goToLastReadPost"));
+				lpIcon.style.cssFloat = "right";
+				lpIcon.style.marginRight = "3px";
+				lpIcon.style.marginLeft = "3px";
+				lpIcon.style.border = "none";
+			lpGo.appendChild(lpIcon);
+			newPosts.insertBefore(lpGo, newPosts.firstChild);
 		}
-		else
-		{
-			lpGo.setAttribute("href", "/showthread.php?postid=" + lastPostID + "#post" + lastPostID);
-		}		lpGo.setAttribute("id", "jumptolast_"+threadId);
-		var unreadCount = this.getThreadUnreadPostCount(doc, titleBox);
-		lpGo.setAttribute("title", unreadCount.toString() +  " unread posts");
-		lpIcon = doc.createElement("img");
-		lpIcon.setAttribute("src", this.getPreference("goToLastReadPost"));
-		lpIcon.style.cssFloat = "right";
-		lpIcon.style.marginRight = "3px";
-		lpIcon.style.marginLeft = "3px";
-		lpIcon.style.border = "none";
-		lpGo.appendChild(lpIcon);
-		titleBox.insertBefore(lpGo, titleBox.firstChild);
 	},
 
 	//gets the unread posts count for a thread using the built in forum data.
@@ -1700,18 +1561,18 @@ salrPersistObject.prototype = {
 	},
 
 	// Inserts the unread icon
-	// @param: doc, TD, (int)
+	// @param: doc, div, (int)
 	// @return: (img)
-	insertUnreadIcon: function(doc, titleBox, threadId)
+	insertUnreadIcon: function(doc, newPosts, threadId)
 	{
 		unvisitIcon = doc.createElement("img");
 		unvisitIcon.setAttribute("src", this.getPreference("markThreadUnvisited"));
-		unvisitIcon.setAttribute("id", "unread_"+threadId);
+		unvisitIcon.setAttribute("id", "unread_" + threadId);
 		unvisitIcon.style.cssFloat = "right";
 		unvisitIcon.style.marginRight = "3px";
 		unvisitIcon.style.border = "none";
 		unvisitIcon.style.cursor = "pointer";
-		titleBox.insertBefore(unvisitIcon, titleBox.firstChild);
+		newPosts.insertBefore(unvisitIcon, newPosts.firstChild);
 		return unvisitIcon;
 	},
 
@@ -1720,14 +1581,17 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	insertStar: function(doc, titleBox)
 	{
-		starIcon = doc.createElement("img");
-		starIcon.setAttribute("src", "chrome://salastread/skin/star.png");
-		starIcon.style.cssFloat = "left";
-		starIcon.style.marginRight = "3px";
-		starIcon.style.marginLeft = "3px";
-		starIcon.style.border = "none";
-		titleBox.insertBefore(starIcon, titleBox.getElementsByTagName('a')[0]);
-		starIcon.style.marginTop = ((titleBox.clientHeight - 21) / 2) + "px";
+		try
+		{
+			starIcon = doc.createElement("img");
+			starIcon.setAttribute("src", "chrome://salastread/skin/star.png");
+			starIcon.style.cssFloat = "left";
+			starIcon.style.marginRight = "3px";
+			starIcon.style.marginLeft = "3px";
+			starIcon.style.border = "none";
+			titleBox.insertBefore(starIcon, titleBox.getElementsByTagName('a')[0]);
+			starIcon.style.marginTop = ((titleBox.clientHeight - 21) / 2) + "px";
+		} catch (e) { }
 	},
 
 	// Add the quick page jump paginator

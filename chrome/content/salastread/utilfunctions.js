@@ -13,7 +13,6 @@ function selectNodes(doc, context, xpath) {
 }
 
 function selectSingleNode(doc, context, xpath) {
-   var nodeList = doc.evaluate(xpath, context, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-   return nodeList.singleNodeValue;
+	var nodeList = doc.evaluate(xpath, context, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+	return nodeList.singleNodeValue;
 }
-

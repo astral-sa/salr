@@ -251,25 +251,6 @@ function finalizeTextGrab(restext) {
 	return;
 }
 
-/*
-function __old__() {
-	//try{
-	var isquote = 1
-	var targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&postid=" + window.opener.__salastread_quotepostid;
-	if(window.opener.__salastread_quotepostid==null) {
-		//alert("isquote = 0");
-		isquote = 0;
-		targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" + window.opener.__salastread_quotethreadid;
-	}
-	
-	var xht = new XMLHttpRequest();
-		xht.open("GET", targeturl, false);
-		xht.send(null);
-	var restext = xht.responseText;
-	var fkeygettext = xht.responseText;
-}
-*/
-
 function getQuoteIntroText() {
 	var astr = persistObject.getPreference('quoteIntroText');
 	if(astr.indexOf("|")!=-1) {

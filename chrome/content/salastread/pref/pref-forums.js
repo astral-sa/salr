@@ -15,9 +15,12 @@ function toggleIconsSource() {
 	if(document.getElementById("toggleExtensionIcons").checked) {
 		document.getElementById("toggleLastReadIcon").disabled = false;
 		document.getElementById("toggleUnvisitIcon").disabled = false;
+		document.getElementById("newReCountNewLine").disabled = false;
+		document.getElementById("newReCount").disabled = false;
 		
 		toggleLastReadIcon();
 		toggleUnvisitIcon();
+		toggleNewReCount();
 	} else {
 		document.getElementById("toggleLastReadIcon").disabled = true;
 		document.getElementById("lastReadIcon").disabled = true;
@@ -25,7 +28,9 @@ function toggleIconsSource() {
 		document.getElementById("alwayShowLastReadIcon").disabled = true;
 		document.getElementById("toggleUnvisitIcon").disabled = true;
 		document.getElementById("unvisitIcon").disabled = true;
-		document.getElementById("unvisitIconDefault").disabled = true;		
+		document.getElementById("unvisitIconDefault").disabled = true;
+		document.getElementById("newReCountNewLine").disabled = true;
+		document.getElementById("newReCount").disabled = true;
 	}
 }
 
