@@ -683,11 +683,11 @@ function handleThreadList(doc, forumid, flags) {
 						threadRe = persistObject.selectSingleNode(doc, newPosts, "A//B").innerHTML;
 						if (newPostCountUseOneLine)
 						{
-							threadRepliesBox.innerHTML += '<br />(' + threadRe + ')';
+							threadRepliesBox.innerHTML += '&nbsp;(' + threadRe + ')';
 						}
 						else
 						{
-							threadRepliesBox.innerHTML += ' (' + threadRe + ')';
+							threadRepliesBox.innerHTML += '<br />(' + threadRe + ')';
 						}
 					}
 					persistObject.colorThread(doc, thread, forumid, readWithNewLight, readWithNewDark);
