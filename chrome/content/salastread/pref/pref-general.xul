@@ -3,9 +3,7 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-general.js"/>
-
-	<prefpane id="general" onpaneload="initGeneral()">
+	<prefpane id="general">
 	<preferences>
 		<preference id="removeHeaderAndFooter" 	name="extensions.salastread.removeHeaderAndFooter" 	type="bool"/>
 		<preference id="removePageTitlePrefix" 	name="extensions.salastread.removePageTitlePrefix" 	type="bool"/>

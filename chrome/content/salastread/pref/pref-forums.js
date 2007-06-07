@@ -1,4 +1,4 @@
-function initGeneral() {
+function initForums() {
 	toggleIconsSource();
 	toggleNewReCount();
 }
