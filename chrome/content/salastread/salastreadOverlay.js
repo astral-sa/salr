@@ -583,6 +583,7 @@ function handleThreadList(doc, forumid, flags) {
 		}
 		
 		threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[contains(@class, 'thread_title')]");
+		if(!threadTitleLink)threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
 		threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1]);
 		threadTitle = threadTitleLink.innerHTML;
 		threadDetails = persistObject.getThreadDetails(threadId);
