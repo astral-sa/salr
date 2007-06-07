@@ -85,234 +85,61 @@ function SALR_menuItemGoTo(event, url, target) {
 	}
 }
 
-function grabForumsFromForumDisplay(doc,id) {
 
-   try{
-      var oldForumXml = persistObject.forumListXml
-      if(!oldForumXml)return
-
-      var newForumXml = oldForumXml.cloneNode(true)
-
-      var parentEl
-
-      var breadcrumbs = persistObject.selectNodes(doc,doc,"//div[@class='breadcrumbs']//a[contains(@href,'forumdisplay.php')]")
-      for(var i=0;i<breadcrumbs.length;i++) {
-         var crumb = breadcrumbs[i]
-
-         var forumTitle = crumb.firstChild.nodeValue;
-         var forumId = crumb.getAttribute("href").match(/forumid=(\d+)/)[1];
-
-         var forumEl
-         if(i==0) {
-            forumEl = persistObject.selectSingleNode(newForumXml,newForumXml,"//cat[@id='" + forumId + "']")
-         }else {
-            forumEl = persistObject.selectSingleNode(newForumXml,newForumXml,"//forum[@id='" + forumId + "']")
-         }
-
-         if(!forumEl) {
-            if(i==0) {
-               //crazy shit must have gone down. fuck this
-               return
-            }
-
-            forumEl = newForumXml.createElement("forum");
-            parentEl.appendChild(forumEl)
-            newForumXml.documentElement.insertBefore(newForumXml.createTextNode("\n"), forumEl);
-
-         }
-
-         forumEl.setAttribute("id", forumId);
-         forumEl.setAttribute("name", forumTitle);
-
-         parentEl = forumEl
-      }
-
-      if(!parentEl)return
-
-      var forumEl = persistObject.selectSingleNode(newForumXml,newForumXml,"//forum[@id='" + id + "']")
-      if(!forumEl) {
-         forumEl = newForumXml.createElement("forum")
-         parentEl.appendChild(forumEl)
-         newForumXml.documentElement.insertBefore(newForumXml.createTextNode("\n"), forumEl);
-      }
-
-
-      var forumTitle = breadcrumbs[breadcrumbs.length-1].nextSibling.nodeValue.substring(3)
-
-
-      forumEl.setAttribute("id", id);
-      forumEl.setAttribute("name", forumTitle);
-
-
-
-      var oldSubForums = Array()
-      var len = forumEl.childNodes.length
-      for(var i=0;i<len;i++) {
-         var el = forumEl.childNodes[0]
-         if(el.nodeName == "forum") {
-            var elId = el.getAttribute("id")
-            oldSubForums[elId] = el
-         }
-         forumEl.removeChild(el)
-      }
-
-
-
-
-      var subForums = persistObject.selectNodes(doc,doc,"//table[@id='subforums']//a[contains(@href,'forumdisplay.php')]")
-      for(var i=0;i<subForums.length;i++) {
-         var subForum = subForums[i]
-         var subForumTitle = subForum.firstChild.nodeValue;
-         if(subForum.firstChild.firstChild) {
-            subForumTitle = subForum.firstChild.firstChild.nodeValue
-         }
-
-         var subForumId = subForum.getAttribute("href").match(/forumid=(\d+)/)[1];
-
-         var subForumEl = oldSubForums[subForumId]
-         if(!subForumEl) {
-            subForumEl = newForumXml.createElement("forum");
-         }
-
-         forumEl.appendChild(newForumXml.createTextNode("\n"))
-         forumEl.appendChild(subForumEl)
-
-
-         subForumEl.setAttribute("id", subForumId);
-         subForumEl.setAttribute("name", subForumTitle);
-
-      }
-
-
-      persistObject.forumListXml = newForumXml
-   }
-   catch (e){
-      alert(e)
-   }
-}
-
-
-
-function grabForumList(doc, selectnode) {
-try
-{
-
-   var rowList = persistObject.selectNodes(doc, doc, "//table[@id='forums']//tr");
+function grabForumList(doc) {
+   var rowList = persistObject.selectNodes(doc, doc, "//select[@name='forumid']/option");
    var oDomParser = new DOMParser();
    var forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
    var targetEl = forumsDoc.documentElement;
-   var oldForumXml = persistObject.forumListXml;
-
-   //var utilsEl = forumsDoc.createElement("utils")
-  // forumsDoc.documentElement.appendChild(utilsEl)
-   //forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), utilsEl);
-
-   //Nowhere to grab these guys from anymore
-  // addUtilItem("Private Messages","pm",forumsDoc,utilsEl)
-  // addUtilItem("User Control Panel","cp",forumsDoc,utilsEl)
-  // addUtilItem("Search Forums","search",forumsDoc,utilsEl)
-  // addUtilItem("Forums Home","home",forumsDoc,utilsEl)
-  // addUtilItem("Leper's Colony","lc",forumsDoc,utilsEl)
 
    var forumsEl = forumsDoc.createElement("forums")
    forumsDoc.documentElement.appendChild(forumsEl)
    forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), forumsEl);
 
-   for (var i=0; i<rowList.length; i++) {
-
-      var thisRow = rowList[i];
-      var firstEl = persistObject.selectSingleNode(doc, thisRow, "th[@class='category'] | td[@class='title']");
-
-      var cssClass = firstEl.getAttribute("class")
-
-      if(cssClass == "category") {
-         var catLink = persistObject.selectSingleNode(doc,firstEl,"a");
-         var catTitle = catLink.firstChild.nodeValue;
-         var catUrl = catLink.getAttribute("href")
-         var catId = catUrl.match(/forumid=(\d+)/)[1];
-
-         var fel;
-
-         fel = forumsDoc.createElement("cat");
-         targetEl = fel;
-
-         fel.setAttribute("id", catId);
-         fel.setAttribute("name", catTitle);
-         forumsEl.appendChild(fel);
-         forumsEl.insertBefore(forumsDoc.createTextNode("\n"), fel);
-
-
-      }
-      else if(cssClass == "title")
-      {
-
-         var forumLink = persistObject.selectSingleNode(doc,firstEl,"a");
-         var forumTitle = forumLink.firstChild.nodeValue;
-         var forumUrl = forumLink.getAttribute("href")
-         var forumId = forumUrl.match(/forumid=(\d+)/)[1];
-
-         var subForums = persistObject.selectNodes(doc,firstEl,"div[@class='subforums']/a")
-         var forumEl =  addForumToForums(forumTitle,forumId,1,oldForumXml,targetEl,forumsDoc,subForums.length == 0)
-         for(var j=0; j<subForums.length; j++) {
-
-            var subForumLink = subForums[j];
-            var subForumTitle = subForumLink.firstChild.nodeValue;
-            var subForumUrl = subForumLink.getAttribute("href")
-            var subForumId = subForumUrl.match(/forumid=(\d+)/)[1];
-
-            addForumToForums(subForumTitle,subForumId,2,oldForumXml,forumEl,forumsDoc,true)
-         }
-      }
+   for(var i=0;i<rowList.length;) {
+      i = addForums(forumsDoc,rowList,i,forumsEl,0)
    }
 
    persistObject.forumListXml = forumsDoc;
    if ( persistObject.getPreference('showSAForumMenu') ) {
       buildSAForumMenu();
    }
-
-
-}
-catch (e)
-{
-   alert(e)
 }
 
-}
+function addForums(forumsDoc,rowList,index,parentEl,depth) {
+   var thisEl = rowList[index]
+   var forumTitle = thisEl.firstChild.nodeValue
+   var forumId = thisEl.getAttribute("value")
+   
+   forumId = parseInt(forumId)
+   if(isNaN(forumId) ||  forumId  < 0 )return index+1
 
-function addUtilItem(name,id,forumsDoc,utilsEl) {
-   var fel = forumsDoc.createElement("util")
-   fel.setAttribute("name",name)
-   fel.setAttribute("id", id)
+   var elDepth = 0
+   while(true) {
+      if(forumTitle.indexOf("--") != 0)break;
 
-   utilsEl.appendChild(fel);
-   utilsEl.insertBefore(forumsDoc.createTextNode("\n"), fel);
-}
-
-function addForumToForums(name,id,depth,oldForumXml,container,forumsDoc,fillInDescendants) {
-
-   var fel = forumsDoc.createElement("forum");
-   fel.setAttribute("id", id);
-   fel.setAttribute("name",name);
-
-   // Carry over sticky attributes
-   if ( oldForumXml ) {
-      var oldEl = persistObject.selectSingleNode(oldForumXml, oldForumXml, "//forum[@id='"+id+"']");
-      if (oldEl) {
-         if(fillInDescendants || id=="44") {
-            for(var i = 0;i<oldEl.childNodes.length;i++) {
-               if(fillInDescendants || (oldEl.childNodes[i].getAttribute && oldEl.childNodes[i].getAttribute("id") == "191")) {
-                  fel.appendChild(oldEl.childNodes[i].cloneNode(true))
-               }
-            }
-         }
-      }
+      forumTitle = forumTitle.substring(2)
+      elDepth++;
    }
+   forumTitle = forumTitle.replace(/^\s+|\s+$/g,"");
+   if(elDepth < depth)return index
+   if(elDepth > depth) return index+1 //this can't fit in the tree
 
+   var fel
+   if(depth == 0)fel = forumsDoc.createElement("cat");
+   else fel = forumsDoc.createElement("forum");
 
-   container.appendChild(fel);
-   container.insertBefore(forumsDoc.createTextNode("\n"), fel);
+   fel.setAttribute("id", forumId);
+   fel.setAttribute("name", forumTitle);
+   parentEl.appendChild(forumsDoc.createTextNode("\n"))
+   parentEl.appendChild(fel);
 
-   return fel
+   for(index++;index<rowList.length;) {
+      var i = addForums(forumsDoc,rowList,index,fel,depth+1)
+      if(i==index)return i
+      index = i
+   }
+   return index
 }
 
 
@@ -335,10 +162,8 @@ function populateForumMenuFrom(nested_menus, target, src, pinnedForumNumbers, pi
 
    if(!foundforums) {
       var menuel = document.createElement("menuitem");
-         menuel.setAttribute("label", "Attempt to load forums");
+         menuel.setAttribute("label", "Visit a forum to reload list");
          menuel.setAttribute("forumnum", "home");
-         menuel.setAttribute("onclick", "SALR_menuItemCommand(event,this,'click');");
-         menuel.setAttribute("oncommand", "SALR_menuItemCommand(event,this,'command');");
 
          target.appendChild(menuel);
    }
@@ -631,7 +456,12 @@ function handleForumDisplay(doc)
 					"inAskTell" : persistObject.inAskTell(forumid),
 					"inGasChamber" : persistObject.inGasChamber(forumid)};
 
-	grabForumsFromForumDisplay(doc, forumid)
+		if (!persistObject.gotForumList)
+		{
+         // TODO: Audit this function
+         grabForumList(doc);
+         persistObject.gotForumList = true;
+		}
 
 	if (doc.getElementById('forum') == null) {
 		return;
@@ -1177,10 +1007,6 @@ function addInternalDebugLog(msg) {
 	}
 }
 
-function handleShowIndex(doc) {
-	grabForumList(doc, null);
-	persistObject.gotForumList = true;
-}
 
 //add a user to the highlighting/note section by clicking on a post link
 function addHighlightedUser(e) {
@@ -1272,18 +1098,14 @@ function handleShowThread(doc) {
 		}
 
 		// Grab the go to dropdown
-		/*
+		
 		if (!persistObject.gotForumList)
 		{
-			var selectnode = persistObject.selectSingleNode(doc, doc.body, "//SELECT[@name='forumid']");
-			if (selectnode)
-			{
-				// TODO: Audit this function
-				//grabForumList(doc, selectnode);
-				//persistObject.gotForumList = true;
-			}
+         grabForumList(doc);
+         persistObject.gotForumList = true;
+
 		}
-		*/
+		
 		doc.__SALR_forumid = forumid;
 		doc.body.className += " salastread_forum" + forumid;
 
@@ -2263,9 +2085,6 @@ function salastread_windowOnLoad(e) {
 
 					} else if ( location.href.indexOf("showthread.php?") != -1) {
 						handleShowThread(doc);
-					} else if ( location.href.indexOf("index.php") != -1 || 
-                  location.href.match( /^http:\/\/forums?\.somethingawful\.com\/$/i ) ) {
-						handleShowIndex(doc)
 					} else if ( location.href.indexOf("newreply.php") != -1) {
 						handleNewReply(e);
 					} else if ( location.href.indexOf("editpost.php") != -1) {
