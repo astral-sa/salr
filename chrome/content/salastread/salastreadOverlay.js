@@ -48,13 +48,7 @@ function SALR_menuItemCommand(event, el, etype) {
 
 function SALR_menuItemCommandGoToLastPost(event, el, etype, threadid) {
 	try {
-		var postid = persistObject.getLastPostID(threadid);
-
-		if(postid != 0) {
-			SALR_menuItemCommandURL(event, "http://forums.somethingawful.com/showthread.php?s=&postid=" + postid + "#post" + postid, etype);
-		} else {
-			SALR_menuItemCommandURL(event, "http://forums.somethingawful.com/showthread.php?s=&threadid=" + threadid, etype);
-		}
+		SALR_menuItemCommandURL(event, "http://forums.somethingawful.com/showthread.php?threadid=" + threadid + "&goto=newpost", etype);
 	} catch(e) {
 		alert("Couldn't find thread id: " + threadid);
 	}
@@ -1102,23 +1096,6 @@ function SALR_DecTimer() {
 function SALR_TimerTick() {
    if ( SALR_PageTimerCount > 0 && persistObject ) {
       persistObject.PingTimer();
-   }
-}
-
-function SALR_SyncTick(force,trace) {
-   var xforce = force ? true : false;
-   trace = (trace==true) ? true : false;
-   if (persistObject) {
-      var res;
-		if(trace) {
-         res = persistObject.PerformRemoteSync(xforce, function(){}, function(a){alert(a);});
-		} else {
-         res = persistObject.PerformRemoteSync(xforce, function(){}, function(a){});
-		}
-
-		if (xforce) {
-			alert("res.bad = "+res.bad+"\nres.msg = "+res.msg);
-		}
    }
 }
 
@@ -2513,8 +2490,6 @@ try
 	}
 
 	setInterval(SALR_TimerTick, 1000);
-	setInterval(function(){SALR_SyncTick(false, false);}, 60 * 1000);
-	setTimeout(function(){SALR_SyncTick(false, false);}, 10);
 
 	if (persistObject && persistObject.LastRunVersion != persistObject.SALRversion)
 	{

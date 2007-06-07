@@ -116,8 +116,6 @@ pref('extensions.salastread.showSAToolsMenu', false);
 //FILE SETTINGS
 pref('extensions.salastread.databaseStoragePath', '%profile%salastread.sqlite');
 pref('extensions.salastread.forumListStoragePath', '%profile%saforumlist.xml');
-pref('extensions.salastread.remoteSyncStorageUrl', 'ftp://username:password@example.com/.salastread.syncdata');
-pref('extensions.salastread.useRemoteSyncStorage', false);
 pref('extensions.salastread.expireMinAge', 7);
 
 //OTHER RANDOM OPTIONS

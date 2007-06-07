@@ -17,11 +17,10 @@ function SALR_vidClick(e)
 	}
 	else
 	{
-		videoIdSearch = link.href.match(/^http\:\/\/video\.google\.com\/videoplay\?docid=([-0-9]+)/);
-		videoId = videoIdSearch[2];
+		videoId = link.href.match(/^http\:\/\/video\.google\.com\/videoplay\?docid=([-0-9]+)/)[1];
 		videoSrc = "google";
 	}
-
+	
 	//if they click again hide the video
 	var video = link.nextSibling.firstChild;
 	if(video && video.className == 'salr_video') {
