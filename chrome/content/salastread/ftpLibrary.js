@@ -12,6 +12,7 @@ function FTPTransferObject() {
 }
 
 FTPTransferObject.prototype = {
+	
 	Components: null,
 
 	// what is a channel?
@@ -88,10 +89,12 @@ FTPTransferObject.prototype = {
 	// @params: (URI) url of remote file, (string) local file path, (function) callback
 	// @return: nothing
 	getFile: function(url, localFile, callback) {
+		Components.utils.reportError(url + " : " + localFile);
+	
 		var channel = this._getChannelForUrl(url);
 			channel.loadFlags |= this.Components.interfaces.nsIRequest.LOAD_BYPASS_CACHE;
 		var that = this;
-		this._sl = this.makeStreamListener(this, url, function(s,d) { that._writeToFile(s,d,localFile,callback); });
+		this._sl = this.makeStreamListener(this, url, function(s, d) { that._writeToFile(s, d, localFile, callback); });
 		this._sl.Components = this.Components;
 		channel.asyncOpen(this._sl, null);
 	},
@@ -110,13 +113,17 @@ FTPTransferObject.prototype = {
 				file.create(this.Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 420);
 			}
 			
-			var outputStream = this.Components.classes["@mozilla.org/network/file-output-stream;1"]
+			var outputStream = this.Components.classes["@mozilla.org/network/safe-file-output-stream;1"]
 								.createInstance(this.Components.interfaces.nsIFileOutputStream);
 			outputStream.init(file, 0x04 | 0x08 | 0x20, 420, 0);
 			
 			var result = outputStream.write(data, data.length);
 			
-			outputStream.close();
+			if (outputStream instanceof this.Components.interfaces.nsISafeOutputStream) {
+				outputStream.finish();
+			} else {
+				outputStream.close();
+			}
 		}
 		callback(status);
 	},
@@ -144,28 +151,35 @@ FTPTransferObject.prototype = {
 	},
 
 	// makes a stream listener (durrr)
-	// @params: (?) owner, (string) url, (function) callback
+	// @params: (object) owner, (string) url, (function) callback
 	// @return: (object) stream listener
 	makeStreamListener: function(owner, url, callback) {
 		var wrap = function(a,b) { callback(a,b); };
 		var xCom = this.Components;
 		return {
-			owner: owner,
-			data: "",
-			url: url,
-			callback: wrap,
-			Components: xCom,
+			owner : owner,
+			data : "",
+			url : url,
+			callback : wrap,
+			Components : xCom,
 
 			onStartRequest: function(request, context) { },
+			
 			onStopRequest: function(request, context, status) {
 				this.callback(status, this.data);
 				this.owner._sl = null;
 			},
+			
 			onDataAvailable: function(request, context, inStr, sourceOffset, count) {
-				var sis = this.Components.classes["@mozilla.org/scriptableinputstream;1"]
-							.createInstance(this.Components.interfaces.nsIScriptableInputStream);
-				sis.init(inStr);
-				this.data += sis.read(count);
+				Components.utils.reportError(count);
+				
+				var bis = this.Components.classes["@mozilla.org/binaryinputstream;1"]
+							.createInstance(this.Components.interfaces.nsIBinaryInputStream);
+				bis.setInputStream(inStr);
+				var input = null;
+				bis.readBytes(count, input);
+				
+				this.data += input;
 			}
 		};
 	},

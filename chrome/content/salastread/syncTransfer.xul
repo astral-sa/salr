@@ -9,13 +9,15 @@
         onerror="winError();"
         title="SALR Remote Sync">
 
- <script language="JavaScript" src="chrome://salastread/content/syncTransfer.js" />
+	<script language="JavaScript" src="chrome://salastread/content/syncTransfer.js" />
 
- <description>
-  Please wait while SALR synchronizes your thread data to
-  the remote server...
- </description>
- <separator/>
- <text id="stat" value="Starting..." />
+	<description>
+		Please wait while SALR synchronizes your thread data to
+		the remote server...
+	</description>
+	
+	<separator/>
+	
+	<text id="stat" value="Starting..." />
 
 </dialog>
