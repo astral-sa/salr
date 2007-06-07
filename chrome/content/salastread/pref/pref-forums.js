@@ -4,7 +4,7 @@ function initForums() {
 }
 
 function toggleNewReCount() {
-	if(document.getElementById("newReCount").checked) {
+	if(document.getElementById("newReCount").checked && !document.getElementById("newReCount").disabled) {
 		document.getElementById("newReCountNewLine").disabled = false;
 	} else {
 		document.getElementById("newReCountNewLine").disabled = true;

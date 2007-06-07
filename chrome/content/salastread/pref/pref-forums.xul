@@ -10,7 +10,7 @@
 			<preference id="enableForumNavigator"		name="extensions.salastread.enableForumNavigator" 	type="bool"/>
 			
 			<preference id="disableNewReCount" 			name="extensions.salastread.disableNewReCount" 		type="bool" inverted="true"/>
-			<preference id="newPostCountUseOneLine" 	name="extensions.salastread.newPostCountUseOneLine" type="bool"/>
+			<preference id="newPostCountUseOneLine" 	name="extensions.salastread.newPostCountUseOneLine" type="bool" inverted="true"/>
 
 			<preference id="showSALRIcons"				name="extensions.salastread.showSALRIcons" 			type="bool"/>
 			<preference id="showGoToLastIcon"			name="extensions.salastread.showGoToLastIcon" 		type="bool"/>

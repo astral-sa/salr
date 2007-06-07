@@ -557,7 +557,6 @@ function handleThreadList(doc, forumid, flags) {
 	var adminBackground = persistObject.getPreference("adminBackground");
 	var highlightUsernames = persistObject.getPreference("highlightUsernames");
 	var dontBoldNames = persistObject.getPreference("dontBoldNames");
-	var disableForumsLastReadButton = persistObject.getPreference("disableForumsLastReadButton");
 	var showSALRIcons = persistObject.getPreference("showSALRIcons");
 
 	// We'll need lots of variables for this
@@ -661,6 +660,7 @@ function handleThreadList(doc, forumid, flags) {
 				persistObject.StoreOPData(threadId, threadOPId);
 			}
 			
+			//thread highlighting
 			if (!dontHighlightThreads)
 			{
 				// If there are new posts
@@ -673,23 +673,6 @@ function handleThreadList(doc, forumid, flags) {
 						persistObject.setThreadTitle(threadId, threadTitle);
 					}
 					
-					if (disableForumsLastReadButton)
-					{
-						newPosts.removeChild(newPosts.firstChild);
-					}
-					
-					if (!disableNewReCount)
-					{
-						threadRe = persistObject.selectSingleNode(doc, newPosts, "A//B").innerHTML;
-						if (newPostCountUseOneLine)
-						{
-							threadRepliesBox.innerHTML += '&nbsp;(' + threadRe + ')';
-						}
-						else
-						{
-							threadRepliesBox.innerHTML += '<br />(' + threadRe + ')';
-						}
-					}
 					persistObject.colorThread(doc, thread, forumid, readWithNewLight, readWithNewDark);
 				}
 				else
@@ -705,7 +688,22 @@ function handleThreadList(doc, forumid, flags) {
 					threadRepliesBox.style.backgroundColor = postedInThreadRe;
 				}
 			}
+			//SALR replacing forums buttons
 			if (showSALRIcons) {
+				if (!disableNewReCount && newPosts)
+				{
+					threadRe = persistObject.selectSingleNode(doc, newPosts, "A//B").innerHTML;
+					if (newPostCountUseOneLine && threadRe)
+					{
+						threadRepliesBox.innerHTML += '&nbsp;(' + threadRe + ')';
+					}
+					else
+					{
+						threadRepliesBox.innerHTML += '<br />(' + threadRe + ')';
+					}
+				}
+				
+				
 				if(!newPosts)
 				{
 					newPosts = doc.createElement("div");
