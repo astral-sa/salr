@@ -1,42 +1,51 @@
 <?xml version="1.0"?>
-<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
-         xmlns:NC="http://home.netscape.com/NC-rdf#"
-         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-  <RDF:Description RDF:about="rdf:#$vx0C81"
-                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="2.0"
-                   em:maxVersion="3.0a6pre" />
-  <RDF:Description RDF:about="urn:mozilla:install-manifest"
-                   em:id="{fc6339b8-9581-4fc7-b824-dffcb091fcb7}"
-                   em:version="1.99.070606"
-                   em:type="2"
-                   em:homepageURL="http://code.google.com/p/salr/"
-                   em:iconURL="chrome://salastread/skin/salastread-small.png"
-                   em:aboutURL="chrome://salastread/content/about.xul"
-                   em:optionsURL="chrome://salastread/content/pref.xul"
-                   em:updateURL="https://svn.bountysource.com/salr/trunk/salr.rdf"
-                   em:name="SomethingAwful Last Read Enhancement"
-                   em:description="Adds &quot;Last Read&quot; support to the Something Awful forums"
-                   em:creator="Tim Fries (biznatchio)">
-    <em:targetApplication RDF:resource="rdf:#$vx0C81"/>
-    <em:targetApplication RDF:resource="rdf:#$Ax0C81"/>
-    <em:developer>Ben Dusinberre (duz)</em:developer>
-    <em:developer>Pat Cavit (Tivac)</em:developer>
-    <em:contributor>Joseph Wain (uncut product)</em:contributor>
-    <em:contributor>(8ender)</em:contributor>
-    <em:contributor>(LonelyKing)</em:contributor>
-    <em:contributor>(Sebbe)</em:contributor>
-    <em:contributor>(Pahalial)</em:contributor>
-    <em:contributor>(ctz)</em:contributor>
-    <em:contributor>(Defiler)</em:contributor>
-    <em:contributor>(Shii)</em:contributor>
-    <em:contributor>(cheesypeanut)</em:contributor>
-    <em:contributor>(cygnustm)</em:contributor>
-    <em:contributor>(alex.vidal)</em:contributor>
-    <em:contributor>(SFrost007)</em:contributor>
-  </RDF:Description>
-  <RDF:Description RDF:about="rdf:#$Ax0C81"
-                   em:id="{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}"
-                   em:minVersion="1.5"
-                   em:maxVersion="1.5a" />
-</RDF:RDF>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+	<Description about="urn:mozilla:install-manifest">
+		<!-- Extension Settings -->
+		<em:id>{fc6339b8-9581-4fc7-b824-dffcb091fcb7}</em:id>
+		<em:version>1.99.070606</em:version>
+		<em:type>2</em:type>
+		<em:homepageURL>http://salr.bountysource.com/</em:homepageURL>
+		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
+		<em:aboutURL>chrome://salastread/content/about.xul</em:aboutURL>
+		<em:optionsURL>chrome://salastread/content/pref.xul</em:optionsURL>
+		<em:updateURL>https://svn.bountysource.com/salr/trunk/salr.rdf</em:updateURL>
+
+		<!-- Supported Applications -->
+		<em:targetApplication>
+			<!-- Firefox -->
+			<Description>
+				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+				<em:minVersion>2.0</em:minVersion>
+				<em:maxVersion>3.0a5pre</em:maxVersion>
+			</Description>
+		</em:targetApplication>
+		<em:targetApplication>
+			<!-- SeaMonkey -->
+			<Description>
+				<em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
+				<em:minVersion>1.5</em:minVersion>
+				<em:maxVersion>1.5a</em:maxVersion>
+			</Description>
+		</em:targetApplication>
+
+		<!-- Front End MetaData -->
+		<em:name>SomethingAwful Last Read Enhancement</em:name>
+		<em:description>Adds "Last Read" support to the Something Awful forums</em:description>
+		<em:creator>Tim Fries (biznatchio)</em:creator>
+		<em:developer>Ben Dusinberre (duz)</em:developer>
+		<em:developer>Pat Cavit (Tivac)</em:developer>
+		<em:contributor>Joseph Wain (uncut product)</em:contributor>
+		<em:contributor>(8ender)</em:contributor>
+		<em:contributor>(LonelyKing)</em:contributor>
+		<em:contributor>(Sebbe)</em:contributor>
+		<em:contributor>(Pahalial)</em:contributor>
+		<em:contributor>(ctz)</em:contributor>
+		<em:contributor>(Defiler)</em:contributor>
+		<em:contributor>(Shii)</em:contributor>
+		<em:contributor>(cheesypeanut)</em:contributor>
+		<em:contributor>(cygnustm)</em:contributor>
+		<em:contributor>(alex.vidal)</em:contributor>
+		<em:contributor>(SFrost007)</em:contributor>
+	</Description>
+</RDF>
