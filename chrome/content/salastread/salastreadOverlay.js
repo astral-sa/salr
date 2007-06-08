@@ -757,8 +757,6 @@ function handleThreadList(doc, forumid, flags) {
 function removeThread(evt) {
 	var threadid = this.id.match(/unread_(\d+)/)[1];
 	
-	Components.utils.reportError(threadid);
-	
 	persistObject.removeThread(threadid);
 	
 	//head up from the link: div.newposts, div.title_links, div.title_rel, td.title, tr.thread
