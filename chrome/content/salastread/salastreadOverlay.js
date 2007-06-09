@@ -1751,7 +1751,7 @@ function SALR_runConfig(page, args) {
 				.getService(Components.interfaces.nsIPrefBranch);
 
     var instantApply = pref.getBoolPref("browser.preferences.instantApply");
-	var features = "chrome,titlebar,toolbar,centerscreen" + (instantApply ? ",dialog=no" : ",modal");
+	var features = "chrome,titlebar,toolbar,centerscreen,resizable" + (instantApply ? ",dialog=no" : ",modal");
 
 	openDialog("chrome://salastread/content/pref.xul", "Preferences", features, page, { "args" : args });
 }
