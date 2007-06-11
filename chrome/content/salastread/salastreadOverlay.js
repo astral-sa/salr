@@ -866,7 +866,7 @@ function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signatur
 		}
 
 		quickQuoteAddHidden(doc, newform,"parseurl", parseurl ? "yes" : "");
-		quickQuoteAddHidden(doc, newform,"email", subscribe ? "yes" : "");
+		quickQuoteAddHidden(doc, newform,"bookmark", subscribe ? "yes" : "");
 		quickQuoteAddHidden(doc, newform,"disablesmilies", disablesmilies ? "yes" : "");
 		quickQuoteAddHidden(doc, newform,"signature", signature ? "yes" : "");
 		quickQuoteAddHidden(doc, newform,"message", message);
