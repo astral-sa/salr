@@ -20,7 +20,7 @@ function SALR_vidClick(e)
 		videoId = link.href.match(/^http\:\/\/video\.google\.com\/videoplay\?docid=([-0-9]+)/)[1];
 		videoSrc = "google";
 	}
-	
+
 	//if they click again hide the video
 	var video = link.nextSibling.firstChild;
 	if(video && video.className == 'salr_video') {
@@ -414,7 +414,8 @@ salrPersistObject.prototype = {
 		return ignoredThreads;
 	},
 
-	// Returns an associative array of the starred threads with the thread id as the key and the thread title as the value
+	// Returns an associative array of the starred threads with the thread id as the key
+	// and the thread title as the value
 	get starList()
 	{
 		var threadid, threadtitle, starredThreads = new Array();
@@ -865,7 +866,10 @@ salrPersistObject.prototype = {
 		{
 			var postbutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
 			var inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
-			fid = inpostbutton[1];
+			if (inpostbutton != null)
+			{
+				fid = inpostbutton[1];
+			}
 		}
 		if (fid == 0)
 		{
@@ -1527,7 +1531,7 @@ salrPersistObject.prototype = {
 			var lpGo = doc.createElement("a");
 				lpGo.setAttribute("title", link.firstChild.innerHTML +  " unread posts");
 				lpGo.setAttribute("href", link.href);
-				
+
 			var lpIcon = doc.createElement("img");
 				lpIcon.setAttribute("src", this.getPreference("goToLastReadPost"));
 				lpIcon.style.cssFloat = "right";
@@ -1542,20 +1546,20 @@ salrPersistObject.prototype = {
 	//gets the unread posts count for a thread using the built in forum data.
 	//@param: document object, title box dom element
 	//@return: int number of unread posts
-	getThreadUnreadPostCount: function ( doc, titleBox ) 
+	getThreadUnreadPostCount: function ( doc, titleBox )
 	{
 		var newPostsBox = this.selectSingleNode(doc,titleBox, "div[contains(@class,'newposts')]");
 		var retNewPostCount = 0;
-		
-		if ( newPostsBox ) 
+
+		if ( newPostsBox )
 		{
 			var countElement = this.selectSingleNode(doc,newPostsBox,"a/b");
-			try 
+			try
 			{
-				retNewPostCount = parseInt(countElement.innerHTML); 
+				retNewPostCount = parseInt(countElement.innerHTML);
 			} catch (e) { }
 		}
-		
+
 		return retNewPostCount;
 	},
 
@@ -1745,6 +1749,7 @@ salrPersistObject.prototype = {
 				link.href.search(/paintedover\.com/i) == -1 && // PaintedOver sucks, we can't embed them
 				link.href.search(/xs\.to/i) == -1 && // xs.to sucks, we can't embed them
 				link.href.search(/imagesocket\.com/i) == -1 && // ImageSocket sucks, we can't embed them
+				link.href.search(/imgplace\.com/i) == -1 && // ImageSocket sucks, we can't embed them
 				link.href.search(/wiki(.*)Image/i) == -1 && // Wikipedia does funky stuff with their images too
 				link.innerHTML != "") // Quotes have fake links for some reason
 			{
