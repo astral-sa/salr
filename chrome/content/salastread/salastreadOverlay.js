@@ -462,13 +462,13 @@ function handleForumDisplay(doc)
 		"inGasChamber" : persistObject.inGasChamber(forumid)
 	};
 
-		if (!persistObject.gotForumList)
-		{
+	if (!persistObject.gotForumList)
+	{
 		// Replace this function once the AJAXified JSON is added to the forums
 		// function will check timestamp which is stored in preferences
-         grabForumList(doc);
-         persistObject.gotForumList = true;
-		}
+		 grabForumList(doc);
+		 persistObject.gotForumList = true;
+	}
 
 	if (doc.getElementById('forum') == null) {
 		// /!\ Forum table isn't there, abort! /!\
@@ -481,78 +481,76 @@ function handleForumDisplay(doc)
 	}
 
 	// Start a transaction to try and reduce the likelihood of database corruption
-		var ourTransaction = false;
-		if (persistObject.database.transactionInProgress) {
-			ourTransaction = true;
-			persistObject.database.beginTransactionAs(persistObject.database.TRANSACTION_DEFERRED);
-		}
+	var ourTransaction = false;
+	if (persistObject.database.transactionInProgress) {
+		ourTransaction = true;
+		persistObject.database.beginTransactionAs(persistObject.database.TRANSACTION_DEFERRED);
+	}
 
-		// Insert the forums paginator & mouse gestures
-		if (persistObject.getPreference("enableForumNavigator"))
-		{
-			persistObject.addPagination(doc);
-		}
-		if (persistObject.getPreference("gestureEnable"))
-		{
-			doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
-			doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
-		}
+	// Insert the forums paginator & mouse gestures
+	if (persistObject.getPreference("enableForumNavigator"))
+	{
+		persistObject.addPagination(doc);
+	}
+	if (persistObject.getPreference("gestureEnable"))
+	{
+		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
+		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
+	}
 
-		// Replace post button
-		if (persistObject.getPreference("useQuickQuote") && !flags.inGasChamber)
-		{
-			var postbutton = persistObject.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
-		if (postbutton)
-		{
-				attachQuickQuoteHandler(undefined,doc,persistObject.turnIntoQuickButton(doc, postbutton, forumid),"",0);
-			}
+	// Replace post button
+	if (persistObject.getPreference("useQuickQuote") && !flags.inGasChamber)
+	{
+		var postbutton = persistObject.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
+	if (postbutton)
+	{
+			attachQuickQuoteHandler(undefined,doc,persistObject.turnIntoQuickButton(doc, postbutton, forumid),"",0);
 		}
+	}
 
-		// Snag Forum Moderators
-		if (!flags.inGasChamber)
+	// Snag Forum Moderators
+	if (!flags.inGasChamber)
+	{
+		var modarray = doc.getElementById('mods').getElementsByTagName('a');
+		var modcount = modarray.length;
+		for (i = 0; i < modcount; i++)
 		{
-			var modarray = doc.getElementById('mods').getElementsByTagName('a');
-			var modcount = modarray.length;
-			for (i=0; i<modcount; i++)
+			userid = modarray[i].href.match(/userid=(\d+)/i)[1];
+			username = modarray[i].innerHTML;
+			if (!persistObject.isMod(userid))
 			{
-				userid = modarray[i].href.match(/userid=(\d+)/i)[1];
-				username = modarray[i].innerHTML;
-				if (!persistObject.isMod(userid))
-				{
 				// TODO: Change this to create a array and then merge it with the mod list array
 				// and if different, store it in the database
-					persistObject.addMod(userid, username);
-				}
+				persistObject.addMod(userid, username);
 			}
 		}
+	}
 
 	if (!flags.inDump)
+	{
+		// Capture and store the post icon # -> post icon filename relationship
+		var iconNumber, iconFilename;
+		var postIcons = persistObject.selectNodes(doc, doc.getElementById("filtericons"), "A[contains(@href,'posticon=')]");
+		for (i in postIcons)
 		{
-			// Capture and store the post icon # -> post icon filename relationship
-			var iconNumber, iconFilename;
-			var postIcons = persistObject.selectNodes(doc, doc.getElementById("filtericons"), "A[contains(@href,'posticon=')]");
-			for (i in postIcons)
+			if ((postIcons[i].href.search(/posticon=(\d+)/i) > -1) && (postIcons[i].firstChild.src.search(/posticons\/(.*)/i) > -1))
 			{
-				if ((postIcons[i].href.search(/posticon=(\d+)/i) > -1) &&
-					(postIcons[i].firstChild.src.search(/posticons\/(.*)/i) > -1))
-				{
-				// TODO: Change this to store the icons as an array and merge them with the post icon list array
-				// and if different, store it in the database
-					iconNumber = parseInt(postIcons[i].href.match(/posticon=(\d+)/i)[1]);
-					iconFilename = postIcons[i].firstChild.src.match(/posticons\/(.*)/i)[1];
-					persistObject.addIcon(iconNumber, iconFilename);
-				}
+			// TODO: Change this to store the icons as an array and merge them with the post icon list array
+			// and if different, store it in the database
+				iconNumber = parseInt(postIcons[i].href.match(/posticon=(\d+)/i)[1]);
+				iconFilename = postIcons[i].firstChild.src.match(/posticons\/(.*)/i)[1];
+				persistObject.addIcon(iconNumber, iconFilename);
 			}
 		}
+	}
 
-		handleThreadList(doc, forumid, flags);
+	handleThreadList(doc, forumid, flags);
 
-		if (ourTransaction)
-		{
+	if (ourTransaction)
+	{
 		// Finish off the transaction
-			persistObject.database.commitTransaction();
-		}
-
+		persistObject.database.commitTransaction();
+	}
 }
 
 //handle highlighting of user cp/forum listings
@@ -601,12 +599,9 @@ function handleThreadList(doc, forumid, flags) {
 			continue;
 		}
 
-		//threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[contains(@href, 'threadid=')]");
-		threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[contains(@class, 'thread_title')]");
-		//if(!threadTitleLink)threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
-		if(!threadTitleLink)continue;
+		threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
+		if(!threadTitleLink) continue;
 		threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1]);
-		//threadDetails[threadId] = new Object();
 		threadTitle = threadTitleLink.innerHTML;
 		threadDetails = persistObject.getThreadDetails(threadId);
 		if (threadDetails['ignore'])
@@ -668,7 +663,7 @@ function handleThreadList(doc, forumid, flags) {
 			}
 		}
 
-		var newPosts = persistObject.selectSingleNode(doc, threadTitleBox, "DIV//DIV[contains(@class, 'newposts')]");
+		var newPosts = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'newposts')]");
 		// If this thread is in the DB as being read
 		if (threadDetails || newPosts)
 		{
@@ -714,7 +709,7 @@ function handleThreadList(doc, forumid, flags) {
 			if (showSALRIcons) {
 				if (!disableNewReCount && newPosts)
 				{
-					threadRe = persistObject.selectSingleNode(doc, newPosts, "A//B").innerHTML;
+					threadRe = persistObject.selectSingleNode(doc, newPosts, "B").innerHTML;
 					if (newPostCountUseOneLine && threadRe)
 					{
 						threadRepliesBox.innerHTML += '&nbsp;(' + threadRe + ')';
@@ -725,32 +720,27 @@ function handleThreadList(doc, forumid, flags) {
 					}
 				}
 
-
-				if(!newPosts)
+				var iconHolder = doc.createElement("div");
+					iconHolder.className = "salrIcons";
+				
+				threadTitleLink.parentNode.insertBefore(iconHolder, threadTitleLink);
+				
+				if(newPosts)
 				{
-					newPosts = doc.createElement("div");
-					newPosts.className = "newposts";
-					threadTitleLink.parentNode.insertBefore(newPosts, threadTitleLink);
-				}
-
-				newPosts.className += " salrIcons";
-				var unreadLink = newPosts.getElementsByTagName('a')[0];
-				if(unreadLink)
-				{
-					newPosts.removeChild(unreadLink);
+					newPosts.parentNode.removeChild(newPosts);
 				}
 
 				if (showUnvisitIcon && swapIconOrder)
 				{
-					persistObject.insertUnreadIcon(doc, newPosts, threadId).addEventListener("click", removeThread, false);
+					persistObject.insertUnreadIcon(doc, iconHolder, threadId).addEventListener("click", removeThread, false);
 				}
-				if (showGoToLastIcon && (unreadLink || alwaysShowGoToLastIcon))
+				if (showGoToLastIcon && (newPosts || alwaysShowGoToLastIcon))
 				{
-					persistObject.insertLastIcon(doc, newPosts, unreadLink);
+					persistObject.insertLastIcon(doc, iconHolder, newPosts);
 				}
 				if (showUnvisitIcon && !swapIconOrder)
 				{
-					persistObject.insertUnreadIcon(doc, newPosts, threadId).addEventListener("click", removeThread, false);
+					persistObject.insertUnreadIcon(doc, iconHolder, threadId).addEventListener("click", removeThread, false);
 				}
 			}
 		}
