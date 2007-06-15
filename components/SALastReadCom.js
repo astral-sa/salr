@@ -6,9 +6,16 @@ function SALR_vidClick(e)
 	e.stopPropagation();
 
 	var link = e.target;
+	
+	//if they click again hide the video
+	var video = link.nextSibling.firstChild;
+	if(video && video.className == 'salr_video') {
+			link.parentNode.removeChild(link.nextSibling);
+			return;
+	}
 
 	//figure out the video type
-	var videoId, videoSrc;
+	var videoId, videoSrc, videoTLD;
 	var videoIdSearch = link.href.match(/^http\:\/\/(www\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
 	if (videoIdSearch)
 	{
@@ -17,15 +24,10 @@ function SALR_vidClick(e)
 	}
 	else
 	{
-		videoId = link.href.match(/^http\:\/\/video\.google\.com\/videoplay\?docid=([-0-9]+)/)[1];
+		var match = link.href.match(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/);
+		videoTLD = match[1];
+		videoId = match[2];
 		videoSrc = "google";
-	}
-
-	//if they click again hide the video
-	var video = link.nextSibling.firstChild;
-	if(video && video.className == 'salr_video') {
-			link.parentNode.removeChild(link.nextSibling);
-			return;
 	}
 
 	//create the embedded elements (p containing video for linebreaky goodness)
@@ -41,7 +43,7 @@ function SALR_vidClick(e)
 	{
 		case "google":
 			embed.setAttribute('flashvars', '');
-			embed.setAttribute('src', 'http://video.google.com/googleplayer.swf?docId=' + videoId + '&hl=en');
+			embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en');
 			break;
 		case "youtube":
 			embed.setAttribute('quality',"high");
@@ -1792,7 +1794,7 @@ salrPersistObject.prototype = {
 			}
 			if (this.getPreference("enableVideoEmbedder") &&
 				(link.href.search(/^http\:\/\/(www\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/i) > -1 ||
-				 link.href.search(/^http\:\/\/video\.google\.com\/videoplay\?docid=([-0-9]+)/i) > -1))
+				 link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1))
 			{
 				link.style.backgroundColor = this.getPreference("videoEmbedderBG");
 				link.addEventListener('click', SALR_vidClick, false);
