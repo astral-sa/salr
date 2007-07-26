@@ -722,9 +722,9 @@ function handleThreadList(doc, forumid, flags) {
 
 				var iconHolder = doc.createElement("div");
 					iconHolder.className = "salrIcons";
-				
+
 				threadTitleLink.parentNode.insertBefore(iconHolder, threadTitleLink);
-				
+
 				if(newPosts)
 				{
 					newPosts.parentNode.removeChild(newPosts);
@@ -732,7 +732,8 @@ function handleThreadList(doc, forumid, flags) {
 
 				if (showUnvisitIcon && swapIconOrder)
 				{
-					persistObject.insertUnreadIcon(doc, iconHolder, threadId).addEventListener("click", removeThread, false);
+					// Forums don't support this at the moment
+					//persistObject.insertUnreadIcon(doc, iconHolder, threadId).addEventListener("click", removeThread, false);
 				}
 				if (showGoToLastIcon && (newPosts || alwaysShowGoToLastIcon))
 				{
@@ -740,7 +741,7 @@ function handleThreadList(doc, forumid, flags) {
 				}
 				if (showUnvisitIcon && !swapIconOrder)
 				{
-					persistObject.insertUnreadIcon(doc, iconHolder, threadId).addEventListener("click", removeThread, false);
+					//persistObject.insertUnreadIcon(doc, iconHolder, threadId).addEventListener("click", removeThread, false);
 				}
 			}
 		}
@@ -1162,13 +1163,6 @@ function handleShowThread(doc) {
 			var threadClosed = true;
 		}
 
-		// draw the new rate thread box
-		var rateThread = persistObject.selectSingleNode(doc,doc,"//DIV[contains(@class,'threadrate')]");
-		if ( rateThread )
-		{
-			SALR_drawNewRateThreadBox(doc,rateThread,threadid);
-		}
-
 		// Replace post button
 		if (persistObject.getPreference("useQuickQuote") && !inGasChamber)
 		{
@@ -1456,138 +1450,6 @@ function handleShowThread(doc) {
 }
 
 
-//replaces the standard rate thread box with a new one
-//@param: doc object, container of the rate box, id of the thread
-function SALR_drawNewRateThreadBox ( doc, container, threadId ) {
-	if ( persistObject.getPreference("enableThreadRating") ) {
-		// build the html for the rating box
-		if ( container ) {
-			container.innerHTML = "";
-			container.className += " salrRateThread";
-			// create the "rate thread" label
-			var div = doc.createElement('div');
-			div.setAttribute("class","salrRateThreadlabel");
-			div.innerHTML = "Rate Thread:";
-			container.appendChild(div);
-
-			var form = doc.createElement("form");
-				form.setAttribute("id","rateform");
-				form.setAttribute("action","threadrate.php");
-				form.setAttribute("method","post");
-				form.setAttribute("name","rateform");
-
-			var rateImage = doc.createElement("img");
-				rateImage.setAttribute("src","chrome://salastread/skin/blank.png");
-				rateImage.setAttribute("id","salrRateImage");
-				rateImage.setAttribute("class","salrratingstars salrstars0");
-				rateImage.setAttribute("title","This thread means nothing to me.");
-				rateImage.addEventListener("mousemove", function(evt) { SALR_ThreadRateMM(rateImage,evt); }, true);
-				rateImage.addEventListener("mouseout", function(evt) { SALR_ThreadRateMM(rateImage,null); }, true);
-				rateImage.addEventListener("click", function(evt) { SALR_ThreadRateSubmit(doc); }, true);
-
-			form.appendChild(rateImage);
-
-			var diggAnchor = doc.createElement("a");
-			diggAnchor.setAttribute("href","http://digg.com/submit?phase=2&url="+doc.location.href);
-
-			var diggImage = doc.createElement("img");
-				diggImage.setAttribute("class","salrdigg");
-				diggImage.setAttribute("src","chrome://salastread/skin/blank.png");
-				diggImage.setAttribute("title","digg this thread!");
-				diggImage.setAttribute("id","salrdiggbutton");
-				diggImage.addEventListener("mousemove", function (evt) { SALR_ThreadRateMM(rateImage,evt); }, true);
-				diggImage.addEventListener("mouseout",function(evt) { SALR_ThreadRateMM(rateImage,null); }, true);
-				diggAnchor.appendChild(diggImage);
-
-			form.appendChild(diggAnchor);
-
-			var input = doc.createElement("input");
-				input.setAttribute("type","hidden");
-				input.setAttribute("id","salrRatingValue");
-				input.setAttribute("name","vote");
-				input.setAttribute("value","0");
-			form.appendChild(input);
-
-			input = doc.createElement("input");
-			input.setAttribute("type","hidden");
-			input.setAttribute("name","threadid");
-			input.setAttribute("value",threadId);
-			form.appendChild(input);
-
-			container.appendChild(form);
-		}
-	}
-}
-
-
-//Array of strings to set the title of the rate image.
-//@type {String[]}
-var salrRatingTitles = [ "This thread means nothing to me.",
-						 "This thread sucks ass.",
-						 "This is not a good thread.",
-						 "This is a mediocre thread.",
-						 "This is a somewhat entertaining thread.",
-						 "Excellent thread!" ];
-
-//Handles the mouse move event of the rate thread image
-//@param {Element} obj the image element
-//@param {Event} evt The event object
-function SALR_ThreadRateMM(obj, evt) {
-	var rateIndex = 0;
-	if (evt)
-	{
-		// find the position of the mouse in the element
-		var mouseX = (evt.clientX - obj.offsetLeft);
-		// get the rating index based on the position
-		rateIndex = SALR_ThreadRateGetRateIndex(mouseX);
-	}
-	else
-	{
-		var rateIndex = 0;
-	}
-
-	// set the image info
-	SALR_ThreadRateSetRateImageInfo ( obj, rateIndex );
-}
-
-//Handles the click event of the rate thread image
-//@param {Object} doc The document object.
-function SALR_ThreadRateSubmit ( doc )
-{
-	var rateForm = doc.getElementById("rateform");
-	if ( rateForm )
-	{
-		rateForm.submit();
-	}
-}
-
-//Sets the value of the rating to a hidden field and changes the css class of the image.
-//@param {Element} obj The image element
-//@param {int} index The rating value which is also the index of the title in the array and part of the css class
-function SALR_ThreadRateSetRateImageInfo ( obj, index ) {
-	if ( obj ) {
-		var doc = obj.ownerDocument;
-		obj.className = "salrratingstars salrstars" + index;
-		obj.title = salrRatingTitles[index];
-		var valField = doc.getElementById("salrRatingValue");
-		if ( valField )
-		{
-			valField.value = index;
-		}
-	}
-}
-
-//gets the rating index based on the X position of the mouse
-//@param {int} x The mouse x position
-//@return 0 - 5 for the rating value
-function SALR_ThreadRateGetRateIndex(x) {
-	if ( x > 2 && x < 20 ) return 1;
-	else if  ( x > 19 && x < 38 ) return 2;
-	else if ( x > 37 && x < 56 ) return 3;
-	else if ( x > 55 && x < 74 ) return 4;
-	else if ( x > 73 && x < 129 ) return 5;
-	else return 0;
-}
 
 function handleSupport(doc)
 {
@@ -2084,9 +1946,6 @@ function salastread_windowOnLoad(e) {
 
 					//insert content CSS
 					SALR_insertCSS("chrome://salastread/content/contentStyling.css", doc);
-
-					// insert thread rate box css
-					SALR_insertCSS("chrome://salastread/content/threadRate.css",doc);
 
 					// why the FUCK doesn't this work?
 					var hresult = 0;
