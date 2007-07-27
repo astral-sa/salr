@@ -573,6 +573,10 @@ function getvBcode(command) {
 		case "super":
 			insertTextAtCursor("[super]" + str + "[/super]");
 			break;
+			
+		case "spoiler":
+			insertTextAtCursor("[spoiler]" + str + "[/spoiler]");
+			break;
 		
 		default : alert("vBcode error! No menu option selected.");
 	}
