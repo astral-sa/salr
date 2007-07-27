@@ -8,13 +8,59 @@ function chooseImage() {
       fp.appendFilters( nsIFilePicker.filterImages );
       var res = fp.show();
       if ( res == nsIFilePicker.returnOK ) {
-         var ufile = document.getElementById("userfile[1]");
+    	 var wafflemode = document.getElementById("urlopt");
+         wafflemode.value = "file";
+         var ufile = document.getElementById("file");
          //alert("filename = " + fp.file.target);
          ufile.value = fp.file.path;
          //alert("ufilename = " + ufile.value);
          document.getElementById("uploaderform").submit();
          document.getElementById("choosebtn").label = "Please wait...";
          document.getElementById("choosebtn").disabled = true;
+         document.getElementById("choosehttpbtn").disabled = true;
+
+/*
+         var itag = document.createElement("img", "http://www.w3.org/1999/xhtml");
+         itag.id = "imgTag";
+         itag.src = fp.file.path;
+         itag.style.visibility = "hidden";
+         itag.style.position = "absolute";
+         itag.style.left = "0px";
+         itag.style.top = "0px";
+         document.getElementById("uploaderform").parentNode.appendChild(itag);
+         alert("src="+ fp.file.path+"\nw="+itag.naturalWidth+"\nh="+itag.naturalHeight);
+*/
+
+         //document.getElementById("imgTag").src = fp.file.path;
+
+         document.getElementById("submitframe").addEventListener("DOMContentLoaded", iframeDCL, false);
+      }
+      //alert("uploaded!?");
+   }
+   catch (e) {
+      alert( e + "\nLine: "+ e.lineNumber );
+   }
+}
+
+function chooseHttpImage() {
+   try {
+   
+	  var waffleurl = prompt('Please enter the location of the image you would like to copy to Waffle Images.', '');
+   
+      if (waffleurl) {
+         var wafflemode = document.getElementById("urlopt");
+         wafflemode.value = "url";
+         
+         var waffleformurl = document.getElementById("url");
+         waffleformurl.value = waffleurl;
+         
+         //alert("waffleurl = " + waffleurl);
+         
+         //alert("ufilename = " + ufile.value);
+         document.getElementById("uploaderform").submit();
+         document.getElementById("choosehttpbtn").label = "Please wait...";
+         document.getElementById("choosebtn").disabled = true;
+         document.getElementById("choosehttpbtn").disabled = true;
 
 /*
          var itag = document.createElement("img", "http://www.w3.org/1999/xhtml");

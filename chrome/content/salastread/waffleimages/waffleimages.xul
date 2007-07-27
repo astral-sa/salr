@@ -17,9 +17,7 @@
    <label class="titlelabel" value="WaffleImages Image Upload"/>
   </hbox>
   <description>
-   You can select an image from your hard drive
-   to upload and host through the
-   WaffleImages.com image hosting service. An [IMG] tag will automatically be added to your post.
+   You can select an image from either your hard drive or from a URL to upload / transload and host through the WaffleImages.com image hosting service. An [IMG] tag will automatically be added to your post.
   </description>
   <description>
    See www.waffleimages.com for more information.
@@ -27,9 +25,12 @@
   <spacer flex="1"/>
   <hbox>
    <spacer flex="1"/>
-   <button id="choosebtn" label="Choose an Image..." onclick="chooseImage();"/>
-   <button label="Cancel" onclick="window.close();"/>
+   <button id="choosebtn" label="Load from file..." onclick="chooseImage();"/>
+   <button id="choosehttpbtn" label="Load from URL..." onclick="chooseHttpImage();"/>
    <spacer flex="1"/>
+  </hbox>
+  <hbox pack="center" align="center">
+  <button label="Cancel" onclick="window.close();"/>
   </hbox>
   <spacer flex="1"/>
  </vbox>
@@ -37,8 +38,9 @@
  <html:form class="uploaderform" id="uploaderform" method="post"
             action="http://waffleimages.com/upload"
             enctype="multipart/form-data" target="submitframe"> 
-  <html:input type="hidden" name="mode" value="file"/>
-  <html:input type="file" name="file" id="userfile[1]" />
+  <html:input type="hidden" name="mode" id="urlopt"/>
+  <html:input type="file" name="file" id="file" />
+  <html:input type="hidden" name="url" id="url" />
   <html:input type="hidden" name="tg_format" value="xml" />
   <html:input type="hidden" name="client" value="Firefox SALR 1.15.1912" />
   <html:submit value="Host"/>
