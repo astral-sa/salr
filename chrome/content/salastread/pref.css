@@ -3,5 +3,5 @@ prefwindow#salastreadpref{
 }
 
 prefwindow#salastreadpref > prefpane > vbox.content-box {
-   height: 39em;
+   height: 42em;
 }

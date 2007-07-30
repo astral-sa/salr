@@ -31,9 +31,21 @@
 		
 		<groupbox>
 			<caption label="User Display Options"/>
-			<checkbox preference="resizeCustomTitleText"	label="Shrink Large Custom Title Texts" />
-			<checkbox preference="highlightUsernames" 		label="Highlight interesting and important usernames"/>
-			<checkbox preference="dontBoldNames" 			label="Don't make highlighted usernames bold"/>
+			<grid>
+			    <columns>
+			    	<column flex="1"/>
+					<column flex="2"/>
+				</columns>
+				<rows>
+					<row>
+						<checkbox preference="resizeCustomTitleText"	label="Shrink Large Custom Title Texts" />
+						<checkbox preference="highlightUsernames" 		label="Highlight interesting and important usernames"/>
+					</row>
+					<row>
+						<checkbox preference="dontBoldNames" 			label="Don't make highlighted usernames bold"/>
+					</row>
+				</rows>
+			</grid>
 		</groupbox>
 		
 		<groupbox>
