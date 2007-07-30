@@ -14,12 +14,15 @@
 			<!-- User Colors -->
 			<preference id="adminColor" 		name="extensions.salastread.adminColor" 		type="string"/>
 			<preference id="adminBackground" 	name="extensions.salastread.adminBackground" 	type="string"/>
+			<preference id="adminSubText" 		name="extensions.salastread.adminSubText" 		type="string"/>
 			
 			<preference id="modColor" 			name="extensions.salastread.modColor" 			type="string"/>
 			<preference id="modBackground" 		name="extensions.salastread.modBackground" 		type="string"/>
+			<preference id="modSubText" 		name="extensions.salastread.modSubText" 		type="string"/>
 			
 			<preference id="opColor" 			name="extensions.salastread.opColor" 			type="string"/>
 			<preference id="opBackground" 		name="extensions.salastread.opBackground" 		type="string"/>
+			<preference id="opSubText" 			name="extensions.salastread.opSubText" 			type="string"/>
 			
 			<!-- Various and Sundry Options -->
 			<preference id="dontBoldNames" 			name="extensions.salastread.dontBoldNames" 			type="bool"/>
@@ -44,14 +47,20 @@
 					<column>
 						<sacolorpicker label="Admin Color:" preference-editable="true" preference="adminColor"/>
 						<sacolorpicker label="Admin Background:" preference-editable="true" preference="adminBackground"/>
+						<label value="Admin Subtext:"/>
+						<textbox id="adminSubText" preference="adminSubText" flex="1"/>
 					</column>
 					<column>
 						<sacolorpicker label="Mod Color:" preference-editable="true" preference="modColor"/>
 						<sacolorpicker label="Mod Background:" preference-editable="true" preference="modBackground"/>
+						<label value="Mod Subtext:"/>
+						<textbox id="modSubText" preference="modSubText" flex="1"/>
 					</column>
 					<column>
 						<sacolorpicker label="OP Color:" preference-editable="true" preference="opColor"/>
 						<sacolorpicker label="OP Background:" preference-editable="true" preference="opBackground"/>
+						<label value="OP Subtext:"/>
+						<textbox id="opSubText" preference="opSubText" flex="1"/>
 					</column>
 				</columns>
 			</grid>			

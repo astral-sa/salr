@@ -1197,10 +1197,13 @@ function handleShowThread(doc) {
 		//standard user colors
 		var modColor = persistObject.getPreference("modColor");
 		var modBackground = persistObject.getPreference("modBackground");
+		var modSubText = persistObject.getPreference("modSubText");
 		var adminColor = persistObject.getPreference("adminColor");
 		var adminBackground = persistObject.getPreference("adminBackground");
+		var adminSubText = persistObject.getPreference("adminSubText");
 		var opColor = persistObject.getPreference("opColor");
 		var opBackground = persistObject.getPreference("opBackground");
+		var opSubText = persistObject.getPreference("opSubText");
 
 		doc.postlinks = new Array;
 
@@ -1272,7 +1275,7 @@ function handleShowThread(doc) {
 			{
 				posterColor = opColor;
 				posterBG 	= opBackground;
-				posterNote 	= "Thread Poster";
+				posterNote 	= opSubText;
 				post.className += " salrThreadOP";
 			}
 			if (persistObject.isMod(posterId))
@@ -1281,7 +1284,7 @@ function handleShowThread(doc) {
 				{
 					posterColor = modColor;
 					posterBG 	= modBackground;
-					posterNote 	= "Forum Moderator";
+					posterNote 	= modSubText;
 					post.className += " salrForumMod";
 				}
 				else
@@ -1295,7 +1298,7 @@ function handleShowThread(doc) {
 				{
 					posterColor = adminColor;
 					posterBG 	= adminBackground;
-					posterNote 	= "Forum Administrator";
+					posterNote 	= adminSubText;
 					post.className += " salrForumAdmin";
 				}
 				else
