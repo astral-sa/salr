@@ -90,6 +90,11 @@ pref('extensions.salastread.unseenPostLight', '#f1f1f1');
 pref('extensions.salastread.unseenPostDarkFYAD', '#ffcccc');
 pref('extensions.salastread.unseenPostLightFYAD', '#ffccff');
 
+//USER SUBTEXT
+pref('extensions.salastread.modSubText', 'Forum Moderator');
+pref('extensions.salastread.adminSubText', 'Forum Administrator');
+pref('extensions.salastread.opSubText', 'Thread Poster');
+
 //THREAD OPTIONS
 pref('extensions.salastread.reanchorThreadOnLoad', true);
 pref('extensions.salastread.insertPostLastMarkLink', true);
