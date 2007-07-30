@@ -6,7 +6,7 @@ function SALR_vidClick(e)
 	e.stopPropagation();
 
 	var link = e.target;
-	
+
 	//if they click again hide the video
 	var video = link.nextSibling.firstChild;
 	if(video && video.className == 'salr_video') {
@@ -1038,10 +1038,10 @@ salrPersistObject.prototype = {
 
 	// Fetches the user's notes from the database
 	// @param: (int) User ID
-	// @returns: (string) Notes about the user, or (bool) false if not found
+	// @returns: (string) Notes about the user, or empty string if not found
 	getPosterNotes: function(userid)
 	{
-		var usernotes = false;
+		var usernotes = '';
 		if(this.userExists(userid))
 		{
 			var statement = this.database.createStatement("SELECT `notes` FROM `userdata` WHERE `userid` = ?1");

@@ -1138,18 +1138,6 @@ function handleShowThread(doc) {
 		// used by the context menu to allow options for this thread
 		doc.body.className += " salastread_thread_"+threadid;
 
-		// Get the original poster and update the database if we don't know it yet
-		var threadOP = persistObject.GetOPFromData(threadid);
-		if (!threadOP && curPage == 1)
-		{
-			var opInfo = persistObject.selectSingleNode(doc, doc, "//TABLE[contains(@class,'post')]//TD[contains(@class,'postlink')]//A[contains(@href,'action=getinfo&userid=')]");
-			if (opInfo)
-			{
-				persistObject.StoreOPData(threadid, opInfo.href.match(/userid=(\d+)/)[1]);
-				threadOP = opInfo.href.match(/userid=(\d+)/)[1];
-			}
-		}
-
 		// Grab the thread title
 		persistObject.setThreadTitle(threadid, SALR_getPageTitle(doc));
 
@@ -1271,15 +1259,16 @@ function handleShowThread(doc) {
 				}
 			}
 
-			posterBG 	= false;
-			posterNote 	= false;
 			posterColor = false;
+			posterBG 	= false;
+			posterNote 	= '';
+			userPosterNote = '';
 
 			//apply this to every post
 			post.className += " salrPoster" + posterId;
 
 			//apply custom user coloring
-			if (posterId == threadOP)
+			if (userNameBox.className.search(/op/) > -1)
 			{
 				posterColor = opColor;
 				posterBG 	= opBackground;
@@ -1340,7 +1329,7 @@ function handleShowThread(doc) {
 				newNoteBox.style.fontSize = "80%";
 				newNoteBox.style.margin = "0";
 				newNoteBox.style.padding = "0";
-				newNoteBox.textContent = (posterNote) ? posterNote : userPosterNote;
+				newNoteBox.innerHTML = (posterNote || userPosterNote) ? (posterNote + ((posterNote && userPosterNote) ? '<br />' : '') + userPosterNote) : '';
 				userNameBox.appendChild(newNoteBox);
 			}
 
