@@ -1264,8 +1264,8 @@ function handleShowThread(doc) {
 
 			posterColor = false;
 			posterBG 	= false;
-			posterNote 	= '';
-			userPosterNote = '';
+			posterNote 	= false;
+			userPosterNote = false;
 
 			//apply this to every post
 			post.className += " salrPoster" + posterId;
@@ -1332,7 +1332,8 @@ function handleShowThread(doc) {
 				newNoteBox.style.fontSize = "80%";
 				newNoteBox.style.margin = "0";
 				newNoteBox.style.padding = "0";
-				newNoteBox.innerHTML = (posterNote || userPosterNote) ? (posterNote + ((posterNote && userPosterNote) ? '<br />' : '') + userPosterNote) : '';
+				newNoteBox.innerHTML  = posterNote ? posterNote : '';
+				newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
 				userNameBox.appendChild(newNoteBox);
 			}
 

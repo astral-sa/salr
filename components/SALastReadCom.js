@@ -1038,10 +1038,10 @@ salrPersistObject.prototype = {
 
 	// Fetches the user's notes from the database
 	// @param: (int) User ID
-	// @returns: (string) Notes about the user, or empty string if not found
+	// @returns: (string) Notes about the user, or (vool) false if not found
 	getPosterNotes: function(userid)
 	{
-		var usernotes = '';
+		var usernotes = false;
 		if(this.userExists(userid))
 		{
 			var statement = this.database.createStatement("SELECT `notes` FROM `userdata` WHERE `userid` = ?1");
