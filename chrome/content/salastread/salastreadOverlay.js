@@ -462,6 +462,9 @@ function handleForumDisplay(doc)
 		"inGasChamber" : persistObject.inGasChamber(forumid)
 	};
 
+
+	//Try grabbing the username from the forumdisplay
+
 	if (!persistObject.gotForumList)
 	{
 		// Replace this function once the AJAXified JSON is added to the forums
@@ -1093,7 +1096,7 @@ function handleShowThread(doc) {
 	var inAskTell = persistObject.inAskTell(forumid);
 	var inGasChamber = persistObject.inGasChamber(forumid);
 	var userId = persistObject.userId;
-	var username = persistObject.getUserName(userId);
+	var username = unescape(persistObject.getPreference('username'));
 
 	if (!inFYAD || persistObject.getPreference("enableFYAD"))
 	{
@@ -2007,6 +2010,12 @@ function salastread_windowOnLoad(e) {
 					hqucss += ' !important; }';
 					SALR_insertDynamicCSS(hqucss, doc);
 
+					//Try grabbing the username, of course it will only find it on the forum index.
+					var userel = persistObject.selectSingleNode(doc,doc,'//div[contains(@class, "mainbodytextsmall")]//b');
+					if (userel!=null) {
+					  var username = escape(userel.textContent);
+					  persistObject.setPreference('username', username);
+					}
 					// why the FUCK doesn't this work?
 					var hresult = 0;
 					if ( location.href.indexOf("forumdisplay.php?") != -1 ) {

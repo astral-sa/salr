@@ -970,9 +970,9 @@ salrPersistObject.prototype = {
 	getCustomizedPosters : function()
 	{
 		var users = [];
+		var userid = userID();
 		try {
-			//var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `color` != 0 OR `background` != 0 OR (notes IS NOT NULL AND notes != '')");
-			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `mod`=0 AND `admin`=0");
+			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `color` != 0 OR `background` != 0 OR (notes IS NOT NULL AND notes != '')");
 			while (statement.executeStep()) {
 				var user = {};
 					user.userid = statement.getInt32(0);

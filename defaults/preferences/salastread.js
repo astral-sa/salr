@@ -3,6 +3,7 @@ pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
 pref('extensions.salastread.userId', 0);
+pref('extensions.salastread.username', '');
 pref('extensions.salastread.disableNewReCount', true);
 pref('extensions.salastread.newPostCountUseOneLine', false);
 
