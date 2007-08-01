@@ -24,6 +24,8 @@
 			<preference id="unreadLight" 			name="extensions.salastread.unreadLight" 		type="string"/>
 			<preference id="unseenPostDark" 		name="extensions.salastread.unseenPostDark" 	type="string"/>
 			<preference id="unseenPostLight" 		name="extensions.salastread.unseenPostLight" 	type="string"/>
+			<preference id="highlightQuotePost"		name="extensions.salastread.highlightQuotePost" type="string"/>
+			<preference id="highlightQuotePostQuote"		name="extensions.salastread.highlightQuotePostQuote" type="string"/>
 			
 			<!-- FYAD Thread Colors -->
 			<preference id="postedInThreadReFYAD" 	name="extensions.salastread.postedInThreadReFYAD" 	type="string"/>
@@ -37,6 +39,7 @@
 			<preference id="unreadLightFYAD" 		name="extensions.salastread.unreadLightFYAD" 		type="string"/>
 			<preference id="unseenPostDarkFYAD" 	name="extensions.salastread.unseenPostDarkFYAD" 	type="string"/>
 			<preference id="unseenPostLightFYAD" 	name="extensions.salastread.unseenPostLightFYAD" 	type="string"/>
+			<preference id="highlightQuotePostFYAD" name="extensions.salastread.highlightQuotePostFYAD" type="string"/>
 			
 			<!-- BYOB Thread Colors (Unused atm) -->
 			<preference id="postedInThreadReBYOB" 	name="extensions.salastread.postedInThreadReBYOB" 	type="string"/>
@@ -56,6 +59,7 @@
 			<preference id="dontHighlightPosts" 	name="extensions.salastread.dontHighlightPosts" 	type="bool"/>
 			<preference id="highlightUsernames" 	name="extensions.salastread.highlightUsernames" 	type="bool"/>
 			<preference id="disableGradients" 		name="extensions.salastread.disableGradients" 		type="bool"/>
+			<preference id="dontHighlightQuotes"    name="extensions.salastread.dontHighlightQuotes"	type="bool"/>
 
 		</preferences>
 		
@@ -65,6 +69,7 @@
 			<checkbox preference="dontHighlightThreads" label="Don't perform color highlighting on thread lists"/>
 			<checkbox preference="dontHighlightPosts" 	label="Don't perform color highlighting on posts in a thread"/>
 			<checkbox preference="disableGradients" 	label="Disable all color gradients"/>
+			<checkbox preference="dontHighlightQuotes"	label="Don't highlight posts that quote your posts" />
 		</groupbox>		
 		
 		<groupbox id="colorPickerGroup">
@@ -119,6 +124,10 @@
 						<html:tr>
 							<html:td class="seenPostDark" 		onclick="editColor(event, this);">Seen Post (dark)</html:td>
 							<html:td class="unseenPostDark" 	onclick="editColor(event, this);">Unseen Post (dark)</html:td>
+						</html:tr>
+						<html:tr>
+							<html:td class="highlightQuotePost" onclick="editColor(event, this);">Quoted Post</html:td>
+							<html:td class="highlightQuotePostQuote" onclick="editColor(event, this);">Quoted Post (quote)</html:td>
 						</html:tr>
 					</html:tbody>
 					</html:table>

@@ -89,6 +89,10 @@ pref('extensions.salastread.unseenPostDark', '#dfdfdf');
 pref('extensions.salastread.unseenPostLight', '#f1f1f1');
 pref('extensions.salastread.unseenPostDarkFYAD', '#ffcccc');
 pref('extensions.salastread.unseenPostLightFYAD', '#ffccff');
+pref('extensions.salastread.highlightQuotePost', '#C691D9');
+pref('extensions.salastread.highlightQuotePostFYAD', '#AF7FC0');
+pref('extensions.salastread.highlightQuotePostQuote', '#C691D9');
+pref('extensions.salastread.highlightQuotePostQuoteFYAD', '#AF7FC0');
 
 //USER SUBTEXT
 pref('extensions.salastread.modSubText', 'Forum Moderator');
@@ -101,6 +105,7 @@ pref('extensions.salastread.insertPostLastMarkLink', true);
 pref('extensions.salastread.insertPostTargetLink', true);
 pref('extensions.salastread.hideEditButtons', false);
 pref('extensions.salastread.hideReportButtons', false);
+pref('extensions.salastread.dontHighlightQuotes', false);
 
 	//USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
@@ -132,3 +137,5 @@ pref('extensions.salastread.thumbnailAllImages', true);
 pref('extensions.salastread.showMenuPinHelper', true);
 pref('extensions.salastread.enableDebugMarkup', false);
 pref('extensions.salastread.scrollPostEnable', false);
+pref('extensions.salastread.showThreadsWithNewPostsFirst', false);
+pref('extensions.salastread.showThreadsWithNewPostsFirstCP', false);

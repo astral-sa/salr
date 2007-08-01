@@ -158,3 +158,4 @@ function editNote() {
 		li.childNodes[2].setAttribute("label", text.value);
 	}
 }
+

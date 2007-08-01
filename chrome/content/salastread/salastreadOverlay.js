@@ -765,6 +765,42 @@ function handleThreadList(doc, forumid, flags) {
 			}
 		}
 	}
+
+	var showTWNP = persistObject.getPreference('showThreadsWithNewPostsFirst');
+	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP'); 
+
+	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP)) {
+	  //Lets reorder the threads
+	  var sortThreads = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
+	  var readThreads = Array();
+	  var tbody = persistObject.selectSingleNode(doc, doc, "//table[@id='forum']/tbody");
+	  var laststickythread = null;
+
+	  //First remove all the markedThreads
+	  for (var i=0; i<sortThreads.length; i++) {
+		var readthread = persistObject.selectSingleNode(doc, sortThreads[i], "td//div[contains(@class, 'salrIcons')]/a");
+		var sticky = persistObject.selectSingleNode(doc, sortThreads[i], "td[contains(@class, 'title_sticky')]");
+		//Only remove threads which we have read and aren't stickies.
+		if (readthread!=null && sticky==null) {
+		  tbody.removeChild(sortThreads[i])
+		  readThreads.push(sortThreads[i]);
+		  sortThreads.splice(i, 1);
+		  i--;
+		}
+		if (sticky!=null) { laststickythread = sortThreads[i]; }
+	  }
+	  //Could be that there are no sticky threads, but there are threads that don't have any unread
+	  if (laststickythread==null) {
+		laststickythread = sortThreads[0].parentNode.insertBefore(readThreads[0], sortThreads[0]);
+		readThreads.splice(0, 1);
+	  }
+	  if (readThreads.length>0) {
+		//Now loop through and add the rest
+		for (var i=0; i<readThreads.length; i++) {
+		  laststickythread = laststickythread.parentNode.insertBefore(readThreads[i], laststickythread.nextSibling);
+		}
+	  }
+   }
 }
 
 function removeThread(evt) {
@@ -973,6 +1009,9 @@ function quickQuoteButtonClick(evt) {
 		window.__salastread_quotepostid = null;
 	}
 
+	//Has this person already posted in this thread?
+	window.__salastread_alreadypostedinthread = persistObject.didIPostHere(threadid);
+
 	window.__salastread_quotethreadid = threadid;
 
 	if(quickquotewin && !quickquotewin.closed) {
@@ -1054,6 +1093,7 @@ function handleShowThread(doc) {
 	var inAskTell = persistObject.inAskTell(forumid);
 	var inGasChamber = persistObject.inGasChamber(forumid);
 	var userId = persistObject.userId;
+	var username = persistObject.getUserName(userId);
 
 	if (!inFYAD || persistObject.getPreference("enableFYAD"))
 	{
@@ -1204,8 +1244,6 @@ function handleShowThread(doc) {
 		var opColor = persistObject.getPreference("opColor");
 		var opBackground = persistObject.getPreference("opBackground");
 		var opSubText = persistObject.getPreference("opSubText");
-		
-		var userId = persistObject.userId;
 
 		doc.postlinks = new Array;
 
@@ -1271,9 +1309,6 @@ function handleShowThread(doc) {
 
 			//apply this to every post
 			post.className += " salrPoster" + posterId;
-			
-
-				
 
 			//apply custom user coloring
 			if (userNameBox.className.search(/op/) > -1)
@@ -1311,7 +1346,6 @@ function handleShowThread(doc) {
 					persistObject.removeAdmin(posterId);
 				}
 			}
-			
 			var dbUser = persistObject.isPosterColored(posterId);
 			if(dbUser)
 			{
@@ -1324,21 +1358,6 @@ function handleShowThread(doc) {
 				if(dontHighlightPosts)
 				{
 					persistObject.colorPost(doc, post, posterBG, forumid);
-				}
-			}
-			
-			// Adds highlighting support if a posts quotes you
-			
-			var userQuote = persistObject.selectSingleNode(doc, post, "tbody//tr/td/blockquote[contains(@class,'qb2')]");
-			var dbUserSelf = persistObject.isPosterColored(userId);
-			
-			if(userQuote)
-			{
-				if (userQuote.textContent.indexOf(unescape(dbUserSelf.username)) > -1)
-				{
-					alert(userQuote.textContent.search(dbUserSelf.username));
-					posterColor = persistObject.getPosterColor(userId);
-					posterBG 	= persistObject.getPosterBackground(userId);
 				}
 			}
 
@@ -1443,6 +1462,17 @@ function handleShowThread(doc) {
 					a.onclick = addHighlightedUser;
 				li.appendChild(a);
 				ul.appendChild(li);
+			}
+
+
+			//Highlight posts that contain quotes from the user
+			if (!persistObject.getPreference('dontHighlightQuotes')) {
+			  if (username!=null) {
+				var userQuote = persistObject.selectSingleNode(doc, post, "tbody//tr/td/blockquote[contains(@class,'qb2')]/h4[./text() = '"+username+" posted:']");
+				if (userQuote!=null) {
+				  post.className += ' salrHighlightQuote';
+				}
+			  }
 			}
 
 			postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
@@ -1960,6 +1990,22 @@ function salastread_windowOnLoad(e) {
 
 					//insert content CSS
 					SALR_insertCSS("chrome://salastread/content/contentStyling.css", doc);
+
+
+					//insert dynamic CSS for highlighting quoted users
+					var hqucss = 'table.salrHighlightQuote td { background-color: ';
+					var hqpostpref = 'highlightQuotePost';
+					var hqpostqpref = 'highlightQuotePostQuote';
+					//Check to see if we are in FYAD, god help us all.
+					var forumid = persistObject.getForumID(doc);
+					var isFYAD = persistObject.inFYAD(forumid);
+					if (isFYAD) { hqpostpref += 'FYAD'; hqpostqpref += 'FYAD' }
+					hqucss += persistObject.getPreference(hqpostpref);
+					hqucss += ' !important; }';
+					hqucss += ' table.salrHighlightQuote blockquote { background-color: ';
+					hqucss += persistObject.getPreference(hqpostqpref);
+					hqucss += ' !important; }';
+					SALR_insertDynamicCSS(hqucss, doc);
 
 					// why the FUCK doesn't this work?
 					var hresult = 0;

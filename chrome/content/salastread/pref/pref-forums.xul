@@ -11,6 +11,8 @@
 			
 			<preference id="disableNewReCount" 			name="extensions.salastread.disableNewReCount" 		type="bool" inverted="true"/>
 			<preference id="newPostCountUseOneLine" 	name="extensions.salastread.newPostCountUseOneLine" type="bool" inverted="true"/>
+			<preference id="showThreadsWithNewPostsFirst" name="extensions.salastread.showThreadsWithNewPostsFirst" type="bool" />
+			<preference id="showThreadsWithNewPostsFirstCP" name="extensions.salastread.showThreadsWithNewPostsFirstCP" type="bool" />
 
 			<preference id="showSALRIcons"				name="extensions.salastread.showSALRIcons" 			type="bool"/>
 			<preference id="showGoToLastIcon"			name="extensions.salastread.showGoToLastIcon" 		type="bool"/>
@@ -35,6 +37,8 @@
 			
 			<checkbox preference="disableNewReCount" 		label="Show new replies count in the replies column" oncommand="toggleNewReCount()" id="newReCount" />
 			<checkbox preference="newPostCountUseOneLine" 	label="Show new replies count on a new line" style="margin-left: 20px;" id="newReCountNewLine" />
+			<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first" />
+			<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads in bookmark list with new posts first" />
 		</groupbox>
 
 		<groupbox>
