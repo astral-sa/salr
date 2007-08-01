@@ -1180,7 +1180,7 @@ function handleShowThread(doc) {
 
 		var curPostId, colorDark = true, colorOfPost, postIdLink, resetLink, profileLink, posterId, postbody, postRow, f, linksUL, storeUserLink;
 		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton, reportbutton;
-		var userPosterColor, userPosterBG, userPosterNote;
+		var userPosterColor, userPosterBG, userPosterNote, userQuote;
 
 		// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
 		var hideEditButtons = persistObject.getPreference('hideEditButtons');
@@ -1204,6 +1204,8 @@ function handleShowThread(doc) {
 		var opColor = persistObject.getPreference("opColor");
 		var opBackground = persistObject.getPreference("opBackground");
 		var opSubText = persistObject.getPreference("opSubText");
+		
+		var userId = persistObject.userId;
 
 		doc.postlinks = new Array;
 
@@ -1269,6 +1271,9 @@ function handleShowThread(doc) {
 
 			//apply this to every post
 			post.className += " salrPoster" + posterId;
+			
+
+				
 
 			//apply custom user coloring
 			if (userNameBox.className.search(/op/) > -1)
@@ -1306,6 +1311,7 @@ function handleShowThread(doc) {
 					persistObject.removeAdmin(posterId);
 				}
 			}
+			
 			var dbUser = persistObject.isPosterColored(posterId);
 			if(dbUser)
 			{
@@ -1318,6 +1324,21 @@ function handleShowThread(doc) {
 				if(dontHighlightPosts)
 				{
 					persistObject.colorPost(doc, post, posterBG, forumid);
+				}
+			}
+			
+			// Adds highlighting support if a posts quotes you
+			
+			var userQuote = persistObject.selectSingleNode(doc, post, "tbody//tr/td/blockquote[contains(@class,'qb2')]");
+			var dbUserSelf = persistObject.isPosterColored(userId);
+			
+			if(userQuote)
+			{
+				if (userQuote.textContent.indexOf(unescape(dbUserSelf.username)) > -1)
+				{
+					alert(userQuote.textContent.search(dbUserSelf.username));
+					posterColor = persistObject.getPosterColor(userId);
+					posterBG 	= persistObject.getPosterBackground(userId);
 				}
 			}
 
