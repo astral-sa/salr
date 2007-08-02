@@ -1778,6 +1778,19 @@ function handleConfigLinkInsertion(e) {
 	}
 }
 
+function handleLogoutAction(e) {
+	var doc = e.originalTarget;
+	var logoutnode = persistObject.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'account.php?s=&action=logout')]");
+	if (logoutnode)
+	{
+	  //Add onclick handler to clear out the userid and username
+	  logoutnode.onclick = function() {
+		persistObject.setPreference('userId', 0);
+		persistObject.setPreference('username', '');	
+	  }
+	}
+}
+
 function handleBodyClassing(e) {
 	var doc = e.originalTarget;
 	var docbody = doc.body;
@@ -2016,6 +2029,15 @@ function salastread_windowOnLoad(e) {
 					  var username = escape(userel.textContent);
 					  persistObject.setPreference('username', username);
 					}
+					//Try grabbing from the control panel as well
+					var userel = persistObject.selectSingleNode(doc,doc,'//div[contains(@class, "breadcrumbs")]/b');
+					if (userel!=null) {
+					  var breadcrumbtext = userel.textContent;
+					  var username = escape(breadcrumbtext.substr(52));
+					  persistObject.setPreference('username', username);
+					}
+					  
+					
 					// why the FUCK doesn't this work?
 					var hresult = 0;
 					if ( location.href.indexOf("forumdisplay.php?") != -1 ) {
@@ -2035,6 +2057,7 @@ function salastread_windowOnLoad(e) {
 					}
 
 					var hcliresult = handleConfigLinkInsertion(e);
+					handleLogoutAction(e);
 					handleBodyClassing(e);
 
 					doc.__salastread_processed = true;
