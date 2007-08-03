@@ -1358,7 +1358,7 @@ function handleShowThread(doc) {
 				posterColor = persistObject.getPosterColor(posterId);
 				posterBG 	= persistObject.getPosterBackground(posterId);
 
-				if(dontHighlightPosts)
+				if(!dontHighlightPosts)
 				{
 					persistObject.colorPost(doc, post, posterBG, forumid);
 				}
