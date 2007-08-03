@@ -329,7 +329,7 @@ function importData() {
 			document.getElementById("spellcheckbutton").style.display = "-moz-box";
 		}
 		
-		if(persistObject.getPreference('quickQuoteSubscribeDefault')) {
+		if(persistObject.getPreference('quickQuoteSubscribeDefault') || window.opener.__salastread_bookmarked) {
 			document.getElementById("subscribe").setAttribute("checked",true);
 		}
 		

@@ -854,6 +854,7 @@ function releaseQuickQuoteVars() {
    window.__salastread_quotetext = null;
    window.__salastread_quotethreadid = null;
    window.__salastread_quotepostid = null;
+   window.__salastread_bookmarked = null;
    window.__salastread_alreadypostedinthread = null;
    window.__salastread_needretrieval = null;
    quickQuoteSubmitting = false;
@@ -1014,6 +1015,15 @@ function quickQuoteButtonClick(evt) {
 
 	//Has this person already posted in this thread?
 	window.__salastread_alreadypostedinthread = persistObject.didIPostHere(threadid);
+
+	//Has this person already bookmarked this thread?
+	//Check for the bookmark/unbookmark button
+	bookmarkbutton = persistObject.selectSingleNode(doc,doc,"//ul[contains(@class, 'postbuttons')]//a[contains(@href, 'action=remove')]");
+	if (bookmarkbutton) {
+	  window.__salastread_bookmarked = true;
+	} else {
+	  window.__salastread_bookmarked = false;
+	}
 
 	window.__salastread_quotethreadid = threadid;
 
