@@ -717,21 +717,6 @@ salrPersistObject.prototype = {
 		return false;
 	},
 
-
-	// Gets a username from the DB
-	// @param: (int) User ID
-	// @return: (string) username or (null) if not found
-	getUserName: function(userid) {
-		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `userid` = ?1");
-		statement.bindInt32Parameter(0, userid);
-		var foundusername = null;
-		if (statement.executeStep()) {
-		  foundusername = statement.getString(0);
-		}
-		statement.reset();
-		return foundusername;
-	},
-
 	// Updates a user's name in the DB
 	// @param: (int) User ID, (string) Username
 	// @return: nothing
@@ -882,12 +867,10 @@ salrPersistObject.prototype = {
 		else
 		{
 			var postbutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
-			if (postbutton != null) {
-			  var inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
-			  if (inpostbutton != null)
-			  {
-				  fid = inpostbutton[1];
-			  }
+			var inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
+			if (inpostbutton != null)
+			{
+				fid = inpostbutton[1];
 			}
 		}
 		if (fid == 0)
@@ -970,7 +953,6 @@ salrPersistObject.prototype = {
 	getCustomizedPosters : function()
 	{
 		var users = [];
-		var userid = userID();
 		try {
 			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `color` != 0 OR `background` != 0 OR (notes IS NOT NULL AND notes != '')");
 			while (statement.executeStep()) {
@@ -1935,7 +1917,7 @@ salrPersistObject.prototype = {
 		var expireLength = this.getPreference("expireMinAge") * 86400; // days * 24 * 60 * 60
 		var rightNow = this.currentTimeStamp;
 		var expireWhen = rightNow - expireLength;
-		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `lastviewdt` < ?1 AND `star` != 1 AND `ignore`=0");
+		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `lastviewdt` < ?1 AND `star` != 1");
 		statement.bindStringParameter(0,expireWhen);
 		statement.execute();
 	},
