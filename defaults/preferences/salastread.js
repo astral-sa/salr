@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.070730');
+pref('extensions.salastread.currentVersion', '1.99.070915');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -16,9 +16,9 @@ pref('extensions.salastread.videoEmbedderBG', '#ffcccc');
 //GENERAL SETTINGS PAGE
 
 //USE SALR ICONS INSTEAD OF FORUMS ICONS
-	pref('extensions.salastread.showSALRIcons', true);
+pref('extensions.salastread.showSALRIcons', true);
 
-	//THREAD COMMAND ICONS
+//THREAD COMMAND ICONS
 pref('extensions.salastread.showGoToLastIcon', true);
 pref('extensions.salastread.goToLastReadPost', 'chrome://salastread/skin/lastpost.png');
 pref('extensions.salastread.alwaysShowGoToLastIcon', false);
@@ -26,7 +26,7 @@ pref('extensions.salastread.showUnvisitIcon', false);
 pref('extensions.salastread.markThreadUnvisited', 'chrome://salastread/skin/unvisit.png');
 pref('extensions.salastread.swapIconOrder', false);
 
-	//MISCELLANEOUS OPTIONS
+//MISCELLANEOUS OPTIONS
 pref('extensions.salastread.removeHeaderAndFooter', false);
 pref('extensions.salastread.removePageTitlePrefix', true);
 pref('extensions.salastread.enablePageNavigator', true);
@@ -37,7 +37,7 @@ pref('extensions.salastread.gestureButton', 2);
 
 //IMAGE HANDLING
 
-	//TEXT-TO-IMAGE OPTIONS
+//TEXT-TO-IMAGE OPTIONS
 pref('extensions.salastread.convertTextToImage', false);
 pref('extensions.salastread.dontConvertQuotedImages', true);
 pref('extensions.salastread.thumbnailQuotedImagesInThreads', false);
@@ -108,7 +108,7 @@ pref('extensions.salastread.hideEditButtons', false);
 pref('extensions.salastread.hideReportButtons', false);
 pref('extensions.salastread.dontHighlightQuotes', false);
 
-	//USER DISPLAY OPTIONS
+//USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
 
 

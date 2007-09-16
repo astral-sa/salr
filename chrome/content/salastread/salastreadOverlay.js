@@ -446,7 +446,7 @@ function handleSubscriptions(doc) {
 // Do anything needed to the post list in a forum
 function handleForumDisplay(doc)
 {
-	var failed, i, e;	// Little variables that'll get reused
+	var failed, i, e;  // Little variables that'll get reused
 	var forumid = persistObject.getForumID(doc);
 	if (forumid === false)
 	{
@@ -456,14 +456,16 @@ function handleForumDisplay(doc)
 	// The following forums have special needs that must be dealt with
 	var flags = {
 		"inFYAD" : persistObject.inFYAD(forumid),
-					"inBYOB" : persistObject.inBYOB(forumid),
-					"inDump" : persistObject.inDump(forumid),
-					"inAskTell" : persistObject.inAskTell(forumid),
+		"inBYOB" : persistObject.inBYOB(forumid),
+		"inDump" : persistObject.inDump(forumid),
+		"inAskTell" : persistObject.inAskTell(forumid),
 		"inGasChamber" : persistObject.inGasChamber(forumid)
 	};
 
-
-	//Try grabbing the username from the forumdisplay
+	if (doc.getElementById('forum') == null) {
+		// /!\ Forum table isn't there, abort! /!\
+		return;
+	}
 
 	if (!persistObject.gotForumList)
 	{
@@ -471,11 +473,6 @@ function handleForumDisplay(doc)
 		// function will check timestamp which is stored in preferences
 		 grabForumList(doc);
 		 persistObject.gotForumList = true;
-	}
-
-	if (doc.getElementById('forum') == null) {
-		// /!\ Forum table isn't there, abort! /!\
-		return;
 	}
 
 	if (flags.inFYAD && !persistObject.getPreference("enableFYAD")) {
@@ -505,8 +502,8 @@ function handleForumDisplay(doc)
 	if (persistObject.getPreference("useQuickQuote") && !flags.inGasChamber)
 	{
 		var postbutton = persistObject.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
-	if (postbutton)
-	{
+		if (postbutton)
+		{
 			attachQuickQuoteHandler(undefined,doc,persistObject.turnIntoQuickButton(doc, postbutton, forumid),"",0);
 		}
 	}
@@ -546,6 +543,8 @@ function handleForumDisplay(doc)
 			}
 		}
 	}
+
+// Put function for relinking post icons here
 
 	handleThreadList(doc, forumid, flags);
 
@@ -602,7 +601,7 @@ function handleThreadList(doc, forumid, flags) {
 			continue;
 		}
 
-		threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
+		threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'thread_title')]");
 		if(!threadTitleLink) continue;
 		threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1]);
 		threadTitle = threadTitleLink.innerHTML;
@@ -619,9 +618,9 @@ function handleThreadList(doc, forumid, flags) {
 		//mark everything in the User CP as being read so it highlights later
 		if(!threadDetails && flags.inUserCP)
 		{
-			persistObject.iAmReadingThis(threadId);
-			persistObject.setThreadTitle(threadId, threadTitle);
-			threadDetails = true;
+			//persistObject.iAmReadingThis(threadId);
+			//persistObject.setThreadTitle(threadId, threadTitle);
+			//threadDetails = true;
 		}
 
 		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
@@ -666,7 +665,7 @@ function handleThreadList(doc, forumid, flags) {
 			}
 		}
 
-		var newPosts = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'newposts')]");
+		var newPosts = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'count')]");
 		// If this thread is in the DB as being read
 		if (threadDetails || newPosts)
 		{
@@ -709,7 +708,8 @@ function handleThreadList(doc, forumid, flags) {
 				}
 			}
 			//SALR replacing forums buttons
-			if (showSALRIcons) {
+			if (showSALRIcons)
+			{
 				if (!disableNewReCount && newPosts)
 				{
 					threadRe = persistObject.selectSingleNode(doc, newPosts, "B").innerHTML;
@@ -723,28 +723,46 @@ function handleThreadList(doc, forumid, flags) {
 					}
 				}
 
-				var iconHolder = doc.createElement("div");
-					iconHolder.className = "salrIcons";
-
-				threadTitleLink.parentNode.insertBefore(iconHolder, threadTitleLink);
-
-				if(newPosts)
+				var iconHolder = persistObject.selectSingleNode(doc, threadTitleBox, "DIV[contains(@class, 'lastseen')]");
+				if (iconHolder)
 				{
-					newPosts.parentNode.removeChild(newPosts);
+					iconHolder.style.background = 'none';
+					iconHolder.style.border = '0';
 				}
 
 				if (showUnvisitIcon && swapIconOrder)
 				{
-					// Forums don't support this at the moment
-					//persistObject.insertUnreadIcon(doc, iconHolder, threadId).addEventListener("click", removeThread, false);
+					if (unRead)
+					{
+						var unRead = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'x')]");
+						unRead.style.background = 'url('+persistObject.getPreference("markThreadUnvisited")+') no-repeat center center';
+						unRead.style.textIndent = '-9000px';
+						unRead.style.width = '22px';
+						unRead.style.height = '22px';
+						unRead.style.padding = '0';
+					}
 				}
 				if (showGoToLastIcon && (newPosts || alwaysShowGoToLastIcon))
 				{
-					persistObject.insertLastIcon(doc, iconHolder, newPosts);
+					newPosts.style.background = 'url('+persistObject.getPreference("goToLastReadPost")+') no-repeat center center';
+					newPosts.style.width = '22px';
+					newPosts.style.height = '22px';
+					newPosts.style.border = 'none';
+					newPosts.style.padding = '0';
+					newPosts.firstChild.style.display = 'none';
+					//persistObject.insertLastIcon(doc, iconHolder, newPosts);
 				}
 				if (showUnvisitIcon && !swapIconOrder)
 				{
-					//persistObject.insertUnreadIcon(doc, iconHolder, threadId).addEventListener("click", removeThread, false);
+					var unRead = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'x')]");
+					if (unRead)
+					{
+						unRead.style.background = 'url('+persistObject.getPreference("markThreadUnvisited")+') no-repeat center center';
+						unRead.style.textIndent = '-9000px';
+						unRead.style.width = '22px';
+						unRead.style.height = '22px';
+						unRead.style.padding = '0';
+					}
 				}
 			}
 		}
@@ -770,7 +788,7 @@ function handleThreadList(doc, forumid, flags) {
 	}
 
 	var showTWNP = persistObject.getPreference('showThreadsWithNewPostsFirst');
-	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP'); 
+	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP');
 
 	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP)) {
 	  //Lets reorder the threads
@@ -1796,7 +1814,7 @@ function handleLogoutAction(e) {
 	  //Add onclick handler to clear out the userid and username
 	  logoutnode.onclick = function() {
 		persistObject.setPreference('userId', 0);
-		persistObject.setPreference('username', '');	
+		persistObject.setPreference('username', '');
 	  }
 	}
 }
@@ -1885,9 +1903,8 @@ function SALR_windowOnLoadMini(e) {
    try {
       if (doc.__salastread_processed) {
          if ( persistObject.getPreference('reanchorThreadOnLoad') ) {
-            var samatch = location.href.match( /^http:\/\/forums?\.somethingawful\.com\//i );
-            samatch = samatch || location.href.match( /^http:\/\/archives?\.somethingawful\.com\//i );
-            if (samatch) {
+						if (location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) > -1)
+						{
                if ( location.href.indexOf("showthread.php?") != -1 ) {
 				  reanchorThreadToLink(doc);
                }
@@ -1941,9 +1958,8 @@ function salastread_windowOnLoad(e) {
 		var isSa = false;
 		try {
 			if ( location && location.href && !doc.__salastread_processed ) {
-				var samatch = location.href.match( /^http:\/\/forums?\.somethingawful\.com\//i );
-					samatch = samatch || location.href.match( /^http:\/\/archives?\.somethingawful\.com\//i );
-				if (samatch) {
+				if (location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) > -1)
+				{
 					isSa = true;
 				}
 			}
@@ -2022,6 +2038,8 @@ function salastread_windowOnLoad(e) {
 					var hqucss = 'table.salrHighlightQuote td { background-color: ';
 					var hqpostpref = 'highlightQuotePost';
 					var hqpostqpref = 'highlightQuotePostQuote';
+
+					/* Temporarily commented out to test
 					//Check to see if we are in FYAD, god help us all.
 					var forumid = persistObject.getForumID(doc);
 					var isFYAD = persistObject.inFYAD(forumid);
@@ -2032,7 +2050,7 @@ function salastread_windowOnLoad(e) {
 					hqucss += persistObject.getPreference(hqpostqpref);
 					hqucss += ' !important; }';
 					SALR_insertDynamicCSS(hqucss, doc);
-
+*/
 					//Try grabbing the username, of course it will only find it on the forum index.
 					var userel = persistObject.selectSingleNode(doc,doc,'//div[contains(@class, "mainbodytextsmall")]//b');
 					if (userel!=null) {
@@ -2046,8 +2064,8 @@ function salastread_windowOnLoad(e) {
 					  var username = escape(breadcrumbtext.substr(52));
 					  persistObject.setPreference('username', username);
 					}
-					  
-					
+
+
 					// why the FUCK doesn't this work?
 					var hresult = 0;
 					if ( location.href.indexOf("forumdisplay.php?") != -1 ) {
@@ -2262,6 +2280,13 @@ function showChangelogWindow() {
 // This code gets called every page load as part of Firefox's extension process
 try
 {
+
+
+//if (aEvent.originalTarget.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) > -1)
+//{
+//
+//
+
 	persistObject = Components.classes["@evercrest.com/salastread/persist-object;1"]
 		.createInstance(Components.interfaces.nsISupports);
 	persistObject = persistObject.wrappedJSObject;
@@ -2308,6 +2333,9 @@ try
 	{
 		throw "SALR Startup Error";
 	}
+
+//}
+
 }
 catch (e)
 {

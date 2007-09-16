@@ -1531,15 +1531,14 @@ salrPersistObject.prototype = {
 		if(link)
 		{
 			var lpGo = doc.createElement("a");
-				lpGo.setAttribute("title", link.firstChild.innerHTML +  " unread posts");
-				lpGo.setAttribute("href", link.href);
-
+			lpGo.setAttribute("title", link.firstChild.innerHTML +  " unread posts");
+			lpGo.setAttribute("href", link.href);
 			var lpIcon = doc.createElement("img");
-				lpIcon.setAttribute("src", this.getPreference("goToLastReadPost"));
-				lpIcon.style.cssFloat = "right";
-				lpIcon.style.marginRight = "3px";
-				lpIcon.style.marginLeft = "3px";
-				lpIcon.style.border = "none";
+			lpIcon.setAttribute("src", this.getPreference("goToLastReadPost"));
+			lpIcon.style.cssFloat = "right";
+			lpIcon.style.marginRight = "3px";
+			lpIcon.style.marginLeft = "3px";
+			lpIcon.style.border = "none";
 			lpGo.appendChild(lpIcon);
 			newPosts.insertBefore(lpGo, newPosts.firstChild);
 		}
