@@ -5,12 +5,12 @@
 			<r:Seq>
 				<r:li>
 					<r:Description>
-						<version>1.99.070730</version>
+						<version>1.99.070915</version>
 						<targetApplication>
 							<r:Description>
 								<id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
 								<minVersion>2.0</minVersion>
-								<maxVersion>3.0a6pre</maxVersion>
+								<maxVersion>3.0a7pre</maxVersion>
 								<updateLink>https://svn.bountysource.com/salr/trunk/salastread.xpi</updateLink>
 							</r:Description>
 						</targetApplication>
@@ -18,7 +18,7 @@
 				</r:li>
 			</r:Seq>
 		</updates>
-		<version>1.99.070730</version>
+		<version>1.99.070915</version>
 		<updateLink>https://svn.bountysource.com/salr/trunk/salastread.xpi</updateLink>
 	</r:Description>
 </r:RDF>
