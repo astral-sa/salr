@@ -20,6 +20,7 @@
 			<preference id="alwaysShowGoToLastIcon"		name="extensions.salastread.alwaysShowGoToLastIcon" type="bool"/>
 			<preference id="showUnvisitIcon"			name="extensions.salastread.showUnvisitIcon" 		type="bool"/>
 			<preference id="markThreadUnvisited"		name="extensions.salastread.markThreadUnvisited" 	type="string"/>
+			<preference id="swapIconOrder"				name="extensions.salastread.swapIconOrder" 			type="bool"/>
 		</preferences>
 		
 		<groupbox>
@@ -39,6 +40,7 @@
 			<checkbox preference="newPostCountUseOneLine" 	label="Show new replies count on a new line" style="margin-left: 20px;" id="newReCountNewLine" />
 			<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first" />
 			<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads in bookmark list with new posts first" />
+			<checkbox preference="swapIconOrder" 			label="Swap the Mark Unvisited and Go To Last Post icon order" />
 		</groupbox>
 
 		<groupbox>

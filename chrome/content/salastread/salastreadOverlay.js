@@ -707,8 +707,16 @@ function handleThreadList(doc, forumid, flags) {
 					threadRepliesBox.style.backgroundColor = postedInThreadRe;
 				}
 			}
+		}
+		
+		var divLastSeen = persistObject.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
+		if (divLastSeen)
+		{
+			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
+			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
+		
 			//SALR replacing forums buttons
-			if (showSALRIcons)
+			if (showSALRIcons) // do we even need this variable? why not just check showUnvisitIcon or showGoToLastIcon?
 			{
 				if (!disableNewReCount && newPosts)
 				{
@@ -723,49 +731,54 @@ function handleThreadList(doc, forumid, flags) {
 					}
 				}
 
-				var iconHolder = persistObject.selectSingleNode(doc, threadTitleBox, "DIV[contains(@class, 'lastseen')]");
-				if (iconHolder)
+				if (divLastSeen) //note: this is what is getting rid of the border on the default buttons, even if you only change one icon
 				{
-					iconHolder.style.background = 'none';
-					iconHolder.style.border = '0';
+					divLastSeen.style.background = 'none';
+					divLastSeen.style.border = '0';
 				}
 
-				if (showUnvisitIcon && swapIconOrder)
+				if (showUnvisitIcon && iconMarkUnseen)
 				{
-					if (unRead)
+					iconMarkUnseen.style.background = 'url('+persistObject.getPreference("markThreadUnvisited")+') no-repeat center center';
+					iconMarkUnseen.style.textIndent = '-9000px';
+					iconMarkUnseen.style.width = '22px';
+					iconMarkUnseen.style.height = '22px';
+					iconMarkUnseen.style.padding = '0';
+				}
+				if (showGoToLastIcon)
+				{
+					if (alwaysShowGoToLastIcon && !iconJumpLastRead)
 					{
-						var unRead = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'x')]");
-						unRead.style.background = 'url('+persistObject.getPreference("markThreadUnvisited")+') no-repeat center center';
-						unRead.style.textIndent = '-9000px';
-						unRead.style.width = '22px';
-						unRead.style.height = '22px';
-						unRead.style.padding = '0';
+						iconJumpLastRead = doc.createElement("a");
+						iconJumpLastRead.title = "Jump to last read post";
+						iconJumpLastRead.href = "/showthread.php?threadid=" + threadId + "&goto=newpost";
+						iconJumpLastRead.className = "count";
+						divLastSeen.appendChild(iconJumpLastRead);
 					}
-				}
-				if (showGoToLastIcon && (newPosts || alwaysShowGoToLastIcon))
-				{
-					newPosts.style.background = 'url('+persistObject.getPreference("goToLastReadPost")+') no-repeat center center';
-					newPosts.style.width = '22px';
-					newPosts.style.height = '22px';
-					newPosts.style.border = 'none';
-					newPosts.style.padding = '0';
-					newPosts.firstChild.style.display = 'none';
-					//persistObject.insertLastIcon(doc, iconHolder, newPosts);
-				}
-				if (showUnvisitIcon && !swapIconOrder)
-				{
-					var unRead = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'x')]");
-					if (unRead)
+					else if (iconJumpLastRead)
 					{
-						unRead.style.background = 'url('+persistObject.getPreference("markThreadUnvisited")+') no-repeat center center';
-						unRead.style.textIndent = '-9000px';
-						unRead.style.width = '22px';
-						unRead.style.height = '22px';
-						unRead.style.padding = '0';
+						iconJumpLastRead.firstChild.style.display = 'none';
+					}
+			
+					if (iconJumpLastRead)
+					{
+						iconJumpLastRead.style.background = 'url('+persistObject.getPreference("goToLastReadPost")+') no-repeat center center';
+						iconJumpLastRead.style.width = '22px';
+						iconJumpLastRead.style.height = '22px';
+						iconJumpLastRead.style.border = 'none';
+						iconJumpLastRead.style.padding = '0';
+						//persistObject.insertLastIcon(doc, iconHolder, newPosts);
 					}
 				}
 			}
+
+			// Switch the Mark as Unseen and Jump to Last Read icon order
+			if (swapIconOrder && iconMarkUnseen && iconJumpLastRead)
+			{
+				divLastSeen.insertBefore(iconJumpLastRead, iconMarkUnseen);
+			}
 		}
+		
 		if (threadDetails['star'])
 		{
 			persistObject.insertStar(doc, threadTitleBox);
@@ -1101,12 +1114,53 @@ function addHighlightedUser(e) {
 	SALR_runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
 }
 
+// Function called by the onclick of the button that shows up for starred and archived threads
+function unstarButtonPress(e) {
+
+	var archivedUnstarButtonInput = e.originalTarget;
+	persistObject.toggleThreadStar(archivedUnstarButtonInput.id);
+	archivedUnstarButtonInput.parentNode.parentNode.parentNode.removeChild(archivedUnstarButtonInput.parentNode.parentNode);
+}
+
 function handleShowThread(doc) {
 	var failed, i, e;	// Little variables that'll get reused
 	if (doc.getElementById('thread') == null)
 	{
-		// If there is no thread div then abort since something's not right
-		return;
+		var archivedLink = persistObject.selectSingleNode(doc, doc, "//div[contains(@class,'inner')]/a[contains(@href,'archives.somethingawful.com/showthread.php?threadid=')]");
+		
+		if (archivedLink)
+		{
+			// This thread has been archived, not everyone has archives so give them an option to unstar it (if it's starred)
+
+			var archivedId = archivedLink.href.match(/threadid=(\d+)/)[1];
+			
+			if (persistObject.isThreadStarred(archivedId))
+			{				
+				var archivedUnstarButtonP = doc.createElement("p");
+					var archivedUnstarButtonForm = doc.createElement("form");
+						var archivedUnstarButtonInput = doc.createElement("input");
+							archivedUnstarButtonInput.type = "button";
+							archivedUnstarButtonInput.name = "archivedunstarbutton";
+							archivedUnstarButtonInput.value = "Click here to unstar this thread.";
+							archivedUnstarButtonInput.id = archivedId;
+							archivedUnstarButtonInput.onclick = unstarButtonPress;
+						archivedUnstarButtonForm.appendChild(archivedUnstarButtonInput);
+					archivedUnstarButtonP.appendChild(doc.createElement("br"));
+					archivedUnstarButtonP.appendChild(archivedUnstarButtonForm);
+				archivedLink.parentNode.appendChild(archivedUnstarButtonP);
+
+				return;
+			}
+			else
+			{
+				return;
+			}
+		}
+		else
+		{
+			// If there is no thread div then abort since something's not right
+			return;
+		}
 	}
 	try
 	{
@@ -1481,6 +1535,18 @@ function handleShowThread(doc) {
 					}
 				}
 			}
+			
+			//ban history link
+			var banHistLink = doc.createElement("li");
+			
+			var banHistAnchor = doc.createElement("a");
+				banHistAnchor.href = "/banlist.php?userid=" + posterId;
+				banHistAnchor.title = "Show poster's ban/probation history.";
+				banHistAnchor.innerHTML = " Ban History";
+			banHistLink.appendChild(banHistAnchor);
+			banHistLink.appendChild(doc.createTextNode(" "));
+			profileLink.parentNode.parentNode.appendChild(banHistLink);
+			
 			//add user coloring/note links
 			if(highlightUsernames) {
 				var ul = profileLink.parentNode.parentNode;
