@@ -47,6 +47,17 @@ function SALR_menuItemCommand(event, el, etype) {
 }
 
 function SALR_menuItemCommandGoToLastPost(event, el, etype, threadid) {
+
+	if (event.ctrlKey == true && event.shiftKey == true)
+	{
+		
+		if (confirm("Do you want to unstar thread \"" +  persistObject.getThreadTitle(threadid) + "\"?"))
+		{
+			persistObject.toggleThreadStar(threadid);
+		}
+		return;
+	}
+	
 	try {
 		SALR_menuItemCommandURL(event, "http://forums.somethingawful.com/showthread.php?threadid=" + threadid + "&goto=newpost", etype);
 	} catch(e) {
@@ -55,12 +66,17 @@ function SALR_menuItemCommandGoToLastPost(event, el, etype, threadid) {
 }
 
 function SALR_menuItemCommandURL(event, el, etype) {
+
 	var target = "none";
-	if(etype=="command") {
-		target = "current";
-	}
-	if(etype=="click") {
-		if(event.button == 2 || event.button == 1) {
+
+	if(etype=="click")
+	{
+		if(event.button == 0)
+		{
+			target = "current";
+		}
+		else if(event.button == 2 || event.button == 1)
+		{
 			target = "newtab";
 		}
 	}
@@ -402,12 +418,22 @@ function SALR_StarredThreadMenuShowing() {
 		menupopup.removeChild(menupopup.firstChild);
 	}
 	var starred = persistObject.starList;
-	for(var id in starred) {
+
+	for(var id in starred)
+	{
 		var title = starred[id];
 		var menuel = document.createElement("menuitem");
 			menuel.setAttribute("label", title);
 			menuel.setAttribute("onclick", "SALR_menuItemCommandGoToLastPost(event, this, 'click'," + id + ");");
-			menuel.setAttribute("oncommand", "SALR_menuItemCommandGoToLastPost(event, this, 'command'," + id + ");");
+	//		menuel.setAttribute("oncommand", "SALR_menuItemCommandGoToLastPost(event, this, 'command'," + id + ");");
+		menupopup.appendChild(menuel);
+	}
+
+	if (!menupopup.firstChild)
+	{
+		var menuel = document.createElement("menuitem");
+			menuel.setAttribute("label", "No have no threads starred.");
+			menuel.setAttribute("disabled", "true");
 		menupopup.appendChild(menuel);
 	}
 }
@@ -555,6 +581,24 @@ function handleForumDisplay(doc)
 	}
 }
 
+// Event catcher for clicking on the Mark Unseen box
+function clickMarkUnseen()
+{
+	var doc = this.ownerDocument;
+	var thread = this.parentNode.parentNode.parentNode;
+	var forumid = persistObject.getForumID(doc);
+
+	var test = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
+//	alert("Name: " + test.className);
+	
+	if (!persistObject.getPreference("disableGradients"))
+	{
+		persistObject.removeGradient(thread);
+	}
+	
+	persistObject.uncolorThread(doc, thread, forumid);
+}
+
 //handle highlighting of user cp/forum listings
 function handleThreadList(doc, forumid, flags) {
 	//get preferences once
@@ -665,9 +709,8 @@ function handleThreadList(doc, forumid, flags) {
 			}
 		}
 
-		var newPosts = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'count')]");
-		// If this thread is in the DB as being read
-		if (threadDetails || newPosts)
+		// Update some DB info
+		if (threadDetails)
 		{
 			if (!threadDetails['title'])
 			{
@@ -678,12 +721,19 @@ function handleThreadList(doc, forumid, flags) {
 			{
 				persistObject.StoreOPData(threadId, threadOPId);
 			}
+		}
 
-			//thread highlighting
-			if (!dontHighlightThreads)
+		var divLastSeen = persistObject.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
+		if (divLastSeen)
+		{
+			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
+			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
+		
+			// Thread highlighting
+			if (!dontHighlightThreads && iconMarkUnseen)
 			{
 				// If there are new posts
-				if (newPosts)
+				if (iconJumpLastRead)
 				{
 					//we haven't been tracking this for whatever reason, add it
 					if(!threadDetails)
@@ -707,20 +757,19 @@ function handleThreadList(doc, forumid, flags) {
 					threadRepliesBox.style.backgroundColor = postedInThreadRe;
 				}
 			}
-		}
-		
-		var divLastSeen = persistObject.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
-		if (divLastSeen)
-		{
-			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
-			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
+			
+			// We need this to actively update the color of a thread getting marked unread
+			if (iconMarkUnseen)
+			{
+				iconMarkUnseen.addEventListener("click", clickMarkUnseen, false);
+			}
 		
 			//SALR replacing forums buttons
 			if (showSALRIcons) // do we even need this variable? why not just check showUnvisitIcon or showGoToLastIcon?
 			{
-				if (!disableNewReCount && newPosts)
+				if (!disableNewReCount && iconJumpLastRead)
 				{
-					threadRe = persistObject.selectSingleNode(doc, newPosts, "B").innerHTML;
+					threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B").innerHTML;
 					if (newPostCountUseOneLine && threadRe)
 					{
 						threadRepliesBox.innerHTML += '&nbsp;(' + threadRe + ')';
@@ -731,7 +780,7 @@ function handleThreadList(doc, forumid, flags) {
 					}
 				}
 
-				if (divLastSeen) //note: this is what is getting rid of the border on the default buttons, even if you only change one icon
+				if (divLastSeen && showUnvisitIcon && showGoToLastIcon) //note: this is what is getting rid of the border on the default buttons, even if you only change one icon
 				{
 					divLastSeen.style.background = 'none';
 					divLastSeen.style.border = '0';
@@ -767,7 +816,6 @@ function handleThreadList(doc, forumid, flags) {
 						iconJumpLastRead.style.height = '22px';
 						iconJumpLastRead.style.border = 'none';
 						iconJumpLastRead.style.padding = '0';
-						//persistObject.insertLastIcon(doc, iconHolder, newPosts);
 					}
 				}
 			}

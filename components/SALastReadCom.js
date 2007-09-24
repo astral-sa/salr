@@ -1444,6 +1444,19 @@ salrPersistObject.prototype = {
 
 		post.className += " colored";
 	},
+	
+	// Back up the background color of an element to a hidden field
+	// @param: doc, element
+	// @return: nothing
+	backupColor: function (doc, element)
+	{
+		var backup = doc.createElement("input");
+		backup.type = "hidden";
+		backup.name = "Original Background Color";
+		backup.className = "bgBackup";
+		backup.value = element.style.backgroundColor;
+		element.appendChild(backup);
+	},
 
 	// Color a thread entry passed to it
 	// @param: doc, TR, (int), color code, color code
@@ -1472,27 +1485,124 @@ salrPersistObject.prototype = {
 		threadRepliesBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'replies')]");
 		threadViewsBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'views')]");
 		threadLastpostBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'lastpost')]");
+		
+		this.backupColor(doc, threadTitleBox);
 		threadTitleBox.style.backgroundColor = lightColorToUse;
+		
+		this.backupColor(doc, threadAuthorBox);
 		threadAuthorBox.style.backgroundColor = darkColorToUse;
+		
+		this.backupColor(doc, threadRepliesBox);
 		threadRepliesBox.style.backgroundColor = lightColorToUse;
+		
+		this.backupColor(doc, threadViewsBox);
 		threadViewsBox.style.backgroundColor = darkColorToUse;
+		
 		if (!this.hasNoRatingBox(forumID))
 		{
+			this.backupColor(doc, threadRatingBox);
 			threadRatingBox.style.backgroundColor = lightColorToUse;
 		}
+		this.backupColor(doc, threadLastpostBox);
 		threadLastpostBox.style.backgroundColor = darkColorToUse;
+		
 		if (this.inDump(forumID))
 		{
+			this.backupColor(doc, threadVoteBox);
 			threadVoteBox.style.backgroundColor = lightColorToUse;
 		}
 		else
 		{
+			this.backupColor(doc, threadIconBox);
 			threadIconBox.style.backgroundColor = darkColorToUse;
 		}
 		if (this.inAskTell(forumID))
 		{
+			this.backupColor(doc, threadIconBox);
 			threadIconBox.style.backgroundColor = lightColorToUse;
+			
+			this.backupColor(doc, threadIcon2Box);
 			threadIcon2Box.style.backgroundColor = darkColorToUse;
+		}
+	},
+	
+	// Uncolor a thread entry passed to it (resets to CSS defaults)
+	// @param: doc, TR, (int)
+	// @return: nothing
+	uncolorThread: function (doc, thread, forumID)
+	{
+		var backedupElement;
+		
+		if (this.inDump(forumID))
+		{
+			threadRatingBox = thread.getElementsByTagName('td')[0];
+			threadVoteBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'votes')]");
+		}
+		else
+		{
+			threadIconBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
+		}
+		if (!this.inDump(forumID) && !this.hasNoRatingBox(forumID))
+		{
+			threadRatingBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'rating')]");
+		}
+		if (this.inAskTell(forumID))
+		{
+			threadIcon2Box = this.selectSingleNode(doc, thread, "TD[contains(@class,'icon2')]");
+		}
+		threadTitleBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
+		threadAuthorBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'author')]");
+		threadRepliesBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'replies')]");
+		threadViewsBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'views')]");
+		threadLastpostBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'lastpost')]");
+		
+		backedupElement = this.selectSingleNode(doc, threadTitleBox, "input[contains(@class,'bgBackup')]");
+		threadTitleBox.style.backgroundColor = backedupElement.value;
+		threadTitleBox.removeChild(backedupElement);
+		
+		backedupElement = this.selectSingleNode(doc, threadAuthorBox, "input[contains(@class,'bgBackup')]");
+		threadAuthorBox.style.backgroundColor = backedupElement.value;
+		threadAuthorBox.removeChild(backedupElement);
+		
+		backedupElement = this.selectSingleNode(doc, threadRepliesBox, "input[contains(@class,'bgBackup')]");
+		threadRepliesBox.style.backgroundColor = backedupElement.value;
+		threadRepliesBox.removeChild(backedupElement);
+		
+		backedupElement = this.selectSingleNode(doc, threadViewsBox, "input[contains(@class,'bgBackup')]");
+		threadViewsBox.style.backgroundColor = backedupElement.value;
+		threadViewsBox.removeChild(backedupElement);
+		
+		if (!this.hasNoRatingBox(forumID))
+		{
+			backedupElement = this.selectSingleNode(doc, threadRatingBox, "input[contains(@class,'bgBackup')]");
+			threadRatingBox.style.backgroundColor = backedupElement.value;
+			threadRatingBox.removeChild(backedupElement);
+		}
+		backedupElement = this.selectSingleNode(doc, threadLastpostBox, "input[contains(@class,'bgBackup')]");
+		threadLastpostBox.style.backgroundColor = backedupElement.value;
+		threadLastpostBox.removeChild(backedupElement);
+		
+		if (this.inDump(forumID))
+		{
+			backedupElement = this.selectSingleNode(doc, threadVoteBox, "input[contains(@class,'bgBackup')]");
+			threadVoteBox.style.backgroundColor = backedupElement.value;
+			threadVoteBox.removeChild(backedupElement);
+		}
+		else
+		{
+			backedupElement = this.selectSingleNode(doc, threadIconBox, "input[contains(@class,'bgBackup')]");
+			threadIconBox.style.backgroundColor = backedupElement.value;
+			threadIconBox.removeChild(backedupElement);
+		}
+		if (this.inAskTell(forumID))
+		{
+			backedupElement = this.selectSingleNode(doc, threadIconBox, "input[contains(@class,'bgBackup')]");
+			threadIconBox.style.backgroundColor = backedupElement.value;
+			threadIconBox.removeChild(backedupElement);
+			
+			backedupElement = this.selectSingleNode(doc, threadIcon2Box, "input[contains(@class,'bgBackup')]");
+			threadIcon2Box.style.backgroundColor = backedupElement.value;
+			threadIcon2Box.removeChild(backedupElement);
 		}
 	},
 
@@ -1508,6 +1618,23 @@ salrPersistObject.prototype = {
 				cell.style.backgroundImage = "url('chrome://salastread/skin/gradient.png')";
 				cell.style.backgroundRepeat = "repeat-x";
 				cell.style.backgroundPosition = "center left";
+		}
+	},
+	
+	// Removes the gradient overlay to a given thread
+	// @param: TR
+	// @return: nothing
+	removeGradient: function(thread)
+	{
+		return;
+		
+		var cells = thread.getElementsByTagName('td');
+		for(var i = cells.length - 1; i >= 0; i--)
+		{
+			var cell = cells[i];
+				cell.style.backgroundImage = "";
+				cell.style.backgroundRepeat = "";
+				cell.style.backgroundPosition = "";
 		}
 	},
 
