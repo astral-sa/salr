@@ -588,15 +588,15 @@ function clickMarkUnseen()
 	var thread = this.parentNode.parentNode.parentNode;
 	var forumid = persistObject.getForumID(doc);
 
-	var test = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
-//	alert("Name: " + test.className);
-	
 	if (!persistObject.getPreference("disableGradients"))
 	{
 		persistObject.removeGradient(thread);
 	}
 	
 	persistObject.uncolorThread(doc, thread, forumid);
+	
+	// Uncomment this to force a refresh after marking a thread unseen
+	// setTimeout(function(){doc.defaultView.location.reload(false);}, 400);
 }
 
 //handle highlighting of user cp/forum listings

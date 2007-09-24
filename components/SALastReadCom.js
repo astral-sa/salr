@@ -1626,8 +1626,6 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	removeGradient: function(thread)
 	{
-		return;
-		
 		var cells = thread.getElementsByTagName('td');
 		for(var i = cells.length - 1; i >= 0; i--)
 		{
