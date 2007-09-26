@@ -728,14 +728,20 @@ function handleThreadList(doc, forumid, flags)
 			//SALR replacing forums buttons
 			if (showGoToLastIcon && !disableNewReCount && iconJumpLastRead)
 			{
-				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B").innerHTML;
-				if (newPostCountUseOneLine && threadRe)
+				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B");
+				threadRe = threadRe.parentNode.removeChild(threadRe);
+				threadRe.style.fontSize = '75%';
+				if (newPostCountUseOneLine)
 				{
-					threadRepliesBox.innerHTML += '&nbsp;(' + threadRe + ')';
+					threadRepliesBox.innerHTML += '&nbsp;(';
+					threadRepliesBox.appendChild(threadRe);
+					threadRepliesBox.innerHTML += ')';
 				}
 				else
 				{
-					threadRepliesBox.innerHTML += '<br />(' + threadRe + ')';
+					threadRepliesBox.innerHTML += '<br />(';
+					threadRepliesBox.appendChild(threadRe);
+					threadRepliesBox.innerHTML += ')';
 				}
 			}
 
@@ -757,9 +763,12 @@ function handleThreadList(doc, forumid, flags)
 				iconJumpLastRead.title = "Jump to last read post";
 				iconJumpLastRead.href = "/showthread.php?threadid=" + threadId + "&goto=newpost";
 				iconJumpLastRead.className = "count";
-				threadRe = doc.createElement("b");
-				threadRe.innerHTML = "0";
-				iconJumpLastRead.appendChild(threadRe);
+				if (disableNewReCount)
+				{
+					threadRe = doc.createElement("b");
+					threadRe.innerHTML = "0";
+					iconJumpLastRead.appendChild(threadRe);
+				}
 				divLastSeen.appendChild(iconJumpLastRead);
 			}
 
