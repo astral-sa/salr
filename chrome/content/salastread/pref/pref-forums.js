@@ -1,5 +1,7 @@
 function initForums() {
 	toggleNewReCount();
+	toggleUnvisitIcon();
+	toggleLastReadIcon();
 }
 
 function toggleNewReCount() {
