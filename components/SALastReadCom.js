@@ -473,6 +473,86 @@ salrPersistObject.prototype = {
 		return admins;
 	},
 
+	// Return a string that contains a CSS file with the custom colors set (when enabled)
+	get generateDynamicCSS()
+	{
+		var CSSFile = '';
+		if (!this.getPreference('dontHightlightPosts'))
+		{
+			// These are for in thread coloring
+			CSSFile += 'table.post tr.seen1 td { background-color:';
+			CSSFile += this.getPreference('seenPostLight');
+			CSSFile += ' !important; }\n';
+			CSSFile += 'table.post tr.seen2 td { background-color:';
+			CSSFile += this.getPreference('seenPostDark');
+			CSSFile += ' !important; }\n';
+		}
+		if (!this.getPreference('dontHighlightThreads'))
+		{
+			CSSFile += 'tr.thread.seen td { background-color:';
+			CSSFile += this.getPreference('readLight');
+			CSSFile += ' !important; }\n';
+			CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
+			CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
+			CSSFile += this.getPreference('readDark');
+			CSSFile += ' !important; }\n';
+			CSSFile += 'tr.thread.category0 td { background-color:';
+			CSSFile += this.getPreference('readLight');
+			CSSFile += ' !important; }\n';
+			CSSFile += 'tr.thread.category0 td.icon, tr.thread.category0 td.author,';
+			CSSFile += 'tr.thread.category0 td.views, tr.thread.category0 td.lastpost { background-color:';
+			CSSFile += this.getPreference('readDark');
+			CSSFile += ' !important; }\n';
+			CSSFile += 'tr.thread.newposts td { background-color:';
+			CSSFile += this.getPreference('readWithNewLight');
+			CSSFile += ' !important; }\n';
+			CSSFile += 'tr.thread.newposts td.icon, tr.thread.newposts td.author,';
+			CSSFile += 'tr.thread.newposts td.views, tr.thread.newposts td.lastpost { background-color:';
+			CSSFile += this.getPreference('readWithNewDark');
+			CSSFile += ' !important; }\n';
+		}
+		if (!this.getPreference('disableGradients'))
+		{
+			CSSFile += '#forum tr.thread.seen td, #forum tr.thread.category0 td, ';
+			CSSFile += '#forum tr.thread.category1 td, #forum tr.thread.category2 td, {';
+			CSSFile += 'background-image:url("chrome://salastread/skin/gradient.png") !important;';
+			CSSFile += 'background-repeat:repeat-x !important;';
+			CSSFile += 'background-position:center left !important;}\n';
+		}
+		if (this.getPreference('showUnvisitIcon') && this.getPreference('showGoToLastIcon'))
+		{
+			CSSFile += 'td.title div.lastseen {';
+			CSSFile += 'border:0 !important;';
+			CSSFile += 'background:none !important;';
+			CSSFile += '}\n';
+		}
+		if (this.getPreference('showUnvisitIcon'))
+		{
+			CSSFile += '#forum td.title div.lastseen a.x {';
+			CSSFile += 'background:url(';
+			CSSFile += this.getPreference("markThreadUnvisited");
+			CSSFile += ') no-repeat center center !important;';
+			CSSFile += 'text-indent:-9000px !important;';
+			CSSFile += 'width:22px !important;';
+			CSSFile += 'height:22px !important;';
+			CSSFile += 'padding:0 !important;';
+			CSSFile += '}\n';
+		}
+		if (this.getPreference('showGoToLastIcon'))
+		{
+			CSSFile += '#forum td.title div.lastseen a.count {';
+			CSSFile += 'background:url(';
+			CSSFile += this.getPreference("goToLastReadPost");
+			CSSFile += ') no-repeat center center !important;';
+			CSSFile += 'width:22px !important;';
+			CSSFile += 'height:22px !important;';
+			CSSFile += 'border:none !important;';
+			CSSFile += 'padding:0 !important;';
+			CSSFile += '}\n';
+		}
+		return CSSFile;
+	},
+
 	// Retrieves all the data on a given thread id including any
 	// @param: (int) thread id
 	// @return: (array)
