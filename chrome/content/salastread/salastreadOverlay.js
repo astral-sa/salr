@@ -50,14 +50,14 @@ function SALR_menuItemCommandGoToLastPost(event, el, etype, threadid) {
 
 	if (event.ctrlKey == true && event.shiftKey == true)
 	{
-		
+
 		if (confirm("Do you want to unstar thread \"" +  persistObject.getThreadTitle(threadid) + "\"?"))
 		{
 			persistObject.toggleThreadStar(threadid);
 		}
 		return;
 	}
-	
+
 	try {
 		SALR_menuItemCommandURL(event, "http://forums.somethingawful.com/showthread.php?threadid=" + threadid + "&goto=newpost", etype);
 	} catch(e) {
@@ -592,15 +592,16 @@ function clickMarkUnseen()
 	{
 		persistObject.removeGradient(thread);
 	}
-	
+
 	persistObject.uncolorThread(doc, thread, forumid);
-	
+
 	// Uncomment this to force a refresh after marking a thread unseen
 	// setTimeout(function(){doc.defaultView.location.reload(false);}, 400);
 }
 
 //handle highlighting of user cp/forum listings
-function handleThreadList(doc, forumid, flags) {
+function handleThreadList(doc, forumid, flags)
+{
 	//get preferences once
 	var dontHighlightThreads = persistObject.getPreference("dontHighlightThreads");
 	var disableNewReCount = persistObject.getPreference("disableNewReCount");
@@ -646,6 +647,10 @@ function handleThreadList(doc, forumid, flags) {
 		}
 
 		threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'thread_title')]");
+		if(!threadTitleLink)
+		{
+			threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
+		}
 		if(!threadTitleLink) continue;
 		threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1]);
 		threadTitle = threadTitleLink.innerHTML;
@@ -659,35 +664,31 @@ function handleThreadList(doc, forumid, flags) {
 			continue;
 		}
 
-		//mark everything in the User CP as being read so it highlights later
-		if(!threadDetails && flags.inUserCP)
-		{
-			//persistObject.iAmReadingThis(threadId);
-			//persistObject.setThreadTitle(threadId, threadTitle);
-			//threadDetails = true;
-		}
-
 		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
 		threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
 		threadOPId = parseInt(threadAuthorBox.getElementsByTagName('a')[0].href.match(/userid=(\d+)/i)[1]);
 		posterColor = false;
 		posterBG = false;
 
-		if (threadDetails['mod']) {
+		if (threadDetails['mod'])
+		{
 			posterColor = modColor;
 			posterBG =  modBackground;
 		}
 
-		if (threadDetails['admin']) {
+		if (threadDetails['admin'])
+		{
 			posterColor = adminColor;
 			posterBG =  adminBackground;
 		}
 
-		if (threadDetails['color']) {
+		if (threadDetails['color'])
+		{
 			posterColor = threadDetails['color'];
 		}
 
-		if (threadDetails['background']) {
+		if (threadDetails['background'])
+		{
 			posterBG = threadDetails['background'];
 		}
 		// So right click star/ignore works
@@ -709,115 +710,45 @@ function handleThreadList(doc, forumid, flags) {
 			}
 		}
 
-		// Update some DB info
-		if (threadDetails)
-		{
-			if (!threadDetails['title'])
-			{
-				persistObject.setThreadTitle(threadId, threadTitle);
-			}
-
-			if (!threadDetails['op'])
-			{
-				persistObject.StoreOPData(threadId, threadOPId);
-			}
-		}
 
 		var divLastSeen = persistObject.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
 		if (divLastSeen)
 		{
+			// Thread is read so lets work our magic
 			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
 			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
-		
-			// Thread highlighting
-			if (!dontHighlightThreads && iconMarkUnseen)
-			{
-				// If there are new posts
-				if (iconJumpLastRead)
-				{
-					//we haven't been tracking this for whatever reason, add it
-					if(!threadDetails)
-					{
-						persistObject.iAmReadingThis(threadId);
-						persistObject.setThreadTitle(threadId, threadTitle);
-					}
 
-					persistObject.colorThread(doc, thread, forumid, readWithNewLight, readWithNewDark);
+			// Thread highlighting
+			if (showSALRIcons && !dontHighlightThreads && threadDetails['posted'])
+			{
+				// Don't think this is working right now
+				threadRepliesBox.style.backgroundColor = postedInThreadRe;
+			}
+
+			//SALR replacing forums buttons
+			if (showGoToLastIcon && !disableNewReCount && iconJumpLastRead)
+			{
+				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B").innerHTML;
+				if (newPostCountUseOneLine && threadRe)
+				{
+					threadRepliesBox.innerHTML += '&nbsp;(' + threadRe + ')';
 				}
 				else
 				{
-					persistObject.colorThread(doc, thread, forumid, readLight, readDark);
-				}
-				if (!disableGradients)
-				{
-					persistObject.addGradient(thread);
-				}
-				if (threadDetails['posted'])
-				{
-					threadRepliesBox.style.backgroundColor = postedInThreadRe;
+					threadRepliesBox.innerHTML += '<br />(' + threadRe + ')';
 				}
 			}
-			
-			// We need this to actively update the color of a thread getting marked unread
-			if (iconMarkUnseen)
-			{
-				iconMarkUnseen.addEventListener("click", clickMarkUnseen, false);
-			}
-		
-			//SALR replacing forums buttons
-			if (showSALRIcons) // do we even need this variable? why not just check showUnvisitIcon or showGoToLastIcon?
-			{
-				if (!disableNewReCount && iconJumpLastRead)
-				{
-					threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B").innerHTML;
-					if (newPostCountUseOneLine && threadRe)
-					{
-						threadRepliesBox.innerHTML += '&nbsp;(' + threadRe + ')';
-					}
-					else
-					{
-						threadRepliesBox.innerHTML += '<br />(' + threadRe + ')';
-					}
-				}
 
-				if (divLastSeen && showUnvisitIcon && showGoToLastIcon) //note: this is what is getting rid of the border on the default buttons, even if you only change one icon
-				{
-					divLastSeen.style.background = 'none';
-					divLastSeen.style.border = '0';
-				}
-
-				if (showUnvisitIcon && iconMarkUnseen)
-				{
-					iconMarkUnseen.style.background = 'url('+persistObject.getPreference("markThreadUnvisited")+') no-repeat center center';
-					iconMarkUnseen.style.textIndent = '-9000px';
-					iconMarkUnseen.style.width = '22px';
-					iconMarkUnseen.style.height = '22px';
-					iconMarkUnseen.style.padding = '0';
-				}
-				if (showGoToLastIcon)
-				{
-					if (alwaysShowGoToLastIcon && !iconJumpLastRead)
-					{
-						iconJumpLastRead = doc.createElement("a");
-						iconJumpLastRead.title = "Jump to last read post";
-						iconJumpLastRead.href = "/showthread.php?threadid=" + threadId + "&goto=newpost";
-						iconJumpLastRead.className = "count";
-						divLastSeen.appendChild(iconJumpLastRead);
-					}
-					else if (iconJumpLastRead)
-					{
-						iconJumpLastRead.firstChild.style.display = 'none';
-					}
-			
-					if (iconJumpLastRead)
-					{
-						iconJumpLastRead.style.background = 'url('+persistObject.getPreference("goToLastReadPost")+') no-repeat center center';
-						iconJumpLastRead.style.width = '22px';
-						iconJumpLastRead.style.height = '22px';
-						iconJumpLastRead.style.border = 'none';
-						iconJumpLastRead.style.padding = '0';
-					}
-				}
+			if (showGoToLastIcon && alwaysShowGoToLastIcon && !iconJumpLastRead)
+			{
+				iconJumpLastRead = doc.createElement("a");
+				iconJumpLastRead.title = "Jump to last read post";
+				iconJumpLastRead.href = "/showthread.php?threadid=" + threadId + "&goto=newpost";
+				iconJumpLastRead.className = "count";
+				threadRe = doc.createElement("b");
+				threadRe.innerHTML = "0";
+				iconJumpLastRead.appendChild(threadRe);
+				divLastSeen.appendChild(iconJumpLastRead);
 			}
 
 			// Switch the Mark as Unseen and Jump to Last Read icon order
@@ -826,10 +757,10 @@ function handleThreadList(doc, forumid, flags) {
 				divLastSeen.insertBefore(iconJumpLastRead, iconMarkUnseen);
 			}
 		}
-		
+
 		if (threadDetails['star'])
 		{
-			persistObject.insertStar(doc, threadTitleBox);
+			threadTitleBox.className += ' starred';
 		}
 		if (highlightUsernames)
 		{
@@ -1175,15 +1106,15 @@ function handleShowThread(doc) {
 	if (doc.getElementById('thread') == null)
 	{
 		var archivedLink = persistObject.selectSingleNode(doc, doc, "//div[contains(@class,'inner')]/a[contains(@href,'archives.somethingawful.com/showthread.php?threadid=')]");
-		
+
 		if (archivedLink)
 		{
 			// This thread has been archived, not everyone has archives so give them an option to unstar it (if it's starred)
 
 			var archivedId = archivedLink.href.match(/threadid=(\d+)/)[1];
-			
+
 			if (persistObject.isThreadStarred(archivedId))
-			{				
+			{
 				var archivedUnstarButtonP = doc.createElement("p");
 					var archivedUnstarButtonForm = doc.createElement("form");
 						var archivedUnstarButtonInput = doc.createElement("input");
@@ -1583,10 +1514,10 @@ function handleShowThread(doc) {
 					}
 				}
 			}
-			
+
 			//ban history link
 			var banHistLink = doc.createElement("li");
-			
+
 			var banHistAnchor = doc.createElement("a");
 				banHistAnchor.href = "/banlist.php?userid=" + posterId;
 				banHistAnchor.title = "Show poster's ban/probation history.";
@@ -1594,7 +1525,7 @@ function handleShowThread(doc) {
 			banHistLink.appendChild(banHistAnchor);
 			banHistLink.appendChild(doc.createTextNode(" "));
 			profileLink.parentNode.parentNode.appendChild(banHistLink);
-			
+
 			//add user coloring/note links
 			if(highlightUsernames) {
 				var ul = profileLink.parentNode.parentNode;
