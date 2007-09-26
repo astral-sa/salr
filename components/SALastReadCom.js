@@ -514,7 +514,7 @@ salrPersistObject.prototype = {
 		if (!this.getPreference('disableGradients'))
 		{
 			CSSFile += '#forum tr.thread.seen td, #forum tr.thread.category0 td, ';
-			CSSFile += '#forum tr.thread.category1 td, #forum tr.thread.category2 td, {';
+			CSSFile += '#forum tr.thread.category1 td, #forum tr.thread.category2 td {';
 			CSSFile += 'background-image:url("chrome://salastread/skin/gradient.png") !important;';
 			CSSFile += 'background-repeat:repeat-x !important;';
 			CSSFile += 'background-position:center left !important;}\n';
