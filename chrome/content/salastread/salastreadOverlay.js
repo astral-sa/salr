@@ -743,6 +743,12 @@ function handleThreadList(doc, forumid, flags)
 			{
 				thread.className += ' newposts';
 			}
+			if (iconMarkUnseen)
+			{
+				// Ask/Tell and maybe other forums forget this at times
+				thread.className += ' seen';
+			}
+
 
 
 			if (alwaysShowGoToLastIcon && !iconJumpLastRead)
