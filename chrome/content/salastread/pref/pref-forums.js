@@ -1,5 +1,4 @@
 function initForums() {
-	toggleIconsSource();
 	toggleNewReCount();
 }
 
@@ -11,40 +10,15 @@ function toggleNewReCount() {
 	}
 }
 
-function toggleIconsSource() {
-	if(document.getElementById("toggleExtensionIcons").checked) {
-		document.getElementById("toggleLastReadIcon").disabled = false;
-		document.getElementById("toggleUnvisitIcon").disabled = false;
-		document.getElementById("newReCountNewLine").disabled = false;
-		document.getElementById("newReCount").disabled = false;
-		
-		toggleLastReadIcon();
-		toggleUnvisitIcon();
-		toggleNewReCount();
-	} else {
-		document.getElementById("toggleLastReadIcon").disabled = true;
-		document.getElementById("lastReadIcon").disabled = true;
-		document.getElementById("lastReadIconDefault").disabled = true;
-		document.getElementById("alwayShowLastReadIcon").disabled = true;
-		document.getElementById("toggleUnvisitIcon").disabled = true;
-		document.getElementById("unvisitIcon").disabled = true;
-		document.getElementById("unvisitIconDefault").disabled = true;
-		document.getElementById("newReCountNewLine").disabled = true;
-		document.getElementById("newReCount").disabled = true;
-	}
-}
-
 function toggleLastReadIcon() {
 	if(document.getElementById("toggleLastReadIcon").checked) {
 		//enable the others
 		document.getElementById("lastReadIcon").disabled = false;
 		document.getElementById("lastReadIconDefault").disabled = false;
-		document.getElementById("alwayShowLastReadIcon").disabled = false;
 	} else {
 		//disable
 		document.getElementById("lastReadIcon").disabled = true;
 		document.getElementById("lastReadIconDefault").disabled = true;
-		document.getElementById("alwayShowLastReadIcon").disabled = true;
 	}
 }
 
@@ -65,7 +39,7 @@ function lastReadIconDefault() {
 		var pref = document.getElementById("goToLastReadPost");
 			pref.reset();
 	} catch(e) {}
-	
+
 	pref.value = pref.valueFromPreferences;
 }
 
@@ -74,6 +48,6 @@ function unvisitIconDefault() {
 		var pref = document.getElementById("markThreadUnvisited");
 			pref.reset();
 	} catch(e) {}
-	
+
 	pref.value = pref.valueFromPreferences;
 }

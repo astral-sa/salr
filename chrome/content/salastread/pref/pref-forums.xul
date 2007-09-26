@@ -2,13 +2,13 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	
+
 	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-forums.js"/>
-	
+
 	<prefpane id="forums" onpaneload="initForums()" >
 		<preferences>
 			<preference id="enableForumNavigator"		name="extensions.salastread.enableForumNavigator" 	type="bool"/>
-			
+
 			<preference id="disableNewReCount" 			name="extensions.salastread.disableNewReCount" 		type="bool" inverted="true"/>
 			<preference id="newPostCountUseOneLine" 	name="extensions.salastread.newPostCountUseOneLine" type="bool" inverted="true"/>
 			<preference id="showThreadsWithNewPostsFirst" name="extensions.salastread.showThreadsWithNewPostsFirst" type="bool" />
@@ -22,20 +22,18 @@
 			<preference id="markThreadUnvisited"		name="extensions.salastread.markThreadUnvisited" 	type="string"/>
 			<preference id="swapIconOrder"				name="extensions.salastread.swapIconOrder" 			type="bool"/>
 		</preferences>
-		
+
 		<groupbox>
 			<caption label="General Forums Features" />
-			
+
 			<checkbox preference="enableForumNavigator"  label="Add a forum navigator to the lower-right corner of the browser" />
 		</groupbox>
-		
+
 		<spacer flex="1"/>
-		
-		<checkbox id="toggleExtensionIcons" preference="showSALRIcons" label="Make forums last read work like SALR" oncommand="toggleIconsSource()" />
 
 		<groupbox>
 			<caption label="Features"/>
-			
+
 			<checkbox preference="disableNewReCount" 		label="Show new replies count in the replies column" oncommand="toggleNewReCount()" id="newReCount" />
 			<checkbox preference="newPostCountUseOneLine" 	label="Show new replies count on a new line" style="margin-left: 20px;" id="newReCountNewLine" />
 			<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first" />
@@ -47,18 +45,18 @@
 			<caption label="Icons"/>
 
 			<vbox>
-				
-				<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Show 'Go To Last Post' icon" oncommand="toggleLastReadIcon()"/>
+
+				<checkbox id="alwayShowLastReadIcon" preference="alwaysShowGoToLastIcon" label="Always show 'Go To Last Post' icon, even if no new posts in thread"/>
+				<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Use this 'Go To Last Post' icon" oncommand="toggleLastReadIcon()"/>
 				<vbox style="margin-left: 20px">
 					<hbox align="center" flex="1">
 						<label value="Icon URL:" control="lastReadPostIcon"/>
 						<textbox id="lastReadIcon" preference="goToLastReadPost" flex="1"/>
 						<button id="lastReadIconDefault" label="Default"  onclick="lastReadIconDefault()"/>
 					</hbox>
-					<checkbox id="alwayShowLastReadIcon" preference="alwaysShowGoToLastIcon" label="Always show 'Go To Last Post' icon, even if no new posts in thread"/>
 				</vbox>
 
-				<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Show 'Mark Thread Unvisited' icon" oncommand="toggleUnvisitIcon()" />
+				<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Use this 'Mark Thread Unvisited' icon" oncommand="toggleUnvisitIcon()" />
 
 				<vbox style="margin-left: 20px">
 
@@ -71,7 +69,7 @@
 				</vbox>
 			</vbox>
 		</groupbox>
-		
+
 		<spacer flex="2"/>
 	</prefpane>
 </overlay>
