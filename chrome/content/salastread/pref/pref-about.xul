@@ -26,16 +26,21 @@
 						<text value="Tim Fries (biznatchio)"/>
 					</hbox>
 					<hbox>
-						<text value="Current Developers: " style="font-weight: bold"/>
-						<text value="duz, Tivac"/>
+						<text value="Lead Developer: " style="font-weight: bold"/>
+						<text value="Ben Dusinberre (duz)"/>
 					</hbox>
 					<hbox>
-						<text value="Contributors: " style="font-weight: bold"/>
+						<text value="2.0 Contributors: " style="font-weight: bold"/>
 						<vbox>
-							<text value="uncut product, 8ender, LonelyKing,"/>
-							<text value="Sebbe, Pahalial, ctz, Defiler, Shii,"/>
-							<text value="cheesypeanut, camalot, SFrost007"/>
-							<text value="Demented Footstool"/>
+							<text value="erebus, camalot, SFrost007,"/>
+							<text value="Demented Footstool, Tivac, RedKazan"/>
+						</vbox>
+					</hbox>
+					<hbox>
+						<text value="1.0 Contributors: " style="font-weight: bold"/>
+						<vbox>
+							<text value="uncut product, 8ender, LonelyKing, Sebbe,"/>
+							<text value="Pahalial, ctz, Defiler, Shii, cheesypeanut"/>
 						</vbox>
 					</hbox>
 					<spacer flex="1"/>
