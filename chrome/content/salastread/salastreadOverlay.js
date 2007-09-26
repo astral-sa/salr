@@ -514,7 +514,7 @@ function handleForumDisplay(doc)
 	}
 
 	// Insert the forums paginator & mouse gestures
-	if (persistObject.getPreference("enableForumNavigator"))
+	if (persistObject.getPreference("enableForumNavigator") || persistObject.getPreference("gestureEnable"))
 	{
 		persistObject.addPagination(doc);
 	}
@@ -770,6 +770,11 @@ function handleThreadList(doc, forumid, flags)
 					iconJumpLastRead.appendChild(threadRe);
 				}
 				divLastSeen.appendChild(iconJumpLastRead);
+			}
+			else if (showUnvisitIcon && iconJumpLastRead)
+			{
+				// Fix up the background gradient on the default Jump To Last link
+				divLastSeen.style.background = 'url(chrome://salastread/skin/lastseen-gradient.gif)';
 			}
 
 			// Switch the Mark as Unseen and Jump to Last Read icon order
@@ -1183,7 +1188,7 @@ function handleShowThread(doc) {
 	if (!inFYAD || persistObject.getPreference("enableFYAD"))
 	{
 		// Insert the forums paginator & mouse gestures
-		if (persistObject.getPreference("enablePageNavigator"))
+		if (persistObject.getPreference("enablePageNavigator") || persistObject.getPreference("gestureEnable"))
 		{
 			persistObject.addPagination(doc);
 		}
@@ -1486,7 +1491,14 @@ function handleShowThread(doc) {
 				}
 			}
 			colorDark = !colorDark;
+			
 			postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
+			if (!postIdLink)
+			{
+				postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#post')]");
+			}
+			if (!postIdLink) continue;
+			
 			postid = postIdLink.href.match(/#post(\d+)/i)[1];
 			if (insertPostTargetLink)
 			{
@@ -1983,6 +1995,10 @@ function SALR_windowOnLoadMini(e) {
 }
 
 function SALR_getPageTitle(doc) {
+	if (doc.title == "The Something Awful Forums")
+	{
+		return doc.title;
+	}
 	return doc.title.replace(/( \- )?The Something ?Awful Forums( \- )?/i, '');
 }
 

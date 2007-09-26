@@ -1493,7 +1493,7 @@ salrPersistObject.prototype = {
 	hasNoRatingBox: function(forumid)
 	{
 		return (forumid == 93 || forumid == 188 || forumid == 61 || forumid == 77 ||
-		 forumid == 78 || forumid == 79 || forumid == 115);
+		 forumid == 78 || forumid == 79 || forumid == 115 || forumid == 25);
 	},
 
 	// Colors the post passed to it
@@ -1894,6 +1894,11 @@ salrPersistObject.prototype = {
 				lastButton.href = this.editPageNumIntoURI(doc, "pagenumber=" + numPages);
 				lastButton.appendChild(lastButtonImg);
 				navDiv.appendChild(lastButton);
+			}
+			if (!this.getPreference("enableForumNavigator") || !this.getPreference("enableForumNavigator"))
+			{
+				navDiv.style.visibility = 'hidden';
+				navDiv.style.display = 'none';
 			}
 			doc.body.appendChild(navDiv);
 			// Do these do anything?
