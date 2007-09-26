@@ -745,7 +745,7 @@ function handleThreadList(doc, forumid, flags)
 			}
 
 
-			if (showGoToLastIcon && alwaysShowGoToLastIcon && !iconJumpLastRead)
+			if (alwaysShowGoToLastIcon && !iconJumpLastRead)
 			{
 				iconJumpLastRead = doc.createElement("a");
 				iconJumpLastRead.title = "Jump to last read post";
