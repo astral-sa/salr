@@ -623,6 +623,8 @@ function handleThreadList(doc, forumid, flags)
 	var highlightUsernames = persistObject.getPreference("highlightUsernames");
 	var dontBoldNames = persistObject.getPreference("dontBoldNames");
 	var showSALRIcons = persistObject.getPreference("showSALRIcons");
+	var showTWNP = persistObject.getPreference('showThreadsWithNewPostsFirst');
+	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP');
 
 	// We'll need lots of variables for this
 	var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox;
@@ -636,12 +638,32 @@ function handleThreadList(doc, forumid, flags)
 
 	// Here be where we work on the thread rows
 	var threadlist = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
+	
+	// These are insertion points for thread sorting
+	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+	{
+		var anchorTop = persistObject.selectSingleNode(doc, doc, "//table[@id='forum']/tbody");
+		
+		var anchorAnnouncement = doc.createElement("tr");
+		anchorTop.insertBefore(anchorAnnouncement,threadlist[0]);
+		var anchorUnreadStickies = doc.createElement("tr");
+		anchorTop.insertBefore(anchorUnreadStickies,threadlist[0]);
+		var anchorReadStickies = doc.createElement("tr");
+		anchorTop.insertBefore(anchorReadStickies,threadlist[0]);
+		var anchorThreads = doc.createElement("tr");
+		anchorTop.insertBefore(anchorThreads,threadlist[0]);
+	}
+
 	for (var i in threadlist)
 	{
 		var thread = threadlist[i];
 		threadTitleBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
 		if (threadTitleBox.getElementsByTagName('a')[0].className.search(/announcement/i) > -1)
 		{
+			if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+			{
+				anchorTop.insertBefore(thread,anchorAnnouncement);
+			}
 			// It's an announcement so skip the rest
 			continue;
 		}
@@ -783,6 +805,26 @@ function handleThreadList(doc, forumid, flags)
 				divLastSeen.insertBefore(iconJumpLastRead, iconMarkUnseen);
 			}
 		}
+		
+		// Sort the threads, new stickies, then stickies, then new threads, then threads
+		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+		{
+			var iAmASticky = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'sticky')]");
+			var iHaveNewPosts = (thread.className.search(/newposts/i) > -1);
+			
+			if (iAmASticky && iHaveNewPosts)
+			{
+				anchorTop.insertBefore(thread,anchorUnreadStickies);
+			}
+			else if (iAmASticky && !iHaveNewPosts)
+			{
+				anchorTop.insertBefore(thread,anchorReadStickies);
+			}
+			else if (!iAmASticky && iHaveNewPosts)
+			{
+				anchorTop.insertBefore(thread,anchorThreads);
+			}
+		}
 
 		if (threadDetails['star'])
 		{
@@ -804,42 +846,15 @@ function handleThreadList(doc, forumid, flags)
 			}
 		}
 	}
-
-	var showTWNP = persistObject.getPreference('showThreadsWithNewPostsFirst');
-	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP');
-
-	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP)) {
-	  //Lets reorder the threads
-	  var sortThreads = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
-	  var readThreads = Array();
-	  var tbody = persistObject.selectSingleNode(doc, doc, "//table[@id='forum']/tbody");
-	  var laststickythread = null;
-
-	  //First remove all the markedThreads
-	  for (var i=0; i<sortThreads.length; i++) {
-		var readthread = persistObject.selectSingleNode(doc, sortThreads[i], "td//div[contains(@class, 'salrIcons')]/a");
-		var sticky = persistObject.selectSingleNode(doc, sortThreads[i], "td[contains(@class, 'title_sticky')]");
-		//Only remove threads which we have read and aren't stickies.
-		if (readthread!=null && sticky==null) {
-		  tbody.removeChild(sortThreads[i])
-		  readThreads.push(sortThreads[i]);
-		  sortThreads.splice(i, 1);
-		  i--;
-		}
-		if (sticky!=null) { laststickythread = sortThreads[i]; }
-	  }
-	  //Could be that there are no sticky threads, but there are threads that don't have any unread
-	  if (laststickythread==null) {
-		laststickythread = sortThreads[0].parentNode.insertBefore(readThreads[0], sortThreads[0]);
-		readThreads.splice(0, 1);
-	  }
-	  if (readThreads.length>0) {
-		//Now loop through and add the rest
-		for (var i=0; i<readThreads.length; i++) {
-		  laststickythread = laststickythread.parentNode.insertBefore(readThreads[i], laststickythread.nextSibling);
-		}
-	  }
-   }
+	
+	// Clean up insertion points for thread sorting
+	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+	{
+		anchorTop.removeChild(anchorAnnouncement);
+		anchorTop.removeChild(anchorUnreadStickies);
+		anchorTop.removeChild(anchorReadStickies);
+		anchorTop.removeChild(anchorThreads);
+	}
 }
 
 function removeThread(evt) {
