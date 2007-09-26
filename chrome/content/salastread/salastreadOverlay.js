@@ -739,6 +739,12 @@ function handleThreadList(doc, forumid, flags)
 				}
 			}
 
+			if (iconJumpLastRead)
+			{
+				threadTitleBox.className += ' newposts';
+			}
+
+
 			if (showGoToLastIcon && alwaysShowGoToLastIcon && !iconJumpLastRead)
 			{
 				iconJumpLastRead = doc.createElement("a");
@@ -1974,11 +1980,10 @@ function SALR_insertCSS(css, doc) {
 }
 
 //not used right now, might be useful later!
-function SALR_insertDynamicCSS(css, doc) {
+function SALR_insertDynamicCSS(doc, css) {
 	var stylesheet = doc.createElement("style");
-		stylesheet.type = "text/css";
-		stylesheet.innerHTML = css;
-
+	stylesheet.type = "text/css";
+	stylesheet.innerHTML = css;
 	doc.getElementsByTagName('head')[0].appendChild(stylesheet);
 }
 
@@ -2078,9 +2083,7 @@ function salastread_windowOnLoad(e) {
 					//insert content CSS
 					SALR_insertCSS("chrome://salastread/content/contentStyling.css", doc);
 
-
 					//insert dynamic CSS for highlighting quoted users
-					var hqucss = 'table.salrHighlightQuote td { background-color: ';
 					var hqpostpref = 'highlightQuotePost';
 					var hqpostqpref = 'highlightQuotePostQuote';
 
@@ -2089,13 +2092,18 @@ function salastread_windowOnLoad(e) {
 					var forumid = persistObject.getForumID(doc);
 					var isFYAD = persistObject.inFYAD(forumid);
 					if (isFYAD) { hqpostpref += 'FYAD'; hqpostqpref += 'FYAD' }
-					hqucss += persistObject.getPreference(hqpostpref);
+					*/
+					/*
+					var hqucss = 'table.salrHighlightQuote td { background-color: ';
+					hqucss += persistObject.getPreference('highlightQuotePost');
 					hqucss += ' !important; }';
 					hqucss += ' table.salrHighlightQuote blockquote { background-color: ';
-					hqucss += persistObject.getPreference(hqpostqpref);
+					hqucss += persistObject.getPreference('highlightQuotePostQuote');
 					hqucss += ' !important; }';
-					SALR_insertDynamicCSS(hqucss, doc);
-*/
+					*/
+					var dynamoCSS = persistObject.generateDynamicCSS;
+					SALR_insertDynamicCSS(doc, dynamoCSS);
+
 					//Try grabbing the username, of course it will only find it on the forum index.
 					var userel = persistObject.selectSingleNode(doc,doc,'//div[contains(@class, "mainbodytextsmall")]//b');
 					if (userel!=null) {
