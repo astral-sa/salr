@@ -479,7 +479,7 @@ salrPersistObject.prototype = {
 	getThreadDetails: function(threadid)
 	{
 		var results = new Array();
-		var statement = this.database.createStatement("SELECT `threaddata`.`lastpostid`, `threaddata`.`lastviewdt`, `threaddata`.`op`, `threaddata`.`title`, `threaddata`.`lastreplyct`, `threaddata`.`posted`, `threaddata`.`ignore`, `threaddata`.`star`, `threaddata`.`options`, `userdata`.`username`, `userdata`.`mod`, `userdata`.`admin`, `userdata`.`color`, `userdata`.`background`, `userdata`.`status` FROM `threaddata` LEFT JOIN `userdata` ON `threaddata`.`op` = `userdata`.`userid` WHERE `threaddata`.`id` = ?1");
+		var statement = this.database.createStatement("SELECT t.`title`, t.`posted`, t.`ignore`, t.`star`, t.`options`, u.`username`, u.`mod`, u.`admin`, u.`color`, u.`background`, u.`status` FROM `threaddata` AS t LEFT JOIN `userdata` AS u ON t.`op` = u.`userid` WHERE t.`id` = ?1");
 		statement.bindInt32Parameter(0,threadid);
 		if (statement.executeStep())
 		{
@@ -1444,7 +1444,7 @@ salrPersistObject.prototype = {
 
 		post.className += " colored";
 	},
-	
+
 	// Back up the background color of an element to a hidden field
 	// @param: doc, element
 	// @return: nothing
@@ -1485,19 +1485,19 @@ salrPersistObject.prototype = {
 		threadRepliesBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'replies')]");
 		threadViewsBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'views')]");
 		threadLastpostBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'lastpost')]");
-		
+
 		this.backupColor(doc, threadTitleBox);
 		threadTitleBox.style.backgroundColor = lightColorToUse;
-		
+
 		this.backupColor(doc, threadAuthorBox);
 		threadAuthorBox.style.backgroundColor = darkColorToUse;
-		
+
 		this.backupColor(doc, threadRepliesBox);
 		threadRepliesBox.style.backgroundColor = lightColorToUse;
-		
+
 		this.backupColor(doc, threadViewsBox);
 		threadViewsBox.style.backgroundColor = darkColorToUse;
-		
+
 		if (!this.hasNoRatingBox(forumID))
 		{
 			this.backupColor(doc, threadRatingBox);
@@ -1505,7 +1505,7 @@ salrPersistObject.prototype = {
 		}
 		this.backupColor(doc, threadLastpostBox);
 		threadLastpostBox.style.backgroundColor = darkColorToUse;
-		
+
 		if (this.inDump(forumID))
 		{
 			this.backupColor(doc, threadVoteBox);
@@ -1520,19 +1520,19 @@ salrPersistObject.prototype = {
 		{
 			this.backupColor(doc, threadIconBox);
 			threadIconBox.style.backgroundColor = lightColorToUse;
-			
+
 			this.backupColor(doc, threadIcon2Box);
 			threadIcon2Box.style.backgroundColor = darkColorToUse;
 		}
 	},
-	
+
 	// Uncolor a thread entry passed to it (resets to CSS defaults)
 	// @param: doc, TR, (int)
 	// @return: nothing
 	uncolorThread: function (doc, thread, forumID)
 	{
 		var backedupElement;
-		
+
 		if (this.inDump(forumID))
 		{
 			threadRatingBox = thread.getElementsByTagName('td')[0];
@@ -1555,23 +1555,23 @@ salrPersistObject.prototype = {
 		threadRepliesBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'replies')]");
 		threadViewsBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'views')]");
 		threadLastpostBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'lastpost')]");
-		
+
 		backedupElement = this.selectSingleNode(doc, threadTitleBox, "input[contains(@class,'bgBackup')]");
 		threadTitleBox.style.backgroundColor = backedupElement.value;
 		threadTitleBox.removeChild(backedupElement);
-		
+
 		backedupElement = this.selectSingleNode(doc, threadAuthorBox, "input[contains(@class,'bgBackup')]");
 		threadAuthorBox.style.backgroundColor = backedupElement.value;
 		threadAuthorBox.removeChild(backedupElement);
-		
+
 		backedupElement = this.selectSingleNode(doc, threadRepliesBox, "input[contains(@class,'bgBackup')]");
 		threadRepliesBox.style.backgroundColor = backedupElement.value;
 		threadRepliesBox.removeChild(backedupElement);
-		
+
 		backedupElement = this.selectSingleNode(doc, threadViewsBox, "input[contains(@class,'bgBackup')]");
 		threadViewsBox.style.backgroundColor = backedupElement.value;
 		threadViewsBox.removeChild(backedupElement);
-		
+
 		if (!this.hasNoRatingBox(forumID))
 		{
 			backedupElement = this.selectSingleNode(doc, threadRatingBox, "input[contains(@class,'bgBackup')]");
@@ -1581,7 +1581,7 @@ salrPersistObject.prototype = {
 		backedupElement = this.selectSingleNode(doc, threadLastpostBox, "input[contains(@class,'bgBackup')]");
 		threadLastpostBox.style.backgroundColor = backedupElement.value;
 		threadLastpostBox.removeChild(backedupElement);
-		
+
 		if (this.inDump(forumID))
 		{
 			backedupElement = this.selectSingleNode(doc, threadVoteBox, "input[contains(@class,'bgBackup')]");
@@ -1599,7 +1599,7 @@ salrPersistObject.prototype = {
 			backedupElement = this.selectSingleNode(doc, threadIconBox, "input[contains(@class,'bgBackup')]");
 			threadIconBox.style.backgroundColor = backedupElement.value;
 			threadIconBox.removeChild(backedupElement);
-			
+
 			backedupElement = this.selectSingleNode(doc, threadIcon2Box, "input[contains(@class,'bgBackup')]");
 			threadIcon2Box.style.backgroundColor = backedupElement.value;
 			threadIcon2Box.removeChild(backedupElement);
@@ -1620,7 +1620,7 @@ salrPersistObject.prototype = {
 				cell.style.backgroundPosition = "center left";
 		}
 	},
-	
+
 	// Removes the gradient overlay to a given thread
 	// @param: TR
 	// @return: nothing
