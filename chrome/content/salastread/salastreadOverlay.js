@@ -741,7 +741,7 @@ function handleThreadList(doc, forumid, flags)
 
 			if (iconJumpLastRead)
 			{
-				threadTitleBox.className += ' newposts';
+				thread.className += ' newposts';
 			}
 
 
