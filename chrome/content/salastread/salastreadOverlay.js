@@ -740,11 +740,32 @@ function handleThreadList(doc, forumid, flags)
 			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
 			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
 
-			// Thread highlighting
+			
 			if (showSALRIcons && !dontHighlightThreads && threadDetails['posted'])
 			{
 				// Don't think this is working right now
 				threadRepliesBox.style.backgroundColor = postedInThreadRe;
+			}
+			
+			// Thread highlighting
+			if (!dontHighlightThreads)
+			{
+				if (iconJumpLastRead)
+				{
+					thread.className += ' newposts';
+				}
+				if (iconMarkUnseen)
+				{
+					// Ask/Tell and maybe other forums forget this at times
+					thread.className += ' seen';
+				}
+			}
+			else
+			{
+				if (iconJumpLastRead || iconMarkUnseen)
+				{
+					thread.className = thread.className.replace(/seen/i, "");
+				}
 			}
 
 			//SALR replacing forums buttons
@@ -766,17 +787,6 @@ function handleThreadList(doc, forumid, flags)
 					threadRepliesBox.innerHTML += ')';
 				}
 			}
-
-			if (iconJumpLastRead)
-			{
-				thread.className += ' newposts';
-			}
-			if (iconMarkUnseen)
-			{
-				// Ask/Tell and maybe other forums forget this at times
-				thread.className += ' seen';
-			}
-
 
 
 			if (alwaysShowGoToLastIcon && !iconJumpLastRead)
