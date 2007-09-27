@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.070923');
+pref('extensions.salastread.currentVersion', '1.99.070926');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -14,9 +14,6 @@ pref('extensions.salastread.videoEmbedderBG', '#ffcccc');
 //OPTIONS DIALOG
 //
 //GENERAL SETTINGS PAGE
-
-//USE SALR ICONS INSTEAD OF FORUMS ICONS
-pref('extensions.salastread.showSALRIcons', true);
 
 //THREAD COMMAND ICONS
 pref('extensions.salastread.showGoToLastIcon', true);
