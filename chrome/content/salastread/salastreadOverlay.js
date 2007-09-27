@@ -739,7 +739,12 @@ function handleThreadList(doc, forumid, flags)
 			// Thread is read so lets work our magic
 			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
 			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
-
+			
+			// For thread sorting later
+			if (iconJumpLastRead && ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP)))
+			{
+				thread.className += ' moveup';
+			}
 			
 			if (showSALRIcons && !dontHighlightThreads && threadDetails['posted'])
 			{
@@ -820,7 +825,7 @@ function handleThreadList(doc, forumid, flags)
 		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
 		{
 			var iAmASticky = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'sticky')]");
-			var iHaveNewPosts = (thread.className.search(/newposts/i) > -1);
+			var iHaveNewPosts = (thread.className.search(/moveup/i) > -1);
 			
 			if (iAmASticky && iHaveNewPosts)
 			{
