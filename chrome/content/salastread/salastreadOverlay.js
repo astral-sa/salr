@@ -584,16 +584,11 @@ function handleForumDisplay(doc)
 // Event catcher for clicking on the Mark Unseen box
 function clickMarkUnseen()
 {
-	var doc = this.ownerDocument;
+//	var doc = this.ownerDocument;
 	var thread = this.parentNode.parentNode.parentNode;
-	var forumid = persistObject.getForumID(doc);
-
-	if (!persistObject.getPreference("disableGradients"))
-	{
-		persistObject.removeGradient(thread);
-	}
-
-	persistObject.uncolorThread(doc, thread, forumid);
+	
+	thread.className = thread.className.replace(/seen/i, "");
+	thread.className = thread.className.replace(/newposts/i, "");
 
 	// Uncomment this to force a refresh after marking a thread unseen
 	// setTimeout(function(){doc.defaultView.location.reload(false);}, 400);
@@ -763,6 +758,8 @@ function handleThreadList(doc, forumid, flags)
 				{
 					// Ask/Tell and maybe other forums forget this at times
 					thread.className += ' seen';
+					// And to make sure it unhighlights properly
+					iconMarkUnseen.addEventListener("click", clickMarkUnseen, false);
 				}
 			}
 			else
