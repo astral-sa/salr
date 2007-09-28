@@ -513,13 +513,17 @@ function handleForumDisplay(doc)
 		persistObject.database.beginTransactionAs(persistObject.database.TRANSACTION_DEFERRED);
 	}
 
-	// Insert the forums paginator & mouse gestures
-	if (persistObject.getPreference("enableForumNavigator") || persistObject.getPreference("gestureEnable"))
+	// Insert the forums paginator
+	if (persistObject.getPreference("enableForumNavigator"))
 	{
 		persistObject.addPagination(doc);
 	}
 	if (persistObject.getPreference("gestureEnable"))
 	{
+		var pageList = this.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+		pageList = pageList[pageList.length-1];
+		doc.__SALR_curPage = this.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
+		doc.__SALR_maxPage = pageList.innerHTML.match(/\((\d+)\)/);
 		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
 		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
 	}
@@ -586,7 +590,7 @@ function clickMarkUnseen()
 {
 //	var doc = this.ownerDocument;
 	var thread = this.parentNode.parentNode.parentNode;
-	
+
 	thread.className = thread.className.replace(/seen/i, "");
 	thread.className = thread.className.replace(/newposts/i, "");
 
@@ -633,12 +637,12 @@ function handleThreadList(doc, forumid, flags)
 
 	// Here be where we work on the thread rows
 	var threadlist = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
-	
+
 	// These are insertion points for thread sorting
 	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
 	{
 		var anchorTop = persistObject.selectSingleNode(doc, doc, "//table[@id='forum']/tbody");
-		
+
 		var anchorAnnouncement = doc.createElement("tr");
 		anchorTop.insertBefore(anchorAnnouncement,threadlist[0]);
 		var anchorUnreadStickies = doc.createElement("tr");
@@ -734,19 +738,19 @@ function handleThreadList(doc, forumid, flags)
 			// Thread is read so lets work our magic
 			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
 			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
-			
+
 			// For thread sorting later
 			if (iconJumpLastRead && ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP)))
 			{
 				thread.className += ' moveup';
 			}
-			
+
 			if (showSALRIcons && !dontHighlightThreads && threadDetails['posted'])
 			{
 				// Don't think this is working right now
 				threadRepliesBox.style.backgroundColor = postedInThreadRe;
 			}
-			
+
 			// Thread highlighting
 			if (!dontHighlightThreads)
 			{
@@ -817,13 +821,13 @@ function handleThreadList(doc, forumid, flags)
 				divLastSeen.insertBefore(iconJumpLastRead, iconMarkUnseen);
 			}
 		}
-		
+
 		// Sort the threads, new stickies, then stickies, then new threads, then threads
 		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
 		{
 			var iAmASticky = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'sticky')]");
 			var iHaveNewPosts = (thread.className.search(/moveup/i) > -1);
-			
+
 			if (iAmASticky && iHaveNewPosts)
 			{
 				anchorTop.insertBefore(thread,anchorUnreadStickies);
@@ -858,7 +862,7 @@ function handleThreadList(doc, forumid, flags)
 			}
 		}
 	}
-	
+
 	// Clean up insertion points for thread sorting
 	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
 	{
@@ -1214,31 +1218,11 @@ function handleShowThread(doc) {
 
 	if (!inFYAD || persistObject.getPreference("enableFYAD"))
 	{
-		// Insert the forums paginator & mouse gestures
-		if (persistObject.getPreference("enablePageNavigator") || persistObject.getPreference("gestureEnable"))
+		// Insert the forums paginator
+		if (persistObject.getPreference("enablePageNavigator"))
 		{
 			persistObject.addPagination(doc);
 		}
-
-		if (persistObject.getPreference("gestureEnable"))
-		{
-			doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
-			doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
-		}
-
-		// Grab threads/posts per page
-		var perpage = persistObject.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
-		if (perpage)
-		{
-			perpage = perpage.href.match(/perpage=(\d+)/i)[1];
-			persistObject.setPreference("postsPerPage", perpage);
-		}
-		else
-		{
-			perpage = 0;
-		}
-
-		var isloggedin = (doc.getElementById("notregistered") == null);
 
 		var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
 		if (pageList)
@@ -1264,6 +1248,30 @@ function handleShowThread(doc) {
 				curPage = 1;
 			}
 		}
+
+		if (persistObject.getPreference("gestureEnable"))
+		{
+			var pageList = this.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+			pageList = pageList[pageList.length-1];
+			doc.__SALR_curPage = curPage;
+			doc.__SALR_maxPage = numPages;
+			doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
+			doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
+		}
+
+		// Grab threads/posts per page
+		var perpage = persistObject.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
+		if (perpage)
+		{
+			perpage = perpage.href.match(/perpage=(\d+)/i)[1];
+			persistObject.setPreference("postsPerPage", perpage);
+		}
+		else
+		{
+			perpage = 0;
+		}
+
+		var isloggedin = (doc.getElementById("notregistered") == null);
 
 		// Grab the go to dropdown
 
@@ -1518,14 +1526,14 @@ function handleShowThread(doc) {
 				}
 			}
 			colorDark = !colorDark;
-			
+
 			postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
 			if (!postIdLink)
 			{
 				postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#post')]");
 			}
 			if (!postIdLink) continue;
-			
+
 			postid = postIdLink.href.match(/#post(\d+)/i)[1];
 			if (insertPostTargetLink)
 			{

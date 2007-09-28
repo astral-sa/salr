@@ -1895,17 +1895,22 @@ salrPersistObject.prototype = {
 				lastButton.appendChild(lastButtonImg);
 				navDiv.appendChild(lastButton);
 			}
+			if (doc.location.pathname == "/showthread.php")
+			{
+				var lastButtonImg = doc.createElement("img");
+				lastButtonImg.title = "Go to First Unread Post";
+				lastButtonImg.src = "chrome://salastread/skin/lastpost.png";
+				var lastButton = doc.createElement("a");
+				lastButton.href = this.editPageNumIntoURI(doc, "goto=newpost");
+				lastButton.appendChild(lastButtonImg);
+				navDiv.appendChild(lastButton);
+			}
 			if (!this.getPreference("enableForumNavigator") || !this.getPreference("enableForumNavigator"))
 			{
 				navDiv.style.visibility = 'hidden';
 				navDiv.style.display = 'none';
 			}
 			doc.body.appendChild(navDiv);
-			// Do these do anything?
-			doc.__SALR_curPage = curPage;
-			doc.__SALR_maxPage = numPages;
-			doc._SALR_curPage = curPage;
-			doc._SALR_maxPages = numPages;
 		}
 		else
 		{
