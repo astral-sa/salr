@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.070926');
+pref('extensions.salastread.currentVersion', '1.99.070927');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -87,10 +87,10 @@ pref('extensions.salastread.unseenPostDark', '#dfdfdf');
 pref('extensions.salastread.unseenPostLight', '#f1f1f1');
 pref('extensions.salastread.unseenPostDarkFYAD', '#ffcccc');
 pref('extensions.salastread.unseenPostLightFYAD', '#ffccff');
-pref('extensions.salastread.highlightQuotePost', '#C691D9');
-pref('extensions.salastread.highlightQuotePostFYAD', '#AF7FC0');
-pref('extensions.salastread.highlightQuotePostQuote', '#C691D9');
-pref('extensions.salastread.highlightQuotePostQuoteFYAD', '#AF7FC0');
+pref('extensions.salastread.highlightQuotePost', '#c691d9');
+pref('extensions.salastread.highlightQuotePostFYAD', '#af7fc0');
+pref('extensions.salastread.highlightQuotePostQuote', '#c691d9');
+pref('extensions.salastread.highlightQuotePostQuoteFYAD', '#af7fc0');
 
 //USER SUBTEXT
 pref('extensions.salastread.modSubText', 'Forum Moderator');
