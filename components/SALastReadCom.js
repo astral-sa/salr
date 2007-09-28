@@ -477,7 +477,7 @@ salrPersistObject.prototype = {
 	get generateDynamicCSS()
 	{
 		var CSSFile = '';
-		if (!this.getPreference('dontHightlightPosts'))
+		if (!this.getPreference('dontHighlightPosts'))
 		{
 			// These are for in thread coloring
 			CSSFile += 'table.post tr.seen1 td { background-color:';
@@ -797,6 +797,20 @@ salrPersistObject.prototype = {
 		return false;
 	},
 
+	// Gets a username from the DB
+	// @param: (int) User ID
+	// @return: (string) username or (null) if not found
+	getUserName: function(userid) {
+		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `userid` = ?1");
+		statement.bindInt32Parameter(0, userid);
+		var foundusername = null;
+		if (statement.executeStep()) {
+		  foundusername = statement.getString(0);
+		}
+		statement.reset();
+		return foundusername;
+	},
+
 	// Updates a user's name in the DB
 	// @param: (int) User ID, (string) Username
 	// @return: nothing
@@ -947,10 +961,13 @@ salrPersistObject.prototype = {
 		else
 		{
 			var postbutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
-			var inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
-			if (inpostbutton != null)
+			if (postbutton)
 			{
-				fid = inpostbutton[1];
+				var inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
+				if (inpostbutton != null)
+				{
+					fid = inpostbutton[1];
+				}
 			}
 		}
 		if (fid == 0)
@@ -1525,230 +1542,6 @@ salrPersistObject.prototype = {
 		post.className += " colored";
 	},
 
-	// Back up the background color of an element to a hidden field
-	// @param: doc, element
-	// @return: nothing
-	backupColor: function (doc, element)
-	{
-		var backup = doc.createElement("input");
-		backup.type = "hidden";
-		backup.name = "Original Background Color";
-		backup.className = "bgBackup";
-		backup.value = element.style.backgroundColor;
-		element.appendChild(backup);
-	},
-
-	// Color a thread entry passed to it
-	// @param: doc, TR, (int), color code, color code
-	// @return: nothing
-	colorThread: function (doc, thread, forumID, lightColorToUse, darkColorToUse)
-	{
-		if (this.inDump(forumID))
-		{
-			threadRatingBox = thread.getElementsByTagName('td')[0];
-			threadVoteBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'votes')]");
-		}
-		else
-		{
-			threadIconBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
-		}
-		if (!this.inDump(forumID) && !this.hasNoRatingBox(forumID))
-		{
-			threadRatingBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'rating')]");
-		}
-		if (this.inAskTell(forumID))
-		{
-			threadIcon2Box = this.selectSingleNode(doc, thread, "TD[contains(@class,'icon2')]");
-		}
-		threadTitleBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
-		threadAuthorBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'author')]");
-		threadRepliesBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'replies')]");
-		threadViewsBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'views')]");
-		threadLastpostBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'lastpost')]");
-
-		this.backupColor(doc, threadTitleBox);
-		threadTitleBox.style.backgroundColor = lightColorToUse;
-
-		this.backupColor(doc, threadAuthorBox);
-		threadAuthorBox.style.backgroundColor = darkColorToUse;
-
-		this.backupColor(doc, threadRepliesBox);
-		threadRepliesBox.style.backgroundColor = lightColorToUse;
-
-		this.backupColor(doc, threadViewsBox);
-		threadViewsBox.style.backgroundColor = darkColorToUse;
-
-		if (!this.hasNoRatingBox(forumID))
-		{
-			this.backupColor(doc, threadRatingBox);
-			threadRatingBox.style.backgroundColor = lightColorToUse;
-		}
-		this.backupColor(doc, threadLastpostBox);
-		threadLastpostBox.style.backgroundColor = darkColorToUse;
-
-		if (this.inDump(forumID))
-		{
-			this.backupColor(doc, threadVoteBox);
-			threadVoteBox.style.backgroundColor = lightColorToUse;
-		}
-		else
-		{
-			this.backupColor(doc, threadIconBox);
-			threadIconBox.style.backgroundColor = darkColorToUse;
-		}
-		if (this.inAskTell(forumID))
-		{
-			this.backupColor(doc, threadIconBox);
-			threadIconBox.style.backgroundColor = lightColorToUse;
-
-			this.backupColor(doc, threadIcon2Box);
-			threadIcon2Box.style.backgroundColor = darkColorToUse;
-		}
-	},
-
-	// Uncolor a thread entry passed to it (resets to CSS defaults)
-	// @param: doc, TR, (int)
-	// @return: nothing
-	uncolorThread: function (doc, thread, forumID)
-	{
-		var backedupElement;
-
-		if (this.inDump(forumID))
-		{
-			threadRatingBox = thread.getElementsByTagName('td')[0];
-			threadVoteBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'votes')]");
-		}
-		else
-		{
-			threadIconBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
-		}
-		if (!this.inDump(forumID) && !this.hasNoRatingBox(forumID))
-		{
-			threadRatingBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'rating')]");
-		}
-		if (this.inAskTell(forumID))
-		{
-			threadIcon2Box = this.selectSingleNode(doc, thread, "TD[contains(@class,'icon2')]");
-		}
-		threadTitleBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
-		threadAuthorBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'author')]");
-		threadRepliesBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'replies')]");
-		threadViewsBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'views')]");
-		threadLastpostBox = this.selectSingleNode(doc, thread, "TD[contains(@class,'lastpost')]");
-
-		backedupElement = this.selectSingleNode(doc, threadTitleBox, "input[contains(@class,'bgBackup')]");
-		threadTitleBox.style.backgroundColor = backedupElement.value;
-		threadTitleBox.removeChild(backedupElement);
-
-		backedupElement = this.selectSingleNode(doc, threadAuthorBox, "input[contains(@class,'bgBackup')]");
-		threadAuthorBox.style.backgroundColor = backedupElement.value;
-		threadAuthorBox.removeChild(backedupElement);
-
-		backedupElement = this.selectSingleNode(doc, threadRepliesBox, "input[contains(@class,'bgBackup')]");
-		threadRepliesBox.style.backgroundColor = backedupElement.value;
-		threadRepliesBox.removeChild(backedupElement);
-
-		backedupElement = this.selectSingleNode(doc, threadViewsBox, "input[contains(@class,'bgBackup')]");
-		threadViewsBox.style.backgroundColor = backedupElement.value;
-		threadViewsBox.removeChild(backedupElement);
-
-		if (!this.hasNoRatingBox(forumID))
-		{
-			backedupElement = this.selectSingleNode(doc, threadRatingBox, "input[contains(@class,'bgBackup')]");
-			threadRatingBox.style.backgroundColor = backedupElement.value;
-			threadRatingBox.removeChild(backedupElement);
-		}
-		backedupElement = this.selectSingleNode(doc, threadLastpostBox, "input[contains(@class,'bgBackup')]");
-		threadLastpostBox.style.backgroundColor = backedupElement.value;
-		threadLastpostBox.removeChild(backedupElement);
-
-		if (this.inDump(forumID))
-		{
-			backedupElement = this.selectSingleNode(doc, threadVoteBox, "input[contains(@class,'bgBackup')]");
-			threadVoteBox.style.backgroundColor = backedupElement.value;
-			threadVoteBox.removeChild(backedupElement);
-		}
-		else
-		{
-			backedupElement = this.selectSingleNode(doc, threadIconBox, "input[contains(@class,'bgBackup')]");
-			threadIconBox.style.backgroundColor = backedupElement.value;
-			threadIconBox.removeChild(backedupElement);
-		}
-		if (this.inAskTell(forumID))
-		{
-			backedupElement = this.selectSingleNode(doc, threadIconBox, "input[contains(@class,'bgBackup')]");
-			threadIconBox.style.backgroundColor = backedupElement.value;
-			threadIconBox.removeChild(backedupElement);
-
-			backedupElement = this.selectSingleNode(doc, threadIcon2Box, "input[contains(@class,'bgBackup')]");
-			threadIcon2Box.style.backgroundColor = backedupElement.value;
-			threadIcon2Box.removeChild(backedupElement);
-		}
-	},
-
-	// Adds the gradient overlay to a given thread
-	// @param: TR
-	// @return: nothing
-	addGradient: function(thread)
-	{
-		var cells = thread.getElementsByTagName('td');
-		for(var i = cells.length - 1; i >= 0; i--)
-		{
-			var cell = cells[i];
-				cell.style.backgroundImage = "url('chrome://salastread/skin/gradient.png')";
-				cell.style.backgroundRepeat = "repeat-x";
-				cell.style.backgroundPosition = "center left";
-		}
-	},
-
-	// Removes the gradient overlay to a given thread
-	// @param: TR
-	// @return: nothing
-	removeGradient: function(thread)
-	{
-		var cells = thread.getElementsByTagName('td');
-		for(var i = cells.length - 1; i >= 0; i--)
-		{
-			var cell = cells[i];
-				cell.style.backgroundImage = "";
-				cell.style.backgroundRepeat = "";
-				cell.style.backgroundPosition = "";
-		}
-	},
-
-	// Blidly colors the thread by alternating without regard to content
-	// @param: document body, thread table row, light color, dark color
-	// @return: nothing
-	blindColorThread: function(doc, thread, lightColorToUse, darkColorToUse)
-	{
-		var cells = thread.getElementsByTagName('td');
-		for(var i = cells.length - 1; i >= 0; i--)
-		{
-			cells[i].style.backgroundColor = (i % 2) ? darkColorToUse : lightColorToUse;
-		}
-	},
-
-	// Inserts the jump to last read post icon
-	// @param: doc, div, thread ID, last read Count
-	// @return: nothing
-	insertLastIcon: function(doc, newPosts, link)
-	{
-		if(link)
-		{
-			var lpGo = doc.createElement("a");
-			lpGo.setAttribute("title", link.firstChild.innerHTML +  " unread posts");
-			lpGo.setAttribute("href", link.href);
-			var lpIcon = doc.createElement("img");
-			lpIcon.setAttribute("src", this.getPreference("goToLastReadPost"));
-			lpIcon.style.cssFloat = "right";
-			lpIcon.style.marginRight = "3px";
-			lpIcon.style.marginLeft = "3px";
-			lpIcon.style.border = "none";
-			lpGo.appendChild(lpIcon);
-			newPosts.insertBefore(lpGo, newPosts.firstChild);
-		}
-	},
-
 	//gets the unread posts count for a thread using the built in forum data.
 	//@param: document object, title box dom element
 	//@return: int number of unread posts
@@ -1767,22 +1560,6 @@ salrPersistObject.prototype = {
 		}
 
 		return retNewPostCount;
-	},
-
-	// Inserts the unread icon
-	// @param: doc, div, (int)
-	// @return: (img)
-	insertUnreadIcon: function(doc, newPosts, threadId)
-	{
-		unvisitIcon = doc.createElement("img");
-		unvisitIcon.setAttribute("src", this.getPreference("markThreadUnvisited"));
-		unvisitIcon.setAttribute("id", "unread_" + threadId);
-		unvisitIcon.style.cssFloat = "right";
-		unvisitIcon.style.marginRight = "3px";
-		unvisitIcon.style.border = "none";
-		unvisitIcon.style.cursor = "pointer";
-		newPosts.insertBefore(unvisitIcon, newPosts.firstChild);
-		return unvisitIcon;
 	},
 
 	// Inserts the star
@@ -2131,7 +1908,7 @@ salrPersistObject.prototype = {
 		var expireLength = this.getPreference("expireMinAge") * 86400; // days * 24 * 60 * 60
 		var rightNow = this.currentTimeStamp;
 		var expireWhen = rightNow - expireLength;
-		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `lastviewdt` < ?1 AND `star` != 1");
+		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `lastviewdt` < ?1 AND `star` != 1 AND `ignore` != 1");
 		statement.bindStringParameter(0,expireWhen);
 		statement.execute();
 	},
