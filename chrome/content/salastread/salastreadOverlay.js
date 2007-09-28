@@ -69,6 +69,10 @@ function SALR_menuItemCommandURL(event, el, etype) {
 
 	var target = "none";
 
+	if(etype=="command")
+	{
+		target = "current";
+	}
 	if(etype=="click")
 	{
 		if(event.button == 0)
@@ -425,7 +429,7 @@ function SALR_StarredThreadMenuShowing() {
 		var menuel = document.createElement("menuitem");
 			menuel.setAttribute("label", title);
 			menuel.setAttribute("onclick", "SALR_menuItemCommandGoToLastPost(event, this, 'click'," + id + ");");
-	//		menuel.setAttribute("oncommand", "SALR_menuItemCommandGoToLastPost(event, this, 'command'," + id + ");");
+			menuel.setAttribute("oncommand", "SALR_menuItemCommandGoToLastPost(event, this, 'command'," + id + ");");
 		menupopup.appendChild(menuel);
 	}
 
@@ -588,14 +592,10 @@ function handleForumDisplay(doc)
 // Event catcher for clicking on the Mark Unseen box
 function clickMarkUnseen()
 {
-//	var doc = this.ownerDocument;
 	var thread = this.parentNode.parentNode.parentNode;
 
-	thread.className = thread.className.replace(/seen/i, "");
-	thread.className = thread.className.replace(/newposts/i, "");
-
-	// Uncomment this to force a refresh after marking a thread unseen
-	// setTimeout(function(){doc.defaultView.location.reload(false);}, 400);
+	thread.className = thread.className.replace(/(^|\s)seen(\s|$)/gi, "");
+	thread.className = thread.className.replace(/(^|\s)newposts(\s|$)/gi, "");
 }
 
 //handle highlighting of user cp/forum listings
