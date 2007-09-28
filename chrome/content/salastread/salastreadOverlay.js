@@ -592,8 +592,20 @@ function handleForumDisplay(doc)
 // Event catcher for clicking on the Mark Unseen box
 function clickMarkUnseen()
 {
+	var doc = this.ownerDocument;
 	var thread = this.parentNode.parentNode.parentNode;
+	var threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
 
+	// Remove the new replies count
+	if (!persistObject.getPreference("disableNewReCount") && thread.className.search(/newposts/i) > -1)
+	{
+		while (threadRepliesBox.childNodes[1])
+		{
+			// Delete everything but the original link
+			threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
+		}
+	}
+	
 	thread.className = thread.className.replace(/(^|\s)seen(\s|$)/gi, "");
 	thread.className = thread.className.replace(/(^|\s)newposts(\s|$)/gi, "");
 }
@@ -775,7 +787,7 @@ function handleThreadList(doc, forumid, flags)
 			}
 
 			//SALR replacing forums buttons
-			if (showGoToLastIcon && !disableNewReCount && iconJumpLastRead)
+			if (!disableNewReCount && iconJumpLastRead)
 			{
 				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B");
 				threadRe = threadRe.parentNode.removeChild(threadRe);

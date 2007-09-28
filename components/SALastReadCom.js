@@ -1682,7 +1682,7 @@ salrPersistObject.prototype = {
 				lastButton.appendChild(lastButtonImg);
 				navDiv.appendChild(lastButton);
 			}
-			if (!this.getPreference("enableForumNavigator") || !this.getPreference("enableForumNavigator"))
+			if (!this.getPreference("enableForumNavigator") && !this.getPreference("enablePageNavigator"))
 			{
 				navDiv.style.visibility = 'hidden';
 				navDiv.style.display = 'none';
