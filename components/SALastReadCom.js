@@ -503,11 +503,11 @@ salrPersistObject.prototype = {
 			CSSFile += 'tr.thread.category0 td.views, tr.thread.category0 td.lastpost { background-color:';
 			CSSFile += this.getPreference('readDark');
 			CSSFile += ' !important; }\n';
-			CSSFile += 'tr.thread.newposts td { background-color:';
+			CSSFile += 'tr.thread.seen.newposts td { background-color:';
 			CSSFile += this.getPreference('readWithNewLight');
 			CSSFile += ' !important; }\n';
-			CSSFile += 'tr.thread.newposts td.icon, tr.thread.newposts td.author,';
-			CSSFile += 'tr.thread.newposts td.views, tr.thread.newposts td.lastpost { background-color:';
+			CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
+			CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
 			CSSFile += this.getPreference('readWithNewDark');
 			CSSFile += ' !important; }\n';
 		}

@@ -522,7 +522,7 @@ function handleForumDisplay(doc)
 	{
 		if (pageList.length >  1)
 		{
-			pageList = pageList[1];
+			pageList = pageList[pageList.length-1];
 		}
 		else
 		{
@@ -628,9 +628,6 @@ function clickMarkUnseen()
 			threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
 		}
 	}
-
-	thread.className = thread.className.replace(/(^|\s)seen(\s|$)/gi, "");
-	thread.className = thread.className.replace(/(^|\s)newposts(\s|$)/gi, "");
 }
 
 //handle highlighting of user cp/forum listings
@@ -759,9 +756,8 @@ function handleThreadList(doc, forumid, flags)
 			{
 				iconGo = doc.createElement("a");
 				iconGo.setAttribute("href", "/forumdisplay.php?forumid=" + forumid + "&posticon=" + iconlist[iconFilename]);
-				iconGo.appendChild(threadIconBox.firstChild.cloneNode(true));
+				iconGo.appendChild(threadIconBox.removeChild(threadIconBox.firstChild));
 				iconGo.firstChild.style.border = "none";
-				threadIconBox.removeChild(threadIconBox.firstChild);
 				threadIconBox.appendChild(iconGo);
 			}
 		}
@@ -796,9 +792,15 @@ function handleThreadList(doc, forumid, flags)
 				if (iconMarkUnseen)
 				{
 					// Ask/Tell and maybe other forums forget this at times
-					thread.className += ' seen';
-					// And to make sure it unhighlights properly
-					iconMarkUnseen.addEventListener("click", clickMarkUnseen, false);
+					if (thread.className.match(/(^|\s)seen(\s|$)/i) == null)
+					{
+						thread.className += ' seen';
+					}
+					// And to make sure it removes the post count properly
+					if (!disableNewReCount)
+					{
+						iconMarkUnseen.addEventListener("click", clickMarkUnseen, false);
+					}
 				}
 			}
 			else
@@ -1252,7 +1254,7 @@ function handleShowThread(doc) {
 	{
 		if (pageList.length >  1)
 		{
-			pageList = pageList[1];
+			pageList = pageList[pageList.length-1];
 		}
 		else
 		{
