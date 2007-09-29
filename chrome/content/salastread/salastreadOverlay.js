@@ -517,6 +517,31 @@ function handleForumDisplay(doc)
 		persistObject.database.beginTransactionAs(persistObject.database.TRANSACTION_DEFERRED);
 	}
 
+	var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+	if (pageList)
+	{
+		if (pageList.length >  1)
+		{
+			pageList = pageList[1];
+		}
+		else
+		{
+			pageList = pageList[0];
+		}
+		var numPages = pageList.innerHTML.match(/\((\d+)\)/);
+		var curPage = persistObject.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
+		if (pageList.childNodes.length > 1) // Are there pages
+		{
+			numPages = parseInt(numPages[1], 10);
+			curPage = parseInt(curPage.innerHTML, 10);
+		}
+		else
+		{
+			numPages = 1;
+			curPage = 1;
+		}
+	}
+
 	// Insert the forums paginator
 	if (persistObject.getPreference("enableForumNavigator"))
 	{
@@ -524,10 +549,8 @@ function handleForumDisplay(doc)
 	}
 	if (persistObject.getPreference("gestureEnable"))
 	{
-		var pageList = this.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-		pageList = pageList[pageList.length-1];
-		doc.__SALR_curPage = this.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
-		doc.__SALR_maxPage = pageList.innerHTML.match(/\((\d+)\)/);
+		doc.__SALR_curPage = curPage;
+		doc.__SALR_maxPage = numPages;
 		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
 		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
 	}
@@ -605,7 +628,7 @@ function clickMarkUnseen()
 			threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
 		}
 	}
-	
+
 	thread.className = thread.className.replace(/(^|\s)seen(\s|$)/gi, "");
 	thread.className = thread.className.replace(/(^|\s)newposts(\s|$)/gi, "");
 }
@@ -1171,45 +1194,35 @@ function unstarButtonPress(e) {
 }
 
 function handleShowThread(doc) {
-	var failed, i, e;	// Little variables that'll get reused
+	var failed, i, e; // Little variables that'll get reused
+
 	if (doc.getElementById('thread') == null)
 	{
 		var archivedLink = persistObject.selectSingleNode(doc, doc, "//div[contains(@class,'inner')]/a[contains(@href,'archives.somethingawful.com/showthread.php?threadid=')]");
-
 		if (archivedLink)
 		{
 			// This thread has been archived, not everyone has archives so give them an option to unstar it (if it's starred)
-
 			var archivedId = archivedLink.href.match(/threadid=(\d+)/)[1];
-
 			if (persistObject.isThreadStarred(archivedId))
 			{
 				var archivedUnstarButtonP = doc.createElement("p");
-					var archivedUnstarButtonForm = doc.createElement("form");
-						var archivedUnstarButtonInput = doc.createElement("input");
-							archivedUnstarButtonInput.type = "button";
-							archivedUnstarButtonInput.name = "archivedunstarbutton";
-							archivedUnstarButtonInput.value = "Click here to unstar this thread.";
-							archivedUnstarButtonInput.id = archivedId;
-							archivedUnstarButtonInput.onclick = unstarButtonPress;
-						archivedUnstarButtonForm.appendChild(archivedUnstarButtonInput);
-					archivedUnstarButtonP.appendChild(doc.createElement("br"));
-					archivedUnstarButtonP.appendChild(archivedUnstarButtonForm);
+				var archivedUnstarButtonForm = doc.createElement("form");
+				var archivedUnstarButtonInput = doc.createElement("input");
+				archivedUnstarButtonInput.type = "button";
+				archivedUnstarButtonInput.name = "archivedunstarbutton";
+				archivedUnstarButtonInput.value = "Click here to unstar this thread.";
+				archivedUnstarButtonInput.id = archivedId;
+				archivedUnstarButtonInput.onclick = unstarButtonPress;
+				archivedUnstarButtonForm.appendChild(archivedUnstarButtonInput);
+				archivedUnstarButtonP.appendChild(doc.createElement("br"));
+				archivedUnstarButtonP.appendChild(archivedUnstarButtonForm);
 				archivedLink.parentNode.appendChild(archivedUnstarButtonP);
-
-				return;
-			}
-			else
-			{
-				return;
 			}
 		}
-		else
-		{
-			// If there is no thread div then abort since something's not right
-			return;
-		}
+		// If there is no thread div then abort since something's not right
+		return;
 	}
+
 	try
 	{
 		var forumid = persistObject.getForumID(doc);
@@ -1219,6 +1232,7 @@ function handleShowThread(doc) {
 		// Can't get the forum id so abort for now
 		return;
 	}
+
 	// The following forums have special needs that must be dealt with
 	var inFYAD = persistObject.inFYAD(forumid);
 	var inBYOB = persistObject.inBYOB(forumid);
@@ -1228,414 +1242,413 @@ function handleShowThread(doc) {
 	var userId = persistObject.userId;
 	var username = unescape(persistObject.getPreference('username'));
 
-	if (!inFYAD || persistObject.getPreference("enableFYAD"))
+	if (inFYAD && !persistObject.getPreference("enableFYAD")) {
+		// We're in FYAD and FYAD support has been turned off
+		return;
+	}
+
+	var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+	if (pageList)
 	{
-		// Insert the forums paginator
-		if (persistObject.getPreference("enablePageNavigator"))
+		if (pageList.length >  1)
 		{
-			persistObject.addPagination(doc);
-		}
-
-		var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-		if (pageList)
-		{
-			if (pageList.length >  1)
-			{
-				pageList = pageList[1];
-			}
-			else
-			{
-				pageList = pageList[0];
-			}
-			var numPages = pageList.innerHTML.match(/\((\d+)\)/);
-			var curPage = persistObject.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
-			if (pageList.childNodes.length > 1) // Are there pages
-			{
-				numPages = parseInt(numPages[1], 10);
-				curPage = parseInt(curPage.innerHTML, 10);
-			}
-			else
-			{
-				numPages = 1;
-				curPage = 1;
-			}
-		}
-
-		if (persistObject.getPreference("gestureEnable"))
-		{
-			var pageList = this.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-			pageList = pageList[pageList.length-1];
-			doc.__SALR_curPage = curPage;
-			doc.__SALR_maxPage = numPages;
-			doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
-			doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
-		}
-
-		// Grab threads/posts per page
-		var perpage = persistObject.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
-		if (perpage)
-		{
-			perpage = perpage.href.match(/perpage=(\d+)/i)[1];
-			persistObject.setPreference("postsPerPage", perpage);
+			pageList = pageList[1];
 		}
 		else
 		{
-			perpage = 0;
+			pageList = pageList[0];
 		}
-
-		var isloggedin = (doc.getElementById("notregistered") == null);
-
-		// Grab the go to dropdown
-
-		if (!persistObject.gotForumList)
+		var numPages = pageList.innerHTML.match(/\((\d+)\)/);
+		var curPage = persistObject.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
+		if (pageList.childNodes.length > 1) // Are there pages
 		{
-         grabForumList(doc);
-         persistObject.gotForumList = true;
-
-		}
-
-		doc.__SALR_forumid = forumid;
-		doc.body.className += " salastread_forum" + forumid;
-
-		// Figure out the current threadid
-		var replybutton = persistObject.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid=')]");
-		if (replybutton)
-		{
-			var threadid = replybutton.href.match(/threadid=(\d+)/)[1];
+			numPages = parseInt(numPages[1], 10);
+			curPage = parseInt(curPage.innerHTML, 10);
 		}
 		else
 		{
-			// If can't figure it out, abort so we don't screw anything up
-			return;
-		}
-		doc.__SALR_threadid = threadid;
-		persistObject.iAmReadingThis(threadid);
-		//var lastReadPostCount = persistObject.getLastReadPostCount(threadid);
-
-		// used by the context menu to allow options for this thread
-		doc.body.className += " salastread_thread_"+threadid;
-
-		// Grab the thread title
-		persistObject.setThreadTitle(threadid, SALR_getPageTitle(doc));
-
-		// Check if the thread is closed
-		if (persistObject.selectSingleNode(doc, doc, "//A[contains(@href,'action=newreply&threadid')]//IMG[contains(@src,'closed')]") == null)
-		{
-			var threadClosed = false;
-		}
-		else
-		{
-			var threadClosed = true;
-		}
-
-		// Replace post button
-		if (persistObject.getPreference("useQuickQuote") && !inGasChamber)
-		{
-			var postbuttons = persistObject.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newthread')]");
-			if (postbuttons.length > 0)
-			{
-				for (i in postbuttons)
-				{
-					attachQuickQuoteHandler(undefined,doc,persistObject.turnIntoQuickButton(doc, postbuttons[i], forumid),"",0);
-				}
-			}
-			if (!threadClosed)
-			{
-				var replybuttons = persistObject.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
-				if (replybuttons.length > 0)
-				{
-					for (i in replybuttons)
-					{
-						attachQuickQuoteHandler(threadid,doc,persistObject.turnIntoQuickButton(doc, replybuttons[i], forumid),"",0);
-					}
-				}
-			}
-		}
-
-		// get the posts to iterate through
-		var postlist = persistObject.selectNodes(doc, doc, "//table[contains(@id,'post')]");
-
-		var curPostId, colorDark = true, colorOfPost, postIdLink, resetLink, profileLink, posterId, postbody, postRow, f, linksUL, storeUserLink;
-		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton, reportbutton;
-		var userPosterColor, userPosterBG, userPosterNote, userQuote;
-
-		// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
-		var hideEditButtons = persistObject.getPreference('hideEditButtons');
-		var hideReportButtons = persistObject.getPreference('hideReportButtons');
-		var useQuickQuote = persistObject.getPreference('useQuickQuote');
-		var insertPostLastMarkLink = persistObject.getPreference("insertPostLastMarkLink");
-		var insertPostTargetLink = persistObject.getPreference("insertPostTargetLink");
-		var highlightUsernames = persistObject.getPreference("highlightUsernames");
-		var dontHighlightPosts = persistObject.getPreference("dontHighlightPosts");
-		var resizeCustomTitleText = persistObject.getPreference("resizeCustomTitleText");
-		//post colors
-		var seenPostDark = persistObject.getPreference("seenPostDark");
-		var seenPostLight = persistObject.getPreference("seenPostLight");
-		//standard user colors
-		var modColor = persistObject.getPreference("modColor");
-		var modBackground = persistObject.getPreference("modBackground");
-		var modSubText = persistObject.getPreference("modSubText");
-		var adminColor = persistObject.getPreference("adminColor");
-		var adminBackground = persistObject.getPreference("adminBackground");
-		var adminSubText = persistObject.getPreference("adminSubText");
-		var opColor = persistObject.getPreference("opColor");
-		var opBackground = persistObject.getPreference("opBackground");
-		var opSubText = persistObject.getPreference("opSubText");
-
-		doc.postlinks = new Array;
-
-		// Loop through each post
-		for (i in postlist)
-		{
-			var post = postlist[i];
-
-			if (post.className.indexOf("ignored") > -1)
-			{
-				// User is ignored by the system so skip doing anything else
-				continue;
-			}
-
-			curPostId = post.id.match(/post(\d+)/)[1];
-			profileLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
-			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
-			if (!inFYAD)
-			{
-				userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
-			}
-			else
-			{
-				userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//DIV[contains(@class,'title')]//following-sibling::B");
-			}
-			titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
-
-			if (titleBox && resizeCustomTitleText)
-			{
-				// Adds a scrollbar if they have a really wide custom title
-				titleBox.style.overflow = "auto";
-				titleBox.style.width = "159px";
-				if (titleBox.getElementsByTagName('font').length > 0)
-				{
-					// They likely have a large, red custom title
-					for(f = 0; f < titleBox.getElementsByTagName('font').length; f++)
-					{
-						titleBox.getElementsByTagName('font')[f].style.fontSize = "10px";
-					}
-				}
-			}
-
-			//Check to see if there's a mod or admin star
-			posterImg = false;
-			posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
-			if (userNameBox.getElementsByTagName('img').length > 0)
-			{
-				posterImg = userNameBox.getElementsByTagName('img')[0].title;
-				if (posterImg == 'Admin')
-				{
-					persistObject.addAdmin(posterId, posterName);
-				}
-				else if (posterImg == 'Moderator')
-				{
-					persistObject.addMod(posterId, posterName);
-				}
-			}
-
-			posterColor = false;
-			posterBG 	= false;
-			posterNote 	= false;
-			userPosterNote = false;
-
-			//apply this to every post
-			post.className += " salrPoster" + posterId;
-
-			//apply custom user coloring
-			if (userNameBox.className.search(/op/) > -1)
-			{
-				posterColor = opColor;
-				posterBG 	= opBackground;
-				posterNote 	= opSubText;
-				post.className += " salrThreadOP";
-			}
-			if (persistObject.isMod(posterId))
-			{
-				if(posterImg == 'Moderator')
-				{
-					posterColor = modColor;
-					posterBG 	= modBackground;
-					posterNote 	= modSubText;
-					post.className += " salrForumMod";
-				}
-				else
-				{
-					persistObject.removeMod(posterId);
-				}
-			}
-			if (persistObject.isAdmin(posterId))
-			{
-				if(posterImg == "Admin")
-				{
-					posterColor = adminColor;
-					posterBG 	= adminBackground;
-					posterNote 	= adminSubText;
-					post.className += " salrForumAdmin";
-				}
-				else
-				{
-					persistObject.removeAdmin(posterId);
-				}
-			}
-			var dbUser = persistObject.isPosterColored(posterId);
-			if(dbUser)
-			{
-				if(!dbUser.username) {
-					persistObject.setUserName(posterId, posterName);
-				}
-				posterColor = persistObject.getPosterColor(posterId);
-				posterBG 	= persistObject.getPosterBackground(posterId);
-
-				if(!dontHighlightPosts)
-				{
-					persistObject.colorPost(doc, post, posterBG, forumid);
-				}
-			}
-
-			userPosterNote = persistObject.getPosterNotes(posterId);
-			if (highlightUsernames && posterColor != false)
-			{
-				userNameBox.style.color = posterColor;
-			}
-			if (posterNote || userPosterNote)
-			{
-				newNoteBox = doc.createElement("p");
-				newNoteBox.style.fontSize = "80%";
-				newNoteBox.style.margin = "0";
-				newNoteBox.style.padding = "0";
-				newNoteBox.innerHTML  = posterNote ? posterNote : '';
-				newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
-				userNameBox.appendChild(newNoteBox);
-			}
-
-			if (!dontHighlightPosts)
-			{
-				if (posterBG != false)
-				{
-					persistObject.colorPost(doc, post, posterBG, forumid);
-				}
-				else
-				{
-					var tr = persistObject.selectSingleNode(doc, post, "tbody/tr[contains(@class, 'seen')]");
-					if(post && tr)
-					{
-						//dark
-						if(tr.className.indexOf("1") > -1)
-						{
-							persistObject.colorPost(doc, post, seenPostDark, forumid);
-						}
-						else
-						{
-							persistObject.colorPost(doc, post, seenPostLight, forumid);
-						}
-					}
-				}
-			}
-			colorDark = !colorDark;
-
-			postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
-			if (!postIdLink)
-			{
-				postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#post')]");
-			}
-			if (!postIdLink) continue;
-
-			postid = postIdLink.href.match(/#post(\d+)/i)[1];
-			if (insertPostTargetLink)
-			{
-				slink = doc.createElement("a");
-				slink.href = "/showthread.php?action=showpost&postid="+postid;
-				slink.title = "Show Single Post";
-				slink.innerHTML = "1";
-				postIdLink.parentNode.insertBefore(slink, postIdLink);
-				postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
-			}
-
-			//grab this once up here to avoid repetition
-			if(useQuickQuote || hideEditButtons) {
-				editbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
-			}
-
-			if(hideEditButtons && editbutton) {
-				if(posterId != userId) {
-					editbutton.parentNode.removeChild(editbutton);
-					//so we don't try to add quickquote to non-existant edit buttons
-					editbutton = null;
-				}
-			}
-
-			if (useQuickQuote && !threadClosed)
-			{
-				quotebutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
-				if (quotebutton)
-				{
-					attachQuickQuoteHandler(threadid, doc, persistObject.turnIntoQuickButton(doc, quotebutton, forumid), posterName, 1, postid);
-				}
-				if (editbutton)
-				{
-					attachQuickQuoteHandler(threadid, doc, persistObject.turnIntoQuickButton(doc, editbutton, forumid), posterName, 1, postid, true);
-				}
-			}
-
-			if(hideReportButtons)
-			{
-				if(posterId == userId)
-				{
-					reportbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'modalert.php')]");
-					if(reportbutton)
-					{
-						reportbutton.parentNode.removeChild(reportbutton);
-					}
-				}
-			}
-
-			//ban history link
-			var banHistLink = doc.createElement("li");
-
-			var banHistAnchor = doc.createElement("a");
-				banHistAnchor.href = "/banlist.php?userid=" + posterId;
-				banHistAnchor.title = "Show poster's ban/probation history.";
-				banHistAnchor.innerHTML = " Ban History";
-			banHistLink.appendChild(banHistAnchor);
-			banHistLink.appendChild(doc.createTextNode(" "));
-			profileLink.parentNode.parentNode.appendChild(banHistLink);
-
-			//add user coloring/note links
-			if(highlightUsernames) {
-				var ul = profileLink.parentNode.parentNode;
-				var li = doc.createElement("li");
-
-				var a = doc.createElement("a");
-					a.id = curPostId + "_" + posterId;
-					a.href ="#" + posterName;
-					a.innerHTML = "Add Coloring/Note";
-					a.onclick = addHighlightedUser;
-				li.appendChild(a);
-				ul.appendChild(li);
-			}
-
-
-			//Highlight posts that contain quotes from the user
-			if (!persistObject.getPreference('dontHighlightQuotes')) {
-			  if (username!=null) {
-				var userQuote = persistObject.selectSingleNode(doc, post, "tbody//tr/td/blockquote[contains(@class,'qb2')]/h4[./text() = '"+username+" posted:']");
-				if (userQuote!=null) {
-				  post.className += ' salrHighlightQuote';
-				}
-			  }
-			}
-
-			postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
-			persistObject.convertSpecialLinks(postbody, doc);
-			persistObject.scaleImages(postbody, doc);
+			numPages = 1;
+			curPage = 1;
 		}
 	}
+
+	// Insert the thread paginator
+	if (persistObject.getPreference("enablePageNavigator"))
+	{
+		persistObject.addPagination(doc);
+	}
+	if (persistObject.getPreference("gestureEnable"))
+	{
+		doc.__SALR_curPage = curPage;
+		doc.__SALR_maxPage = numPages;
+		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
+		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
+	}
+
+	// Grab threads/posts per page
+	var perpage = persistObject.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
+	if (perpage)
+	{
+		perpage = perpage.href.match(/perpage=(\d+)/i)[1];
+		persistObject.setPreference("postsPerPage", perpage);
+	}
+	else
+	{
+		perpage = 0;
+	}
+
+	var isloggedin = (doc.getElementById("notregistered") == null);
+
+	// Grab the go to dropdown
+
+	if (!persistObject.gotForumList)
+	{
+		grabForumList(doc);
+		persistObject.gotForumList = true;
+	}
+
+	doc.__SALR_forumid = forumid;
+	doc.body.className += " salastread_forum" + forumid;
+
+	// Figure out the current threadid
+	var replybutton = persistObject.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid=')]");
+	if (replybutton)
+	{
+		var threadid = replybutton.href.match(/threadid=(\d+)/)[1];
+	}
+	else
+	{
+		// If can't figure it out, abort so we don't screw anything up
+		return;
+	}
+	doc.__SALR_threadid = threadid;
+	persistObject.iAmReadingThis(threadid);
+	//var lastReadPostCount = persistObject.getLastReadPostCount(threadid);
+
+	// used by the context menu to allow options for this thread
+	doc.body.className += " salastread_thread_"+threadid;
+
+	// Grab the thread title
+	persistObject.setThreadTitle(threadid, SALR_getPageTitle(doc));
+
+	// Check if the thread is closed
+	if (persistObject.selectSingleNode(doc, doc, "//A[contains(@href,'action=newreply&threadid')]//IMG[contains(@src,'closed')]") == null)
+	{
+		var threadClosed = false;
+	}
+	else
+	{
+		var threadClosed = true;
+	}
+
+	// Replace post button
+	if (persistObject.getPreference("useQuickQuote") && !inGasChamber)
+	{
+		var postbuttons = persistObject.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newthread')]");
+		if (postbuttons.length > 0)
+		{
+			for (i in postbuttons)
+			{
+				attachQuickQuoteHandler(undefined,doc,persistObject.turnIntoQuickButton(doc, postbuttons[i], forumid),"",0);
+			}
+		}
+		if (!threadClosed)
+		{
+			var replybuttons = persistObject.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
+			if (replybuttons.length > 0)
+			{
+				for (i in replybuttons)
+				{
+					attachQuickQuoteHandler(threadid,doc,persistObject.turnIntoQuickButton(doc, replybuttons[i], forumid),"",0);
+				}
+			}
+		}
+	}
+
+	// get the posts to iterate through
+	var postlist = persistObject.selectNodes(doc, doc, "//table[contains(@id,'post')]");
+
+	var curPostId, colorDark = true, colorOfPost, postIdLink, resetLink, profileLink, posterId, postbody, postRow, f, linksUL, storeUserLink;
+	var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton, reportbutton;
+	var userPosterColor, userPosterBG, userPosterNote, userQuote;
+
+	// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
+	var hideEditButtons = persistObject.getPreference('hideEditButtons');
+	var hideReportButtons = persistObject.getPreference('hideReportButtons');
+	var useQuickQuote = persistObject.getPreference('useQuickQuote');
+	var insertPostLastMarkLink = persistObject.getPreference("insertPostLastMarkLink");
+	var insertPostTargetLink = persistObject.getPreference("insertPostTargetLink");
+	var highlightUsernames = persistObject.getPreference("highlightUsernames");
+	var dontHighlightPosts = persistObject.getPreference("dontHighlightPosts");
+	var resizeCustomTitleText = persistObject.getPreference("resizeCustomTitleText");
+	//post colors
+	var seenPostDark = persistObject.getPreference("seenPostDark");
+	var seenPostLight = persistObject.getPreference("seenPostLight");
+	//standard user colors
+	var modColor = persistObject.getPreference("modColor");
+	var modBackground = persistObject.getPreference("modBackground");
+	var modSubText = persistObject.getPreference("modSubText");
+	var adminColor = persistObject.getPreference("adminColor");
+	var adminBackground = persistObject.getPreference("adminBackground");
+	var adminSubText = persistObject.getPreference("adminSubText");
+	var opColor = persistObject.getPreference("opColor");
+	var opBackground = persistObject.getPreference("opBackground");
+	var opSubText = persistObject.getPreference("opSubText");
+
+	doc.postlinks = new Array;
+
+	// Loop through each post
+	for (i in postlist)
+	{
+		var post = postlist[i];
+
+		if (post.className.indexOf("ignored") > -1)
+		{
+			// User is ignored by the system so skip doing anything else
+			continue;
+		}
+
+		curPostId = post.id.match(/post(\d+)/)[1];
+		profileLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
+		posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+		if (!inFYAD)
+		{
+			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
+		}
+		else
+		{
+			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//DIV[contains(@class,'title')]//following-sibling::B");
+		}
+		titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+
+		if (titleBox && resizeCustomTitleText)
+		{
+			// Adds a scrollbar if they have a really wide custom title
+			titleBox.style.overflow = "auto";
+			titleBox.style.width = "159px";
+			if (titleBox.getElementsByTagName('font').length > 0)
+			{
+				// They likely have a large, red custom title
+				for(f = 0; f < titleBox.getElementsByTagName('font').length; f++)
+				{
+					titleBox.getElementsByTagName('font')[f].style.fontSize = "10px";
+				}
+			}
+		}
+
+		//Check to see if there's a mod or admin star
+		posterImg = false;
+		posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
+		if (userNameBox.getElementsByTagName('img').length > 0)
+		{
+			posterImg = userNameBox.getElementsByTagName('img')[0].title;
+			if (posterImg == 'Admin')
+			{
+				persistObject.addAdmin(posterId, posterName);
+			}
+			else if (posterImg == 'Moderator')
+			{
+				persistObject.addMod(posterId, posterName);
+			}
+		}
+
+		posterColor = false;
+		posterBG 	= false;
+		posterNote 	= false;
+		userPosterNote = false;
+
+		//apply this to every post
+		post.className += " salrPoster" + posterId;
+
+		//apply custom user coloring
+		if (userNameBox.className.search(/op/) > -1)
+		{
+			posterColor = opColor;
+			posterBG 	= opBackground;
+			posterNote 	= opSubText;
+			post.className += " salrThreadOP";
+		}
+		if (persistObject.isMod(posterId))
+		{
+			if(posterImg == 'Moderator')
+			{
+				posterColor = modColor;
+				posterBG 	= modBackground;
+				posterNote 	= modSubText;
+				post.className += " salrForumMod";
+			}
+			else
+			{
+				persistObject.removeMod(posterId);
+			}
+		}
+		if (persistObject.isAdmin(posterId))
+		{
+			if(posterImg == "Admin")
+			{
+				posterColor = adminColor;
+				posterBG 	= adminBackground;
+				posterNote 	= adminSubText;
+				post.className += " salrForumAdmin";
+			}
+			else
+			{
+				persistObject.removeAdmin(posterId);
+			}
+		}
+		var dbUser = persistObject.isPosterColored(posterId);
+		if(dbUser)
+		{
+			if(!dbUser.username) {
+				persistObject.setUserName(posterId, posterName);
+			}
+			posterColor = persistObject.getPosterColor(posterId);
+			posterBG 	= persistObject.getPosterBackground(posterId);
+
+			if(!dontHighlightPosts)
+			{
+				persistObject.colorPost(doc, post, posterBG, forumid);
+			}
+		}
+
+		userPosterNote = persistObject.getPosterNotes(posterId);
+		if (highlightUsernames && posterColor != false)
+		{
+			userNameBox.style.color = posterColor;
+		}
+		if (posterNote || userPosterNote)
+		{
+			newNoteBox = doc.createElement("p");
+			newNoteBox.style.fontSize = "80%";
+			newNoteBox.style.margin = "0";
+			newNoteBox.style.padding = "0";
+			newNoteBox.innerHTML  = posterNote ? posterNote : '';
+			newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
+			userNameBox.appendChild(newNoteBox);
+		}
+
+		if (!dontHighlightPosts)
+		{
+			if (posterBG != false)
+			{
+				persistObject.colorPost(doc, post, posterBG, forumid);
+			}
+			else
+			{
+				var tr = persistObject.selectSingleNode(doc, post, "tbody/tr[contains(@class, 'seen')]");
+				if(post && tr)
+				{
+					//dark
+					if(tr.className.indexOf("1") > -1)
+					{
+						persistObject.colorPost(doc, post, seenPostDark, forumid);
+					}
+					else
+					{
+						persistObject.colorPost(doc, post, seenPostLight, forumid);
+					}
+				}
+			}
+		}
+		colorDark = !colorDark;
+
+		postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
+		if (!postIdLink)
+		{
+			postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#post')]");
+		}
+		if (!postIdLink) continue;
+
+		postid = postIdLink.href.match(/#post(\d+)/i)[1];
+		if (insertPostTargetLink)
+		{
+			slink = doc.createElement("a");
+			slink.href = "/showthread.php?action=showpost&postid="+postid;
+			slink.title = "Show Single Post";
+			slink.innerHTML = "1";
+			postIdLink.parentNode.insertBefore(slink, postIdLink);
+			postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
+		}
+
+		//grab this once up here to avoid repetition
+		if(useQuickQuote || hideEditButtons) {
+			editbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
+		}
+
+		if(hideEditButtons && editbutton) {
+			if(posterId != userId) {
+				editbutton.parentNode.removeChild(editbutton);
+				//so we don't try to add quickquote to non-existant edit buttons
+				editbutton = null;
+			}
+		}
+
+		if (useQuickQuote && !threadClosed)
+		{
+			quotebutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
+			if (quotebutton)
+			{
+				attachQuickQuoteHandler(threadid, doc, persistObject.turnIntoQuickButton(doc, quotebutton, forumid), posterName, 1, postid);
+			}
+			if (editbutton)
+			{
+				attachQuickQuoteHandler(threadid, doc, persistObject.turnIntoQuickButton(doc, editbutton, forumid), posterName, 1, postid, true);
+			}
+		}
+
+		if(hideReportButtons)
+		{
+			if(posterId == userId)
+			{
+				reportbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'modalert.php')]");
+				if(reportbutton)
+				{
+					reportbutton.parentNode.removeChild(reportbutton);
+				}
+			}
+		}
+
+		//ban history link
+		var banHistLink = doc.createElement("li");
+
+		var banHistAnchor = doc.createElement("a");
+			banHistAnchor.href = "/banlist.php?userid=" + posterId;
+			banHistAnchor.title = "Show poster's ban/probation history.";
+			banHistAnchor.innerHTML = " Ban History";
+		banHistLink.appendChild(banHistAnchor);
+		banHistLink.appendChild(doc.createTextNode(" "));
+		profileLink.parentNode.parentNode.appendChild(banHistLink);
+
+		//add user coloring/note links
+		if(highlightUsernames) {
+			var ul = profileLink.parentNode.parentNode;
+			var li = doc.createElement("li");
+
+			var a = doc.createElement("a");
+				a.id = curPostId + "_" + posterId;
+				a.href ="#" + posterName;
+				a.innerHTML = "Add Coloring/Note";
+				a.onclick = addHighlightedUser;
+			li.appendChild(a);
+			ul.appendChild(li);
+		}
+
+
+		//Highlight posts that contain quotes from the user
+		if (!persistObject.getPreference('dontHighlightQuotes')) {
+			if (username!=null) {
+			var userQuote = persistObject.selectSingleNode(doc, post, "tbody//tr/td/blockquote[contains(@class,'qb2')]/h4[./text() = '"+username+" posted:']");
+			if (userQuote!=null) {
+				post.className += ' salrHighlightQuote';
+			}
+			}
+		}
+
+		postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
+		persistObject.convertSpecialLinks(postbody, doc);
+		persistObject.scaleImages(postbody, doc);
+	}
+
 
 	// below hasn't been rewritten
 	try {
