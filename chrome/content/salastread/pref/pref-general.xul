@@ -8,13 +8,13 @@
 		<preference id="removeHeaderAndFooter" 	name="extensions.salastread.removeHeaderAndFooter" 	type="bool"/>
 		<preference id="removePageTitlePrefix" 	name="extensions.salastread.removePageTitlePrefix" 	type="bool"/>
 		<preference id="gestureEnable" 			name="extensions.salastread.gestureEnable" 			type="bool"/>
-		<preference id="showSAToolsMenu" 		name="extensions.salastread.showSAToolsMenu" 		type="bool"/>
-		
+		<preference id="showTextConfigLink" 		name="extensions.salastread.showTextConfigLink" 		type="bool"/>
+
 		<preference id="suppressErrors"			name="extensions.salastread.suppressErrors" 		type="bool"/>
-		
+
 		<preference id="databaseStoragePath" 	name="extensions.salastread.databaseStoragePath" 	type="string"/>
 		<preference id="forumListStoragePath" 	name="extensions.salastread.forumListStoragePath" 	type="string"/>
-		
+
     </preferences>
 
 	<groupbox>
@@ -22,17 +22,17 @@
 	<vbox>
 		<checkbox preference="removeHeaderAndFooter" 	label="Hide Forum Header and Footer" />
 		<checkbox preference="removePageTitlePrefix" 	label="Remove 'The Something Awful Forums' from page titles" />
-		
-		
+
+
 		<checkbox preference="gestureEnable" 		 	label="Allow mouse gestures to navigate around threads and forums" />
-		<checkbox preference="showSAToolsMenu" 		 	label="Add 'SALR Config' item to the tools menu" />
+		<checkbox preference="showTextConfigLink" 		 	label="Add 'SALR Config' item to forum's menu" />
 	</vbox>
 	</groupbox>
 
 	<groupbox>
 		<caption label="File Locations"/>
 		<description>
-			These preferences define where SALR will store the files it uses to keep 
+			These preferences define where SALR will store the files it uses to keep
 			track of your forums activities.  %profile% will be replaced with the path to your Firefox User Profile.
 		</description>
 		<grid>
@@ -55,7 +55,7 @@
 			</rows>
 		</grid>
 	</groupbox>
-	
+
 	<groupbox>
 		<caption label="Debugging Info"/>
 		<checkbox preference="suppressErrors" label="Don't display error popup messages" />
