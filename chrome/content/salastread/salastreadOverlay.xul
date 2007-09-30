@@ -2,7 +2,7 @@
 <?xml-stylesheet href="chrome://salastread/content/chromeStyling.css" type="text/css"?>
 
 <overlay id="salastreadOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  
+
 	<script type="application/x-javascript" src="chrome://salastread/content/utilfunctions.js"/>
 <!--
   <script type="application/x-javascript"
@@ -17,13 +17,13 @@
 		</statusbarpanel>
 	</statusbar>
 -->
-	
+
 	<!-- Add our submenu to the main Context menu -->
 	<popup id="contentAreaContextMenu">
-		<menu 	label="SA Last Read Options" 
+		<menu 	label="SA Last Read Options"
 				id="salastread-context-menu"
 				image="chrome://salastread/skin/sa.png"
-				class="menuitem-iconic salastread_context_menu" 
+				class="menuitem-iconic salastread_context_menu"
 				position="1">
 			<menupopup id="salastread-context-menupopup">
 				<menuitem id="salastread-context-ignorethread" label="Ignore This Thread" accesskey="i" oncommand="SALR_IgnoreThread();" />
@@ -33,9 +33,4 @@
 		<menuseparator id="salastread-context-menuseparator" position="2"/>
 	</popup>
 
-	<!-- Add item to the tools menu (in case they don't want the main SA menu) -->
-	<menupopup id="menu_ToolsPopup"> 
-		<menuitem id="salastread-tools-menuitem" label="SALR Config" insertafter="devToolsSeparator"  oncommand="SALR_runConfig();" />
-	</menupopup> 	
-	
 </overlay>
