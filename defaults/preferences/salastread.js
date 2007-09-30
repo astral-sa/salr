@@ -35,7 +35,7 @@ pref('extensions.salastread.gestureButton', 2);
 //IMAGE HANDLING
 
 //TEXT-TO-IMAGE OPTIONS
-pref('extensions.salastread.convertTextToImage', false);
+pref('extensions.salastread.convertTextToImage', true);
 pref('extensions.salastread.dontConvertQuotedImages', true);
 pref('extensions.salastread.thumbnailQuotedImagesInThreads', false);
 pref('extensions.salastread.shrinkTextToImages', true);
@@ -113,11 +113,12 @@ pref('extensions.salastread.resizeCustomTitleText', true);
 pref('extensions.salastread.showSAForumMenu', true);
 pref('extensions.salastread.nestSAForumMenu', true);
 pref('extensions.salastread.useSAForumMenuBackground', true);
-pref('extensions.salastread.hideOtherSAMenus', true);
-pref('extensions.salastread.menuPinnedForums', '1,22,44');
+pref('extensions.salastread.hideOtherSAMenus', false); // Why false? To increase speed
+pref('extensions.salastread.menuAccessKey', 'A');
+pref('extensions.salastread.menuPinnedForums', '1,22,44,144');
 pref('extensions.salastread.contextMenuOnBottom', true);
 pref('extensions.salastread.enableContextMenu', true);
-pref('extensions.salastread.showSAToolsMenu', false);
+pref('extensions.salastread.showTextConfigLink', true);
 
 
 //FILE SETTINGS
