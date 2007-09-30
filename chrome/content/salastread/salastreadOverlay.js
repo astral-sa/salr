@@ -814,13 +814,6 @@ function handleThreadList(doc, forumid, flags)
 					}
 				}
 			}
-			else
-			{
-				if (iconJumpLastRead || iconMarkUnseen)
-				{
-					thread.className = thread.className.replace(/seen/i, "");
-				}
-			}
 
 			//SALR replacing forums buttons
 			if (!disableNewReCount && iconJumpLastRead)
@@ -1206,9 +1199,9 @@ function unstarButtonPress(e) {
 	archivedUnstarButtonInput.parentNode.parentNode.parentNode.removeChild(archivedUnstarButtonInput.parentNode.parentNode);
 }
 
-function handleShowThread(doc) {
+function handleShowThread(doc)
+{
 	var failed, i, e; // Little variables that'll get reused
-
 	if (doc.getElementById('thread') == null)
 	{
 		var archivedLink = persistObject.selectSingleNode(doc, doc, "//div[contains(@class,'inner')]/a[contains(@href,'archives.somethingawful.com/showthread.php?threadid=')]");
@@ -1245,7 +1238,6 @@ function handleShowThread(doc) {
 		// Can't get the forum id so abort for now
 		return;
 	}
-
 	// The following forums have special needs that must be dealt with
 	var inFYAD = persistObject.inFYAD(forumid);
 	var inBYOB = persistObject.inBYOB(forumid);
@@ -1509,9 +1501,10 @@ function handleShowThread(doc) {
 			}
 		}
 		var dbUser = persistObject.isUserIdColored(posterId);
-		if(dbUser)
+		if (dbUser)
 		{
-			if(!dbUser.username) {
+			if (!dbUser.username)
+			{
 				persistObject.setUserName(posterId, posterName);
 			}
 			posterColor = dbUser.color;
@@ -1558,7 +1551,7 @@ function handleShowThread(doc) {
 			newNoteBox.style.fontSize = "80%";
 			newNoteBox.style.margin = "0";
 			newNoteBox.style.padding = "0";
-			newNoteBox.innerHTML  = posterNote ? posterNote : '';
+			newNoteBox.innerHTML = posterNote ? posterNote : '';
 			newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
 			userNameBox.appendChild(newNoteBox);
 		}
@@ -1583,12 +1576,14 @@ function handleShowThread(doc) {
 		}
 
 		//grab this once up here to avoid repetition
-		if(useQuickQuote || hideEditButtons) {
+		if (useQuickQuote || hideEditButtons)
+		{
 			editbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
 		}
 
-		if(hideEditButtons && editbutton) {
-			if(posterId != userId) {
+		if (hideEditButtons && editbutton)
+		{
+			if (posterId != userId) {
 				editbutton.parentNode.removeChild(editbutton);
 				//so we don't try to add quickquote to non-existant edit buttons
 				editbutton = null;
@@ -1608,7 +1603,7 @@ function handleShowThread(doc) {
 			}
 		}
 
-		if(hideReportButtons)
+		if (hideReportButtons)
 		{
 			if(posterId == userId)
 			{
@@ -1625,8 +1620,9 @@ function handleShowThread(doc) {
 		var banHistAnchor = doc.createElement("a");
 		banHistAnchor.href = "/banlist.php?userid=" + posterId;
 		banHistAnchor.title = "Show poster's ban/probation history.";
-		banHistAnchor.innerHTML = "Ban History";
+		banHistAnchor.innerHTML = " Ban History";
 		banHistLink.appendChild(banHistAnchor);
+		banHistLink.appendChild(doc.createTextNode(" "));
 		profileLink.parentNode.parentNode.appendChild(banHistLink);
 
 		// Add user coloring/note links
@@ -1679,10 +1675,10 @@ function handleSupport(doc)
 		return;
 	}
 	var newImg = doc.createElement('img');
-		newImg.src = "chrome://salastread/skin/techsupport.jpg";
+	newImg.src = "chrome://salastread/skin/techsupport.jpg";
 	var newText = doc.createElement('p');
-		newText.innerHTML = "Please disable SA Last Read before reporting a problem with the forums";
-		newText.style.textAlign = "center";
+	newText.innerHTML = "Please disable SA Last Read before reporting a problem with the forums";
+	newText.style.textAlign = "center";
 	var emptyP = doc.createElement('p');
 	var newLink = doc.createElement('a');
 	emptyP.appendChild(newLink);
@@ -1690,7 +1686,7 @@ function handleSupport(doc)
 	newLink.href = "https://salr.bountysource.com/development";
 	newLink.innerHTML = "Click here to report a problem with SA Last Read instead";
 	var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
-		supportTable.parentNode.replaceChild(newImg, supportTable);
+	supportTable.parentNode.replaceChild(newImg, supportTable);
 	newImg.parentNode.appendChild(newText);
 	newImg.parentNode.appendChild(emptyP);
 }
@@ -1921,19 +1917,6 @@ function SALR_insertConfigLink(doc) {
 	}
 }
 
-function handleLogoutAction(e) {
-	var doc = e.originalTarget;
-	var logoutnode = persistObject.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'account.php?s=&action=logout')]");
-	if (logoutnode)
-	{
-	  //Add onclick handler to clear out the userid and username
-	  logoutnode.onclick = function() {
-		persistObject.setPreference('userId', 0);
-		persistObject.setPreference('username', '');
-	  }
-	}
-}
-
 function handleBodyClassing(doc) {
 	var docbody = doc.body;
 	var addclass = " somethingawfulforum";
@@ -1962,19 +1945,12 @@ function SALR_insertCSS(doc, url) {
 }
 
 
-function SALR_insertDynamicCSS(doc, css) {
-	var stylesheet = doc.createElement("style");
-	stylesheet.type = "text/css";
-	stylesheet.innerHTML = css;
-	doc.getElementsByTagName('head')[0].appendChild(stylesheet);
-}
-
 var SALR_SilenceLoadErrors = false;
 
 
 /*
  *
- * New and improced onload handler wrapper
+ * New and improved onload handler wrapper
  * It waits until we visit Something Awful before adding the SA specific onload
  * NOTE: This is fired on every page load and then some, plan accordingly
  *
@@ -1987,12 +1963,27 @@ function SALR_windowOnload(e)
 		SALR_buildForumMenu();
 	}
 
-
+	if (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1)
+	{
+		// Remove the context menu since we're not at Something Awful
+		var cacm = document.getElementById("contentAreaContextMenu");
+		var mopt = document.getElementById("salastread-context-menu");
+		var moptsep = document.getElementById("salastread-context-menuseparator");
+		if (mopt)
+		{
+			cacm.removeChild(mopt);
+		}
+		if (moptsep)
+		{
+			cacm.removeChild(moptsep);
+		}
+	}
 
 	var appcontent = document.getElementById("appcontent"); // browser
 	var doc = e.originalTarget; // document
 	if (appcontent && doc.location && (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) > -1))
 	{
+		// Once we visit Something Awful, start doing Something Awful stuff
 		appcontent.addEventListener("load", SALR_onLoad, true);
 	}
 
@@ -2001,7 +1992,7 @@ function SALR_windowOnload(e)
 
 /*
  *
- * New and improced onload handler
+ * New and improved onload handler
  * Designed to only load when we're at Something Awful, then load every page load there after
  * Hopefully this will cut down on memory usage
  * NOTE: This won't fire until Something Awful is visited, then it fires on every page load
@@ -2033,82 +2024,95 @@ function SALR_onLoad(e)
 
 	var location = doc.location;
 
-	try {
+	try
+	{
 
 
-			// Set a listener on the context menu
-			if (persistObject.getPreference("enableContextMenu"))
+		// Set a listener on the context menu
+		if (persistObject.getPreference("enableContextMenu"))
+		{
+			document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
+		}
+		else
+		{
+			// The context menu is turned off, so remove it
+			var cacm = document.getElementById("contentAreaContextMenu");
+			var mopt = document.getElementById("salastread-context-menu");
+			var moptsep = document.getElementById("salastread-context-menuseparator");
+			if (mopt)
 			{
-				document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
-			}
-			else
-			{
-				// We have to remove them because they've already been added via the overlay
-				var cacm = document.getElementById("contentAreaContextMenu");
-				var mopt = document.getElementById("salastread-context-menu");
-				var moptsep = document.getElementById("salastread-context-menuseparator");
 				cacm.removeChild(mopt);
+			}
+			if (moptsep)
+			{
 				cacm.removeChild(moptsep);
 			}
+		}
 
-			// Append custom CSS files to the head
-			if (persistObject.getPreference("gestureEnable"))
-			{
-				SALR_insertCSS(doc, "chrome://salastread/content/css/gestureStyling.css");
-			}
-			if (persistObject.getPreference("removeHeaderAndFooter"))
-			{
-				SALR_insertCSS(doc, "chrome://salastread/content/css/removeHeaderAndFooter.css");
-			}
-			if (persistObject.getPreference("enablePageNavigator") ||
-			 persistObject.getPreference("enableForumNavigator"))
-			{
-				SALR_insertCSS(doc, "chrome://salastread/content/css/pageNavigator.css");
-			}
+		// Append custom CSS files to the head
+		if (persistObject.getPreference("gestureEnable"))
+		{
+			SALR_insertCSS(doc, "chrome://salastread/content/css/gestureStyling.css");
+		}
+		if (persistObject.getPreference("removeHeaderAndFooter"))
+		{
+			SALR_insertCSS(doc, "chrome://salastread/content/css/removeHeaderAndFooter.css");
+		}
+		if (persistObject.getPreference("enablePageNavigator") ||
+		 persistObject.getPreference("enableForumNavigator"))
+		{
+			SALR_insertCSS(doc, "chrome://salastread/content/css/pageNavigator.css");
+		}
 
-			// Insert our dynamic CSS into the head
-			persistObject.insertDynamicCSS(doc, persistObject.generateDynamicCSS);
+		// Insert our dynamic CSS into the head
+		persistObject.insertDynamicCSS(doc, persistObject.generateDynamicCSS);
 
-			// Insert a text link to open the options menu
-			if (persistObject.getPreference('showTextConfigLink'))
+		// Insert a text link to open the options menu
+		if (persistObject.getPreference('showTextConfigLink'))
+		{
+			SALR_insertConfigLink(doc);
+		}
+
+		// Remove the page title prefix/postfix
+		if (persistObject.getPreference("removePageTitlePrefix"))
+		{
+			doc.title = SALR_getPageTitle(doc);
+		}
+
+		// See what page we're on and do what needs to be done
+		if (doc.location.pathname.indexOf("index.php") != -1)
+		{
+			// It's the main page
+			if (persistObject.getPreference("username") == '')
 			{
-				SALR_insertConfigLink(doc);
+				var username = persistObject.selectSingleNode(doc,doc,"//div[contains(@class, 'mainbodytextsmall')]//b");
+				username = escape(username.textContent);
+				persistObject.setPreference("username", username);
 			}
-
-			// See what page we're on and do what needs to be done
-			if (doc.location.pathname.indexOf("index.php") != -1)
+		}
+		if (doc.location.pathname.indexOf("usercp.php") != -1)
+		{
+			// It's the control panel
+			if (persistObject.getPreference("username") == '')
 			{
-				// It's the main page
-				if (persistObject.getPreference("username") == '')
+				var username = persistObject.selectSingleNode(doc,doc,"//div[contains(@class, 'breadcrumbs')]/b");
+				username = escape(username.textContent.substr(52));
+				persistObject.setPreference("username", username);
+			}
+			handleSubscriptions(doc);
+		}
+		if (doc.location.pathname.indexOf("account.php") != -1)
+		{
+			// It's either the log out or the change password, let's find out which
+			if ((action = doc.location.search.match(/action=(\w+)/i)) != null)
+			{
+				if (action[1] == "logout")
 				{
-					var username = persistObject.selectSingleNode(doc,doc,"//div[contains(@class, 'mainbodytextsmall')]//b");
-					username = escape(username.textContent);
-					persistObject.setPreference("username", username);
+					persistObject.setPreference("username", '');
+					persistObject.setPreference("userId", 0);
 				}
 			}
-			if (doc.location.pathname.indexOf("usercp.php") != -1)
-			{
-				// It's the control panel
-				if (persistObject.getPreference("username") == '')
-				{
-					var username = persistObject.selectSingleNode(doc,doc,"//div[contains(@class, 'breadcrumbs')]/b");
-					username = escape(username.textContent.substr(52));
-					persistObject.setPreference("username", username);
-				}
-				handleSubscriptions(doc);
-			}
-			if (doc.location.pathname.indexOf("account.php") != -1)
-			{
-				// It's either the log out or the change password, let's find out which
-				if ((action = doc.location.search.match(/action=(\w+)/i)) != null)
-				{
-					if (action[1] == "logout")
-					{
-						persistObject.setPreference("username", '');
-						persistObject.setPreference("userId", 0);
-					}
-				}
-			}
+		}
 
 
 
@@ -2117,77 +2121,73 @@ function SALR_onLoad(e)
 
 
 
-				// why the FUCK doesn't this work?
-				var hresult = 0;
-				if ( location.href.indexOf("forumdisplay.php?") != -1 ) {
-					handleForumDisplay(doc);
+					// why the FUCK doesn't this work?
+					if ( location.href.indexOf("forumdisplay.php?") != -1 ) {
+						handleForumDisplay(doc);
 
-				} else if ( location.href.indexOf("showthread.php?") != -1) {
-					handleShowThread(doc);
-				} else if ( location.href.indexOf("newreply.php") != -1) {
-					handleNewReply(e);
-				} else if ( location.href.indexOf("editpost.php") != -1) {
-					handleEditPost(e);
+					} else if ( location.href.indexOf("showthread.php?") != -1) {
+						handleShowThread(doc);
+					} else if ( location.href.indexOf("newreply.php") != -1) {
+						handleNewReply(e);
+					} else if ( location.href.indexOf("editpost.php") != -1) {
+						handleEditPost(e);
 				} else if ( location.href.indexOf("bookmarkthreads.php") != -1) {
-					handleSubscriptions(doc);
-				} else if (location.href.search(/supportmail\.php/) > -1) {
-					handleSupport(doc);
-				}
+						handleSubscriptions(doc);
+					} else if (location.href.search(/supportmail\.php/) > -1) {
+						handleSupport(doc);
+					}
 
 
 
 
 				handleBodyClassing(doc);
 
-				doc.__salastread_processed = true;
+					doc.__salastread_processed = true;
 
-				// XXX: The unload prevents FF 1.5 from using Quick Back Button.
-				//      SALR needs to work with it, but this works to prevent trouble in the meantime.
-				if (true) {
-					var screl = doc.createElement("SCRIPT");
+					// XXX: The unload prevents FF 1.5 from using Quick Back Button.
+					//      SALR needs to work with it, but this works to prevent trouble in the meantime.
+					if (true) {
+						var screl = doc.createElement("SCRIPT");
+							screl.setAttribute("language","javascript");
+							screl.setAttribute("src","chrome://salastread/content/pageunload.js");
+						doc.getElementsByTagName('head')[0].appendChild(screl);
+
+						// Added by duz for testing events
+						screl = doc.createElement("SCRIPT");
 						screl.setAttribute("language","javascript");
-						screl.setAttribute("src","chrome://salastread/content/pageunload.js");
-					doc.getElementsByTagName('head')[0].appendChild(screl);
-
-					// Added by duz for testing events
-					screl = doc.createElement("SCRIPT");
-					screl.setAttribute("language","javascript");
-					screl.setAttribute("src","chrome://salastread/content/salrevents.js");
-					doc.getElementsByTagName('head')[0].appendChild(screl);
-				}
-				SALR_IncTimer();
-				if(persistObject.getPreference('enableDebugMarkup') ) {
-					var dbg = doc.createElement("DIV");
-						dbg.innerHTML = SALR_debugLog.join("<br>");
-						doc.body.appendChild(dbg);
-				}
-
-				if (persistObject.getPreference("removePageTitlePrefix")) {
-					doc.title = SALR_getPageTitle(doc);
-				}
+						screl.setAttribute("src","chrome://salastread/content/salrevents.js");
+						doc.getElementsByTagName('head')[0].appendChild(screl);
+					}
+					SALR_IncTimer();
+					if(persistObject.getPreference('enableDebugMarkup') ) {
+						var dbg = doc.createElement("DIV");
+							dbg.innerHTML = SALR_debugLog.join("<br>");
+							doc.body.appendChild(dbg);
+					}
 
 
 
-	} catch(ex) {
+
+		} catch(ex) {
 		if(!e.runSilent) {
-			if (typeof(ex) == "object") {
-				var errstr = "";
-				for ( var tn in ex ) {
-					errstr += tn + ": " + ex[tn] + "\n";
-				}
+				if (typeof(ex) == "object") {
+					var errstr = "";
+					for ( var tn in ex ) {
+						errstr += tn + ": " + ex[tn] + "\n";
+					}
 
-				if (!persistObject || !persistObject.getPreference('suppressErrors')) {
-					alert("SALastRead application err: "+errstr);
-				} else {
 					if (!persistObject || !persistObject.getPreference('suppressErrors')) {
-						alert("SALastRead application err: "+ex);
+						alert("SALastRead application err: "+errstr);
+					} else {
+						if (!persistObject || !persistObject.getPreference('suppressErrors')) {
+							alert("SALastRead application err: "+ex);
+						}
 					}
 				}
+			} else {
+				throw ex;
 			}
-		} else {
-			throw ex;
 		}
-	}
 
 }
 
