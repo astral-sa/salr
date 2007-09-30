@@ -1041,7 +1041,7 @@ salrPersistObject.prototype = {
 	// checks to see if the userid has any custom coloring defined
 	// @param: (int) User Id
 	// @returns: (object) Object contained userid and username
-	isPosterColored: function(userid)
+	isUserIdColored: function(userid)
 	{
 		var user = false;
 		var statement = this.database.createStatement("SELECT `userid`,`username`,`color`,`background` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
@@ -1061,7 +1061,7 @@ salrPersistObject.prototype = {
 	// checks to see if the username has any custom coloring defined
 	// @param: (string) Username
 	// @returns: (object) Object contained userid and username
-	isQuotedColored: function(username)
+	isUsernameColored: function(username)
 	{
 		var user = false;
 		var statement = this.database.createStatement("SELECT `userid`,`username`,`color`,`background` FROM `userdata` WHERE `username` = ?1 AND (`color` != 0 OR `background` != 0)");

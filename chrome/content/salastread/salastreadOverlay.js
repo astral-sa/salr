@@ -1508,7 +1508,7 @@ function handleShowThread(doc) {
 				persistObject.removeAdmin(posterId);
 			}
 		}
-		var dbUser = persistObject.isPosterColored(posterId);
+		var dbUser = persistObject.isUserIdColored(posterId);
 		if(dbUser)
 		{
 			if(!dbUser.username) {
@@ -1536,7 +1536,7 @@ function handleShowThread(doc) {
 					}
 					else
 					{
-						userQuotedDetails = persistObject.isQuotedColored(userQuoted);
+						userQuotedDetails = persistObject.isUsernameColored(userQuoted);
 						if (userQuotedDetails)
 						{
 							quote.parentNode.className += ' salrQuoteOf' + userQuotedDetails.userid;
