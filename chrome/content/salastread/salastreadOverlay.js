@@ -1514,12 +1514,36 @@ function handleShowThread(doc) {
 			if(!dbUser.username) {
 				persistObject.setUserName(posterId, posterName);
 			}
-			posterColor = persistObject.getPosterColor(posterId);
-			posterBG = persistObject.getPosterBackground(posterId);
+			posterColor = dbUser.color;
+			posterBG = dbUser.background;
+			persistObject.colorPost(doc, posterBG, posterId);
+		}
 
-			if(!dontHighlightPosts)
+		// Check for quotes that need to be colored
+		if (persistObject.getPreference('highlightQuotes'))
+		{
+			var userQuoted;
+			var anyQuotes = persistObject.selectNodes(doc, post, "TBODY//TR/TD/BLOCKQUOTE[contains(@class,'qb2')]/H4");
+			for each (quote in anyQuotes)
 			{
-				persistObject.colorPost(doc, post, posterBG, forumid);
+				userQuoted = quote.innerHTML.match(/(.*) posted:/);
+				if (userQuoted)
+				{
+					userQuoted = userQuoted[1];
+					if (userQuoted == persistObject.getPreference('username'))
+					{
+						quote.parentNode.className += ' salrQuoteOfSelf';
+					}
+					else
+					{
+						userQuotedDetails = persistObject.isQuotedColored(userQuoted);
+						if (userQuotedDetails)
+						{
+							quote.parentNode.className += ' salrQuoteOf' + userQuotedDetails.userid;
+							persistObject.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
+						}
+					}
+				}
 			}
 		}
 
@@ -1539,30 +1563,6 @@ function handleShowThread(doc) {
 			userNameBox.appendChild(newNoteBox);
 		}
 
-		if (!dontHighlightPosts)
-		{
-			if (posterBG != false)
-			{
-				persistObject.colorPost(doc, post, posterBG, forumid);
-			}
-			else
-			{
-				var tr = persistObject.selectSingleNode(doc, post, "tbody/tr[contains(@class, 'seen')]");
-				if(post && tr)
-				{
-					//dark
-					if(tr.className.indexOf("1") > -1)
-					{
-						persistObject.colorPost(doc, post, seenPostDark, forumid);
-					}
-					else
-					{
-						persistObject.colorPost(doc, post, seenPostLight, forumid);
-					}
-				}
-			}
-		}
-		colorDark = !colorDark;
 
 		postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
 		if (!postIdLink)
@@ -1620,40 +1620,27 @@ function handleShowThread(doc) {
 			}
 		}
 
-		//ban history link
+		// Add a link to the user's ban history
 		var banHistLink = doc.createElement("li");
-
 		var banHistAnchor = doc.createElement("a");
-			banHistAnchor.href = "/banlist.php?userid=" + posterId;
-			banHistAnchor.title = "Show poster's ban/probation history.";
-			banHistAnchor.innerHTML = " Ban History";
+		banHistAnchor.href = "/banlist.php?userid=" + posterId;
+		banHistAnchor.title = "Show poster's ban/probation history.";
+		banHistAnchor.innerHTML = "Ban History";
 		banHistLink.appendChild(banHistAnchor);
-		banHistLink.appendChild(doc.createTextNode(" "));
 		profileLink.parentNode.parentNode.appendChild(banHistLink);
 
-		//add user coloring/note links
-		if(highlightUsernames) {
+		// Add user coloring/note links
+		if (highlightUsernames)
+		{
 			var ul = profileLink.parentNode.parentNode;
 			var li = doc.createElement("li");
-
 			var a = doc.createElement("a");
-				a.id = curPostId + "_" + posterId;
-				a.href ="#" + posterName;
-				a.innerHTML = "Add Coloring/Note";
-				a.onclick = addHighlightedUser;
+			a.id = curPostId + "_" + posterId;
+			a.href ="#" + posterName;
+			a.innerHTML = "Add Coloring/Note";
+			a.onclick = addHighlightedUser;
 			li.appendChild(a);
 			ul.appendChild(li);
-		}
-
-
-		//Highlight posts that contain quotes from the user
-		if (!persistObject.getPreference('dontHighlightQuotes')) {
-			if (username!=null) {
-			var userQuote = persistObject.selectSingleNode(doc, post, "tbody//tr/td/blockquote[contains(@class,'qb2')]/h4[./text() = '"+username+" posted:']");
-			if (userQuote!=null) {
-				post.className += ' salrHighlightQuote';
-			}
-			}
 		}
 
 		postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
@@ -2080,7 +2067,7 @@ function SALR_onLoad(e)
 			}
 
 			// Insert our dynamic CSS into the head
-			SALR_insertDynamicCSS(doc, persistObject.generateDynamicCSS);
+			persistObject.insertDynamicCSS(doc, persistObject.generateDynamicCSS);
 
 			// Insert a text link to open the options menu
 			if (persistObject.getPreference('showTextConfigLink'))

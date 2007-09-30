@@ -303,7 +303,7 @@ salrPersistObject.prototype = {
 		{
 			result[i] = nodes.snapshotItem(i);
 		}
-	return result;
+		return result;
 	},
 
 	get storedbFileName() { return this._dbfn; },
@@ -550,7 +550,22 @@ salrPersistObject.prototype = {
 			CSSFile += 'padding:0 !important;';
 			CSSFile += '}\n';
 		}
+		if (this.getPreference('highlightQuotes'))
+		{
+			CSSFile += 'blockquote.salrQuoteOfSelf {';
+			CSSFile += 'background:';
+			CSSFile += this.getPreference("highlightQuotePost");
+			CSSFile += '};\n';
+		}
 		return CSSFile;
+	},
+
+	insertDynamicCSS: function(doc, css)
+	{
+		var stylesheet = doc.createElement("style");
+		stylesheet.type = "text/css";
+		stylesheet.innerHTML = css;
+		doc.getElementsByTagName("head")[0].appendChild(stylesheet);
 	},
 
 	// Retrieves all the data on a given thread id including any
@@ -1029,20 +1044,37 @@ salrPersistObject.prototype = {
 	isPosterColored: function(userid)
 	{
 		var user = false;
-
-		if(this.userExists(userid))
+		var statement = this.database.createStatement("SELECT `userid`,`username`,`color`,`background` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
+		statement.bindInt32Parameter(0, userid);
+		if (statement.executeStep())
 		{
-			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
-				statement.bindInt32Parameter(0, userid);
-			if (statement.executeStep())
-			{
-				user = {};
-				user.userid = statement.getInt32(0);
-				user.username = statement.getString(1);
-			}
-			statement.reset();
+			user = {};
+			user.userid = statement.getInt32(0);
+			user.username = statement.getString(1);
+			user.color = statement.getString(2);
+			user.background = statement.getString(3);
 		}
+		statement.reset();
+		return user;
+	},
 
+	// checks to see if the username has any custom coloring defined
+	// @param: (string) Username
+	// @returns: (object) Object contained userid and username
+	isQuotedColored: function(username)
+	{
+		var user = false;
+		var statement = this.database.createStatement("SELECT `userid`,`username`,`color`,`background` FROM `userdata` WHERE `username` = ?1 AND (`color` != 0 OR `background` != 0)");
+		statement.bindStringParameter(0, username);
+		if (statement.executeStep())
+		{
+			user = {};
+			user.userid = statement.getInt32(0);
+			user.username = statement.getString(1);
+			user.color = statement.getString(2);
+			user.background = statement.getString(3);
+		}
+		statement.reset();
 		return user;
 	},
 
@@ -1515,34 +1547,29 @@ salrPersistObject.prototype = {
 		 forumid == 78 || forumid == 79 || forumid == 115 || forumid == 25);
 	},
 
-	// Colors the post passed to it
-	// @param: (html doc) document, (htmlTableElement) post table, (string) color to use for the post
+	// Colors a post based on deatails passed to it
+	// @param: (html doc) document, (string) color to use for the post, (int) userid of poster
 	// @return: nothing
-	colorPost: function(doc, post, colorToUse)
+	colorPost: function(doc, colorToUse, userid)
 	{
-		var userInfoBox = this.selectSingleNode(doc, post, "TBODY/TR/TD[contains(@class,'userinfo')]");
-		var postBodyBox = this.selectSingleNode(doc, post, "TBODY/TR/TD[contains(@class,'postbody')]");
-		var postDateBox = this.selectSingleNode(doc, post, "TBODY/TR/TD[contains(@class,'postdate')]");
-		var postLinksBox = this.selectSingleNode(doc, post, "TBODY/TR/TD[contains(@class,'postlinks')]");
-		if (userInfoBox)
-		{
-			userInfoBox.style.backgroundColor = colorToUse;
-		}
-		if (postBodyBox)
-		{
-			postBodyBox.style.backgroundColor = colorToUse;
-		}
-		if (postDateBox)
-		{
-			postDateBox.style.backgroundColor = colorToUse;
-		}
-		if (postLinksBox)
-		{
-			postLinksBox.style.backgroundColor = colorToUse;
-		}
-
-		post.className += " colored";
+		CSSFile = 'table.salrPostBy'+userid+' tr.seen1 td, table.salrPostBy'+userid+' tr.seen2 td { background-color:';
+		CSSFile += colorToUse;
+		CSSFile += ' !important; }\n';
+		this.insertDynamicCSS(doc, CSSFile);
 	},
+
+	// Colors a quote based on details passed to it
+	// @param: (html doc) document, (string) color to use for the post, (int) userid of quoted
+	// @return: nothing
+	colorQuote: function(doc, colorToUse, userid)
+	{
+		CSSFile += 'blockquote.salrQuoteOf'+userid+' {';
+		CSSFile += 'background:';
+		CSSFile += colorToUse;
+		CSSFile += '};\n';
+		this.insertDynamicCSS(doc, CSSFile);
+	},
+
 
 	//gets the unread posts count for a thread using the built in forum data.
 	//@param: document object, title box dom element
@@ -1677,7 +1704,7 @@ salrPersistObject.prototype = {
 			lastButton.appendChild(lastButtonImg);
 			navDiv.appendChild(lastButton);
 		}
-		if (doc.location.pathname == "/showthread.php")
+		if (doc.location.pathname == "/showthread.php" && this.getPreference("lastPostOnNavigator"))
 		{
 			var lastButtonImg = doc.createElement("img");
 			lastButtonImg.title = "Go to First Unread Post";
@@ -1686,11 +1713,6 @@ salrPersistObject.prototype = {
 			lastButton.href = this.editPageNumIntoURI(doc, "goto=newpost");
 			lastButton.appendChild(lastButtonImg);
 			navDiv.appendChild(lastButton);
-		}
-		if (!this.getPreference("enableForumNavigator") && !this.getPreference("enablePageNavigator"))
-		{
-			navDiv.style.visibility = 'hidden';
-			navDiv.style.display = 'none';
 		}
 		doc.body.appendChild(navDiv);
 	},

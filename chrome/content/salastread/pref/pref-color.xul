@@ -5,13 +5,13 @@
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" xmlns:html="http://www.w3.org/1999/xhtml">
 
 	<prefpane id="colors" onpaneload="loadColors()">
-		
+
 		<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-color.js"/>
 
 		<preferences>
 			<!-- General Colors -->
 			<preference id="videoEmbedderBG" name="extensions.salastread.readLight" type="string"/>
-			
+
 			<!-- Normal Thread Colors -->
 			<preference id="postedInThreadRe" 		name="extensions.salastread.postedInThreadRe" 	type="string"/>
 			<preference id="readDark" 				name="extensions.salastread.readDark" 			type="string"/>
@@ -25,8 +25,7 @@
 			<preference id="unseenPostDark" 		name="extensions.salastread.unseenPostDark" 	type="string"/>
 			<preference id="unseenPostLight" 		name="extensions.salastread.unseenPostLight" 	type="string"/>
 			<preference id="highlightQuotePost"		name="extensions.salastread.highlightQuotePost" type="string"/>
-			<preference id="highlightQuotePostQuote"		name="extensions.salastread.highlightQuotePostQuote" type="string"/>
-			
+
 			<!-- FYAD Thread Colors -->
 			<preference id="postedInThreadReFYAD" 	name="extensions.salastread.postedInThreadReFYAD" 	type="string"/>
 			<preference id="readDarkFYAD" 			name="extensions.salastread.readDarkFYAD" 			type="string"/>
@@ -40,7 +39,7 @@
 			<preference id="unseenPostDarkFYAD" 	name="extensions.salastread.unseenPostDarkFYAD" 	type="string"/>
 			<preference id="unseenPostLightFYAD" 	name="extensions.salastread.unseenPostLightFYAD" 	type="string"/>
 			<preference id="highlightQuotePostFYAD" name="extensions.salastread.highlightQuotePostFYAD" type="string"/>
-			
+
 			<!-- BYOB Thread Colors (Unused atm) -->
 			<preference id="postedInThreadReBYOB" 	name="extensions.salastread.postedInThreadReBYOB" 	type="string"/>
 			<preference id="readDarkBYOB" 			name="extensions.salastread.readDarkBYOB" 			type="string"/>
@@ -53,29 +52,29 @@
 			<preference id="unreadLightBYOB" 		name="extensions.salastread.unreadLightBYOB" 		type="string"/>
 			<preference id="unseenPostDarkBYOB" 	name="extensions.salastread.unseenPostDarkBYOB" 	type="string"/>
 			<preference id="unseenPostLightBYOB" 	name="extensions.salastread.unseenPostLightBYOB" 	type="string"/>
-			
+
 			<!-- Coloring Toggles -->
 			<preference id="dontHighlightThreads" 	name="extensions.salastread.dontHighlightThreads" 	type="bool"/>
 			<preference id="dontHighlightPosts" 	name="extensions.salastread.dontHighlightPosts" 	type="bool"/>
 			<preference id="highlightUsernames" 	name="extensions.salastread.highlightUsernames" 	type="bool"/>
 			<preference id="disableGradients" 		name="extensions.salastread.disableGradients" 		type="bool"/>
-			<preference id="dontHighlightQuotes"    name="extensions.salastread.dontHighlightQuotes"	type="bool"/>
+			<preference id="highlightQuotes"    name="extensions.salastread.highlightQuotes"	type="bool"/>
 
 		</preferences>
-		
+
 		<groupbox id="colorOptionsGroup">
 			<caption label="Thread Coloring Options"/>
-			
+
 			<checkbox preference="dontHighlightThreads" label="Don't perform color highlighting on thread lists"/>
 			<checkbox preference="dontHighlightPosts" 	label="Don't perform color highlighting on posts in a thread"/>
 			<checkbox preference="disableGradients" 	label="Disable all color gradients"/>
-			<checkbox preference="dontHighlightQuotes"	label="Don't highlight posts that quote your posts" />
-		</groupbox>		
-		
+			<checkbox preference="highlightQuotes"	label="Highlight quoted interesting people" />
+		</groupbox>
+
 		<groupbox id="colorPickerGroup">
 			<caption label="Click on a link to adjust the specified color." />
-			
-			<hbox align="center"> 
+
+			<hbox align="center">
 				<label value="Change/view color settings for:" control="forumtype"/>
 				<menulist id="forumtype" oncommand="loadColors()">
 					<menupopup>
@@ -86,7 +85,7 @@
 				</menulist>
 				<button label="Load Default Colors" oncommand="loadDefaultColors()"/>
 			</hbox>
-			
+
 			<hbox id="sampletableholder" class="sampletableholder">
 				<vbox>
 					<html:table id="sampletable" class="sampletable">
@@ -114,7 +113,7 @@
 						</html:tr>
 					</html:tbody>
 					</html:table>
-					
+
 					<html:table id="postsampletable" class="postsampletable">
 					<html:tbody>
 						<html:tr>
@@ -126,15 +125,14 @@
 							<html:td class="unseenPostDark" 	onclick="editColor(event, this);">Unseen Post (dark)</html:td>
 						</html:tr>
 						<html:tr>
-							<html:td class="highlightQuotePost" onclick="editColor(event, this);">Quoted Post</html:td>
-							<html:td class="highlightQuotePostQuote" onclick="editColor(event, this);">Quoted Post (quote)</html:td>
+							<html:td colspan="2" class="highlightQuotePost" onclick="editColor(event, this);">My Post Is Quoted</html:td>
 						</html:tr>
 					</html:tbody>
 					</html:table>
 				</vbox>
 			</hbox>
 		</groupbox>
-		
+
 		<popupset>
 			<popup id="gradientSelectorPopup" position="at_pointer">
 				<menuitem label="Top Gradient Color" accesskey="t" oncommand="choseTopOrBottom(true);"/>

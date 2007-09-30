@@ -28,6 +28,7 @@ pref('extensions.salastread.removeHeaderAndFooter', false);
 pref('extensions.salastread.removePageTitlePrefix', true);
 pref('extensions.salastread.enablePageNavigator', true);
 pref('extensions.salastread.enableForumNavigator', true);
+pref('extensions.salastread.lastPostOnNavigator', true);
 pref('extensions.salastread.gestureEnable', false);
 pref('extensions.salastread.suppressErrors', true);
 pref('extensions.salastread.gestureButton', 2);
@@ -89,8 +90,7 @@ pref('extensions.salastread.unseenPostDarkFYAD', '#ffcccc');
 pref('extensions.salastread.unseenPostLightFYAD', '#ffccff');
 pref('extensions.salastread.highlightQuotePost', '#c691d9');
 pref('extensions.salastread.highlightQuotePostFYAD', '#af7fc0');
-pref('extensions.salastread.highlightQuotePostQuote', '#c691d9');
-pref('extensions.salastread.highlightQuotePostQuoteFYAD', '#af7fc0');
+
 
 //USER SUBTEXT
 pref('extensions.salastread.modSubText', 'Forum Moderator');
@@ -103,7 +103,7 @@ pref('extensions.salastread.insertPostLastMarkLink', true);
 pref('extensions.salastread.insertPostTargetLink', true);
 pref('extensions.salastread.hideEditButtons', false);
 pref('extensions.salastread.hideReportButtons', false);
-pref('extensions.salastread.dontHighlightQuotes', false);
+pref('extensions.salastread.highlightQuotes', true);
 
 //USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
