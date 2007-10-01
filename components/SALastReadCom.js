@@ -549,6 +549,11 @@ salrPersistObject.prototype = {
 			CSSFile += 'border:none !important;';
 			CSSFile += 'padding:0 !important;';
 			CSSFile += '}\n';
+		} else if (!this.getPreference("disableNewReCount"))
+		{
+			CSSFile += '#forum td.title div.lastseen a.count {';
+			CSSFile += 'height:12px !important;';
+			CSSFile += '}\n';
 		}
 		if (this.getPreference('highlightQuotes'))
 		{
@@ -1552,7 +1557,11 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	colorPost: function(doc, colorToUse, userid)
 	{
-		CSSFile = 'table.salrPostBy'+userid+' tr.seen1 td, table.salrPostBy'+userid+' tr.seen2 td { background-color:';
+		if (colorToUse == 0)
+		{
+			return;
+		}
+		CSSFile = 'table.salrPostBy'+userid+' td, table.salrPostBy'+userid+' tr.seen1 td, table.salrPostBy'+userid+' tr.seen2 td { background-color:';
 		CSSFile += colorToUse;
 		CSSFile += ' !important; }\n';
 		this.insertDynamicCSS(doc, CSSFile);
@@ -1563,7 +1572,11 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	colorQuote: function(doc, colorToUse, userid)
 	{
-		CSSFile += 'blockquote.salrQuoteOf'+userid+' {';
+		if (colorToUse == 0)
+		{
+			return;
+		}
+		CSSFile = 'blockquote.salrQuoteOf'+userid+' {';
 		CSSFile += 'background:';
 		CSSFile += colorToUse;
 		CSSFile += '};\n';
@@ -1760,49 +1773,53 @@ salrPersistObject.prototype = {
 		{
 			var link = linksInPost[i];
 			if (this.getPreference("convertTextToImage") &&
-				link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?$/i) > -1 &&
-				link.href.search(/paintedover\.com/i) == -1 && // PaintedOver sucks, we can't embed them
-				link.href.search(/xs\.to/i) == -1 && // xs.to sucks, we can't embed them
-				link.href.search(/imagesocket\.com/i) == -1 && // ImageSocket sucks, we can't embed them
-				link.href.search(/imgplace\.com/i) == -1 && // ImageSocket sucks, we can't embed them
-				link.href.search(/wiki(.*)Image/i) == -1 && // Wikipedia does funky stuff with their images too
-				link.innerHTML != "") // Quotes have fake links for some reason
+				(link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?$/i) > -1))
 			{
-				if (!this.getPreference("dontTextToImageIfMayBeNws") ||
-					link.parentNode.innerHTML.search(/(nsfw|nws|nms|t work safe|t safe for work)/i) == -1)
+				if (link.href.search(/paintedover\.com/i) > -1 || // PaintedOver sucks, we can't embed them
+					link.href.search(/xs\.to/i) > -1 || // xs.to sucks, we can't embed them
+					link.href.search(/imagesocket\.com/i) > -1 || // ImageSocket sucks, we can't embed them
+					link.href.search(/imgplace\.com/i) > -1 || // ImageSocket sucks, we can't embed them
+					link.href.search(/wiki(.*)Image/i) > -1 || // Wikipedia does funky stuff with their images too
+					link.innerHTML == "") // Quotes have fake links for some reason
 				{
-					if (!this.getPreference("dontTextToImageInSpoilers") ||
-						(link.parentNode.className.search(/spoiler/i) == -1 &&
-						link.textContent.search(/spoiler/i) == -1))
+					continue;
+				}
+				if (this.getPreference("dontTextToImageIfMayBeNws") &&
+					link.parentNode.innerHTML.search(/(nsfw|nws|nms|t work safe|t safe for work)/i) > -1)
+				{
+					continue;
+				}
+				if (this.getPreference("dontTextToImageInSpoilers") &&
+					(link.parentNode.className.search(/spoiler/i) > -1 ||
+					link.textContent.search(/spoiler/i) > -1))
+				{
+					continue;
+				}
+				if (this.getPreference("dontConvertQuotedImages"))
+				{
+					// Check if it's in a blockquote
+					if (link.parentNode.parentNode.className.search(/qb2/i) > -1 ||
+						link.parentNode.parentNode.parentNode.className.search(/qb2/i) > -1)
 					{
-						if (this.getPreference("dontConvertQuotedImages"))
-						{
-							// Check if it's in a blockquote
-							if (link.parentNode.parentNode.className.search(/qb2/i) > -1 ||
-								link.parentNode.parentNode.parentNode.className.search(/qb2/i) > -1)
-							{
-								continue;
-							}
-						}
-
-						newImg = doc.createElement("img");
-						newImg.src = link.href;
-						newImg.title = "Link converted by SALR";
-						newImg.style.border = "1px dashed red";
-
-						if ((link.firstChild == link.lastChild && (link.firstChild.tagName && link.firstChild.tagName.search(/img/i) > -1)) ||
-							link.textContent.search(/http:/i) == 0)
-						{
-							link.textContent = '';
-							link.parentNode.replaceChild(newImg, link);
-						}
-						else
-						{
-							link.previousSibling.textContent += link.textContent;
-							link.textContent = '';
-							link.parentNode.replaceChild(newImg, link);
-						}
+						continue;
 					}
+				}
+				newImg = doc.createElement("img");
+				newImg.src = link.href;
+				newImg.title = "Link converted by SALR";
+				newImg.style.border = "1px dashed red";
+				// Check if the link was a text link to an image and move the text
+				if ((link.firstChild == link.lastChild && (link.firstChild.tagName && link.firstChild.tagName.search(/img/i) > -1)) ||
+					link.textContent.search(/http:/i) == 0)
+				{
+					link.textContent = '';
+					link.parentNode.replaceChild(newImg, link);
+				}
+				else
+				{
+					link.previousSibling.textContent += link.textContent;
+					link.textContent = '';
+					link.parentNode.replaceChild(newImg, link);
 				}
 			}
 			if (this.getPreference("enableVideoEmbedder") &&
