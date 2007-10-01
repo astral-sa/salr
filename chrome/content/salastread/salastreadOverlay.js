@@ -667,12 +667,13 @@ function handleThreadList(doc, forumid, flags)
 	var showSALRIcons = persistObject.getPreference("showSALRIcons");
 	var showTWNP = persistObject.getPreference('showThreadsWithNewPostsFirst');
 	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP');
+	var postsPerPage = persistObject.getPreference('postsPerPage');
 
 	// We'll need lots of variables for this
 	var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox;
 	var threadTitle, threadId, threadOPId, threadRe, threadDetails;
 	var threadLRCount, posterColor, posterBG, unvistIcon, lpIcon, lastPostID;
-	var userPosterNote;
+	var userPosterNote, lastLink, threadReCount;
 	var starredthreads = persistObject.starList, ignoredthreads = persistObject.ignoreList;
 	var iconlist = persistObject.iconList;
 	var table = document.getElementById('forum');
@@ -734,6 +735,14 @@ function handleThreadList(doc, forumid, flags)
 		posterColor = false;
 		posterBG = false;
 
+		lastLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[./text() = 'Last']");
+		if (lastLink)
+		{
+			threadReCount = parseInt(threadRepliesBox.textContent, 10) + 1;
+			lastPageNum = Math.ceil(threadReCount / postsPerPage);
+			lastLink.innerHTML += ' (' + lastPageNum + ')';
+		}
+
 		if (threadDetails['mod'])
 		{
 			posterColor = modColor;
@@ -772,7 +781,6 @@ function handleThreadList(doc, forumid, flags)
 				threadIconBox.appendChild(iconGo);
 			}
 		}
-
 
 		var divLastSeen = persistObject.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
 		if (divLastSeen)
@@ -820,18 +828,19 @@ function handleThreadList(doc, forumid, flags)
 			{
 				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B");
 				threadRe = threadRe.parentNode.removeChild(threadRe);
-				threadRe.style.fontSize = '75%';
+				threadRe.style.fontWeight = "normal";
+				threadRe.style.fontSize = "75%";
 				if (newPostCountUseOneLine)
 				{
-					threadRepliesBox.innerHTML += '&nbsp;(';
+					threadRepliesBox.innerHTML += "&nbsp;(";
 					threadRepliesBox.appendChild(threadRe);
-					threadRepliesBox.innerHTML += ')';
+					threadRepliesBox.innerHTML += ")";
 				}
 				else
 				{
-					threadRepliesBox.innerHTML += '<br />(';
+					threadRepliesBox.innerHTML += "<br />(";
 					threadRepliesBox.appendChild(threadRe);
-					threadRepliesBox.innerHTML += ')';
+					threadRepliesBox.innerHTML += ")";
 				}
 			}
 
@@ -1957,13 +1966,15 @@ var SALR_SilenceLoadErrors = false;
  */
 function SALR_windowOnload(e)
 {
+	var appcontent = document.getElementById("appcontent"); // browser
+	var doc = e.originalTarget; // document
 
 	if (persistObject.getPreference("showSAForumMenu") && (document.getElementById("salr-menu") == null))
 	{
 		SALR_buildForumMenu();
 	}
 
-	if (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1)
+	if (appcontent && doc.location && (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1))
 	{
 		// Remove the context menu since we're not at Something Awful
 		var cacm = document.getElementById("contentAreaContextMenu");
@@ -1971,16 +1982,14 @@ function SALR_windowOnload(e)
 		var moptsep = document.getElementById("salastread-context-menuseparator");
 		if (mopt)
 		{
-			cacm.removeChild(mopt);
+			mopt.style.display = "none";
 		}
 		if (moptsep)
 		{
-			cacm.removeChild(moptsep);
+			moptsep.style.display = "none";
 		}
 	}
 
-	var appcontent = document.getElementById("appcontent"); // browser
-	var doc = e.originalTarget; // document
 	if (appcontent && doc.location && (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) > -1))
 	{
 		// Once we visit Something Awful, start doing Something Awful stuff
@@ -2041,11 +2050,11 @@ function SALR_onLoad(e)
 			var moptsep = document.getElementById("salastread-context-menuseparator");
 			if (mopt)
 			{
-				cacm.removeChild(mopt);
+				mopt.style.display = "none";
 			}
 			if (moptsep)
 			{
-				cacm.removeChild(moptsep);
+				moptsep.style.display = "none";
 			}
 		}
 
