@@ -1,10 +1,10 @@
-pref('extensions.salastread.currentVersion', '1.99.070929');
+pref('extensions.salastread.currentVersion', '1.99.070930');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
 pref('extensions.salastread.userId', 0);
 pref('extensions.salastread.username', '');
-pref('extensions.salastread.disableNewReCount', true);
+pref('extensions.salastread.disableNewReCount', false);
 pref('extensions.salastread.newPostCountUseOneLine', false);
 
 //VIDEO EMBEDDER
@@ -19,7 +19,7 @@ pref('extensions.salastread.videoEmbedderBG', '#ffcccc');
 pref('extensions.salastread.showGoToLastIcon', true);
 pref('extensions.salastread.goToLastReadPost', 'chrome://salastread/skin/lastpost.png');
 pref('extensions.salastread.alwaysShowGoToLastIcon', false);
-pref('extensions.salastread.showUnvisitIcon', false);
+pref('extensions.salastread.showUnvisitIcon', true);
 pref('extensions.salastread.markThreadUnvisited', 'chrome://salastread/skin/unvisit.png');
 pref('extensions.salastread.swapIconOrder', false);
 
