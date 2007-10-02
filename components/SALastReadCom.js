@@ -1832,47 +1832,71 @@ salrPersistObject.prototype = {
 		}
 	},
 
-	// Scale all images in the post body to the user-specified size
+	// Process images in posts, consolidated into one function for speed
 	// @param: body of the post, document body
 	// @return: nothing
-	scaleImages: function(postbody, doc)
+	processImages: function(postbody, doc)
 	{
-		if(this.getPreference("thumbnailAllImages"))
+		var thumbnailAllImages = this.getPreference("thumbnailAllImages");
+		
+		if(thumbnailAllImages)
 		{
 			var maxWidth = this.getPreference("maxWidthOfConvertedImages");
 			var maxHeight = this.getPreference("maxHeightOfConvertedImages");
 
-			if(maxHeight) {
+			if(maxHeight)
+			{
 				maxHeight += "px";
 			}
 
-			if(maxWidth) {
+			if(maxWidth)
+			{
 				maxWidth += "px";
 			}
-
-			var images = this.selectNodes(doc, postbody, "img");
-			for(var i in images)
+		}
+				
+		var images = this.selectNodes(doc, postbody, "//img");
+		for(var i in images)
+		{
+			var image = images[i];
+			
+			// Scale all images in the post body to the user-specified size
+			if(thumbnailAllImages && image.parentNode.isSameNode(postbody))
 			{
-				var image = images[i];
-
-				if(!image.src.match(/forumimages\.somethingawful\.com/i)) {
-					if(maxWidth) {
+				if(!image.src.match(/forumimages\.somethingawful\.com/i))
+				{
+					if(maxWidth)
+					{
 						image.style.maxWidth = maxWidth;
 					}
-					if(maxHeight) {
+					if(maxHeight)
+					{
 						image.style.maxHeight = maxHeight;
 					}
 
 					image.addEventListener("click",
-					function() {
-						if(maxWidth) {
-							this.style.maxWidth = (this.style.maxWidth == maxWidth) ? "" : maxWidth;
-						}
-						if(maxHeight) {
-							this.style.maxHeight = (this.style.maxHeight == maxHeight) ? "" : maxHeight;
-						}
-					}, false);
+						function()
+						{
+							if(maxWidth)
+							{
+								this.style.maxWidth = (this.style.maxWidth == maxWidth) ? "" : maxWidth;
+							}
+							if(maxHeight)
+							{
+								this.style.maxHeight = (this.style.maxHeight == maxHeight) ? "" : maxHeight;
+							}
+						}, false);
 				}
+			}
+			
+			// Set the mouseover text of emoticons to their code
+			if (image.src.match(/.somethingawful.com\/forumsystem\/emoticons/))
+			{
+				image.title = ":" + image.src.split(/emoticons\//)[1].split(/\./)[0].split(/\-/)[1] + ":";
+			} 
+			if (image.src.match(/.somethingawful.com\/images\/smilies/))
+			{
+				image.title = ":" + image.src.split(/smilies\//)[1].split(/\./)[0] + ":";
 			}
 		}
 	},

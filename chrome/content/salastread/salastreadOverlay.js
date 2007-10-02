@@ -2157,7 +2157,7 @@ function handleShowThread(doc)
 
 		postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
 		persistObject.convertSpecialLinks(postbody, doc);
-		persistObject.scaleImages(postbody, doc);
+		persistObject.processImages(postbody, doc);
 	}
 
 	if (persistObject.getPreference('reanchorThreadOnLoad'))
