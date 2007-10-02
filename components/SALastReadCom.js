@@ -1962,6 +1962,30 @@ salrPersistObject.prototype = {
 				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('20065', 'biznatchio', 0, 0, '#4400bb', 0, 0, 'SALR Creator')");
 				break;
 		}
+	},
+	
+	// Toggles the visibility of something
+	// @param: element, (bool) display inline?
+	// @return: nothing
+	toggleVisibility: function(element,inline)
+	{
+		if (element.style.visibility == "hidden" && element.style.display == "none")
+		{
+			element.style.visibility = "visible";
+			if (inline)
+			{
+				element.style.display = "inline";
+			}
+			else
+			{
+				element.style.display = "";
+			}
+		}
+		else
+		{
+			element.style.visibility = "hidden";
+			element.style.display = "none";
+		}
 	}
 
 	// Don't forget the trailing comma when adding a new function/property

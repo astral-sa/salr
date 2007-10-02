@@ -22,6 +22,7 @@ pref('extensions.salastread.alwaysShowGoToLastIcon', false);
 pref('extensions.salastread.showUnvisitIcon', true);
 pref('extensions.salastread.markThreadUnvisited', 'chrome://salastread/skin/unvisit.png');
 pref('extensions.salastread.swapIconOrder', false);
+pref('extensions.salastread.advancedThreadFiltering', false);
 
 //MISCELLANEOUS OPTIONS
 pref('extensions.salastread.removeHeaderAndFooter', false);
@@ -125,6 +126,11 @@ pref('extensions.salastread.showTextConfigLink', true);
 pref('extensions.salastread.databaseStoragePath', '%profile%salastread.sqlite');
 pref('extensions.salastread.forumListStoragePath', '%profile%saforumlist.xml');
 pref('extensions.salastread.expireMinAge', 7);
+
+//ADVANCED FILTERING SETTINGS
+pref('extensions.salastread.ignoredPostIcons', ' ');
+pref('extensions.salastread.ignoredKeywords', '');
+pref('extensions.salastread.filteredThreadCount', 0);
 
 //OTHER RANDOM OPTIONS
 pref('extensions.salastread.timeSpentOnForums', 0);

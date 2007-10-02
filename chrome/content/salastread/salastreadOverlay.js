@@ -484,6 +484,292 @@ function handleSubscriptions(doc)
 	handleThreadList(doc, null, { "inUserCP" : true });
 }
 
+// To cut down on code elsewhere (for keeping track of the number of threads being filtered)
+function filteredThreadCount(doc,amount)
+{
+	var count = persistObject.getPreference("filteredThreadCount");
+	var afObject, afObject2; // Temp object storage for things that really only get handled once
+	
+	afObject = doc.getElementById("filteredthreadcount1");
+	afObject2 = doc.getElementById("filteredthreadcount2");
+	count += amount;
+	afObject.childNodes[1].textContent = count;
+	afObject2.childNodes[1].textContent = count;
+	
+	if (count <= 0 && afObject.style.visibility != "hidden")
+	{
+		persistObject.toggleVisibility(afObject,true);
+	}
+	else if (afObject.style.visibility == "hidden")
+	{
+		persistObject.toggleVisibility(afObject,true);
+	}
+	
+	if (count <= 0 && afObject2.style.visibility != "hidden")
+	{
+		persistObject.toggleVisibility(afObject2,true);
+	}
+	else if (afObject2.style.visibility == "hidden")
+	{
+		persistObject.toggleVisibility(afObject2,true);
+	}
+	
+	persistObject.setPreference("filteredThreadCount",count);
+}
+
+// Event catcher for ignoring post icons
+function clickToggleIgnoreIcon(event)
+{
+	if (persistObject.getPreference("advancedThreadFiltering"))
+	{
+		var doc = this.ownerDocument;
+		var afMain = doc.getElementById("tags_showing");
+
+		if (afMain)
+		{
+			var afMainIcons, afIgnoredIcons, afShowMe, afHideMe, afIgnoring;
+			var iconToIgnore, iconToIgnoreId, iconIgnored;
+			var afObject; // Temp object storage for things that really only get handled once
+			var prefIgnoredPostIcons = persistObject.getPreference("ignoredPostIcons");
+			var prefIgnoredKeywords = persistObject.getPreference("ignoredKeywords");
+			var anyLeft, anyLeftIn, searchString, threadBeGone;
+			var threadList, thread, threadIcon, threadIconFile, iconList;
+
+			afMainIcons = doc.getElementById("filtericons");
+			afIgnoredIcons = doc.getElementById("ignoredicons");
+			
+			if (this.parentNode.id == "filtericons")
+			{
+				if (event.ctrlKey == false)
+				{
+					return; // Moving from the main icon list requires ctrl click
+				}
+				afIgnoring = true;
+				afShowMe = "alliconsignored";
+				afHideMe = "noiconsignored";
+				anyLeftIn = afMainIcons;
+				mirrorIcons = afIgnoredIcons;
+			}
+			else if (this.parentNode.id == "ignoredicons")
+			{
+				afIgnoring = false;
+				afShowMe = "noiconsignored";
+				afHideMe = "alliconsignored";
+				anyLeftIn = afIgnoredIcons;
+				mirrorIcons = afMainIcons;
+			}
+			else
+			{
+				return;
+			}
+
+			iconToIgnore = this.firstChild;
+			iconToIgnoreId = parseInt(iconToIgnore.href.match(/posticon=(\d+)/i)[1]);
+			iconIgnored = persistObject.selectSingleNode(doc, mirrorIcons, "DIV/A[contains(@href,'posticon=" + iconToIgnoreId + "')]");
+			
+			searchString = "(^|\\s)" + iconToIgnoreId + ",";
+			searchString = new RegExp(searchString , "gi");
+
+			if (!afMainIcons || !afIgnoredIcons || !iconIgnored || (afIgnoring && prefIgnoredPostIcons.search(searchString) > -1))
+			{
+				// Something is amiss
+				return;
+			}
+			
+		//	event.stopPropagation();
+			event.preventDefault();
+
+			if (afIgnoring)
+			{
+				prefIgnoredPostIcons += iconToIgnoreId + ", ";
+			}
+			else
+			{
+				prefIgnoredPostIcons = prefIgnoredPostIcons.replace(searchString,"");
+			}
+			persistObject.setPreference("ignoredPostIcons",prefIgnoredPostIcons);
+
+			persistObject.toggleVisibility(this,true);
+			afObject = doc.getElementById(afHideMe);
+			if (afObject && afObject.style.visibility != "hidden")
+			{
+				persistObject.toggleVisibility(afObject,true);
+			}
+
+			persistObject.toggleVisibility(iconIgnored.parentNode,true);
+			afObject = doc.getElementById(afShowMe);
+			anyLeft = persistObject.selectSingleNode(doc, anyLeftIn, "DIV[contains(@style,'visibility: visible; display: inline;')]");
+			if (!anyLeft && afObject && afObject.style.visibility == "hidden")
+			{
+				persistObject.toggleVisibility(afObject,true);
+			}
+
+			// Cycle through the threads and actively update their visibility
+			threadList = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
+			iconList = persistObject.iconList;
+			
+			for (var i in threadList)
+			{
+				thread = threadList[i];
+				threadIcon = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
+				threadBeGone = false;
+				iconMatch = false;
+				
+				if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
+				{
+					threadIconFile = threadIcon.src.match(/posticons\/(.*)/i)[1];
+					if (iconList[threadIconFile] == iconToIgnoreId)
+					{
+						if (afIgnoring)
+						{
+							threadBeGone = true;
+						}
+					}
+					else
+					{
+						continue;
+					}
+				}
+				
+				// No icon match or matched icon is being unignored, I could reveal it, but is it keyword-ignored?
+				if (!threadBeGone && prefIgnoredKeywords && thread.style.visibility == "hidden")
+				{
+					var threadTitleLink = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/DIV/A[contains(@class, 'thread_title')]");
+					if(!threadTitleLink)
+					{
+						threadTitleLink = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
+					}
+					var threadTitle = threadTitleLink.innerHTML;
+					var keywordList = prefIgnoredKeywords.split("|");
+						
+					for (var j in keywordList)
+					{
+						keywords = keywordList[j];
+						if (!keywords)
+						{
+							continue;
+						}
+						searchString = new RegExp(keywords, "gi");
+						
+						if (threadTitle.search(searchString) > -1)
+						{
+							threadBeGone = true;
+							break;
+						}
+					}
+				}
+				
+				if (threadBeGone && thread.style.visibility != "hidden")
+				{
+					persistObject.toggleVisibility(thread,false);
+					filteredThreadCount(doc,1);
+				}
+				else if (!threadBeGone && thread.style.visibility == "hidden")
+				{
+					persistObject.toggleVisibility(thread,false);
+					filteredThreadCount(doc,-1);
+				}
+			}
+		}
+	}
+}
+
+// Event catcher for keyword ignoring input box
+function clickIgnoreKeywordSave(event)
+{
+	if (persistObject.getPreference("advancedThreadFiltering"))
+	{
+		var doc = this.ownerDocument;
+		var afMain = doc.getElementById("tags_showing");
+
+		if (afMain)
+		{
+			var afObject; // Temp object storage for things that really only get handled once
+			var prefIgnoredKeywords = persistObject.getPreference("ignoredKeywords");
+			var prefIgnoredPostIcons = persistObject.getPreference("ignoredPostIcons");
+			var threadList, thread, threadTitleLink, threadtitle, threadBeGone;
+			var newKeywords, keywordList, keywords, searchString;
+			
+			afObject = doc.getElementById("ignoredkeywords");
+			newKeywords = afObject.value;
+			
+			if (newKeywords == prefIgnoredKeywords)
+			{
+				return;
+			}
+			
+			//	Todo: may need to strip certain chars like " or ' ?
+			
+		//	event.stopPropagation();
+			event.preventDefault();
+			
+			persistObject.setPreference("ignoredKeywords",newKeywords);
+			
+			// Cycle through the threads and actively update their visibility
+			threadList = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
+			keywordList = newKeywords.split("|");
+			
+			for (var i in threadList)
+			{
+				thread = threadList[i];
+				threadTitleLink = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/DIV/A[contains(@class, 'thread_title')]");
+				if(!threadTitleLink)
+				{
+					threadTitleLink = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
+				}
+				threadTitle = threadTitleLink.innerHTML;
+				threadBeGone = false;
+				
+				for (var j in keywordList)
+				{
+					keywords = keywordList[j];
+					if (!keywords)
+					{
+						continue;
+					}
+					searchString = new RegExp(keywords, "gi");
+					
+					if (threadTitle.search(searchString) > -1)
+					{
+						threadBeGone = true;
+						break;
+					}
+				}
+				
+				// No keyword match, I could reveal it, but is it icon-ignored?
+				if (!threadBeGone && prefIgnoredPostIcons && thread.style.visibility == "hidden")
+				{
+					var iconList = persistObject.iconList;
+					var threadIcon = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
+					
+					if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
+					{
+						threadIconFile = threadIcon.src.match(/posticons\/(.*)/i)[1];
+						searchString = "(^|\\s)" + iconList[threadIconFile] + ",";
+						searchString = new RegExp(searchString , "gi");
+						
+						if (prefIgnoredPostIcons.search(searchString) > -1)
+						{
+							threadBeGone = true;
+						}
+					}
+				}
+				
+				if (threadBeGone && thread.style.visibility != "hidden")
+				{
+					persistObject.toggleVisibility(thread,false);
+					filteredThreadCount(doc,1);
+				}
+				else if (!threadBeGone && thread.style.visibility == "hidden")
+				{
+					persistObject.toggleVisibility(thread,false);
+					filteredThreadCount(doc,-1);
+				}
+			}
+		}
+	}
+}
+
 // Do anything needed to the post list in a forum
 function handleForumDisplay(doc)
 {
@@ -594,11 +880,129 @@ function handleForumDisplay(doc)
 		}
 	}
 
+	// Advanced thread filtering interface
+	var prefAdvancedThreadFiltering = persistObject.getPreference("advancedThreadFiltering");
+	
+	if (prefAdvancedThreadFiltering && !flags.inDump)
+	{
+		var afHidden = doc.getElementById("tags_hidden");
+		var afMain = doc.getElementById("tags_showing");
+		var afObject, afObject2; // Temp object storage for things that really only get handled once
+		
+		if (afHidden)
+		{
+			afObject = persistObject.selectSingleNode(doc, afHidden, "B");
+			afObject.innerHTML = "Advanced thread filtering";
+			afObject2 = doc.createElement("div");
+			afObject2.id = "filteredthreadcount1";
+			afObject2.style.fontSize = "80%";
+			afObject2.style.fontWeight = "normal";
+			afObject2.style.marginLeft = "6px";
+			afObject2.appendChild(doc.createTextNode("(Currently ignoring "));
+			afObject2.appendChild(doc.createTextNode("0"));
+			afObject2.appendChild(doc.createTextNode(" threads.)"));
+			persistObject.toggleVisibility(afObject2,true);
+			afObject.appendChild(afObject2);
+		}
+		if (afMain) // Incoming wall of text
+		{
+			var afMainIcons, afIgnoredIcons, afIgnoredKeywords;
+			var prefIgnoredPostIcons = persistObject.getPreference("ignoredPostIcons");
+			var prefIgnoredKeywords = persistObject.getPreference("ignoredKeywords");
+		
+			afObject = persistObject.selectSingleNode(doc, afMain, "B");
+			afObject.innerHTML = "Advanced thread filtering";
+			afObject2 = doc.createElement("div");
+			afObject2.id = "filteredthreadcount2";
+			afObject2.style.fontSize = "80%";
+			afObject2.style.fontWeight = "normal";
+			afObject2.style.marginLeft = "6px";
+			afObject2.appendChild(doc.createTextNode("(Currently ignoring "));
+			afObject2.appendChild(doc.createTextNode("0"));
+			afObject2.appendChild(doc.createTextNode(" threads.)"));
+			persistObject.toggleVisibility(afObject2,true);
+			afObject.appendChild(afObject2);
+			afObject.appendChild(doc.createElement("br"));
+			
+			afMainIcons = doc.getElementById("filtericons");
+			// Plug a bunch of stuff in before the main icon list
+			afMain.insertBefore(doc.createTextNode("Show only this icon: ("), afMainIcons);
+			afObject = persistObject.selectSingleNode(doc, afMain, "A[contains(@href,'/forumdisplay.php?forumid=')]");
+			afObject.innerHTML = "Reset"
+			afObject.style.fontSize = "75%";
+			afObject.style.fontWeight = "bold";
+			afMain.insertBefore(afObject, afMainIcons);
+			afMain.insertBefore(doc.createTextNode(")"), afMainIcons);
+			afMain.insertBefore(doc.createElement("br"), afMainIcons);
+			
+			// Add a message for when all the icons are ignored and hide it for now
+			afObject = doc.createElement("div");
+			afObject.id = "alliconsignored";
+			afObject.appendChild(doc.createTextNode("You've ignored everything but shit posts you cretin!"));
+			afObject.style.fontWeight = "bold";
+			persistObject.toggleVisibility(afObject,true);
+			afMainIcons.insertBefore(afObject,afMainIcons.firstChild);
+			
+			// Plug a bunch of stuff in after the main icon list
+			afObject = doc.createElement("div");
+			afObject.appendChild(doc.createTextNode("Ctrl click an icon to add to ignored list."));
+			afObject.style.fontStyle = "italic";
+			afObject.style.fontSize = "85%";
+			afMain.appendChild(afObject);
+			afMain.appendChild(doc.createElement("br"));
+			
+			// Now all the ignored icons
+			afMain.appendChild(doc.createTextNode("Ignored icons:"));
+			afMain.appendChild(doc.createElement("br"));
+			afIgnoredIcons = doc.createElement("div");
+			afIgnoredIcons.id = "ignoredicons";
+			afObject = doc.createElement("div");
+			afObject.id = "noiconsignored";
+			afObject.appendChild(doc.createTextNode("None."));
+			afObject.style.fontStyle = "italic";
+			afObject.style.visibility = "visible";
+			afObject.style.display = "inline";
+			afIgnoredIcons.appendChild(afObject);
+			afMain.appendChild(afIgnoredIcons);
+			afMain.appendChild(doc.createElement("br"));
+			
+			// Now the ignored keywords
+			afMain.appendChild(doc.createTextNode("Ignored keywords:"));
+			afMain.appendChild(doc.createElement("br"));
+			afObject = doc.createElement("input");
+			afObject.id = "ignoredkeywords";
+			afObject.type = "text";
+			afObject.value = prefIgnoredKeywords;
+			afObject.size = 75;
+			afMain.appendChild(afObject);
+			afMain.appendChild(doc.createTextNode(" "));
+			afObject = doc.createElement("input");
+			afObject.type = "button";
+			afObject.value = "Save";
+			afObject.addEventListener("click", clickIgnoreKeywordSave, false);
+			afMain.appendChild(afObject);
+			afMain.appendChild(doc.createElement("br"));
+			afObject = doc.createElement("div");
+			afObject.appendChild(doc.createTextNode("Separate strings with a pipe \"|\" symbol. Too many strings may affect performance."));
+			afObject.style.fontStyle = "italic";
+			afObject.style.fontSize = "85%";
+			afMain.appendChild(afObject);
+			afMain.appendChild(doc.createElement("br"));
+			
+			// TODO: ability to ignore shitposts even though they dont have an icon id
+			// TODO: remove all the icon stuff for when viewing the dumps but keep the rest, maybe add star# filtering for those
+			// TODO: thread rating filtering
+		}
+	}
+
 	if (!flags.inDump)
 	{
 		// Capture and store the post icon # -> post icon filename relationship
 		var iconNumber, iconFilename;
 		var postIcons = persistObject.selectNodes(doc, doc.getElementById("filtericons"), "A[contains(@href,'posticon=')]");
+		var divIcon, seperator, divClone, anyLeft, allIgnored, noneIgnored, searchString;
+		var atLeastOneIgnored = false;
+		
 		for (i in postIcons)
 		{
 			if ((postIcons[i].href.search(/posticon=(\d+)/i) > -1) && (postIcons[i].firstChild.src.search(/posticons\/(.*)/i) > -1))
@@ -608,11 +1012,62 @@ function handleForumDisplay(doc)
 				iconNumber = parseInt(postIcons[i].href.match(/posticon=(\d+)/i)[1]);
 				iconFilename = postIcons[i].firstChild.src.match(/posticons\/(.*)/i)[1];
 				persistObject.addIcon(iconNumber, iconFilename);
+				
+				// Additional stuff for advanced thread filtering
+				if (prefAdvancedThreadFiltering)
+				{
+					// First move all the existing icons and their spacers into a div for easy handling
+					divIcon = doc.createElement("div");
+					postIcons[i].parentNode.insertBefore(divIcon,postIcons[i]);
+					seperator = postIcons[i].nextSibling;
+					divIcon.appendChild(postIcons[i]);
+					divIcon.appendChild(seperator);
+					divIcon.style.visibility = "visible";
+					divIcon.style.display = "inline";
+					
+					// Now make a copy of that div and stick it down in the ignored icons div, hidden
+					divClone = divIcon.cloneNode(true);
+					afIgnoredIcons.appendChild(divClone);
+					
+					searchString = "(^|\\s)" + iconNumber + ",";
+					searchString = new RegExp(searchString , "gi");
+					
+					// Is this icon ignored already?
+					if (prefIgnoredPostIcons.search(searchString) > -1)
+					{
+						persistObject.toggleVisibility(divIcon,true);
+						atLeastOneIgnored = true;
+					}
+					else
+					{
+						persistObject.toggleVisibility(divClone,true);
+					}
+					
+					// Add the appropriate click events
+					postIcons[i].parentNode.addEventListener("click", clickToggleIgnoreIcon, false);
+					divClone.addEventListener("click", clickToggleIgnoreIcon, false);
+				}
+			}
+		}
+		
+		// Little bit of house cleaning after cycling through the icons
+		if (prefAdvancedThreadFiltering)
+		{
+			allIgnored = doc.getElementById("alliconsignored");
+			noneIgnored = doc.getElementById("noiconsignored");
+			
+			// Hide or show the placeholder labels
+			anyLeft = persistObject.selectSingleNode(doc, afMainIcons, "DIV[contains(@style,'visibility: visible; display: inline;')]");
+			if (!anyLeft && allIgnored.style.visibility == "hidden")
+			{
+				persistObject.toggleVisibility(allIgnored,true);
+			}
+			if (atLeastOneIgnored && noneIgnored.style.visibility == "visible")
+			{
+				persistObject.toggleVisibility(noneIgnored,true);
 			}
 		}
 	}
-
-// Put function for relinking post icons here
 
 	handleThreadList(doc, forumid, flags);
 
@@ -668,16 +1123,22 @@ function handleThreadList(doc, forumid, flags)
 	var showTWNP = persistObject.getPreference('showThreadsWithNewPostsFirst');
 	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP');
 	var postsPerPage = persistObject.getPreference('postsPerPage');
+	var advancedThreadFiltering = persistObject.getPreference("advancedThreadFiltering");
+	var ignoredPostIcons = persistObject.getPreference("ignoredPostIcons");
+	var ignoredKeywords = persistObject.getPreference("ignoredKeywords");
 
 	// We'll need lots of variables for this
 	var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox;
 	var threadTitle, threadId, threadOPId, threadRe, threadDetails;
 	var threadLRCount, posterColor, posterBG, unvistIcon, lpIcon, lastPostID;
-	var userPosterNote, lastLink, threadReCount;
+	var userPosterNote, lastLink, threadReCount, searchString;
 	var starredthreads = persistObject.starList, ignoredthreads = persistObject.ignoreList;
 	var iconlist = persistObject.iconList;
 	var table = document.getElementById('forum');
 	var threadDetails = new Array();
+	
+	// We need to reset this every time the page is fully loaded
+	persistObject.setPreference("filteredThreadCount",0);
 
 	// Here be where we work on the thread rows
 	var threadlist = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
@@ -738,6 +1199,30 @@ function handleThreadList(doc, forumid, flags)
 			persistObject.setThreadTitle(threadId, threadTitle);
 			continue;
 		}
+		
+		if (advancedThreadFiltering)
+		{
+			// Check for ignored keywords
+			var keywordList = ignoredKeywords.split("|");
+			var threadBeGone = false;
+				
+			for (var j in keywordList)
+			{
+				var keywords = keywordList[j];
+				if (!keywords || threadBeGone)
+				{
+					continue;
+				}
+				searchString = new RegExp(keywords, "gi");
+				
+				if (threadTitle.search(searchString) > -1 && thread.style.visibility != "hidden")
+				{
+					persistObject.toggleVisibility(thread,false);
+					filteredThreadCount(doc,1);
+					threadBeGone = true;
+				}
+			}
+		}
 
 		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
 		threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
@@ -789,6 +1274,18 @@ function handleThreadList(doc, forumid, flags)
 				iconGo.appendChild(threadIconBox.removeChild(threadIconBox.firstChild));
 				iconGo.firstChild.style.border = "none";
 				threadIconBox.appendChild(iconGo);
+			}
+			
+			if (advancedThreadFiltering)
+			{
+				// Is this icon ignored?
+				searchString = "(^|\\s)" + iconlist[iconFilename] + ",";
+				searchString = new RegExp(searchString , "gi");
+				if (ignoredPostIcons.search(searchString) > -1 && thread.style.visibility != "hidden")
+				{
+					persistObject.toggleVisibility(thread,false);
+					filteredThreadCount(doc,1);
+				}
 			}
 		}
 

@@ -21,6 +21,7 @@
 			<preference id="showUnvisitIcon"			name="extensions.salastread.showUnvisitIcon" 		type="bool"/>
 			<preference id="markThreadUnvisited"		name="extensions.salastread.markThreadUnvisited" 	type="string"/>
 			<preference id="swapIconOrder"				name="extensions.salastread.swapIconOrder" 			type="bool"/>
+			<preference id="advancedThreadFiltering"	name="extensions.salastread.advancedThreadFiltering" type="bool"/>
 		</preferences>
 
 		<groupbox>
@@ -39,6 +40,7 @@
 			<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first" />
 			<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads in bookmark list with new posts first" />
 			<checkbox preference="swapIconOrder" 			label="Swap the Mark Unvisited and Go To Last Post icon order" />
+			<checkbox preference="advancedThreadFiltering" 	label="Enable advanced thread filtering" />
 		</groupbox>
 
 		<groupbox>
