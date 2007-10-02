@@ -687,14 +687,24 @@ function handleThreadList(doc, forumid, flags)
 	{
 		var anchorTop = persistObject.selectSingleNode(doc, doc, "//table[@id='forum']/tbody");
 
-		var anchorAnnouncement = doc.createElement("tr");
-		anchorTop.insertBefore(anchorAnnouncement,threadlist[0]);
-		var anchorUnreadStickies = doc.createElement("tr");
-		anchorTop.insertBefore(anchorUnreadStickies,threadlist[0]);
-		var anchorReadStickies = doc.createElement("tr");
-		anchorTop.insertBefore(anchorReadStickies,threadlist[0]);
-		var anchorThreads = doc.createElement("tr");
-		anchorTop.insertBefore(anchorThreads,threadlist[0]);
+		if (anchorTop)
+		{
+			var anchorAnnouncement = doc.createElement("tr");
+			anchorTop.insertBefore(anchorAnnouncement,threadlist[0]);
+			var anchorUnreadStickies = doc.createElement("tr");
+			anchorTop.insertBefore(anchorUnreadStickies,threadlist[0]);
+			var anchorReadStickies = doc.createElement("tr");
+			anchorTop.insertBefore(anchorReadStickies,threadlist[0]);
+			var anchorThreads = doc.createElement("tr");
+			anchorTop.insertBefore(anchorThreads,threadlist[0]);
+		}
+		else
+		{
+			// Oh dear there are no threads to sort!
+			// Change these options for now so that it doesn't error later
+			showTWNP = false;
+			showTWNPCP = false;
+		}
 	}
 
 	for (var i in threadlist)
