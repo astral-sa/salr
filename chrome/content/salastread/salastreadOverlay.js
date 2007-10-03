@@ -2023,8 +2023,18 @@ function handleShowThread(doc)
 			{
 				persistObject.setUserName(posterId, posterName);
 			}
-			posterColor = dbUser.color;
-			posterBG = dbUser.background;
+			if (dbUser.color && dbUser.color != "0")
+			{
+				posterColor = dbUser.color;
+			}
+			if (dbUser.background && dbUser.background != "0")
+			{
+				posterBG = dbUser.background;
+			}
+		}
+		
+		if (posterBG != "0")
+		{
 			persistObject.colorPost(doc, posterBG, posterId);
 		}
 
