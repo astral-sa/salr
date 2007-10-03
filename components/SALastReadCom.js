@@ -1890,12 +1890,12 @@ salrPersistObject.prototype = {
 			}
 			
 			// Set the mouseover text of emoticons to their code
-			if (image.src.match(/.somethingawful.com\/forumsystem\/emoticons/))
+			if (image.src.match(/\.somethingawful\.com\/forumsystem\/emoticons/i))
 			{
 				var newTitle = image.src.split(/emoticons\//)[1].split(/\./)[0].split(/\-/)[1];
 				image.title = ":" + newTitle + ":";
 			} 
-			else if (image.src.match(/.somethingawful.com\/images\/smilies/))
+			else if (image.src.match(/\.somethingawful\.com\/images\/smilies/i))
 			{
 				var newTitle = image.src.split(/smilies\//)[1].split(/\./)[0];
 				if (newTitle.search(/^emot\-/) > -1)
