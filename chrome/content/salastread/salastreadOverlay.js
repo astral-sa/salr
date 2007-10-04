@@ -1334,7 +1334,7 @@ function handleThreadList(doc, forumid, flags)
 			if (!disableNewReCount && iconJumpLastRead)
 			{
 				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B");
-				threadRe = threadRe.parentNode.removeChild(threadRe);
+				threadRe = threadRe.cloneNode(true);
 				threadRe.style.fontWeight = "normal";
 				threadRe.style.fontSize = "75%";
 				if (newPostCountUseOneLine)
@@ -1349,6 +1349,13 @@ function handleThreadList(doc, forumid, flags)
 					threadRepliesBox.appendChild(threadRe);
 					threadRepliesBox.innerHTML += ")";
 				}
+			}
+			
+			// Remove the new replies count from the default box if we are showing the custom icon
+			if (showGoToLastIcon && iconJumpLastRead)
+			{
+				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B");
+				iconJumpLastRead.removeChild(threadRe);
 			}
 
 
@@ -1366,7 +1373,8 @@ function handleThreadList(doc, forumid, flags)
 				}
 				divLastSeen.appendChild(iconJumpLastRead);
 			}
-			else if (showUnvisitIcon && iconJumpLastRead)
+			
+			if (showUnvisitIcon && !showGoToLastIcon && iconJumpLastRead)
 			{
 				// Fix up the background gradient on the default Jump To Last link
 				divLastSeen.style.background = 'url(chrome://salastread/skin/lastseen-gradient.gif)';
