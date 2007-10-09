@@ -492,6 +492,12 @@ function filteredThreadCount(doc,amount)
 	
 	afObject = doc.getElementById("filteredthreadcount1");
 	afObject2 = doc.getElementById("filteredthreadcount2");
+	
+	if (!afObject || !afObject2)
+	{
+		return;
+	}
+	
 	count += amount;
 	afObject.childNodes[1].textContent = count;
 	afObject2.childNodes[1].textContent = count;
@@ -1201,7 +1207,7 @@ function handleThreadList(doc, forumid, flags)
 			continue;
 		}
 		
-		if (advancedThreadFiltering && !flags.inArchives)
+		if (advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP)
 		{
 			// Check for ignored keywords
 			var keywordList = ignoredKeywords.split("|");
@@ -1284,7 +1290,7 @@ function handleThreadList(doc, forumid, flags)
 				threadIconBox.appendChild(iconGo);
 			}
 			
-			if (advancedThreadFiltering)
+			if (advancedThreadFiltering && !flags.inArchives&& !flags.inDump && !flags.inUserCP)
 			{
 				// Is this icon ignored?
 				searchString = "(^|\\s)" + iconlist[iconFilename] + ",";
