@@ -786,7 +786,8 @@ function handleForumDisplay(doc)
 		"inBYOB" : persistObject.inBYOB(forumid),
 		"inDump" : persistObject.inDump(forumid),
 		"inAskTell" : persistObject.inAskTell(forumid),
-		"inGasChamber" : persistObject.inGasChamber(forumid)
+		"inGasChamber" : persistObject.inGasChamber(forumid),
+		"inArchives" : (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1)
 	};
 
 	if (doc.getElementById('forum') == null) {
@@ -863,7 +864,7 @@ function handleForumDisplay(doc)
 	}
 
 	// Snag Forum Moderators
-	if (!flags.inGasChamber)
+	if (!flags.inGasChamber && !flags.inArchives)
 	{
 		var modarray = doc.getElementById('mods').getElementsByTagName('a');
 		var modcount = modarray.length;
@@ -871,7 +872,7 @@ function handleForumDisplay(doc)
 		{
 			userid = modarray[i].href.match(/userid=(\d+)/i)[1];
 			username = modarray[i].innerHTML;
-			if (!persistObject.isMod(userid))
+			if (!persistObject.isMod(userid) && !persistObject.isAdmin(userid))
 			{
 				// TODO: Change this to create a array and then merge it with the mod list array
 				// and if different, store it in the database
@@ -883,7 +884,7 @@ function handleForumDisplay(doc)
 	// Advanced thread filtering interface
 	var prefAdvancedThreadFiltering = persistObject.getPreference("advancedThreadFiltering");
 	
-	if (prefAdvancedThreadFiltering && !flags.inDump)
+	if (prefAdvancedThreadFiltering && !flags.inDump && !flags.inArchives)
 	{
 		var afHidden = doc.getElementById("tags_hidden");
 		var afMain = doc.getElementById("tags_showing");
@@ -1014,7 +1015,7 @@ function handleForumDisplay(doc)
 				persistObject.addIcon(iconNumber, iconFilename);
 				
 				// Additional stuff for advanced thread filtering
-				if (prefAdvancedThreadFiltering)
+				if (prefAdvancedThreadFiltering && !flags.inArchives)
 				{
 					// First move all the existing icons and their spacers into a div for easy handling
 					divIcon = doc.createElement("div");
@@ -1051,7 +1052,7 @@ function handleForumDisplay(doc)
 		}
 		
 		// Little bit of house cleaning after cycling through the icons
-		if (prefAdvancedThreadFiltering)
+		if (prefAdvancedThreadFiltering && !flags.inArchives)
 		{
 			allIgnored = doc.getElementById("alliconsignored");
 			noneIgnored = doc.getElementById("noiconsignored");
@@ -1200,7 +1201,7 @@ function handleThreadList(doc, forumid, flags)
 			continue;
 		}
 		
-		if (advancedThreadFiltering)
+		if (advancedThreadFiltering && !flags.inArchives)
 		{
 			// Check for ignored keywords
 			var keywordList = ignoredKeywords.split("|");
@@ -1238,27 +1239,34 @@ function handleThreadList(doc, forumid, flags)
 			lastLink.innerHTML += ' (' + lastPageNum + ')';
 		}
 
-		if (threadDetails['mod'])
+		if (highlightUsernames)
 		{
-			posterColor = modColor;
-			posterBG =  modBackground;
+			if (persistObject.isMod(threadOPId))
+			{
+				posterColor = modColor;
+				posterBG =  modBackground;
+			}
+
+			if (persistObject.isAdmin(threadOPId))
+			{
+				posterColor = adminColor;
+				posterBG =  adminBackground;
+			}
+
+			var userColoring = persistObject.isUserIdColored(threadOPId)
+			if (userColoring)
+			{
+				if (userColoring.color && userColoring.color != "0")
+				{
+					posterColor = userColoring.color;
+				}
+				if (userColoring.background && userColoring.background != "0")
+				{
+					posterBG = userColoring.background;
+				}
+			}
 		}
 
-		if (threadDetails['admin'])
-		{
-			posterColor = adminColor;
-			posterBG =  adminBackground;
-		}
-
-		if (threadDetails['color'])
-		{
-			posterColor = threadDetails['color'];
-		}
-
-		if (threadDetails['background'])
-		{
-			posterBG = threadDetails['background'];
-		}
 		// So right click star/ignore works
 		thread.className += " salastread_thread_" + threadId;
 
@@ -1413,11 +1421,11 @@ function handleThreadList(doc, forumid, flags)
 		}
 		if (highlightUsernames)
 		{
-			if (posterBG != false)
+			if (posterBG != false && posterBG != "0")
 			{
 				threadAuthorBox.style.backgroundColor = posterBG;
 			}
-			if (posterColor != false)
+			if (posterColor != false && posterColor != "0")
 			{
 				threadAuthorBox.getElementsByTagName("a")[0].style.color = posterColor;
 				if (!dontBoldNames)
@@ -1768,6 +1776,7 @@ function handleShowThread(doc)
 	var inDump = persistObject.inDump(forumid);
 	var inAskTell = persistObject.inAskTell(forumid);
 	var inGasChamber = persistObject.inGasChamber(forumid);
+	var inArchives = (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1);
 	var userId = persistObject.userId;
 	var username = unescape(persistObject.getPreference('username'));
 
@@ -1967,7 +1976,7 @@ function handleShowThread(doc)
 		//Check to see if there's a mod or admin star
 		posterImg = false;
 		posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
-		if (userNameBox.getElementsByTagName('img').length > 0)
+		if (userNameBox.getElementsByTagName('img').length > 0 && !inArchives)
 		{
 			posterImg = userNameBox.getElementsByTagName('img')[0].title;
 			if (posterImg == 'Admin')
@@ -1998,28 +2007,28 @@ function handleShowThread(doc)
 		}
 		if (persistObject.isMod(posterId))
 		{
-			if(posterImg == 'Moderator')
+			if(posterImg == 'Moderator' || inArchives)
 			{
 				posterColor = modColor;
 				posterBG = modBackground;
 				posterNote = modSubText;
 				post.className += " salrPostByMod";
 			}
-			else
+			else if (!inArchives)
 			{
 				persistObject.removeMod(posterId);
 			}
 		}
 		if (persistObject.isAdmin(posterId))
 		{
-			if(posterImg == "Admin")
+			if(posterImg == "Admin" || inArchives)
 			{
 				posterColor = adminColor;
 				posterBG = adminBackground;
 				posterNote = adminSubText;
 				post.className += " salrPostByAdmin";
 			}
-			else
+			else if (!inArchives)
 			{
 				persistObject.removeAdmin(posterId);
 			}
@@ -2075,7 +2084,7 @@ function handleShowThread(doc)
 		}
 
 		userPosterNote = persistObject.getPosterNotes(posterId);
-		if (highlightUsernames && posterColor != false)
+		if (highlightUsernames && posterColor != false && posterColor != "0")
 		{
 			userNameBox.style.color = posterColor;
 		}
