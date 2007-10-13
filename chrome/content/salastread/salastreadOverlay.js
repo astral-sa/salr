@@ -1792,7 +1792,7 @@ function handleShowThread(doc)
 	}
 
 	var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-	if (pageList)
+	if (pageList[0])
 	{
 		if (pageList.length >  1)
 		{
