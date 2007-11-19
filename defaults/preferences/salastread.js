@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.070930');
+pref('extensions.salastread.currentVersion', '1.99.071119');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
