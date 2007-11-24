@@ -791,32 +791,6 @@ salrPersistObject.prototype = {
 		return build;
 	},
 
-	// Searches the user's cookies for their stored SA userid
-	// @param:
-	// @return: (int) user id or (null) if not found
-	get userId() {
-		var id = this.getPreference('userId');
-		if(id > 0) {
-			return id;
-		} else {
-			var cookieManager = Components.classes["@mozilla.org/cookiemanager;1"]
-								.getService(Components.interfaces.nsICookieManager);
-			var iter = cookieManager.enumerator;
-			while (iter.hasMoreElements()) {
-				var cookie = iter.getNext();
-				if (cookie instanceof Components.interfaces.nsICookie){
-					if (cookie.host == "forums.somethingawful.com" && cookie.name == 'bbuserid') {
-						if(cookie.value > 0) {
-							this.setPreference('userId', cookie.value);
-							return cookie.value;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	},
-
 	// Gets a username from the DB
 	// @param: (int) User ID
 	// @return: (string) username or (null) if not found
@@ -1838,7 +1812,7 @@ salrPersistObject.prototype = {
 	processImages: function(postbody, doc)
 	{
 		var thumbnailAllImages = this.getPreference("thumbnailAllImages");
-		
+
 		if(thumbnailAllImages)
 		{
 			var maxWidth = this.getPreference("maxWidthOfConvertedImages");
@@ -1854,12 +1828,12 @@ salrPersistObject.prototype = {
 				maxWidth += "px";
 			}
 		}
-				
+
 		var images = this.selectNodes(doc, postbody, "//img");
 		for(var i in images)
 		{
 			var image = images[i];
-			
+
 			// Scale all images in the post body to the user-specified size
 			if(thumbnailAllImages && image.parentNode.isSameNode(postbody))
 			{
@@ -1888,13 +1862,13 @@ salrPersistObject.prototype = {
 						}, false);
 				}
 			}
-			
+
 			// Set the mouseover text of emoticons to their code
 			if (image.src.match(/\.somethingawful\.com\/forumsystem\/emoticons/i))
 			{
 				var newTitle = image.src.split(/emoticons\//)[1].split(/\./)[0].split(/\-/)[1];
 				image.title = ":" + newTitle + ":";
-			} 
+			}
 			else if (image.src.match(/\.somethingawful\.com\/images\/smilies/i))
 			{
 				var newTitle = image.src.split(/smilies\//)[1].split(/\./)[0];
@@ -1993,7 +1967,7 @@ salrPersistObject.prototype = {
 				break;
 		}
 	},
-	
+
 	// Toggles the visibility of something
 	// @param: element, (bool) display inline?
 	// @return: nothing
