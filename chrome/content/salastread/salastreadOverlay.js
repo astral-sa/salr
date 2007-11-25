@@ -492,12 +492,12 @@ function filteredThreadCount(doc,amount)
 
 	afObject = doc.getElementById("filteredthreadcount1");
 	afObject2 = doc.getElementById("filteredthreadcount2");
-	
+
 	if (!afObject || !afObject2)
 	{
 		return;
 	}
-	
+
 	count += amount;
 	afObject.childNodes[1].textContent = count;
 	afObject2.childNodes[1].textContent = count;
@@ -1364,7 +1364,7 @@ function handleThreadList(doc, forumid, flags)
 					threadRepliesBox.innerHTML += ")";
 				}
 			}
-			
+
 			// Remove the new replies count from the default box if we are showing the custom icon
 			if (showGoToLastIcon && iconJumpLastRead)
 			{
@@ -1387,7 +1387,7 @@ function handleThreadList(doc, forumid, flags)
 				}
 				divLastSeen.appendChild(iconJumpLastRead);
 			}
-			
+
 			if (showUnvisitIcon && !showGoToLastIcon && iconJumpLastRead)
 			{
 				// Fix up the background gradient on the default Jump To Last link
@@ -1783,7 +1783,6 @@ function handleShowThread(doc)
 	var inAskTell = persistObject.inAskTell(forumid);
 	var inGasChamber = persistObject.inGasChamber(forumid);
 	var inArchives = (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1);
-	var userId = persistObject.userId;
 	var username = unescape(persistObject.getPreference('username'));
 
 	if (inFYAD && !persistObject.getPreference("enableFYAD")) {
@@ -2055,7 +2054,7 @@ function handleShowThread(doc)
 				posterBG = dbUser.background;
 			}
 		}
-		
+
 		if (posterBG != "0")
 		{
 			persistObject.colorPost(doc, posterBG, posterId);
@@ -2132,7 +2131,8 @@ function handleShowThread(doc)
 
 		if (hideEditButtons && editbutton)
 		{
-			if (posterName != username) {
+			if (posterName != username)
+			{
 				editbutton.parentNode.removeChild(editbutton);
 				//so we don't try to add quickquote to non-existant edit buttons
 				editbutton = null;
@@ -2154,7 +2154,7 @@ function handleShowThread(doc)
 
 		if (hideReportButtons)
 		{
-			if(posterId == userId)
+			if (posterName == username)
 			{
 				reportbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'modalert.php')]");
 				if(reportbutton)
