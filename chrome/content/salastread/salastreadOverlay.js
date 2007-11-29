@@ -3,32 +3,6 @@
 var needToShowChangeLog = false;
 var persistObject = null;
 
-function SALRHexToNumber(hex) {
-	var res = 0;
-	for (var i=0; i<hex.length; i++) {
-		res = res * 16;
-		switch (hex[i]) {
-			case "0": res += 0; break;
-			case "1": res += 1; break;
-			case "2": res += 2; break;
-			case "3": res += 3; break;
-			case "4": res += 4; break;
-			case "5": res += 5; break;
-			case "6": res += 6; break;
-			case "7": res += 7; break;
-			case "8": res += 8; break;
-			case "9": res += 9; break;
-			case "a": case "A": res += 10; break;
-			case "b": case "B": res += 11; break;
-			case "c": case "C": res += 12; break;
-			case "d": case "D": res += 13; break;
-			case "e": case "E": res += 14; break;
-			case "f": case "F": res += 15; break;
-		}
-	}
-	return res;
-}
-
 function SALR_menuItemCommand(event, el, etype) {
 	var target = "none";
 	if(etype=="command") {
@@ -2896,7 +2870,7 @@ function SALR_init()
 		needToShowChangeLog = !persistObject.IsDevelopmentRelease;
 		// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 		var buildNum = parseInt(persistObject.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
-		if (buildNum <= 70531) // Put the latest build number to need an SQL patch here
+		if (buildNum <= 71129) // Put the latest build number to need an SQL patch here
 		{
 			needToShowChangeLog = true;
 		}
@@ -2916,6 +2890,7 @@ function SALR_init()
 
 }
 
+
 // This gets called once, on browser load, plan accordingly
 try
 {
@@ -2927,9 +2902,9 @@ try
 	}
 	SALR_init();
 
-	window.addEventListener('load', SALR_windowOnload, true);
-	window.addEventListener('beforeunload', salastread_windowOnBeforeUnload, true);
-	window.addEventListener('unload', salastread_windowOnUnload, true);
+	document.addEventListener('load', SALR_windowOnload, true);
+	document.addEventListener('beforeunload', salastread_windowOnBeforeUnload, true);
+	document.addEventListener('unload', salastread_windowOnUnload, true);
 }
 catch (e)
 {
