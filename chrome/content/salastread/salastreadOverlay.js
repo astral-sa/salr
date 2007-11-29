@@ -582,7 +582,7 @@ function clickToggleIgnoreIcon(event)
 				return;
 			}
 
-		//	event.stopPropagation();
+			event.stopPropagation();
 			event.preventDefault();
 
 			if (afIgnoring)
