@@ -557,10 +557,30 @@ salrPersistObject.prototype = {
 		}
 		if (this.getPreference('highlightQuotes'))
 		{
-			CSSFile += 'blockquote.salrQuoteOfSelf {';
-			CSSFile += 'background:';
-			CSSFile += this.getPreference("highlightQuotePost");
-			CSSFile += '};\n';
+			var selfColor = 0;
+			var quotedColor = this.getPreference("highlightQuotePost");
+			var selfDetails = this.isUsernameColored(this.getPreference('username'));
+			
+			// I may have given my posts a custom background
+			if (selfDetails)
+			{
+				selfColor = selfDetails.background;
+			}
+			
+			// But override it if I have a custom color just for my quotes
+			if (quotedColor != 0)
+			{
+				selfColor = quotedColor;
+			}
+			
+			// Only apply this class if something is actually going to be colored
+			if (selfColor != 0)
+			{
+				CSSFile += 'blockquote.salrQuoteOfSelf {';
+				CSSFile += 'background:';
+				CSSFile += selfColor;
+				CSSFile += '};\n';
+			}
 		}
 		return CSSFile;
 	},
