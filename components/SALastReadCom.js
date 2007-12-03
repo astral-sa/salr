@@ -1759,7 +1759,7 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	convertSpecialLinks: function(postbody, doc)
 	{
-		var newImg, vidIdSearch, vidid, vidsrc;
+		var newImg, vidIdSearch, vidid, vidsrc, imgNum;
 		var linksInPost = this.selectNodes(doc, postbody, "descendant::A");
 		var maxWidth = this.getPreference("maxWidthOfConvertedImages");
 		var maxHeight = this.getPreference("maxHeightOfConvertedImages");
@@ -1767,7 +1767,7 @@ salrPersistObject.prototype = {
 		{
 			var link = linksInPost[i];
 			if (this.getPreference("convertTextToImage") &&
-				(link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?$/i) > -1))
+				(link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?(%3C\/a%3E)?$/i) > -1))
 			{
 				if (link.href.search(/paintedover\.com/i) > -1 || // PaintedOver sucks, we can't embed them
 					link.href.search(/xs\.to/i) > -1 || // xs.to sucks, we can't embed them
@@ -1789,7 +1789,19 @@ salrPersistObject.prototype = {
 				{
 					continue;
 				}
-				if (this.getPreference("dontConvertQuotedImages"))
+				// Fix Imageshack links that went to a page instead of an image
+				if (link.href.search(/fi\.somethingawful\.com\/is\/.*\?loc=img(\d+)/) > -1)
+				{
+					imgNum = link.href.match(/=img(\d+)/)[1];
+					link.href = link.href.replace(/fi\.somethingawful\.com\/is/, 'img' + imgNum + '.imageshack.us');
+					if (link.parentNode.nodeName == 'IMG')
+					{
+						link.parentNode.parentNode.replaceChild(link, link.parentNode);
+					}
+					continue;
+				}
+				if (this.getPreference("dontConvertQuotedImages") &&
+				 link.href.search(/fi\.somethingawful\.com\/is\/.*%3C\/a%3E/) == -1)
 				{
 					// Check if it's in a blockquote
 					if (link.parentNode.parentNode.className.search(/qb2/i) > -1 ||
@@ -1798,13 +1810,20 @@ salrPersistObject.prototype = {
 						continue;
 					}
 				}
+				// Fix archived Imageshack thumbnails
+				if (link.href.search(/fi\.somethingawful\.com\/is\/.*%3C\/a%3E/) > -1 &&
+				 link.textContent.search(/fi\.somethingawful\.com\/is\//))
+				{
+					link.href = link.href.replace('%3C/a%3E', '');
+				}
 				newImg = doc.createElement("img");
 				newImg.src = link.href;
 				newImg.title = "Link converted by SALR";
 				newImg.style.border = "1px dashed red";
 				// Check if the link was a text link to an image and move the text
-				if ((link.firstChild == link.lastChild && (link.firstChild.tagName && link.firstChild.tagName.search(/img/i) > -1)) ||
-					link.textContent.search(/http:/i) == 0)
+				if ((link.firstChild == link.lastChild &&
+				 (link.firstChild.tagName && link.firstChild.tagName.search(/img/i) > -1)) ||
+				 link.textContent.search(/http:/i) == 0)
 				{
 					link.textContent = '';
 					link.parentNode.replaceChild(newImg, link);
