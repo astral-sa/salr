@@ -560,19 +560,19 @@ salrPersistObject.prototype = {
 			var selfColor = 0;
 			var quotedColor = this.getPreference("highlightQuotePost");
 			var selfDetails = this.isUsernameColored(this.getPreference('username'));
-			
+
 			// I may have given my posts a custom background
 			if (selfDetails)
 			{
 				selfColor = selfDetails.background;
 			}
-			
+
 			// But override it if I have a custom color just for my quotes
 			if (quotedColor != 0)
 			{
 				selfColor = quotedColor;
 			}
-			
+
 			// Only apply this class if something is actually going to be colored
 			if (selfColor != 0)
 			{
@@ -1800,6 +1800,16 @@ salrPersistObject.prototype = {
 					}
 					continue;
 				}
+				if (link.href.search(/fi\.somethingawful\.com\/is\/.*\?image=/) > -1)
+				{
+					imgNum = link.getElementsByTagName('img');
+					if (imgNum)
+					{
+						imgNum = link.getElementsByTagName('img')[0].src.match(/img(\d+)/)[1];
+						link.href = link.href.replace(/fi\.somethingawful\.com\/is/, 'img' + imgNum + '.imageshack.us');
+						continue;
+					}
+				}
 				if (this.getPreference("dontConvertQuotedImages") &&
 				 link.href.search(/fi\.somethingawful\.com\/is\/.*%3C\/a%3E/) == -1)
 				{
@@ -1816,6 +1826,7 @@ salrPersistObject.prototype = {
 				{
 					link.href = link.href.replace('%3C/a%3E', '');
 				}
+
 				newImg = doc.createElement("img");
 				newImg.src = link.href;
 				newImg.title = "Link converted by SALR";
