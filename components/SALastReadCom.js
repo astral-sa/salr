@@ -826,6 +826,22 @@ salrPersistObject.prototype = {
 		statement.reset();
 		return foundusername;
 	},
+	
+	// Gets an id from the DB
+	// @param: (string) Username
+	// @return: (int) User ID or (null) if not found
+	getUserId: function(username)
+	{
+		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `username` = ?1");
+		statement.bindStringParameter(0, username);
+		var founduserid = null;
+		if (statement.executeStep())
+		{
+			founduserid = statement.getInt32(0);
+		}
+		statement.reset();
+		return founduserid;
+	},
 
 	// Updates a user's name in the DB
 	// @param: (int) User ID, (string) Username
@@ -969,28 +985,104 @@ salrPersistObject.prototype = {
 	getForumID: function(doc)
 	{
 		var fid = 0;
-		var intitle = doc.location.href.match(/forumid=(\d+)/i);
-		if (intitle != null)
+
+		while (true) // Not actually going to loop, I just want to be able to break out
 		{
-			fid = intitle[1];
-		}
-		else
-		{
+			// Look in the location bar
+			var intitle = doc.location.href.match(/forumid=(\d+)/i);
+			if (intitle)
+			{
+				fid = parseInt(intitle[1],10);
+				if (!isNaN(fid)) break;
+			}
+
+			// Look in the link for the post button
 			var postbutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
 			if (postbutton)
 			{
 				var inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
-				if (inpostbutton != null)
+				if (inpostbutton)
 				{
-					fid = inpostbutton[1];
+					fid = parseInt(inpostbutton[1],10);
+					if (!isNaN(fid)) break;
 				}
 			}
+
+			// Look in the hash added to urls
+			var inhash = doc.location.hash.match(/forum(\d+)/i);
+			if (inhash)
+			{
+				fid = parseInt(inhash[1],10);
+				if (!isNaN(fid)) break;
+			}
+
+			break;
 		}
-		if (fid == 0)
+
+		if (fid == 0 || isNaN(fid))
 		{
 			fid = false;
 		}
 		return fid;
+	},
+	
+	// Try to figure out the current thread we're in
+	// @param: (document) The current page being viewed
+	// @return: (int) Thread ID, or (bool) false if unable to determine
+	getThreadID: function(doc)
+	{
+		var tid = 0;
+
+		while (true) // Not actually going to loop, I just want to be able to break out
+		{
+			// Look in the location bar
+			var intitle = doc.location.href.match(/threadid=(\d+)/i);
+			if (intitle)
+			{
+				tid = parseInt(intitle[1],10);
+				if (!isNaN(tid)) break;
+			}
+
+			// Look in the ? Link in the first post
+			var filterlink = this.selectSingleNode(doc, doc, "//TD[contains(@class,'postdate')]//A[contains(@href,'threadid=')]");
+			if (filterlink)
+			{
+				var inlink = filterlink.href.match(/threadid=(\d+)/i);
+				if (inlink)
+				{
+					tid = parseInt(inlink[1],10);
+					if (!isNaN(tid)) break;
+				}
+			}
+
+			// Look in the link for the reply button
+			var replybutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'threadid=')]");
+			if (replybutton)
+			{
+				var inreplybutton = replybutton.href.match(/threadid=(\d+)/i);
+				if (inreplybutton)
+				{
+					tid = parseInt(inreplybutton[1],10);
+					if (!isNaN(tid)) break;
+				}
+			}
+
+			// Look in the hash added to urls
+			var inhash = doc.location.hash.match(/thread(\d+)/i);
+			if (inhash)
+			{
+				tid = parseInt(inhash[1],10);
+				if (!isNaN(tid)) break;
+			}
+
+			break;
+		}
+
+		if (tid == 0 || isNaN(tid))
+		{
+			tid = false;
+		}
+		return tid;
 	},
 
 	// Fetches the total post count as of the last time the thread was read

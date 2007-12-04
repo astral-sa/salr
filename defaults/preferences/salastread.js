@@ -4,8 +4,12 @@ pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
 pref('extensions.salastread.userId', 0);
 pref('extensions.salastread.username', '');
+
+// UNDOCUMENTED OPTIONS
 pref('extensions.salastread.disableNewReCount', false);
 pref('extensions.salastread.newPostCountUseOneLine', false);
+pref('extensions.salastread.replyCountLinkinThreads', true);
+
 
 //VIDEO EMBEDDER
 pref('extensions.salastread.enableVideoEmbedder', false);
