@@ -22,10 +22,13 @@ function initUsers() {
 			var userid = window.arguments[1].args.userid;
 			var username = window.arguments[1].args.username;
 		
-			if(!persistObject.userExists(userid)) {
+			if (!persistObject.userExists(userid))
+			{
 				persistObject.addUser(userid, username);
 				addListUser(listBox, userid, username);
-			} else if(!persistObject.isPosterColored(userid) && !persistObject.getPosterNotes(userid)) {
+			}
+			else if (!persistObject.isUserIdColored(userid) && !persistObject.getPosterNotes(userid))
+			{
 				addListUser(listBox, userid, username);
 			}
 		}
