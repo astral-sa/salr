@@ -826,7 +826,7 @@ salrPersistObject.prototype = {
 		statement.reset();
 		return foundusername;
 	},
-	
+
 	// Gets an id from the DB
 	// @param: (string) Username
 	// @return: (int) User ID or (null) if not found
@@ -1025,7 +1025,7 @@ salrPersistObject.prototype = {
 		}
 		return fid;
 	},
-	
+
 	// Try to figure out the current thread we're in
 	// @param: (document) The current page being viewed
 	// @return: (int) Thread ID, or (bool) false if unable to determine
@@ -1851,7 +1851,7 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	convertSpecialLinks: function(postbody, doc)
 	{
-		var newImg, vidIdSearch, vidid, vidsrc, imgNum;
+		var newImg, vidIdSearch, vidid, vidsrc, imgNum, imgLink;
 		var linksInPost = this.selectNodes(doc, postbody, "descendant::A");
 		var maxWidth = this.getPreference("maxWidthOfConvertedImages");
 		var maxHeight = this.getPreference("maxHeightOfConvertedImages");
@@ -1861,10 +1861,16 @@ salrPersistObject.prototype = {
 			if (this.getPreference("convertTextToImage") &&
 				(link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?(%3C\/a%3E)?$/i) > -1))
 			{
+				// this doesn't actually work yet
+				//if ((link.src.search(/imagesocket\.com/i) > -1) && (link.src.search(/content\.imagesocket\.com/i) == -1))
+				//{
+					//link.src = link.href.replace(/imagesocket/, 'content.imagesocket');
+				//}
 				if (link.href.search(/paintedover\.com/i) > -1 || // PaintedOver sucks, we can't embed them
 					link.href.search(/xs\.to/i) > -1 || // xs.to sucks, we can't embed them
 					link.href.search(/imagesocket\.com/i) > -1 || // ImageSocket sucks, we can't embed them
 					link.href.search(/imgplace\.com/i) > -1 || // ImageSocket sucks, we can't embed them
+					link.href.search(/echo\.cx\/.*\?/) > -1 || // Old school ImageShack links that go to a page
 					link.href.search(/wiki(.*)Image/i) > -1 || // Wikipedia does funky stuff with their images too
 					link.innerHTML == "") // Quotes have fake links for some reason
 				{
@@ -1882,28 +1888,40 @@ salrPersistObject.prototype = {
 					continue;
 				}
 				// Fix Imageshack links that went to a page instead of an image
-				if (link.href.search(/fi\.somethingawful\.com\/is\/.*\?loc=img(\d+)/) > -1)
+				if ((link.href.search(/fi\.somethingawful\.com\/is\/img(\d+)\/(\d+)\//) > -1) ||
+				 (link.href.search(/fi\.somethingawful\.com\/is\/.*\?loc=img(\d+)/) > -1))
 				{
-					imgNum = link.href.match(/=img(\d+)/)[1];
+					imgNum = link.href.match(/img(\d+)/)[1];
 					link.href = link.href.replace(/fi\.somethingawful\.com\/is/, 'img' + imgNum + '.imageshack.us');
 					if (link.parentNode.nodeName == 'IMG')
 					{
 						link.parentNode.parentNode.replaceChild(link, link.parentNode);
+						continue;
 					}
-					continue;
 				}
 				if (link.href.search(/fi\.somethingawful\.com\/is\/.*\?image=/) > -1)
 				{
 					imgNum = link.getElementsByTagName('img');
-					if (imgNum)
+					if (imgNum[0])
 					{
-						imgNum = link.getElementsByTagName('img')[0].src.match(/img(\d+)/)[1];
+						imgLink = link.getElementsByTagName('img')[0];
+						imgNum = imgLink.src.match(/img(\d+)/)[1];
 						link.href = link.href.replace(/fi\.somethingawful\.com\/is/, 'img' + imgNum + '.imageshack.us');
-						continue;
+						if ((imgLink.src.search(/fi\.somethingawful\.com\/is\/img(\d+)\/(\d+)\//) > -1) ||
+						 (imgLink.src.search(/fi\.somethingawful\.com\/is\/.*\?loc=img(\d+)/) > -1))
+						{
+							imgNum = imgLink.src.match(/img(\d+)/)[1];
+							imgLink.src = imgLink.src.replace(/fi\.somethingawful\.com\/is/, 'img' + imgNum + '.imageshack.us');
+						}
 					}
+					continue;
 				}
-				if (this.getPreference("dontConvertQuotedImages") &&
-				 link.href.search(/fi\.somethingawful\.com\/is\/.*%3C\/a%3E/) == -1)
+				// Fix archived thumbnails
+				if (link.href.search(/%3C\/a%3E/) > -1)
+				{
+					link.href = link.href.replace('%3C/a%3E', '');
+				}
+				if (this.getPreference("dontConvertQuotedImages"))
 				{
 					// Check if it's in a blockquote
 					if (link.parentNode.parentNode.className.search(/qb2/i) > -1 ||
@@ -1911,12 +1929,6 @@ salrPersistObject.prototype = {
 					{
 						continue;
 					}
-				}
-				// Fix archived Imageshack thumbnails
-				if (link.href.search(/fi\.somethingawful\.com\/is\/.*%3C\/a%3E/) > -1 &&
-				 link.textContent.search(/fi\.somethingawful\.com\/is\//))
-				{
-					link.href = link.href.replace('%3C/a%3E', '');
 				}
 
 				newImg = doc.createElement("img");
