@@ -3,7 +3,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>{fc6339b8-9581-4fc7-b824-dffcb091fcb7}</em:id>
-		<em:version>1.99.071128</em:version>
+		<em:version>1.99.071227</em:version>
 		<em:type>2</em:type>
 		<em:homepageURL>http://salr.bountysource.com/</em:homepageURL>
 		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
@@ -35,6 +35,7 @@
 		<em:creator>Tim Fries (biznatchio)</em:creator>
 		<em:developer>Ben Dusinberre (duz)</em:developer>
 		<em:developer>Pat Cavit (Tivac)</em:developer>
+		<em:developer>(RedKazan)</em:developer>
 		<em:contributor>Joseph Wain (uncut product)</em:contributor>
 		<em:contributor>(8ender)</em:contributor>
 		<em:contributor>(LonelyKing)</em:contributor>
@@ -47,6 +48,5 @@
 		<em:contributor>(cygnustm)</em:contributor>
 		<em:contributor>(alex.vidal)</em:contributor>
 		<em:contributor>(SFrost007)</em:contributor>
-		<em:contributor>(RedKazan)</em:contributor>
 	</Description>
 </RDF>
