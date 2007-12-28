@@ -2227,11 +2227,25 @@ function SALR_DirectionalNavigate(doc, dir)
 	var perpage = "&perpage=" + persistObject.getPreference("postsPerPage");
 	var forumid = doc.location.href.match(/forumid=[0-9]+/);
 	var posticon = doc.location.href.match(/posticon=[0-9]+/);
-	if (!posticon) posticon = "&posticon=0";
+	if (!posticon)
+	{
+		posticon = "&posticon=0";
+	}
 	var sortfield = doc.location.href.match(/&sortfield=[a-zA-Z0-9]+/);
-	if (!sortfield) sortfield = "&sortfield=lastpost";
+	if (!sortfield)
+	{
+		sortfield = "&sortfield=lastpost";
+	}
 	var sortorder = doc.location.href.match(/&sortorder=[a-z]+/);
-	if (!sortorder) sortorder = "&sortorder=desc";
+	if (!sortorder)
+	{
+		sortorder = "&sortorder=desc";
+	}
+	var userfilter = doc.location.href.match(/&userid=[0-9]+/);
+	if (!userfilter)
+	{
+		userfilter = "";
+	}
 
 	if (dir == "top")
 	{
@@ -2260,7 +2274,7 @@ function SALR_DirectionalNavigate(doc, dir)
 			var threadid = doc.__SALR_threadid;
 			if (threadid)
 			{
-				doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + perpage + "&pagenumber=" + (curPage - 1);
+				doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage - 1);
 			}
 			else
 			{
@@ -2277,7 +2291,7 @@ function SALR_DirectionalNavigate(doc, dir)
 			var threadid = doc.__SALR_threadid;
 			if (threadid)
 			{
-				doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + perpage + "&pagenumber=" + (curPage + 1);
+				doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage + 1);
 			}
 			else
 			{
