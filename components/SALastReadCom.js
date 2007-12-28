@@ -1896,8 +1896,8 @@ salrPersistObject.prototype = {
 					if (link.parentNode.nodeName == 'IMG')
 					{
 						link.parentNode.parentNode.replaceChild(link, link.parentNode);
-						continue;
 					}
+					continue;
 				}
 				if (link.href.search(/fi\.somethingawful\.com\/is\/.*\?image=/) > -1)
 				{
