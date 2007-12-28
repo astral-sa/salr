@@ -1572,69 +1572,206 @@ function handleMisc(doc)
 	var action;
 	if ((action = doc.location.search.match(/action=(\w+)/i)) != null)
 	{
-		if (action[1] == "whoposted")
 		// Handle the "Who posted?" list window
+		if (action[1] == "whoposted")
 		{
-			var posterTable;
+			// Rebuild the page for archives, it's ugly and incompatible
 			if (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1)
 			{
-				posterTable = persistObject.selectSingleNode(doc,doc,"//BODY/TABLE/TBODY/TR/TD/TABLE/TBODY");
-			}
-			else
-			{
-				posterTable = persistObject.selectSingleNode(doc,doc,"//DIV[@id='main_stretch']/DIV/TABLE/TBODY");
+				var oldTable = persistObject.selectSingleNode(doc,doc,"//BODY/TABLE/TBODY/TR/TD/TABLE");
+				if (oldTable)
+				{
+					var tempObj,tempWhere, tempText;
+					var body = doc.getElementById("something_awful");
+					
+					tempObj = doc.createElement("DIV");
+					tempObj.id = "main_stretch";
+					tempObj.className = "standard";
+					body.insertBefore(tempObj,body.childNodes[1]);
+					tempWhere = tempObj;
+					
+					tempObj = persistObject.selectSingleNode(doc,oldTable,"//B[contains(./text(),'Total Posts')]");
+					tempText = tempObj.textContent;
+					tempObj = doc.createElement("H2");
+					tempObj.textContent = tempText;
+					tempWhere.appendChild(tempObj);
+					
+					tempObj = doc.createElement("DIV");
+					tempObj.className = "inner";
+					tempWhere.appendChild(tempObj);
+					tempWhere = tempObj;
+					
+					tempObj = oldTable.parentNode.parentNode.parentNode.parentNode;
+					oldTable.className = "standard";
+					tempWhere.appendChild(oldTable);
+					body.removeChild(tempObj);
+					
+					oldTable = oldTable.childNodes[1];
+					oldTable.removeChild(oldTable.firstChild);
+					oldTable.removeChild(oldTable.firstChild);
+					oldTable.firstChild.className = "smalltext";
+					tempObj = doc.createElement("TH");
+					tempObj.appendChild(oldTable.firstChild.childNodes[1].firstChild);
+					oldTable.firstChild.removeChild(oldTable.firstChild.childNodes[1]);
+					oldTable.firstChild.insertBefore(tempObj,oldTable.firstChild.childNodes[1]);
+					tempObj = doc.createElement("TH");
+					tempObj.appendChild(oldTable.firstChild.childNodes[3].firstChild);
+					oldTable.firstChild.removeChild(oldTable.firstChild.childNodes[3]);
+					oldTable.firstChild.insertBefore(tempObj,oldTable.firstChild.childNodes[3]);
+					oldTable.childNodes[oldTable.childNodes.length-2].className = "smalltext";
+					tempObj = doc.createElement("TH");
+					tempObj.colSpan = 2;
+					tempObj.appendChild(oldTable.childNodes[oldTable.childNodes.length-2].childNodes[1].childNodes[1]);
+					oldTable.childNodes[oldTable.childNodes.length-2].removeChild(oldTable.childNodes[oldTable.childNodes.length-2].childNodes[1]);
+					oldTable.childNodes[oldTable.childNodes.length-2].insertBefore(tempObj,oldTable.childNodes[oldTable.childNodes.length-2].childNodes[1]);
+				}
+				// Todo: incomplete: still need to rebuild the individual row structure
+				return;
 			}
 			
+			var posterTable = persistObject.selectSingleNode(doc,doc,"//DIV[@id='main_stretch']/DIV/TABLE/TBODY");
 			var threadId = parseInt(doc.location.search.match(/threadid=(\d+)/i)[1], 10);
 			if (posterTable && threadId)
 			{
-				// Linkify all the post counts to lead to the thread filtered for that poster
+				var highlightUsernames = persistObject.getPreference("highlightUsernames");
+				var sortReplyList = persistObject.getPreference("sortReplyList");
+				
+				// Make some headers for sorting users by importance
+				// Custom colored users, then admins, then mods
+				if (sortReplyList)
+				{
+					var headerUsers = posterTable.firstChild;
+					headerUsers.firstChild.textContent = "Normal Users";
+					
+					var headerMods = posterTable.firstChild.cloneNode(true);
+					headerMods.firstChild.textContent = "Moderators";
+					posterTable.insertBefore(headerMods,posterTable.firstChild);
+					
+					var headerAdmins = posterTable.firstChild.cloneNode(true);
+					headerAdmins.firstChild.textContent = "Administrators";
+					posterTable.insertBefore(headerAdmins,posterTable.firstChild);
+					
+					var headerCustom = posterTable.firstChild.cloneNode(true);
+					headerCustom.firstChild.textContent = "Users of Interest";
+					posterTable.insertBefore(headerCustom,posterTable.firstChild);
+					
+					var customPosted, adminPosted, modPosted;
+				}
+				
+				// Cycle through all the users listed and do whatever
 				var rows = persistObject.selectNodes(doc, posterTable, "TR");
 				for (var i in rows)
 				{
 					var posterId;
 					var row = rows[i];
 
-					// Skip first and last rows, they are just labels
-					if (i == 0 || i == rows.length-1 || ((doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1) && i == 1))
+					// Skip the labels
+					if (row.className == "smalltext" || row.childNodes[1].className == "smalltext")
 					{
 						continue;
 					}
 					
-					if (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1)
+					// Linkify all the post counts to lead to the thread filtered for that poster
+					posterId = parseInt(row.childNodes[1].firstChild.href.match(/userid=(\d+)/i)[1], 10);
+					if (posterId)
 					{
-						posterId = parseInt(row.childNodes[1].childNodes[1].childNodes[1].href.match(/userid=(\d+)/i)[1], 10);
-						if (posterId)
+						row.childNodes[3].innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
+							+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].innerHTML + "</a>";
+					}
+					
+					if ((highlightUsernames || sortReplyList) && posterId)
+					{
+						var userPriority = 0;
+						
+						if (persistObject.isMod(posterId))
 						{
-							row.childNodes[3].firstChild.innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
-								+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].firstChild.innerHTML + "</a>";
+							userPriority = 1;
+						}
+						if (persistObject.isAdmin(posterId))
+						{
+							userPriority = 2;
+						}
+
+						// Check for user-defined name coloring and/or mod/admin coloring
+						if (highlightUsernames)
+						{
+							var userColoring = persistObject.isUserIdColored(posterId);
+							if (userColoring)
+							{
+								if (userColoring.color && userColoring.color != "0")
+								{
+									row.childNodes[1].firstChild.style.color = userColoring.color;
+									if (!persistObject.getPreference("dontBoldNames"))
+									{
+										row.childNodes[1].firstChild.style.fontWeight = "bold";
+									}
+								}
+								
+								userPriority = 3;
+							}
+							else if (userPriority == 1)
+							{
+								row.childNodes[1].firstChild.style.color = persistObject.getPreference("modColor");
+								if (!persistObject.getPreference("dontBoldNames"))
+								{
+									row.childNodes[1].firstChild.style.fontWeight = "bold";
+								}
+							}
+							else if (userPriority == 2)
+							{
+								row.childNodes[1].firstChild.style.color = persistObject.getPreference("adminColor");
+								if (!persistObject.getPreference("dontBoldNames"))
+								{
+									row.childNodes[1].firstChild.style.fontWeight = "bold";
+								}
+							}
+						}
+					
+						// Sort them to the appropriate header
+						if (sortReplyList)
+						{
+							switch (userPriority)
+							{
+								// Note for clarity: we are inserting the user BEFORE the headers referenced below,
+								//   not after, thats why header and bool checks don't match up
+								case 1:
+									posterTable.insertBefore(row, headerUsers);
+									modPosted = true;
+									break;
+								case 2:
+									posterTable.insertBefore(row, headerMods);
+									adminPosted = true;
+									break;
+								case 3:
+									posterTable.insertBefore(row, headerAdmins);
+									customPosted = true;
+									break;
+							}
 						}
 					}
-					else
+				}
+				
+				// If we didn't sort any users to a particular header, remove it
+				if (sortReplyList)
+				{
+					if (!customPosted)
 					{
-						posterId = parseInt(row.childNodes[1].firstChild.href.match(/userid=(\d+)/i)[1], 10);
-						if (posterId)
-						{
-							row.childNodes[3].innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
-								+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].innerHTML + "</a>";
-						}
+						posterTable.removeChild(headerCustom);
+					}
+					if (!adminPosted)
+					{
+						posterTable.removeChild(headerAdmins);
+					}
+					if (!modPosted)
+					{
+						posterTable.removeChild(headerMods);
 					}
 				}
 				
 				// If we came here from a link inside the thread, we dont want the link at the bottom to take us back to page 1
 				if (doc.location.hash.search(/fromthread/i) > -1)
 				{
-					var closeLink;
-					
-					if (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1)
-					{
-						closeLink = persistObject.selectSingleNode(doc, doc, "//A/FONT[contains(./text(),'show thread')]");
-						closeLink = closeLink.parentNode;
-					}
-					else
-					{
-						closeLink = persistObject.selectSingleNode(doc, doc, "//A[contains(./text(),'show thread')]");
-					}
+					var closeLink = persistObject.selectSingleNode(doc, doc, "//A[contains(./text(),'show thread')]");
 					closeLink.parentNode.innerHTML = "<a style=\"color: rgb(255, 255, 255) ! important;\" onclick=\"self.close();\" href=\"#\">" + closeLink.innerHTML + "</a>";
 				}
 			}

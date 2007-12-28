@@ -9,6 +9,7 @@ pref('extensions.salastread.username', '');
 pref('extensions.salastread.disableNewReCount', false);
 pref('extensions.salastread.newPostCountUseOneLine', false);
 pref('extensions.salastread.replyCountLinkinThreads', true);
+pref('extensions.salastread.sortReplyList', true);
 
 
 //VIDEO EMBEDDER
