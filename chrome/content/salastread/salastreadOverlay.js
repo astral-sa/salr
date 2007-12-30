@@ -2521,6 +2521,7 @@ function SALR_IgnoreThread()
 		{
 			var ignoreStatus = persistObject.isThreadIgnored(threadid);
 			persistObject.toggleThreadIgnore(threadid);
+			// todo: detect by if there is a "forum" node, to cover bookmark page and control panel
 			if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
 			{
 				target.parentNode.removeChild(target);
