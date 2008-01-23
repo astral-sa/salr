@@ -1582,7 +1582,7 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	addIcon: function(iconNumber, iconFilename)
 	{
-		if (!this.getIconNumber(iconFilename))
+		if (!this.checkIconNumberExist(iconNumber))
 		{
 			var statement = this.database.createStatement("INSERT INTO `posticons` (`iconnumber`, `filename`) VALUES (?1, ?2)");
 			statement.bindInt32Parameter(0,iconNumber);
@@ -1599,6 +1599,22 @@ salrPersistObject.prototype = {
 	{
 		var statement = this.database.createStatement("SELECT `iconnumber` FROM `posticons` WHERE `filename` = ?1");
 		statement.bindStringParameter(0,iconFilename);
+		if (statement.executeStep())
+		{
+			var result = statement.getInt32(0);
+		}
+		else
+		{
+			var result = false;
+		}
+		statement.reset();
+		return result;
+	},
+
+	checkIconNumberExist: function(iconNumber)
+	{
+		var statement = this.database.createStatement("SELECT `iconnumber` FROM `posticons` WHERE `iconnumber` = ?1");
+		statement.bindInt32Parameter(0,iconNumber);
 		if (statement.executeStep())
 		{
 			var result = statement.getInt32(0);

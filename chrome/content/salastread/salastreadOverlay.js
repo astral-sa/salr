@@ -61,7 +61,7 @@ function SALR_init()
 		needToShowChangeLog = !persistObject.IsDevelopmentRelease;
 		// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 		var buildNum = parseInt(persistObject.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
-		if (buildNum <= 71129) // Put the latest build number to need an SQL patch here
+		if (buildNum <= 80122) // Put the latest build number to need an SQL patch here
 		{
 			needToShowChangeLog = true;
 		}
@@ -167,7 +167,7 @@ function SALR_onLoad(e)
 				moptsep.style.display = "none";
 			}
 		}
-		
+
 		var pageHandler;
 		var pageName = doc.location.pathname.match(/^\/(\w+)\.php/i);
 		if (pageName)
@@ -177,36 +177,36 @@ function SALR_onLoad(e)
 				case "index":
 					pageHandler = handleIndex;
 					break;
-					
+
 				case "usercp":
 				case "bookmarkthreads":
 					pageHandler = handleSubscriptions;
 					break;
-					
+
 				case "account":
 					pageHandler = handleAccount;
 					break;
-					
+
 				case "forumdisplay":
 					pageHandler = handleForumDisplay;
 					break;
-					
+
 				case "showthread":
 					pageHandler = handleShowThread;
 					break;
-					
+
 				case "newreply":
 					pageHandler = handleNewReply;
 					break;
-					
+
 				case "editpost":
 					pageHandler = handleEditPost;
 					break;
-					
+
 				case "supportmail":
 					pageHandler = handleSupport;
 					break;
-					
+
 				case "misc":
 					pageHandler = handleMisc;
 					break;
@@ -267,7 +267,7 @@ function SALR_onLoad(e)
 				screl.setAttribute("src","chrome://salastread/content/salrevents.js");
 				head.appendChild(screl);
 			}
-			
+
 			SALR_IncTimer();
 		}
 
@@ -277,7 +277,7 @@ function SALR_onLoad(e)
 			dbg.innerHTML = SALR_debugLog.join("<br>");
 			doc.body.appendChild(dbg);
 		}
-		
+
 		doc.__salastread_processed = true;
 	}
 	catch(ex)
@@ -715,7 +715,7 @@ function handleThreadList(doc, forumid, flags)
 		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
 		threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
 		threadOPId = parseInt(threadAuthorBox.getElementsByTagName('a')[0].href.match(/userid=(\d+)/i)[1]);
-		
+
 		// We may need to fix the reply count link for this thread
 		//  Note: This can be removed when this is fixed forum-side. - RedKazan
 		if (brokenReplyCounts)
@@ -883,7 +883,7 @@ function handleThreadList(doc, forumid, flags)
 		{
 			threadTitleBox.className += ' starred';
 		}
-		
+
 		if (highlightUsernames)
 		{
 			var userColoring, threadLastPostBox, lastPostId;
@@ -894,7 +894,7 @@ function handleThreadList(doc, forumid, flags)
 			{
 				posterColor = false;
 				posterBG = false;
-				
+
 				if (persistObject.isMod(threadOPId))
 				{
 					posterColor = modColor;
@@ -919,7 +919,7 @@ function handleThreadList(doc, forumid, flags)
 						posterBG = userColoring.background;
 					}
 				}
-				
+
 				if (posterBG != false && posterBG != "0")
 				{
 					threadAuthorBox.style.backgroundColor = posterBG;
@@ -942,7 +942,7 @@ function handleThreadList(doc, forumid, flags)
 			{
 				posterColor = false;
 				posterBG = false;
-				
+
 				if (persistObject.isMod(lastPostId))
 				{
 					posterColor = modColor;
@@ -1024,7 +1024,7 @@ function handleShowThread(doc)
 	{
 		var forumid = persistObject.getForumID(doc);
 		var threadid = persistObject.getThreadID(doc);
-		
+
 		if (!forumid || !threadid)
 		{	// Feel free to elaborate on this later
 			throw false;
@@ -1054,7 +1054,7 @@ function handleShowThread(doc)
 		// We're in FYAD and FYAD support has been turned off
 		return;
 	}
-	
+
 	doc.body.className += " salastread_forum" + forumid;
 	// used by the context menu to allow options for this thread
 	doc.body.className += " salastread_thread_" + threadid;
@@ -1064,7 +1064,7 @@ function handleShowThread(doc)
 
 	// Grab the thread title
 	persistObject.setThreadTitle(threadid, SALR_getPageTitle(doc));
-	
+
 	// Grab the go to dropdown
 	if (!persistObject.gotForumList && !singlePost)
 	{
@@ -1155,7 +1155,7 @@ function handleShowThread(doc)
 			}
 		}
 	}
-	
+
 	if (persistObject.getPreference("replyCountLinkinThreads") && !singlePost)
 	{
 		var replyCountLink = doc.createElement("A");
@@ -1583,29 +1583,29 @@ function handleMisc(doc)
 				{
 					var tempObj,tempWhere, tempText;
 					var body = doc.getElementById("something_awful");
-					
+
 					tempObj = doc.createElement("DIV");
 					tempObj.id = "main_stretch";
 					tempObj.className = "standard";
 					body.insertBefore(tempObj,body.childNodes[1]);
 					tempWhere = tempObj;
-					
+
 					tempObj = persistObject.selectSingleNode(doc,oldTable,"//B[contains(./text(),'Total Posts')]");
 					tempText = tempObj.textContent;
 					tempObj = doc.createElement("H2");
 					tempObj.textContent = tempText;
 					tempWhere.appendChild(tempObj);
-					
+
 					tempObj = doc.createElement("DIV");
 					tempObj.className = "inner";
 					tempWhere.appendChild(tempObj);
 					tempWhere = tempObj;
-					
+
 					tempObj = oldTable.parentNode.parentNode.parentNode.parentNode;
 					oldTable.className = "standard";
 					tempWhere.appendChild(oldTable);
 					body.removeChild(tempObj);
-					
+
 					oldTable = oldTable.childNodes[1];
 					oldTable.removeChild(oldTable.firstChild);
 					oldTable.removeChild(oldTable.firstChild);
@@ -1628,36 +1628,36 @@ function handleMisc(doc)
 				// Todo: incomplete: still need to rebuild the individual row structure
 				return;
 			}
-			
+
 			var posterTable = persistObject.selectSingleNode(doc,doc,"//DIV[@id='main_stretch']/DIV/TABLE/TBODY");
 			var threadId = parseInt(doc.location.search.match(/threadid=(\d+)/i)[1], 10);
 			if (posterTable && threadId)
 			{
 				var highlightUsernames = persistObject.getPreference("highlightUsernames");
 				var sortReplyList = persistObject.getPreference("sortReplyList");
-				
+
 				// Make some headers for sorting users by importance
 				// Custom colored users, then admins, then mods
 				if (sortReplyList)
 				{
 					var headerUsers = posterTable.firstChild;
 					headerUsers.firstChild.textContent = "Normal Users";
-					
+
 					var headerMods = posterTable.firstChild.cloneNode(true);
 					headerMods.firstChild.textContent = "Moderators";
 					posterTable.insertBefore(headerMods,posterTable.firstChild);
-					
+
 					var headerAdmins = posterTable.firstChild.cloneNode(true);
 					headerAdmins.firstChild.textContent = "Administrators";
 					posterTable.insertBefore(headerAdmins,posterTable.firstChild);
-					
+
 					var headerCustom = posterTable.firstChild.cloneNode(true);
 					headerCustom.firstChild.textContent = "Users of Interest";
 					posterTable.insertBefore(headerCustom,posterTable.firstChild);
-					
+
 					var customPosted, adminPosted, modPosted;
 				}
-				
+
 				// Cycle through all the users listed and do whatever
 				var rows = persistObject.selectNodes(doc, posterTable, "TR");
 				for (var i in rows)
@@ -1670,7 +1670,7 @@ function handleMisc(doc)
 					{
 						continue;
 					}
-					
+
 					// Linkify all the post counts to lead to the thread filtered for that poster
 					posterId = parseInt(row.childNodes[1].firstChild.href.match(/userid=(\d+)/i)[1], 10);
 					if (posterId)
@@ -1678,11 +1678,11 @@ function handleMisc(doc)
 						row.childNodes[3].innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
 							+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].innerHTML + "</a>";
 					}
-					
+
 					if ((highlightUsernames || sortReplyList) && posterId)
 					{
 						var userPriority = 0;
-						
+
 						if (persistObject.isMod(posterId))
 						{
 							userPriority = 1;
@@ -1706,7 +1706,7 @@ function handleMisc(doc)
 										row.childNodes[1].firstChild.style.fontWeight = "bold";
 									}
 								}
-								
+
 								userPriority = 3;
 							}
 							else if (userPriority == 1)
@@ -1726,7 +1726,7 @@ function handleMisc(doc)
 								}
 							}
 						}
-					
+
 						// Sort them to the appropriate header
 						if (sortReplyList)
 						{
@@ -1750,7 +1750,7 @@ function handleMisc(doc)
 						}
 					}
 				}
-				
+
 				// If we didn't sort any users to a particular header, remove it
 				if (sortReplyList)
 				{
@@ -1767,7 +1767,7 @@ function handleMisc(doc)
 						posterTable.removeChild(headerMods);
 					}
 				}
-				
+
 				// If we came here from a link inside the thread, we dont want the link at the bottom to take us back to page 1
 				if (doc.location.hash.search(/fromthread/i) > -1)
 				{
@@ -2435,7 +2435,7 @@ function SALR_ContextMenuShowing(e)
 		}
 		catch (e)
 		{
-			
+
 		}
 	}
 }
@@ -2700,15 +2700,15 @@ function addForums(forumsDoc, rowList, index, parentEl, depth)
 	for (index++; index < rowList.length; )
 	{
 		var i = addForums(forumsDoc, rowList, index, fel, depth+1);
-		
+
 		if (i == index)
 		{
 			return i;
 		}
-		
+
 		index = i;
 	}
-	
+
 	return index;
 }
 

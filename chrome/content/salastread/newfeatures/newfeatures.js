@@ -98,6 +98,10 @@ function checkForSQLPatches(build)
 	{
 		persistObject.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer')");
 	}
+	if (build < 80122)
+	{
+		persistObject.database.executeSimpleSQL("DELETE FROM `posticons`");
+	}
 }
 
 // Convert the old 1.0 preferences and thread data to the new 2.0 format
