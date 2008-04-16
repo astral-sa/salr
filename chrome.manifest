@@ -1,5 +1,6 @@
 content	salastread	chrome/content/salastread/ xpcnativewrappers=no
-content	salastread	chrome/content/salastread/ xpcnativewrappers=no	contentaccessible=yes
 skin salastread	classic/1.0	skin/content/
+content	salastread	chrome/content/salastread/ xpcnativewrappers=no	contentaccessible=yes
+skin salastread	classic/1.0	skin/content/	contentaccessible=yes
 overlay	chrome://browser/content/browser.xul		chrome://salastread/content/salastreadOverlay.xul
 overlay	chrome://navigator/content/navigator.xul	chrome://salastread/content/salastreadOverlay.xul
