@@ -576,7 +576,7 @@ salrPersistObject.prototype = {
 			// Only apply this class if something is actually going to be colored
 			if (selfColor != 0)
 			{
-				CSSFile += 'blockquote.salrQuoteOfSelf {';
+				CSSFile += 'div.bbc-block.salrQuoteOfSelf {';
 				CSSFile += 'background:';
 				CSSFile += selfColor;
 				CSSFile += '};\n';
@@ -1678,7 +1678,7 @@ salrPersistObject.prototype = {
 		{
 			return;
 		}
-		CSSFile = 'blockquote.salrQuoteOf'+userid+' {';
+		CSSFile = 'div.bbc-block.salrQuoteOf'+userid+' {';
 		CSSFile += 'background:';
 		CSSFile += colorToUse;
 		CSSFile += '};\n';
@@ -1940,8 +1940,8 @@ salrPersistObject.prototype = {
 				if (this.getPreference("dontConvertQuotedImages"))
 				{
 					// Check if it's in a blockquote
-					if (link.parentNode.parentNode.className.search(/qb2/i) > -1 ||
-						link.parentNode.parentNode.parentNode.className.search(/qb2/i) > -1)
+					if (link.parentNode.parentNode.className.search(/bbc-block/i) > -1 ||
+						link.parentNode.parentNode.parentNode.className.search(/bbc-block/i) > -1)
 					{
 						continue;
 					}

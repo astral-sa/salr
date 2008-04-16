@@ -1,7 +1,5 @@
-// <script> This line added because my IDE has problems detecting JS ~ 0330 ~ duz
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Globals /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Globals ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 var persistObject = null;
@@ -15,8 +13,8 @@ var salastread_savedQuickReply = "";
 var salastread_savedQuickReplyThreadId = "";
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Core Funtions & Events //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Core Funtions & Events /////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // This starts it all. Called once, on browser load, plan accordingly.
@@ -1243,6 +1241,15 @@ function handleShowThread(doc)
 					titleBox.getElementsByTagName('font')[f].style.fontSize = "10px";
 				}
 			}
+			// The new system uses spans but the old stuff hasn't been converted so both branches are needed
+			if (titleBox.getElementsByTagName('span').length > 0)
+			{
+				// They likely have a large, red custom title
+				for(f = 0; f < titleBox.getElementsByTagName('span').length; f++)
+				{
+					titleBox.getElementsByTagName('span')[f].style.fontSize = "10px";
+				}
+			}
 		}
 
 		//Check to see if there's a mod or admin star
@@ -1331,23 +1338,23 @@ function handleShowThread(doc)
 		if (persistObject.getPreference('highlightQuotes'))
 		{
 			var userQuoted;
-			var anyQuotes = persistObject.selectNodes(doc, post, "TBODY//TR/TD/BLOCKQUOTE[contains(@class,'qb2')]/H4");
-			for each (quote in anyQuotes)
+			var anyQuotes = persistObject.selectNodes(doc, post, "TBODY//TR/TD/DIV[contains(@class,'bbc-block')]");
+			for (quote in anyQuotes)
 			{
-				userQuoted = quote.innerHTML.match(/(.*) posted:/);
+				userQuoted = anyQuotes[quote].textContent.match(/(.*) posted:/);
 				if (userQuoted)
 				{
 					userQuoted = userQuoted[1];
 					if (userQuoted == username)
 					{
-						quote.parentNode.className += ' salrQuoteOfSelf';
+						anyQuotes[quote].className += ' salrQuoteOfSelf';
 					}
 					else
 					{
 						userQuotedDetails = persistObject.isUsernameColored(userQuoted);
 						if (userQuotedDetails)
 						{
-							quote.parentNode.className += ' salrQuoteOf' + userQuotedDetails.userid;
+							anyQuotes[quote].className += ' salrQuoteOf' + userQuotedDetails.userid;
 							persistObject.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
 						}
 					}
