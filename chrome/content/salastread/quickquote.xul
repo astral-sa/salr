@@ -68,6 +68,7 @@
 		   <xul:menuitem id="vbcode_sub" label="Subscript" oncommand="getvBcode('sub');"/>
 		   <xul:menuitem id="vbcode_super" label="Superscript" oncommand="getvBcode('super');"/>
 		   <xul:menuitem id="vbcode_underline" style="text-decoration: underline;" label="Underline" oncommand="getvBcode('underline');"/>
+		   <xul:menuitem id="vbcode_fixed" style="font-family: monospace;" label="Fixed" oncommand="getvBcode('fixed');"/>
 		   <xul:menuitem id="vbcode_spoiler" label="Spoiler" oncommand="getvBcode('spoiler');"/>
 		   <xul:menuseparator/>
 		   <xul:menuitem id="vbcode_code" label="Code" oncommand="getvBcode('code');"/>

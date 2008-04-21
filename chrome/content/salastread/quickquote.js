@@ -577,6 +577,10 @@ function getvBcode(command) {
 		case "spoiler":
 			insertTextAtCursor("[spoiler]" + str + "[/spoiler]");
 			break;
+			
+		case "fixed":
+			insertTextAtCursor("[fixed]" + str + "[/fixed]");
+			break;
 		
 		default : alert("vBcode error! No menu option selected.");
 	}
@@ -594,6 +598,7 @@ function doPreview() {
 	vbcode['<i>$1</i>'] = /\[i\](.*?)\[\/i\]/gi;
 	vbcode['<u>$1</u>'] = /\[u\](.*?)\[\/u\]/gi;
 	vbcode['<s>$1</s>'] = /\[s\](.*?)\[\/s\]/gi;
+	vbcode['<tt class="bbc">$1</tt>'] = /\[fixed\](.*?)\[\/fixed\]/gi;
 	
 	markup = markup.replace(/\[sub\]|\[\/sub\]|\[super\]|\[\/super\]/gi, 
 		function(strMatch) {
