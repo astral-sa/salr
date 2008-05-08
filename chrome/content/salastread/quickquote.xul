@@ -62,20 +62,20 @@
 
          <xul:button class="qqbutton" id="vbcodebutton" label="vB code" tabindex="8" type="menu">
           <xul:menupopup id="vbcodemenu">
-		   <xul:menuitem id="vbcode_bold" style="font-weight: bold;" label="Bold" oncommand="getvBcode('bold');"/>
-		   <xul:menuitem id="vbcode_italic" style="font-style: italic;" label="Italic" oncommand="getvBcode('italic');"/>
-		   <xul:menuitem id="vbcode_strike" style="text-decoration: line-through;" label="Strikethrough" oncommand="getvBcode('strike');"/>
-		   <xul:menuitem id="vbcode_sub" label="Subscript" oncommand="getvBcode('sub');"/>
-		   <xul:menuitem id="vbcode_super" label="Superscript" oncommand="getvBcode('super');"/>
-		   <xul:menuitem id="vbcode_underline" style="text-decoration: underline;" label="Underline" oncommand="getvBcode('underline');"/>
-		   <xul:menuitem id="vbcode_fixed" style="font-family: monospace;" label="Fixed" oncommand="getvBcode('fixed');"/>
-		   <xul:menuitem id="vbcode_spoiler" label="Spoiler" oncommand="getvBcode('spoiler');"/>
+		   <xul:menuitem id="vbcode_bold" style="font-weight: bold;" label="Bold" oncommand="getvBcode(event, 'bold');"/>
+		   <xul:menuitem id="vbcode_italic" style="font-style: italic;" label="Italic" oncommand="getvBcode(event, 'italic');"/>
+		   <xul:menuitem id="vbcode_strike" style="text-decoration: line-through;" label="Strikethrough" oncommand="getvBcode(event, 'strike');"/>
+		   <xul:menuitem id="vbcode_sub" label="Subscript" oncommand="getvBcode(event, 'sub');"/>
+		   <xul:menuitem id="vbcode_super" label="Superscript" oncommand="getvBcode(event, 'super');"/>
+		   <xul:menuitem id="vbcode_underline" style="text-decoration: underline;" label="Underline" oncommand="getvBcode(event, 'underline');"/>
+		   <xul:menuitem id="vbcode_fixed" style="font-family: monospace;" label="Fixed" oncommand="getvBcode(event, 'fixed');"/>
+		   <xul:menuitem id="vbcode_spoiler" label="Spoiler" oncommand="getvBcode(event, 'spoiler');"/>
 		   <xul:menuseparator/>
-		   <xul:menuitem id="vbcode_code" label="Code" oncommand="getvBcode('code');"/>
-		   <xul:menuitem id="vbcode_code" label="Quote" oncommand="getvBcode('quote');"/>
+		   <xul:menuitem id="vbcode_code" label="Code" oncommand="getvBcode(event, 'code');"/>
+		   <xul:menuitem id="vbcode_code" label="Quote" oncommand="getvBcode(event, 'quote');"/>
 		   <xul:menuseparator/>
-		   <xul:menuitem id="vbcode_img" label="Image" oncommand="getvBcode('img');"/>
-		   <xul:menuitem id="vbcode_urltag" label="URL" oncommand="getvBcode('urltag');"/>
+		   <xul:menuitem id="vbcode_img" label="Image" oncommand="getvBcode(event, 'img');"/>
+		   <xul:menuitem id="vbcode_urltag" label="URL" oncommand="getvBcode(event, 'urltag');"/>
           </xul:menupopup>
          </xul:button>
 

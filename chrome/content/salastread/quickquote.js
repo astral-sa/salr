@@ -483,6 +483,56 @@ function insertTextAtCursor(emotlabel) {
 	doPreview();
 }
 
+// Insert BBcode tags into our message box, maintaining cursor/selection position in a variery of situations
+// Params: (string) tag to insert, (bool) maintain selection after insertion,
+//			(string) text to insert tags around, (string) tag option string (i.e. [url=(OPTION)])
+function insertTags(tag, saveSel, inner, tagEquals)
+{
+	var msgBox = document.getElementById("messagearea");
+	if (msgBox && tag)
+	{
+		if (tagEquals)
+		{
+			tagOpen = "[" + tag + "=" + tagEquals + "]";
+		}
+		else
+		{
+			tagOpen = "[" + tag + "]";
+		}
+		tagClose = "[/" + tag + "]";
+		
+		var selStart = msgBox.selectionStart;
+		var selEnd = msgBox.selectionEnd;
+		msgBox.focus();
+		if (inner)
+		{
+			insert = tagOpen + inner + tagClose;
+			msgBox.value = msgBox.value.substring(0, selStart) + insert + msgBox.value.substring(selEnd);
+			if (saveSel)
+			{
+				msgBox.setSelectionRange(selStart + tagOpen.length, selStart + tagOpen.length + inner.length);
+			}
+			else
+			{
+				msgBox.setSelectionRange(selStart + insert.length, selStart + insert.length);
+			}
+		}
+		else
+		{
+			msgBox.value = msgBox.value.substring(0, selStart) + tagOpen + tagClose + msgBox.value.substring(selEnd);
+			if (saveSel)
+			{
+				
+			}
+			else
+			{
+				msgBox.setSelectionRange(selStart + tagOpen.length, selStart + tagOpen.length);
+			}
+		}
+		doPreview();
+	}
+}
+
 function doAttach() {
 	if(attachedFileName == "") {
 		var nsIFilePicker = Components.interfaces.nsIFilePicker;
@@ -501,7 +551,7 @@ function doAttach() {
 	}
 }
 
-function getvBcode(command) {
+function getvBcode(event, command) {
 	var str = null;
 	
 	var theBox = document.getElementById("messagearea");
@@ -515,15 +565,17 @@ function getvBcode(command) {
 	var nHeight = theBox.scrollHeight - oHeight;
 	theBox.scrollTop = oPosition + nHeight;
 	
+	var saveSel = event.ctrlKey;
+	
 	switch(command) {
 		case "img":
 			var menuch = str.match(/^(http:\/\/)|(https:\/\/)|(ftp:\/\/)/i);
 			if(menuch) {
-				insertTextAtCursor("[img]" + str + "[/img]");
+				insertTags("img", saveSel, str);
 			} else {
 				var url = prompt('Enter a URL to an image below.', ' ');
 				if(url) {
-					insertTextAtCursor("[img]" + url + "[/img]");
+					insertTags("img", saveSel, url);
 				}
 			}
 			break;
@@ -531,55 +583,55 @@ function getvBcode(command) {
 		case "urltag":
 			var menuch = str.match(/^(http:\/\/)|(https:\/\/)|(ftp:\/\/)/i);
 			if(menuch) {
-				insertTextAtCursor("[url]" + str + "[/url]");
+				insertTags("url", saveSel, str);
 			} else {
 				var url = prompt('You have selected text that may not be a URL. Enter a URL to link to with the selected text or press cancel to make the selected text a link.', ' ');
 				if(!url) {
-					insertTextAtCursor("[url]" + str + "[/url]");
+					insertTags("url", saveSel, str);
 				} else {
-					insertTextAtCursor("[url=" + url + "]" + str + "[/url]");
+					insertTags("url", saveSel, str, url);
 				}
 			}
 			break;
 		
 		case "bold":
-			insertTextAtCursor("[b]" + str + "[/b]");
+			insertTags("b", saveSel, str);
 			break;
 		
 		case "code":
-			insertTextAtCursor("[code]" + str + "[/code]");
+			insertTags("code", saveSel, str);
 			break;
 		
 		case "quote":
-			insertTextAtCursor("[quote]" + str + "[/quote]");
+			insertTags("quote", saveSel, str);
 			break;
 		
 		case "italic":
-			insertTextAtCursor("[i]" + str + "[/i]");
+			insertTags("i", saveSel, str);
 			break;
 		
 		case "underline":
-			insertTextAtCursor("[u]" + str + "[/u]");
+			insertTags("u", saveSel, str);
 			break;
 		
 		case "strike":
-			insertTextAtCursor("[s]" + str + "[/s]");
+			insertTags("s", saveSel, str);
 			break;
 		
 		case "sub":
-			insertTextAtCursor("[sub]" + str + "[/sub]");
+			insertTags("sub", saveSel, str);
 			break;
 		
 		case "super":
-			insertTextAtCursor("[super]" + str + "[/super]");
+			insertTags("super", saveSel, str);
 			break;
 			
 		case "spoiler":
-			insertTextAtCursor("[spoiler]" + str + "[/spoiler]");
+			insertTags("spoiler", saveSel, str);
 			break;
 			
 		case "fixed":
-			insertTextAtCursor("[fixed]" + str + "[/fixed]");
+			insertTags("fixed", saveSel, str);
 			break;
 		
 		default : alert("vBcode error! No menu option selected.");
