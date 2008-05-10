@@ -1860,7 +1860,7 @@ function markThreadReplied(threadid)
 
 function SALR_insertConfigLink(doc)
 {
-	var usercpnode = persistObject.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'usercp.php?s=')]");
+	var usercpnode = persistObject.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'usercp.php')]");
 	if (usercpnode)
 	{
 		var containerLi = doc.createElement("LI");
