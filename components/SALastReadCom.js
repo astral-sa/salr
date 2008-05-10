@@ -384,7 +384,7 @@ salrPersistObject.prototype = {
 		}
 		if (!mDBConn.tableExists("userdata"))
 		{
-			mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT)");
+			mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT, ignored BOOLEAN, hideavater BOOLEAN)");
 			this.prepopulateDB("userdata");
 		}
 		if (!mDBConn.tableExists("posticons"))
@@ -873,7 +873,7 @@ salrPersistObject.prototype = {
 	{
 		if(!this.userExists(userid))
 		{
-			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES (?1, null, 0, 0, 0, 0, 0, null)");
+			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, null, 0, 0, 0, 0, 0, null, 0, 0)");
 			statement.bindInt32Parameter(0, userid);
 			statement.execute();
 			if(username)
@@ -896,7 +896,7 @@ salrPersistObject.prototype = {
 			if (!statement.executeStep())
 			{
 				statement.reset();
-				statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES (?1, ?2, 1, 0, 0, 0, 0, null)");
+				statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 1, 0, 0, 0, 0, null, 0, 0)");
 				statement.bindInt32Parameter(0,userid);
 				statement.bindStringParameter(1,username);
 				statement.executeStep();
@@ -932,7 +932,7 @@ salrPersistObject.prototype = {
 			if (!statement.executeStep())
 			{
 				statement.reset();
-				statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES (?1, ?2, 0, 1, 0, 0, 0, null)");
+				statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 1, 0, 0, 0, null, 0, 0)");
 				statement.bindInt32Parameter(0,userid);
 				statement.bindStringParameter(1,username);
 				statement.executeStep();
@@ -954,6 +954,32 @@ salrPersistObject.prototype = {
 				statement.reset();
 		}
 	},
+	
+	// Toggle whether a user's avatar is shown or not
+	// @param: (int) User ID
+	// @return: nothing
+	toggleAvatarHidden: function(userid, username)
+	{
+		var statement;
+		if (this.isAvatarHidden(userid))
+		{
+			statement = this.database.createStatement("UPDATE `userdata` SET `hideavatar` = 0 WHERE `userid` = ?1");
+		}
+		else
+		{
+			statement = this.database.createStatement("UPDATE `userdata` SET `hideavatar` = 1 WHERE `userid` = ?1");
+		}
+		statement.bindInt32Parameter(0, userid);
+		if (!statement.executeStep())
+		{
+			statement.reset();
+			statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 0, 0, 0, 0, null, 0, 1)");
+			statement.bindInt32Parameter(0,userid);
+			statement.bindStringParameter(1,username);
+			statement.executeStep();
+		}
+		statement.reset();
+	},
 
 	// Checks if a user id is flagged as a mod
 	// @param: (int) User ID
@@ -969,7 +995,7 @@ salrPersistObject.prototype = {
 
 	// Checks if a user id is flagged as an admin
 	// @param: (int) User ID
-	// @return: (boolean) Mod or not
+	// @return: (boolean) Admin or not
 	isAdmin: function(userid)
 	{
 		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `admin` = 1 AND `userid` = ?1");
@@ -977,6 +1003,30 @@ salrPersistObject.prototype = {
 		var isAdmin = statement.executeStep();
 		statement.reset();
 		return isAdmin;
+	},
+	
+	// Checks if a user id is flagged to be ignored
+	// @param: (int) User ID
+	// @return: (boolean) Ignored or not
+	isUserIgnored: function(userid)
+	{
+		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `ignored` = 1 AND `userid` = ?1");
+		statement.bindInt32Parameter(0,userid);
+		var ignored = statement.executeStep();
+		statement.reset();
+		return ignored;
+	},
+	
+	// Checks if a user id is flagged to have their avatar hidden
+	// @param: (int) User ID
+	// @return: (boolean) Hidden or not
+	isAvatarHidden: function(userid)
+	{
+		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `hideavatar` = 1 AND `userid` = ?1");
+		statement.bindInt32Parameter(0,userid);
+		var hidden = statement.executeStep();
+		statement.reset();
+		return hidden;
 	},
 
 	// Try to figure out the current forum we're in
@@ -2131,10 +2181,10 @@ salrPersistObject.prototype = {
 		switch (dbtable)
 		{
 			case "userdata":
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('81482', 'duz', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer')");
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('33775', 'Tivac', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer')");
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer')");
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('20065', 'biznatchio', 0, 0, '#4400bb', 0, 0, 'SALR Creator')");
+				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('81482', 'duz', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
+				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('33775', 'Tivac', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
+				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
+				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('20065', 'biznatchio', 0, 0, '#4400bb', 0, 0, 'SALR Creator', 0, 0)");
 				break;
 		}
 	},

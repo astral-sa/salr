@@ -59,7 +59,7 @@ function SALR_init()
 		needToShowChangeLog = !persistObject.IsDevelopmentRelease;
 		// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 		var buildNum = parseInt(persistObject.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
-		if (buildNum <= 80122) // Put the latest build number to need an SQL patch here
+		if (buildNum <= 80509) // Put the latest build number to need an SQL patch here
 		{
 			needToShowChangeLog = true;
 		}
@@ -1228,26 +1228,34 @@ function handleShowThread(doc)
 		}
 		titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
 
-		if (titleBox && resizeCustomTitleText)
+		if (titleBox)
 		{
-			// Adds a scrollbar if they have a really wide custom title
-			titleBox.style.overflow = "auto";
-			titleBox.style.width = "159px";
-			if (titleBox.getElementsByTagName('font').length > 0)
+			if (persistObject.isAvatarHidden(posterId))
 			{
-				// They likely have a large, red custom title
-				for(f = 0; f < titleBox.getElementsByTagName('font').length; f++)
-				{
-					titleBox.getElementsByTagName('font')[f].style.fontSize = "10px";
-				}
+				// We hate this person's avatar and we want to banish it to the depths of Hell
+				titleBox.style.display = "none";
 			}
-			// The new system uses spans but the old stuff hasn't been converted so both branches are needed
-			if (titleBox.getElementsByTagName('span').length > 0)
+			else if (resizeCustomTitleText)
 			{
-				// They likely have a large, red custom title
-				for(f = 0; f < titleBox.getElementsByTagName('span').length; f++)
+				// Adds a scrollbar if they have a really wide custom title
+				titleBox.style.overflow = "auto";
+				titleBox.style.width = "159px";
+				if (titleBox.getElementsByTagName('font').length > 0)
 				{
-					titleBox.getElementsByTagName('span')[f].style.fontSize = "10px";
+					// They likely have a large, red custom title
+					for(f = 0; f < titleBox.getElementsByTagName('font').length; f++)
+					{
+						titleBox.getElementsByTagName('font')[f].style.fontSize = "10px";
+					}
+				}
+				// The new system uses spans but the old stuff hasn't been converted so both branches are needed
+				if (titleBox.getElementsByTagName('span').length > 0)
+				{
+					// They likely have a large, red custom title
+					for(f = 0; f < titleBox.getElementsByTagName('span').length; f++)
+					{
+						titleBox.getElementsByTagName('span')[f].style.fontSize = "10px";
+					}
 				}
 			}
 		}
@@ -1436,21 +1444,22 @@ function handleShowThread(doc)
 				}
 			}
 		}
+		
+		var userLinks = profileLink.parentNode.parentNode;
 
 		// Add a link to the user's ban history
 		var banHistLink = doc.createElement("li");
 		var banHistAnchor = doc.createElement("a");
 		banHistAnchor.href = "/banlist.php?userid=" + posterId;
 		banHistAnchor.title = "Show poster's ban/probation history.";
-		banHistAnchor.innerHTML = " Ban History";
+		banHistAnchor.innerHTML = "Ban History";
 		banHistLink.appendChild(banHistAnchor);
-		banHistLink.appendChild(doc.createTextNode(" "));
-		profileLink.parentNode.parentNode.appendChild(banHistLink);
+		userLinks.appendChild(doc.createTextNode(" "));
+		userLinks.appendChild(banHistLink);
 
 		// Add user coloring/note links
 		if (highlightUsernames)
 		{
-			var ul = profileLink.parentNode.parentNode;
 			var li = doc.createElement("li");
 			var a = doc.createElement("a");
 			a.id = curPostId + "_" + posterId;
@@ -1458,8 +1467,27 @@ function handleShowThread(doc)
 			a.innerHTML = "Add Coloring/Note";
 			a.onclick = addHighlightedUser;
 			li.appendChild(a);
-			ul.appendChild(li);
+			userLinks.appendChild(doc.createTextNode(" "));
+			userLinks.appendChild(li);
 		}
+		
+		// Add a link to hide/unhide the user's avatar
+		var avLink = doc.createElement("li");
+		var avAnch = doc.createElement("a");
+		avAnch.href = "#ToggleAvatar#" + posterId + "#" + posterName;
+		avAnch.title = "Toggle displaying this poster's avatar.";
+		if (persistObject.isAvatarHidden(posterId))
+		{
+			avAnch.innerHTML = "Show Avatar";
+		}
+		else
+		{
+			avAnch.innerHTML = "Hide Avatar";
+		}
+		avAnch.addEventListener("click", clickToggleAvatar, false);
+		avLink.appendChild(avAnch);
+		userLinks.appendChild(doc.createTextNode(" "));
+		userLinks.appendChild(avLink);
 
 		postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
 		persistObject.convertSpecialLinks(postbody, doc);
@@ -1976,6 +2004,40 @@ function clickMarkUnseen()
 			threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
 		}
 	}
+}
+
+// Event catcher for clicking the "Hide Avatar" or "Unhide Avatar" links
+function clickToggleAvatar()
+{
+	var doc = this.ownerDocument;
+	var idToToggle = this.href.match(/\#ToggleAvatar\#(\d+)\#(.*)$/)[1];
+	var nameToToggle = this.href.match(/\#ToggleAvatar\#(\d+)\#(.*)$/)[2];
+	var alreadyHidden = persistObject.isAvatarHidden(idToToggle);
+	var posts = persistObject.selectNodes(doc, doc, "//table[contains(@id,'post')]");
+	var post, profileLink, posterId, titleBox, toggleLink;
+
+	for (n in posts)
+	{
+		post = posts[n];
+		profileLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
+		posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+		if (posterId == idToToggle)
+		{
+			titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+			toggleLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#ToggleAvatar#')]");
+			if (alreadyHidden)
+			{
+				titleBox.style.display = "block";
+				toggleLink.innerHTML = "Hide Avatar";
+			}
+			else
+			{
+				titleBox.style.display = "none";
+				toggleLink.innerHTML = "Show Avatar";
+			}
+		}
+	}
+	persistObject.toggleAvatarHidden(idToToggle, nameToToggle);
 }
 
 

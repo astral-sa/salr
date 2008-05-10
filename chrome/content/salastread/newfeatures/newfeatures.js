@@ -79,6 +79,10 @@ function checkForSQLPatches(build)
 			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `color` VARCHAR(8)");
 			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `background` VARCHAR(8)");
 		}
+		else
+		{
+			statement.reset();
+		}
 	}
 	if (build < 70418)
 	{
@@ -89,6 +93,31 @@ function checkForSQLPatches(build)
 		statement = persistObject.database.executeSimpleSQL("UPDATE `userdata` SET `color` = 0 WHERE `color` IS NULL");
 		statement = persistObject.database.executeSimpleSQL("UPDATE `userdata` SET `background` = 0 WHERE `background` IS NULL");
 	}
+	if (build < 80122)
+	{
+		persistObject.database.executeSimpleSQL("DELETE FROM `posticons`");
+	}
+	if (build < 80509)
+	{
+		try
+		{
+			statement = persistObject.database.createStatement("SELECT * FROM `userdata` WHERE `ignored` = 0");
+			statement.executeStep();
+		}
+		catch(e)
+		{
+			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
+			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
+		}
+		finally
+		{
+			statement.reset();
+		}
+	}
+	
+	// Always do inserts last so that any table altering takes affect first
+	// ====================================================================
+	
 	if (build < 70531)
 	{
 		// Toss in coloring for biznatchio, Tivac and duz to see if it breaks anything
@@ -96,11 +125,7 @@ function checkForSQLPatches(build)
 	}
 	if (build < 71128 && build > 70531)
 	{
-		persistObject.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer')");
-	}
-	if (build < 80122)
-	{
-		persistObject.database.executeSimpleSQL("DELETE FROM `posticons`");
+		persistObject.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
 	}
 }
 
