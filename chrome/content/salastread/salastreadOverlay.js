@@ -712,7 +712,11 @@ function handleThreadList(doc, forumid, flags)
 
 		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
 		threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
-		threadOPId = parseInt(threadAuthorBox.getElementsByTagName('a')[0].href.match(/userid=(\d+)/i)[1]);
+		threadOPLink = threadAuthorBox.getElementsByTagName('a');
+		if (threadOPLink[0])
+		{
+			threadOPId = parseInt(threadOPLink[0].href.match(/userid=(\d+)/i)[1]);
+		}
 
 		// We may need to fix the reply count link for this thread
 		//  Note: This can be removed when this is fixed forum-side. - RedKazan
@@ -934,7 +938,11 @@ function handleThreadList(doc, forumid, flags)
 
 			// Then color the Killed By column
 			threadLastPostBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'lastpost')]");
-			lastPostId = persistObject.getUserId(threadLastPostBox.getElementsByTagName('a')[0].innerHTML);
+			lastPostLink = threadLastPostBox.getElementsByTagName('a');
+			if (lastPostLink[0])
+			{
+				lastPostId = persistObject.getUserId(lastPostLink[0].innerHTML);
+			}
 
 			if (lastPostId)
 			{
@@ -993,27 +1001,6 @@ function handleShowThread(doc)
 	var failed, i, e; // Little variables that'll get reused
 	if (doc.getElementById('thread') == null)
 	{
-		var archivedLink = persistObject.selectSingleNode(doc, doc, "//div[contains(@class,'inner')]/a[contains(@href,'archives.somethingawful.com/showthread.php?threadid=')]");
-		if (archivedLink)
-		{
-			// This thread has been archived, not everyone has archives so give them an option to unstar it (if it's starred)
-			var archivedId = archivedLink.href.match(/threadid=(\d+)/)[1];
-			if (persistObject.isThreadStarred(archivedId))
-			{
-				var archivedUnstarButtonP = doc.createElement("p");
-				var archivedUnstarButtonForm = doc.createElement("form");
-				var archivedUnstarButtonInput = doc.createElement("input");
-				archivedUnstarButtonInput.type = "button";
-				archivedUnstarButtonInput.name = "archivedunstarbutton";
-				archivedUnstarButtonInput.value = "Click here to unstar this thread.";
-				archivedUnstarButtonInput.id = archivedId;
-				archivedUnstarButtonInput.onclick = unstarButtonPress;
-				archivedUnstarButtonForm.appendChild(archivedUnstarButtonInput);
-				archivedUnstarButtonP.appendChild(doc.createElement("br"));
-				archivedUnstarButtonP.appendChild(archivedUnstarButtonForm);
-				archivedLink.parentNode.appendChild(archivedUnstarButtonP);
-			}
-		}
 		// If there is no thread div then abort since something's not right
 		return;
 	}
@@ -1403,6 +1390,17 @@ function handleShowThread(doc)
 			postIdLink.parentNode.insertBefore(slink, postIdLink);
 			postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
 		}
+		
+		var userfilter = doc.location.href.match(/&userid=[0-9]+/);
+		if (userfilter && postIdLink && postid)
+		{
+			// We are filtering this thread by userid, so lets change the ? link to take us back to this post in context
+			var filterlink = persistObject.selectSingleNode(doc, postIdLink.parentNode, "A[contains(@href,'&userid=')]");
+			if (filterlink)
+			{
+				filterlink.href = "?goto=post&postid=" + postid
+			}
+		}
 
 		//grab this once up here to avoid repetition
 		if (useQuickQuote || hideEditButtons)
@@ -1600,6 +1598,25 @@ function handleAccount(doc)
 			persistObject.setPreference("userId", 0);
 		}
 	}
+	else
+	{
+		// There is no action specified, we may be logging in
+		var div = doc.getElementById("main_wide");
+		if (div)
+		{
+			var loginMsg = persistObject.selectSingleNode(doc, div, "DIV[contains(./text(),'GLUE')]");
+			if (loginMsg)
+			{
+				var name = loginMsg.firstChild.textContent.match(/GLUE GLUEEEEE GLUUUUUUEEE, (.*)!  GLUUUEEE/);
+				// Note that there are 2 spaces after the !, the extra space doesn't show up on the page but it's in the raw HTML
+				if (name)
+				{
+					name = name[1];
+					persistObject.setPreference("username", name);
+				}
+			}
+		}
+	}
 }
 
 function handleMisc(doc)
@@ -1610,60 +1627,6 @@ function handleMisc(doc)
 		// Handle the "Who posted?" list window
 		if (action[1] == "whoposted")
 		{
-			// Rebuild the page for archives, it's ugly and incompatible
-			if (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1)
-			{
-				var oldTable = persistObject.selectSingleNode(doc,doc,"//BODY/TABLE/TBODY/TR/TD/TABLE");
-				if (oldTable)
-				{
-					var tempObj,tempWhere, tempText;
-					var body = doc.getElementById("something_awful");
-
-					tempObj = doc.createElement("DIV");
-					tempObj.id = "main_stretch";
-					tempObj.className = "standard";
-					body.insertBefore(tempObj,body.childNodes[1]);
-					tempWhere = tempObj;
-
-					tempObj = persistObject.selectSingleNode(doc,oldTable,"//B[contains(./text(),'Total Posts')]");
-					tempText = tempObj.textContent;
-					tempObj = doc.createElement("H2");
-					tempObj.textContent = tempText;
-					tempWhere.appendChild(tempObj);
-
-					tempObj = doc.createElement("DIV");
-					tempObj.className = "inner";
-					tempWhere.appendChild(tempObj);
-					tempWhere = tempObj;
-
-					tempObj = oldTable.parentNode.parentNode.parentNode.parentNode;
-					oldTable.className = "standard";
-					tempWhere.appendChild(oldTable);
-					body.removeChild(tempObj);
-
-					oldTable = oldTable.childNodes[1];
-					oldTable.removeChild(oldTable.firstChild);
-					oldTable.removeChild(oldTable.firstChild);
-					oldTable.firstChild.className = "smalltext";
-					tempObj = doc.createElement("TH");
-					tempObj.appendChild(oldTable.firstChild.childNodes[1].firstChild);
-					oldTable.firstChild.removeChild(oldTable.firstChild.childNodes[1]);
-					oldTable.firstChild.insertBefore(tempObj,oldTable.firstChild.childNodes[1]);
-					tempObj = doc.createElement("TH");
-					tempObj.appendChild(oldTable.firstChild.childNodes[3].firstChild);
-					oldTable.firstChild.removeChild(oldTable.firstChild.childNodes[3]);
-					oldTable.firstChild.insertBefore(tempObj,oldTable.firstChild.childNodes[3]);
-					oldTable.childNodes[oldTable.childNodes.length-2].className = "smalltext";
-					tempObj = doc.createElement("TH");
-					tempObj.colSpan = 2;
-					tempObj.appendChild(oldTable.childNodes[oldTable.childNodes.length-2].childNodes[1].childNodes[1]);
-					oldTable.childNodes[oldTable.childNodes.length-2].removeChild(oldTable.childNodes[oldTable.childNodes.length-2].childNodes[1]);
-					oldTable.childNodes[oldTable.childNodes.length-2].insertBefore(tempObj,oldTable.childNodes[oldTable.childNodes.length-2].childNodes[1]);
-				}
-				// Todo: incomplete: still need to rebuild the individual row structure
-				return;
-			}
-
 			var posterTable = persistObject.selectSingleNode(doc,doc,"//DIV[@id='main_stretch']/DIV/TABLE/TBODY");
 			var threadId = parseInt(doc.location.search.match(/threadid=(\d+)/i)[1], 10);
 			if (posterTable && threadId)
@@ -1708,11 +1671,11 @@ function handleMisc(doc)
 
 					// Linkify all the post counts to lead to the thread filtered for that poster
 					posterId = parseInt(row.childNodes[1].firstChild.href.match(/userid=(\d+)/i)[1], 10);
-					if (posterId)
-					{
-						row.childNodes[3].innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
-							+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].innerHTML + "</a>";
-					}
+				//	if (posterId)
+				//	{
+				//		row.childNodes[3].innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
+				//			+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].innerHTML + "</a>";
+				//	}
 
 					if ((highlightUsernames || sortReplyList) && posterId)
 					{
@@ -2310,6 +2273,11 @@ function SALR_DirectionalNavigate(doc, dir)
 	{
 		sortorder = "&sortorder=desc";
 	}
+	var daysprune = doc.location.href.match(/&daysprune=[0-9]+/);
+	if (!daysprune)
+	{
+		daysprune = "&daysprune=30";
+	}
 	var userfilter = doc.location.href.match(/&userid=[0-9]+/);
 	if (!userfilter)
 	{
@@ -2347,13 +2315,12 @@ function SALR_DirectionalNavigate(doc, dir)
 			}
 			else
 			{
-				doc.location = urlbase + "/forumdisplay.php?" + forumid + "&daysprune=30" + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage - 1);
+				doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage - 1);
 			}
 		}
 	}
 	else if (dir == "right")
 	{
-		var curPage = doc.__SALR_curPage;
 		var maxPage = doc.__SALR_maxPage;
 		if (maxPage > curPage)
 		{
@@ -2364,7 +2331,7 @@ function SALR_DirectionalNavigate(doc, dir)
 			}
 			else
 			{
-				doc.location = urlbase + "/forumdisplay.php?"+forumid+"&daysprune=30" + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage + 1);
+				doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage + 1);
 			}
 		}
 	}

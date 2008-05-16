@@ -384,7 +384,7 @@ salrPersistObject.prototype = {
 		}
 		if (!mDBConn.tableExists("userdata"))
 		{
-			mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT, ignored BOOLEAN, hideavater BOOLEAN)");
+			mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT, ignored BOOLEAN, hideavatar BOOLEAN)");
 			this.prepopulateDB("userdata");
 		}
 		if (!mDBConn.tableExists("posticons"))
