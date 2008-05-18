@@ -59,5 +59,12 @@
 
 	<!-- according to docs anything not a prefpane should come last to avoid weird behavior.  Go figure. -->
 	<script type="application/x-javascript" src="chrome://salastread/content/pref.js"/>
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-about.js"/>
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-color.js"/>
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-images.js"/>
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-forums.js"/>
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-ignored.js"/>
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-menu.js"/>
+	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-users.js"/>
 
 </prefwindow>

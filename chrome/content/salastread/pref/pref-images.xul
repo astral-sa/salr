@@ -3,8 +3,6 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	
-	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-images.js"/>
-	
 	<prefpane id="images" onpaneload="initImages()">
 	<preferences>
 		<preference id="convertTextToImage" 		name="extensions.salastread.convertTextToImage" 		type="bool"/>

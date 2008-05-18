@@ -3,8 +3,6 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-forums.js"/>
-
 	<prefpane id="forums" onpaneload="initForums()" >
 		<preferences>
 			<preference id="enableForumNavigator"		name="extensions.salastread.enableForumNavigator" 	type="bool"/>

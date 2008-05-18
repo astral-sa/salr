@@ -6,8 +6,6 @@
 
 	<prefpane id="colors" onpaneload="loadColors()">
 
-		<script type="application/x-javascript" src="chrome://salastread/content/pref/pref-color.js"/>
-
 		<preferences>
 			<!-- General Colors -->
 			<preference id="videoEmbedderBG" name="extensions.salastread.readLight" type="string"/>

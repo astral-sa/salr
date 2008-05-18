@@ -1,9 +1,9 @@
 function generalInit() {
    initSettings('Quick Reply Settings');
-   cbSet();
+   qrcbSet();
 }
 
-function cbSet() {
+function qrcbSet() {
    var qqt = document.getElementById("qqtoggles");
    if ( !document.getElementById("toggle_useQuickQuote").getAttribute("checked") ) {
       var child = qqt.firstChild;

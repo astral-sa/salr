@@ -1,7 +1,7 @@
 function menuInit() {
 	try {
 		pinnedListInit();
-		cbSet();
+		mcbSet();
 	} catch(e) {
 		alert("init error: "+e);
 	}
@@ -89,7 +89,7 @@ function pinnedListInit() {
 	}
 }
 
-function cbSet() {
+function mcbSet() {
 	var dis = false;
 	if ( document.getElementById("showSaMenu").getAttribute("checked") ) {
 		document.getElementById("nestSaMenu").setAttribute("disabled",false);
