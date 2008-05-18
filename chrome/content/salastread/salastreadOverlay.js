@@ -2492,11 +2492,11 @@ function SALR_ContextVis_IgnoreThisThread(doc)
 			{
 				threadid = tidmatch[1];
 
-				SALR_ShowContextMenuItem("salastread-context-ignorethread");
 				document.getElementById("salastread-context-ignorethread").data = threadid;
-				document.getElementById("salastread-context-ignorethread").lpdtvalue = target.lpdtvalue;
+				//document.getElementById("salastread-context-ignorethread").lpdtvalue = target.lpdtvalue;
 				document.getElementById("salastread-context-ignorethread").target = target;
 				document.getElementById("salastread-context-ignorethread").label = "Ignore This Thread (" + threadid + ")";
+				SALR_ShowContextMenuItem("salastread-context-ignorethread");
 			}
 		}
 
@@ -2518,7 +2518,7 @@ function SALR_ContextVis_StarThisThread(doc)
 				threadid = tidmatch[1];
 				SALR_ShowContextMenuItem("salastread-context-starthread");
 				document.getElementById("salastread-context-starthread").data = threadid;
-				document.getElementById("salastread-context-starthread").lpdtvalue = target.lpdtvalue;
+				//document.getElementById("salastread-context-starthread").lpdtvalue = target.lpdtvalue;
 				document.getElementById("salastread-context-starthread").target = target;
 
 				document.getElementById("salastread-context-starthread").label = (persistObject.isThreadStarred(threadid) ? 'Unstar' : 'Star') + " This Thread (" + threadid + ")";
@@ -2531,7 +2531,7 @@ function SALR_ContextVis_StarThisThread(doc)
 function SALR_StarThread()
 {
 	var threadid = document.getElementById("salastread-context-starthread").data;
-	var lpdtvalue = document.getElementById("salastread-context-starthread").lpdtvalue;
+	//var lpdtvalue = document.getElementById("salastread-context-starthread").lpdtvalue;
 	var target = document.getElementById("salastread-context-starthread").target;
 	if (threadid)
 	{
@@ -2553,7 +2553,7 @@ function SALR_StarThread()
 function SALR_IgnoreThread()
 {
 	var threadid = document.getElementById("salastread-context-ignorethread").data;
-	var lpdtvalue = document.getElementById("salastread-context-ignorethread").lpdtvalue;
+	//var lpdtvalue = document.getElementById("salastread-context-ignorethread").lpdtvalue;
 	var target = document.getElementById("salastread-context-ignorethread").target;
 	if (threadid)
 	{
