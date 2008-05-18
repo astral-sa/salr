@@ -146,9 +146,11 @@ function SALR_onLoad(e)
 	try
 	{
 		// Set a listener on the context menu
+		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
+		
 		if (persistObject.getPreference("enableContextMenu"))
 		{
-			document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
+			//document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
 		}
 		else
 		{
@@ -2469,8 +2471,10 @@ function SALR_ContextMenuShowing(e)
 
 			if(doc.__salastread_processed == true)
 			{
-				SALR_ContextVis_IgnoreThisThread(doc);
-				SALR_ContextVis_StarThisThread(doc);
+				//SALR_ContextVis_IgnoreThisThread(doc);
+				//SALR_ContextVis_StarThisThread(doc);
+				if (persistObject.getPreference("enableContextMenu"))
+					SALR_ContextVis();
 			}
 		}
 		catch (e)
@@ -2480,10 +2484,11 @@ function SALR_ContextMenuShowing(e)
 	}
 }
 
-function SALR_ContextVis_IgnoreThisThread(doc)
+function SALR_ContextVis()
 {
 	var target = gContextMenu.target;
 	var threadid = null;
+
 	while (target) {
 		if (target.className)
 		{
@@ -2491,47 +2496,26 @@ function SALR_ContextVis_IgnoreThisThread(doc)
 			if (tidmatch)
 			{
 				threadid = tidmatch[1];
-
 				document.getElementById("salastread-context-ignorethread").data = threadid;
-				//document.getElementById("salastread-context-ignorethread").lpdtvalue = target.lpdtvalue;
 				document.getElementById("salastread-context-ignorethread").target = target;
 				document.getElementById("salastread-context-ignorethread").label = "Ignore This Thread (" + threadid + ")";
-				SALR_ShowContextMenuItem("salastread-context-ignorethread");
-			}
-		}
-
-		target = target.parentNode;
-	}
-}
-
-function SALR_ContextVis_StarThisThread(doc)
-{
-	var target = gContextMenu.target;
-	var threadid = null;
-	while (target)
-	{
-		if(target.className)
-		{
-			var tidmatch = target.className.match(/salastread_thread_(\d+)/);
-			if (tidmatch)
-			{
-				threadid = tidmatch[1];
-				SALR_ShowContextMenuItem("salastread-context-starthread");
 				document.getElementById("salastread-context-starthread").data = threadid;
-				//document.getElementById("salastread-context-starthread").lpdtvalue = target.lpdtvalue;
 				document.getElementById("salastread-context-starthread").target = target;
-
 				document.getElementById("salastread-context-starthread").label = (persistObject.isThreadStarred(threadid) ? 'Unstar' : 'Star') + " This Thread (" + threadid + ")";
+				// Need to set labels before these functions are called - FF3
+				SALR_ShowContextMenuItem("salastread-context-ignorethread");
+				// The whole function doesn't need to run again, though. Just one line:
+				//SALR_ShowContextMenuItem("salastread-context-starthread");
+				document.getElementById("salastread-context-starthread").style.display = "-moz-box";
 			}
 		}
-		target = target.parentNode;
+			target = target.parentNode;
 	}
 }
 
 function SALR_StarThread()
 {
 	var threadid = document.getElementById("salastread-context-starthread").data;
-	//var lpdtvalue = document.getElementById("salastread-context-starthread").lpdtvalue;
 	var target = document.getElementById("salastread-context-starthread").target;
 	if (threadid)
 	{
@@ -2553,7 +2537,6 @@ function SALR_StarThread()
 function SALR_IgnoreThread()
 {
 	var threadid = document.getElementById("salastread-context-ignorethread").data;
-	//var lpdtvalue = document.getElementById("salastread-context-ignorethread").lpdtvalue;
 	var target = document.getElementById("salastread-context-ignorethread").target;
 	if (threadid)
 	{
