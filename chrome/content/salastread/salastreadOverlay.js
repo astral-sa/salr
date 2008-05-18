@@ -2462,7 +2462,11 @@ function SALR_ContextMenuShowing(e)
 		SALR_HideContextMenuItems();
 		try
 		{
+
 			var doc = document.getElementById("content").mCurrentBrowser.contentDocument;
+			if (doc.wrappedJSObject) //FF3 fix
+				doc = doc.wrappedJSObject; 
+
 			if(doc.__salastread_processed == true)
 			{
 				SALR_ContextVis_IgnoreThisThread(doc);
