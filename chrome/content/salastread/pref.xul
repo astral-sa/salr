@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://salastread/content/pref.css" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/colorpicker/colorpicker.css" type="text/css"?>
 
 <prefwindow id="salastreadpref" 
 			title="SALR Preferences" 

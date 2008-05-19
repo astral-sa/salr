@@ -8,10 +8,9 @@
 		<xbl:content>
 			<hbox align="center" flex="1">
 				<spacer flex="1"/>
-				<label xbl:inherits="value=label,disabled" control="pickerbutton"/>
+				<label xbl:inherits="value=label"/>
 				<button class="colorpicker-button" anonid="pickerbutton" id="pickerbutton"
-						oncommand="parentNode.parentNode.showPopup();"
-						xbl:inherits="disabled">
+						oncommand="parentNode.parentNode.showPopup();">
 					<box class="colorpickerthumbnail" anonid="colorpickerthumbnail"/>
 					<image class="colorpickerdroparrow" src="chrome://global/skin/arrow/arrow-dn.gif"/>
 				</button>

@@ -60,17 +60,3 @@ function editColor(event, targetEl) {
 		}
 	}
 }
-
-function toggleUserHighlighting() {
-	if(document.getElementById("userHighlighting").checked) {
-		//enable the others
-		document.getElementById("adminColorPicker").disabled = false;
-		document.getElementById("modColorPicker").disabled = false;
-		document.getElementById("opColorPicker").disabled = false;
-	} else {
-		//disable
-		document.getElementById("adminColorPicker").disabled = true;
-		document.getElementById("modColorPicker").disabled = true;
-		document.getElementById("opColorPicker").disabled = true;
-	}	
-}
