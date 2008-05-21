@@ -47,6 +47,15 @@ window {
  font-weight: bold;
 }
 
+.salr_posticon_popup .menu-iconic-icon {
+  width: 60px;
+  height: 15px;
+}
+
+.salr_posticon_popup .menu-iconic-accel {
+  display: none;
+}
+
 #emoticonbutton,
 #waffleimagesbtn {
  min-width: 30px;

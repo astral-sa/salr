@@ -29,7 +29,7 @@
        <xul:textbox id="subject" flex="10" />
        <xul:label value="Post icon:" />
        <xul:button id='posticonbutton' class="qqbutton" image="http://fi.somethingawful.com/forums/posticons/byob-salt.gif" type="menu">
-        <xul:menupopup id="posticonmenu">
+        <xul:menupopup id="posticonmenu" class="salr_posticon_popup">
          <xul:hbox id='posticonmenuhbox' />
         </xul:menupopup>
        </xul:button>
