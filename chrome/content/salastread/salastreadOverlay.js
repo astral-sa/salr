@@ -1085,7 +1085,7 @@ function handleShowThread(doc)
 	}
 
 	// Insert the thread paginator
-	if (persistObject.getPreference("enablePageNavigator"))
+	if (persistObject.getPreference("enablePageNavigator") && !singlePost)
 	{
 		persistObject.addPagination(doc);
 	}
