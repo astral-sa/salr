@@ -39,6 +39,7 @@
 			<preference id="highlightQuotePostFYAD" name="extensions.salastread.highlightQuotePostFYAD" type="string"/>
 
 			<!-- BYOB Thread Colors (Unused atm) -->
+			<!-- Then we should comment them out.
 			<preference id="postedInThreadReBYOB" 	name="extensions.salastread.postedInThreadReBYOB" 	type="string"/>
 			<preference id="readDarkBYOB" 			name="extensions.salastread.readDarkBYOB" 			type="string"/>
 			<preference id="readLightBYOB" 			name="extensions.salastread.readLightBYOB" 			type="string"/>
@@ -50,7 +51,7 @@
 			<preference id="unreadLightBYOB" 		name="extensions.salastread.unreadLightBYOB" 		type="string"/>
 			<preference id="unseenPostDarkBYOB" 	name="extensions.salastread.unseenPostDarkBYOB" 	type="string"/>
 			<preference id="unseenPostLightBYOB" 	name="extensions.salastread.unseenPostLightBYOB" 	type="string"/>
-
+			-->
 			<!-- Coloring Toggles -->
 			<preference id="dontHighlightThreads" 	name="extensions.salastread.dontHighlightThreads" 	type="bool"/>
 			<preference id="dontHighlightPosts" 	name="extensions.salastread.dontHighlightPosts" 	type="bool"/>
@@ -78,7 +79,7 @@
 					<menupopup>
 						<menuitem label="Normal" 	value=""/>
 						<menuitem label="FYAD"		value="FYAD"/>
-						<menuitem label="BYOB"		value="BYOB"/>
+						<!--<menuitem label="BYOB"		value="BYOB"/>-->
 					</menupopup>
 				</menulist>
 				<button label="Load Default Colors" oncommand="loadDefaultColors()"/>
