@@ -56,6 +56,11 @@ window {
   display: none;
 }
 
+#emoticonmenu .menu-iconic-icon {
+  width: auto;
+  height: auto;
+}
+
 #emoticonbutton,
 #waffleimagesbtn {
  min-width: 30px;
