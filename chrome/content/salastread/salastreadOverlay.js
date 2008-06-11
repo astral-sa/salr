@@ -28,9 +28,9 @@ try
 	}
 	SALR_init();
 
-	document.addEventListener('load', SALR_windowOnload, true);
-	document.addEventListener('beforeunload', salastread_windowOnBeforeUnload, true);
-	document.addEventListener('unload', salastread_windowOnUnload, true);
+	window.addEventListener('load', SALR_windowOnload, true);
+	window.addEventListener('beforeunload', salastread_windowOnBeforeUnload, true);
+	window.addEventListener('unload', salastread_windowOnUnload, true);
 }
 catch (e)
 {
@@ -79,20 +79,27 @@ function SALR_init()
 }
 
 // New and improved onload handler wrapper
-// It waits until we visit Something Awful before adding the SA specific onload
-// NOTE: This is fired on every page load and then some, plan accordingly
 
-function SALR_windowOnload(e)
-{
-	var appcontent = document.getElementById("appcontent"); // browser
-	var doc = e.originalTarget; // document
-
+function SALR_windowOnload(e) {
+	if (document.getElementById('appcontent')) {
+		window.addEventListener('DOMContentLoaded', SALR_onLoad, true);
+	}
 	if (persistObject.getPreference("showSAForumMenu") && (document.getElementById("salr-menu") == null))
 	{
 		SALR_buildForumMenu();
 	}
+}
 
-	if (appcontent && doc.location && (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1))
+// New and improved onload handler
+
+function SALR_onLoad(e)
+{
+	var appcontent = document.getElementById("appcontent"); // browser
+	var doc = e.originalTarget; // document
+	
+	if(!appcontent || !doc.location) return;
+	
+	if (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1 || !persistObject.getPreference("enableContextMenu") || persistObject.getPreference("disabled"))
 	{
 		// Remove the context menu since we're not at Something Awful
 		var cacm = document.getElementById("contentAreaContextMenu");
@@ -107,37 +114,21 @@ function SALR_windowOnload(e)
 			moptsep.style.display = "none";
 		}
 	}
-
-	if (appcontent && doc.location && (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) > -1))
-	{
-		// Once we visit Something Awful, start doing Something Awful stuff
-		appcontent.addEventListener("load", SALR_onLoad, true);
-	}
-
-}
-
-// New and improved onload handler
-// Designed to only load when we're at Something Awful, then load every page load there after
-// Hopefully this will cut down on memory usage
-// NOTE: This won't fire until Something Awful is visited, then it fires on every page load
-
-function SALR_onLoad(e)
-{
-	// This if statement included to help debugging, change the pref value to disable without restarting
-	if (persistObject.getPreference("disabled"))
-	{
-		return;
-	}
-
-	var doc = e.originalTarget;
+	// Set a listener on the context menu
+	else document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
 
 	if (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1)
 	{
 		// We're not at Something Awful
 		return;
 	}
+		
+	if (persistObject.getPreference("disabled"))
+	{
+		return;
+	}
 
-	if (doc.__salastread_processed)
+		if (doc.__salastread_processed)
 	{
 		// We've already been here
 		return;
@@ -145,29 +136,6 @@ function SALR_onLoad(e)
 
 	try
 	{
-		// Set a listener on the context menu
-		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
-		
-		if (persistObject.getPreference("enableContextMenu"))
-		{
-			//document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
-		}
-		else
-		{
-			// The context menu is turned off, so remove it
-			var cacm = document.getElementById("contentAreaContextMenu");
-			var mopt = document.getElementById("salastread-context-menu");
-			var moptsep = document.getElementById("salastread-context-menuseparator");
-			if (mopt)
-			{
-				mopt.style.display = "none";
-			}
-			if (moptsep)
-			{
-				moptsep.style.display = "none";
-			}
-		}
-
 		var pageHandler;
 		var pageName = doc.location.pathname.match(/^\/(\w+)\.php/i);
 		if (pageName)
