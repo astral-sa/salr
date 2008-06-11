@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.080518');
+pref('extensions.salastread.currentVersion', '1.99.080610');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -36,7 +36,7 @@ pref('extensions.salastread.enablePageNavigator', true);
 pref('extensions.salastread.enableForumNavigator', true);
 pref('extensions.salastread.lastPostOnNavigator', true);
 pref('extensions.salastread.gestureEnable', false);
-pref('extensions.salastread.suppressErrors', false);
+pref('extensions.salastread.suppressErrors', true);
 pref('extensions.salastread.gestureButton', 2);
 
 //IMAGE HANDLING
