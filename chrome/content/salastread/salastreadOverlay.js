@@ -81,7 +81,8 @@ function SALR_init()
 // New and improved onload handler wrapper
 
 function SALR_windowOnload(e) {
-	if (document.getElementById('appcontent')) {
+	if (document.getElementById('appcontent'))
+	{
 		window.addEventListener('DOMContentLoaded', SALR_onLoad, true);
 	}
 	if (persistObject.getPreference("showSAForumMenu") && (document.getElementById("salr-menu") == null))
@@ -99,7 +100,18 @@ function SALR_onLoad(e)
 	
 	if(!appcontent || !doc.location) return;
 	
-	if (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1 || !persistObject.getPreference("enableContextMenu") || persistObject.getPreference("disabled"))
+	// nsSimpleURIs don't have a .host, so check this
+	try
+	{
+		doc.location.host;
+		var simpleURI = false;
+	}
+	catch (ex)
+	{
+		var simpleURI = true;
+	}
+	
+	if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1 || !persistObject.getPreference("enableContextMenu") || persistObject.getPreference("disabled"))
 	{
 		// Remove the context menu since we're not at Something Awful
 		var cacm = document.getElementById("contentAreaContextMenu");
@@ -117,7 +129,7 @@ function SALR_onLoad(e)
 	// Set a listener on the context menu
 	else document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
 
-	if (doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1)
+	if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1)
 	{
 		// We're not at Something Awful
 		return;
