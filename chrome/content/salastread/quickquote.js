@@ -39,10 +39,45 @@ function recoverLastPost() {
 }
 
 function checkKeys(e) {
+	// changes on 16-June-08 by grrowl for awesoem quickformat
 	if(e.ctrlKey) {
-		if((e.charCode == 119 || e.charCode == 87)) {   // "w"
-			releaseVars();
-			window.close();
+		switch(e.charCode) {
+			case 119: case 87: // "w"
+				releaseVars();
+				window.close();
+				break;
+			
+			case 98: case 66: // "b"
+				getvBcode(e, 'bold');
+				break;
+				
+			case 105: case 73: // "i"
+				getvBcode(e, 'italic');
+				break;
+			
+			case 115: case 83: // "s"
+				getvBcode(e, 'strike');
+				break;
+			
+			case 45: // numpad -
+				getvBcode(e, 'sub');
+				break;
+			
+			case 43: // numpad +
+				getvBcode(e, 'super');
+				break;
+				
+			case 117: case 85: // "u"
+				getvBcode(e, 'underline');
+				break;
+
+			case 102: case 70: // "f"
+				getvBcode(e, 'fixed');
+				break;
+
+			case 112: case 80: // "p"
+				getvBcode(e, 'spoiler');
+				break;
 		}
 	}
 }
