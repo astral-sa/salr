@@ -910,7 +910,7 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	removeMod: function(userid)
 	{
-		if(this.isMod(userid))
+		if (this.isMod(userid))
 		{
 			var statement = this.database.createStatement("UPDATE `userdata` SET `mod` = 0 WHERE `userid` = ?1");
 				statement.bindInt32Parameter(0, userid);
@@ -954,7 +954,7 @@ salrPersistObject.prototype = {
 				statement.reset();
 		}
 	},
-	
+
 	// Toggle whether a user's avatar is shown or not
 	// @param: (int) User ID
 	// @return: nothing
@@ -1004,7 +1004,7 @@ salrPersistObject.prototype = {
 		statement.reset();
 		return isAdmin;
 	},
-	
+
 	// Checks if a user id is flagged to be ignored
 	// @param: (int) User ID
 	// @return: (boolean) Ignored or not
@@ -1016,7 +1016,7 @@ salrPersistObject.prototype = {
 		statement.reset();
 		return ignored;
 	},
-	
+
 	// Checks if a user id is flagged to have their avatar hidden
 	// @param: (int) User ID
 	// @return: (boolean) Hidden or not
@@ -1891,6 +1891,11 @@ salrPersistObject.prototype = {
 		if (doc.baseURI.search(/pagenumber=(\d+)/) > -1) // Is the pagenumber already in the uri?
 		{
 			result = doc.baseURI.replace(/pagenumber=(\d+)/, replacement);
+			// If we're in showthread, remove the anchor since it's page specific
+			if (doc.location.pathname == "/showthread.php")
+			{
+				result = result.replace(/#.*/, '');
+			}
 		}
 		else
 		{
