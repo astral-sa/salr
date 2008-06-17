@@ -345,9 +345,13 @@ salrPersistObject.prototype = {
 	//
 
 	_needToExpireThreads: true,
-	modArray: Array(),
-	adminArray: Array(),
-	ignoredArray: Array(),
+	modArray: null,
+	adminArray: null,
+	ignoredArray: null,
+	coloredArray: null,
+	backgroundArray: null,
+	notedArray: null,
+	avatarArray: null,
 
 	// Return a resource pointing to the proper preferences branch
 	get preferences()
@@ -989,6 +993,7 @@ salrPersistObject.prototype = {
 	populateModArray: function()
 	{
 		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `mod` = 1");
+		this.modArray = Array();
 		while (statement.executeStep())
 		{
 			this.modArray[statement.getInt32(0)] = true;
@@ -1001,7 +1006,7 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Mod or not
 	isMod: function(userid)
 	{
-		if (this.modArray.length < 1)
+		if (this.modArray == null)
 		{
 			this.populateModArray();
 		}
@@ -1014,6 +1019,7 @@ salrPersistObject.prototype = {
 	populateAdminArray: function()
 	{
 		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `admin` = 1");
+		this.adminArray = Array();
 		while (statement.executeStep())
 		{
 			this.adminArray[statement.getInt32(0)] = true;
@@ -1026,11 +1032,25 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Admin or not
 	isAdmin: function(userid)
 	{
-		if (this.adminArray.length < 1)
+		if (this.adminArray == null)
 		{
 			this.populateAdminArray();
 		}
 		return (this.adminArray[userid] == true);
+	},
+
+	// Fill up this.ignoredArray with the userids of ignored users
+	// @param: none
+	// @return: none
+	populateIgnoredArray: function()
+	{
+		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `ignored` = 1");
+		this.ignoredArray = Array();
+		while (statement.executeStep())
+		{
+			this.ignoredArray[statement.getInt32(0)] = true;
+		}
+		statement.reset();
 	},
 
 	// Checks if a user id is flagged to be ignored
@@ -1038,11 +1058,11 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Ignored or not
 	isUserIgnored: function(userid)
 	{
-		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `ignored` = 1 AND `userid` = ?1");
-		statement.bindInt32Parameter(0,userid);
-		var ignored = statement.executeStep();
-		statement.reset();
-		return ignored;
+		if (this.ignoredArray == null)
+		{
+			this.populateIgnoredArray();
+		}
+		return (this.ignoredArray[userid] == true);
 	},
 
 	// Checks if a user id is flagged to have their avatar hidden
