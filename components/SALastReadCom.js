@@ -345,13 +345,13 @@ salrPersistObject.prototype = {
 	//
 
 	_needToExpireThreads: true,
-	modArray: null,
-	adminArray: null,
-	ignoredArray: null,
-	coloredArray: null,
-	backgroundArray: null,
-	notedArray: null,
-	avatarArray: null,
+	modCache: null,
+	adminCache: null,
+	ignoredCache: null,
+	coloredCache: null,
+	backgroundCache: null,
+	notedCache: null,
+	avatarCache: null,
 
 	// Return a resource pointing to the proper preferences branch
 	get preferences()
@@ -987,16 +987,16 @@ salrPersistObject.prototype = {
 		statement.reset();
 	},
 
-	// Fill up this.modArray with the userids of the mods
+	// Fill up this.modCache with the userids of the mods
 	// @param: none
 	// @return: none
-	populateModArray: function()
+	populateModCache: function()
 	{
 		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `mod` = 1");
-		this.modArray = Array();
+		this.modCache = Array();
 		while (statement.executeStep())
 		{
-			this.modArray[statement.getInt32(0)] = true;
+			this.modCache[statement.getInt32(0)] = true;
 		}
 		statement.reset();
 	},
@@ -1006,23 +1006,23 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Mod or not
 	isMod: function(userid)
 	{
-		if (this.modArray == null)
+		if (this.modCache == null)
 		{
-			this.populateModArray();
+			this.populateModCache();
 		}
-		return (this.modArray[userid] == true);
+		return (this.modCache[userid] == true);
 	},
 
-	// Fill up this.adminArray with the userids of the admins
+	// Fill up this.adminCache with the userids of the admins
 	// @param: none
 	// @return: none
-	populateAdminArray: function()
+	populateAdminCache: function()
 	{
 		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `admin` = 1");
-		this.adminArray = Array();
+		this.adminCache = Array();
 		while (statement.executeStep())
 		{
-			this.adminArray[statement.getInt32(0)] = true;
+			this.adminCache[statement.getInt32(0)] = true;
 		}
 		statement.reset();
 	},
@@ -1032,23 +1032,23 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Admin or not
 	isAdmin: function(userid)
 	{
-		if (this.adminArray == null)
+		if (this.adminCache == null)
 		{
-			this.populateAdminArray();
+			this.populateAdminCache();
 		}
-		return (this.adminArray[userid] == true);
+		return (this.adminCache[userid] == true);
 	},
 
-	// Fill up this.ignoredArray with the userids of ignored users
+	// Fill up this.ignoredCache with the userids of ignored users
 	// @param: none
 	// @return: none
-	populateIgnoredArray: function()
+	populateIgnoredCache: function()
 	{
 		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `ignored` = 1");
-		this.ignoredArray = Array();
+		this.ignoredCache = Array();
 		while (statement.executeStep())
 		{
-			this.ignoredArray[statement.getInt32(0)] = true;
+			this.ignoredCache[statement.getInt32(0)] = true;
 		}
 		statement.reset();
 	},
@@ -1058,11 +1058,25 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Ignored or not
 	isUserIgnored: function(userid)
 	{
-		if (this.ignoredArray == null)
+		if (this.ignoredCache == null)
 		{
-			this.populateIgnoredArray();
+			this.populateIgnoredCache();
 		}
-		return (this.ignoredArray[userid] == true);
+		return (this.ignoredCache[userid] == true);
+	},
+
+	// Fill up this.avatarCache with the userids of users with hidden avatars
+	// @param: none
+	// @return: none
+	populateAvatarCache: function()
+	{
+		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `hideavatar` = 1");
+		this.avatarCache = Array();
+		while (statement.executeStep())
+		{
+			this.avatarCache[statement.getInt32(0)] = true;
+		}
+		statement.reset();
 	},
 
 	// Checks if a user id is flagged to have their avatar hidden
@@ -1070,11 +1084,11 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Hidden or not
 	isAvatarHidden: function(userid)
 	{
-		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `hideavatar` = 1 AND `userid` = ?1");
-		statement.bindInt32Parameter(0,userid);
-		var hidden = statement.executeStep();
-		statement.reset();
-		return hidden;
+		if (this.avatarCache == null)
+		{
+			this.populateAvatarCache();
+		}
+		return (this.avatarCache[userid] == true);
 	},
 
 	// Try to figure out the current forum we're in
