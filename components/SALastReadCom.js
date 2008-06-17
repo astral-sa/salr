@@ -345,6 +345,9 @@ salrPersistObject.prototype = {
 	//
 
 	_needToExpireThreads: true,
+	modArray: Array(),
+	adminArray: Array(),
+	ignoredArray: Array(),
 
 	// Return a resource pointing to the proper preferences branch
 	get preferences()
@@ -849,9 +852,9 @@ salrPersistObject.prototype = {
 	setUserName: function(userid, username)
 	{
 		var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1 WHERE `userid` = ?2");
-			statement.bindStringParameter(0, username);
-			statement.bindInt32Parameter(1, userid);
-			statement.execute();
+		statement.bindStringParameter(0, username);
+		statement.bindInt32Parameter(1, userid);
+		statement.execute();
 	},
 
 	// Checks to see if the DB already knows about a user
@@ -861,8 +864,7 @@ salrPersistObject.prototype = {
 	{
 		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `userid` = ?1");
 		statement.bindInt32Parameter(0, userid);
-		var founduser = statement.executeStep();
-		statement.reset();
+		var founduser = statement.execute();
 		return founduser;
 	},
 
@@ -913,9 +915,9 @@ salrPersistObject.prototype = {
 		if (this.isMod(userid))
 		{
 			var statement = this.database.createStatement("UPDATE `userdata` SET `mod` = 0 WHERE `userid` = ?1");
-				statement.bindInt32Parameter(0, userid);
-				statement.executeStep();
-				statement.reset();
+			statement.bindInt32Parameter(0, userid);
+			statement.executeStep();
+			statement.reset();
 		}
 	},
 
@@ -981,16 +983,42 @@ salrPersistObject.prototype = {
 		statement.reset();
 	},
 
+	// Fill up this.modArray with the userids of the mods
+	// @param: none
+	// @return: none
+	populateModArray: function()
+	{
+		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `mod` = 1");
+		while (statement.executeStep())
+		{
+			this.modArray[statement.getInt32(0)] = true;
+		}
+		statement.reset();
+	},
+
 	// Checks if a user id is flagged as a mod
 	// @param: (int) User ID
 	// @return: (boolean) Mod or not
 	isMod: function(userid)
 	{
-		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `mod` = 1 AND `userid` = ?1");
-		statement.bindInt32Parameter(0,userid);
-		var isMod = statement.executeStep();
+		if (this.modArray.length < 1)
+		{
+			this.populateModArray();
+		}
+		return (this.modArray[userid] == true);
+	},
+
+	// Fill up this.adminArray with the userids of the admins
+	// @param: none
+	// @return: none
+	populateAdminArray: function()
+	{
+		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `admin` = 1");
+		while (statement.executeStep())
+		{
+			this.adminArray[statement.getInt32(0)] = true;
+		}
 		statement.reset();
-		return isMod;
 	},
 
 	// Checks if a user id is flagged as an admin
@@ -998,11 +1026,11 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Admin or not
 	isAdmin: function(userid)
 	{
-		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `admin` = 1 AND `userid` = ?1");
-		statement.bindInt32Parameter(0,userid);
-		var isAdmin = statement.executeStep();
-		statement.reset();
-		return isAdmin;
+		if (this.adminArray.length < 1)
+		{
+			this.populateAdminArray();
+		}
+		return (this.adminArray[userid] == true);
 	},
 
 	// Checks if a user id is flagged to be ignored
