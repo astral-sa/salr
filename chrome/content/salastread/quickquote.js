@@ -707,10 +707,8 @@ function doPreview() {
 	// Spoiler
 	vbcode['<span style="background: #000000;" onmouseover="this.style.color=\'#FFFFFF\';" onmouseout="this.style.color=this.style.backgroundColor=\'#000000\'">$1</span>'] = /\[spoiler\](.*?)\[\/spoiler\]/gi;
 	
-	// Code and quote
+	// Code
 	vbcode['<blockquote><pre><span style="font-family: verdana,arial,helvetica">code:</span><hr />$1<hr /></pre></blockquote>'] = /\[code\](.*?)\[\/code\]/gi;
-	vbcode['<blockquote class="qb2"><h4>quote:</h4><p>$1</p></blockquote>'] = /\[quote\](.*?)\[\/quote\]/gi;
-	vbcode['<blockquote class="qb2"><h4>$1 posted:</h4><p>$2</p></blockquote>'] = /\[quote=([^\]]+)\](.*?)\[\/quote\]/gi;
 	
 	// Links and images
 	if(document.getElementById("parseurl").checked) {
@@ -757,6 +755,20 @@ function doPreview() {
 	for(var rplc in vbcode) {
 		markup = markup.replace(vbcode[rplc], rplc);
 	}
+
+	// Quote handling
+	quoteSegment = markup.split('[/quote]');
+	for (var key = 0; key < quoteSegment.length; key++) {
+		quoteSegment[key] = quoteSegment[key].replace(
+			 /\[quote="?([^\]]+?)"?\](.*?)/gi,
+			'<blockquote class="qb2"><h4>$1 posted:</h4><p>$2');
+		
+		quoteSegment[key] = quoteSegment[key].replace(
+			/\[quote\](.*?)/gi,
+			'<blockquote class="qb2"><h4>quote:</h4><p>$1');
+		
+	}
+	markup = quoteSegment.join('</p></blockquote>');
 	
 	var iframe = document.getElementById("previewiframe").contentWindow;
 		iframe.scrollBy(0, iframe.document.body.scrollHeight);
