@@ -551,7 +551,8 @@ salrPersistObject.prototype = {
 			CSSFile += 'border:none !important;';
 			CSSFile += 'padding:0 !important;';
 			CSSFile += '}\n';
-		} else if (!this.getPreference("disableNewReCount"))
+		}
+		else if (!this.getPreference("disableNewReCount"))
 		{
 			CSSFile += '#forum td.title div.lastseen a.count {';
 			CSSFile += 'height:12px !important;';
@@ -584,6 +585,16 @@ salrPersistObject.prototype = {
 				CSSFile += '};\n';
 			}
 		}
+		if (this.getPreference('resizeCustomTitleText'))
+		{
+			CSSFile += 'dl.userinfo dd.title { overflow:auto; width:159px; }\n';
+			CSSFile += 'dl.userinfo dd.title * { font-size:10px !important; }\n';
+		}
+		if (this.getPreference('superIgnore'))
+		{
+			CSSFile += 'table.salrPostQuoteIgnored { display:none !important; }\n';
+		}
+
 		return CSSFile;
 	},
 
@@ -601,6 +612,9 @@ salrPersistObject.prototype = {
 	getThreadDetails: function(threadid)
 	{
 		var results = new Array();
+		results['ignore'] = false;
+		results['posted'] = false;
+		results['star'] = false;
 		var statement = this.database.createStatement("SELECT t.`title`, t.`posted`, t.`ignore`, t.`star`, t.`options`, u.`username`, u.`mod`, u.`admin`, u.`color`, u.`background`, u.`status` FROM `threaddata` AS t LEFT JOIN `userdata` AS u ON t.`op` = u.`userid` WHERE t.`id` = ?1");
 		statement.bindInt32Parameter(0,threadid);
 		if (statement.executeStep())
