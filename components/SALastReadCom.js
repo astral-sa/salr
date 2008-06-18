@@ -818,12 +818,13 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	populateUserDataCache: function()
 	{
-		var statement = this.database.createStatement("SELECT `userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar` FROM `userdata` WHERE `mod` = 1");
+		var statement = this.database.createStatement("SELECT `userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar` FROM `userdata`");
 		var userid;
 		while (statement.executeStep())
 		{
 			userid = statement.getInt32(0);
 			this.userDataCache[userid] = {};
+			this.userDataCache[userid].userid = userid;
 			this.userDataCache[userid].username = statement.getString(1);
 			this.userDataCache[userid].mod = statement.getInt32(2);
 			this.userDataCache[userid].admin = statement.getInt32(3);
@@ -907,6 +908,7 @@ salrPersistObject.prototype = {
 				username = null;
 			}
 			this.userDataCache[userid] = {};
+			this.userDataCache[userid].userid = userid;
 			this.userDataCache[userid].username = username;
 			this.userDataCache[userid].mod = false;
 			this.userDataCache[userid].admin = false;
@@ -989,7 +991,7 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	removeAdmin: function(userid)
 	{
-		if(this.isAdmin(userid))
+		if (this.isAdmin(userid))
 		{
 			this.userDataCache[userid].admin = false;
 			var statement = this.database.createStatement("UPDATE `userdata` SET `admin` = 0 WHERE `userid` = ?1");
@@ -1212,17 +1214,14 @@ salrPersistObject.prototype = {
 	isUserIdColored: function(userid)
 	{
 		var user = false;
-		var statement = this.database.createStatement("SELECT `userid`,`username`,`color`,`background` FROM `userdata` WHERE `userid` = ?1 AND (`color` != 0 OR `background` != 0)");
-		statement.bindInt32Parameter(0, userid);
-		if (statement.executeStep())
+		if (this.userExists(userid))
 		{
 			user = {};
-			user.userid = statement.getInt32(0);
-			user.username = statement.getString(1);
-			user.color = statement.getString(2);
-			user.background = statement.getString(3);
+			user.userid = userid;
+			user.username = this.userDataCache[userid].username;
+			user.color = this.userDataCache[userid].color;
+			user.background = this.userDataCache[userid].background;
 		}
-		statement.reset();
 		return user;
 	},
 
@@ -1232,17 +1231,15 @@ salrPersistObject.prototype = {
 	isUsernameColored: function(username)
 	{
 		var user = false;
-		var statement = this.database.createStatement("SELECT `userid`,`username`,`color`,`background` FROM `userdata` WHERE `username` = ?1 AND (`color` != 0 OR `background` != 0)");
-		statement.bindStringParameter(0, username);
-		if (statement.executeStep())
+		var userid = this.getUserId(username);
+		if (this.userExists(userid))
 		{
 			user = {};
-			user.userid = statement.getInt32(0);
-			user.username = statement.getString(1);
-			user.color = statement.getString(2);
-			user.background = statement.getString(3);
+			user.userid = userid;
+			user.username = username;
+			user.color = this.userDataCache[userid].color;
+			user.background = this.userDataCache[userid].background;
 		}
-		statement.reset();
 		return user;
 	},
 
@@ -1252,18 +1249,16 @@ salrPersistObject.prototype = {
 	getCustomizedPosters : function()
 	{
 		var users = [];
-		try {
-			var statement = this.database.createStatement("SELECT `userid`,`username` FROM `userdata` WHERE `color` != 0 OR `background` != 0 OR (notes IS NOT NULL AND notes != '')");
-			while (statement.executeStep()) {
+		for each (userData in this.userDataCache)
+		{
+			if (userData.color != '0' || userData.background != '0' || (userData.notes != '' && userData.notes != null))
+			{
 				var user = {};
-					user.userid = statement.getInt32(0);
-					user.username = statement.getString(1);
+				user.userid = userData.userid;
+				user.username = userData.username;
 				users.push(user);
 			}
-		} finally {
-			statement.reset();
 		}
-
 		return users;
 	},
 
