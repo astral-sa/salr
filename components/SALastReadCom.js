@@ -388,7 +388,7 @@ salrPersistObject.prototype = {
 		var mDBConn = storageService.openDatabase(file);
 		if (!mDBConn.tableExists("threaddata"))
 		{
-			mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, lastpostid INTEGER, lastviewdt INTEGER, op INTEGER, title VARCHAR(161), lastreplyct INTEGER, posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, options INTEGER)");
+			mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, options INTEGER)");
 			this.prepopulateDB("threaddata");
 		}
 		if (!mDBConn.tableExists("userdata"))
@@ -598,59 +598,6 @@ salrPersistObject.prototype = {
 		doc.getElementsByTagName("head")[0].appendChild(stylesheet);
 	},
 
-	// Retrieves all the data on a given thread id including any
-	// @param: (int) thread id
-	// @return: (array)
-	getThreadDetails: function(threadid)
-	{
-		var results = new Array();
-		results['ignore'] = false;
-		results['posted'] = false;
-		results['star'] = false;
-		var statement = this.database.createStatement("SELECT t.`title`, t.`posted`, t.`ignore`, t.`star`, t.`options`, u.`username`, u.`mod`, u.`admin`, u.`color`, u.`background`, u.`status` FROM `threaddata` AS t LEFT JOIN `userdata` AS u ON t.`op` = u.`userid` WHERE t.`id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
-		{
-			results['threadid'] = threadid;
-			for (var i=0;i<statement.numEntries;i++)
-			{
-				results[statement.getColumnName(i)] = statement.getString(i);
-				if (results[statement.getColumnName(i)] == "0" || results[statement.getColumnName(i)] == null)
-				{
-					results[statement.getColumnName(i)] = false;
-				}
-				if (results[statement.getColumnName(i)] == "1")
-				{
-					results[statement.getColumnName(i)] = true;
-				}
-			}
-			/*
-			results['lastpostid']
-			results['lastviewdt']
-			results['op']
-			results['title']
-			results['lastreplyct']
-			results['posted']
-			results['ignore']
-			results['star']
-			results['options']
-			results['username']
-			results['mod']
-			results['admin']
-			results['color']
-			results['background']
-			results['status']
-			*/
-			statement.reset();
-			return results;
-		}
-		else
-		{
-			statement.reset();
-			return false;
-		}
-	},
-
 	// Returns the value at the given preference from the branch in the preference property
 	// @param: (string) Preference name
 	// @return: (boolean, string or int) Preference value or NULL if not found
@@ -697,37 +644,6 @@ salrPersistObject.prototype = {
 				success = false;
 		}
 		return success;
-	},
-
-	// Updates the OP UID in the database
-	// @param: (int) Thread ID #, (int) User ID # of Original Poster
-	// @return: nothing
-	StoreOPData: function(threadid, userid)
-	{
-		var statement = this.database.createStatement("UPDATE `threaddata` SET `op` = ?1 WHERE `id` = ?2");
-		statement.bindInt32Parameter(0,userid);
-		statement.bindInt32Parameter(1,threadid);
-		statement.execute();
-	},
-
-	// Retrieve the OP UID from the database
-	// @param: (int) Thread ID #
-	// @return: (int) User ID # of Original Poster; or (boolean) false if not found in database
-	GetOPFromData: function(threadid)
-	{
-		var userid;
-		var statement = this.database.createStatement("SELECT `op` FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
-		{
-			userid = statement.getInt32(0);
-		}
-		else
-		{
-			userid = false;
-		}
-		statement.reset();
-		return userid;
 	},
 
 	// Returns the last version ran
@@ -992,19 +908,23 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	addMod: function(userid, username)
 	{
-		if (!this.isMod(userid))
+		if (this.isMod(userid))
+		{
+			// We already know it's a mod
+			return;
+		}
+		if (this.userExists(userid))
 		{
 			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1, `mod` = 1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0,username);
 			statement.bindInt32Parameter(1,userid);
+			statement.execute();
 			this.userDataCache[userid].mod = true;
-			if (!statement.executeStep())
-			{
-				statement.reset();
-				this.addUser(userid, username);
-				this.addMod(userid, username);
-			}
-			statement.reset();
+		}
+		else
+		{
+			this.addUser(userid, username);
+			this.addMod(userid, username);
 		}
 	},
 
@@ -1028,19 +948,23 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	addAdmin: function(userid, username)
 	{
-		if (!this.isAdmin(userid))
+		if (this.isAdmin(userid))
+		{
+			// We already know it's an admin
+			return;
+		}
+		if (this.userExists(userid))
 		{
 			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1, `admin` = 1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0,username);
 			statement.bindInt32Parameter(1,userid);
+			statement.execute();
 			this.userDataCache[userid].admin = true;
-			if (!statement.executeStep())
-			{
-				statement.reset();
-				this.addUser(userid, username);
-				this.addAdmin(userid, username);
-			}
-			statement.reset();
+		}
+		else
+		{
+			this.addUser(userid, username);
+			this.addAdmin(userid, username);
 		}
 	},
 
@@ -1064,16 +988,18 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	toggleAvatarHidden: function(userid, username)
 	{
-		var statement = this.database.createStatement("UPDATE `userdata` SET `hideavatar` = not(`hideavatar`) WHERE `userid` = ?1");
-		statement.bindInt32Parameter(0, userid);
-		if (!statement.executeStep())
+		if (this.userExists(userid))
 		{
-			statement.reset();
+			var statement = this.database.createStatement("UPDATE `userdata` SET `hideavatar` = not(`hideavatar`) WHERE `userid` = ?1");
+			statement.bindInt32Parameter(0, userid);
+			statement.execute();
+			this.userDataCache[userid].hideavatar = !this.userDataCache[userid].hideavatar;
+		}
+		else
+		{
 			this.addUser(userid, username);
 			this.toggleAvatarHidden(userid, username);
 		}
-		this.userDataCache[userid].hideavatar = !this.userDataCache[userid].hideavatar;
-		statement.reset();
 	},
 
 	// Checks if a user id is flagged as a mod
@@ -1272,13 +1198,18 @@ salrPersistObject.prototype = {
 	// @returns: nothing
 	setPosterColor : function(userid, color)
 	{
-		if (this.userExists(userid))
+		if (this.userExists(userid) && this.userDataCache[userid].color != color)
 		{
 			var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0, color);
 			statement.bindInt32Parameter(1, userid);
 			statement.execute();
 			this.userDataCache[userid].color = color;
+		}
+		else
+		{
+			this.addUser(userid);
+			this.setPosterColor(userid, note);
 		}
 	},
 
@@ -1295,13 +1226,18 @@ salrPersistObject.prototype = {
 	// @returns: nothing
 	setPosterBackground : function(userid, color)
 	{
-		if (this.userExists(userid))
+		if (this.userExists(userid) && this.userDataCache[userid].background != color)
 		{
 			var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0, color);
 			statement.bindInt32Parameter(1, userid);
 			statement.execute();
 			this.userDataCache[userid].background = color;
+		}
+		else
+		{
+			this.addUser(userid);
+			this.setPosterBackground(userid, note);
 		}
 	},
 
@@ -1456,11 +1392,15 @@ salrPersistObject.prototype = {
 	// @return: (booler) true on success, false on failure
 	removeThread: function(threadId)
 	{
-		this.threadDataCache.splice(threadId, 1);
-		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadId);
-		var result = statement.executeStep();
-		statement.reset();
+		var result = false;
+		if (this.threadExists(threadId))
+		{
+			this.threadDataCache.splice(threadId, 1);
+			var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `id` = ?1");
+			statement.bindInt32Parameter(0,threadId);
+			result = statement.executeStep();
+			statement.reset();
+		}
 		return result;
 	},
 
