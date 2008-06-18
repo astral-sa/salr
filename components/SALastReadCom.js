@@ -1395,50 +1395,6 @@ salrPersistObject.prototype = {
 		}
 	},
 
-	// Get the Post ID of the last read post
-	// @param: (int) Thread ID
-	// @return: (int) ID of the last read post in the thread
-	getLastPostID: function(threadid)
-	{
-		var lastread;
-		var statement = this.database.createStatement("SELECT `lastpostid` FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
-		{
-			lastread = statement.getString(0);
-			if (lastread == null)
-			{
-				lastread = 0;
-			}
-		}
-		else
-		{
-			lastread = 0;
-		}
-		statement.reset();
-		return lastread;
-	},
-
-	// Sets the Post ID of the last read post
-	// @param: (int) Thread ID, (int) Last Post ID, (bool) Force Update
-	// @return: (bool) status of update success
-	setLastPostID: function(threadid, lastpostid, forceUpdate)
-	{
-		var result = false;
-		if (lastpostid > this.getLastPostID(threadid) || (forceUpdate != undefined && forceUpdate == true))
-		{
-			var statement = this.database.createStatement("UPDATE `threaddata` SET `lastpostid` = ?1 WHERE `id` = ?2");
-			statement.bindStringParameter(0,lastpostid);
-			statement.bindInt32Parameter(1,threadid);
-			if (statement.executeStep())
-			{
-				var result = true;
-			}
-			statement.reset();
-		}
-		return result;
-	},
-
 	// Get the title of the selected thread
 	// @param: (int) Thread ID
 	// @return: (bool) status of thread title update
@@ -1518,36 +1474,15 @@ salrPersistObject.prototype = {
 	// @return: (bool) thread's star status
 	isThreadStarred: function(threadid)
 	{
-		var starred = false;
-		var statement = this.database.createStatement("SELECT `star` FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
-		{
-			starred = statement.getInt32(0);
-			starred = (starred == true);
-		}
-		statement.reset();
-		return starred;
+		return (this.threadExists(threadid) && this.threadDataCache[threadid].star);
 	},
 
 	// Check to see if the thread is ignored
-	// @param:
-	// @return:
+	// @param: (int) Thread Id
+	// @return: (bool) thread's ignore status
 	isThreadIgnored: function(threadid)
 	{
-		var statement = this.database.createStatement("SELECT `ignore` FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
-		{
-			var ignored = statement.getInt32(0);
-			ignored = (ignored == true);
-		}
-		else
-		{
-			var ignored = false;
-		}
-		statement.reset();
-		return ignored;
+		return (this.threadExists(threadid) && this.threadDataCache[threadid].ignore);
 	},
 
 	// Toggles a thread's starred status in the database
