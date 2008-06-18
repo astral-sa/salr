@@ -76,11 +76,15 @@ function SALR_init()
 		needToShowChangeLog = false;
 		showChangelogWindow();
 	}
+
+	// Fill up the cache
+	persistObject.populateUserDataCache();
 }
 
 // New and improved onload handler wrapper
 
-function SALR_windowOnload(e) {
+function SALR_windowOnload(e)
+{
 	if (document.getElementById('appcontent'))
 	{
 		window.addEventListener('DOMContentLoaded', SALR_onLoad, true);
@@ -97,9 +101,9 @@ function SALR_onLoad(e)
 {
 	var appcontent = document.getElementById("appcontent"); // browser
 	var doc = e.originalTarget; // document
-	
+
 	if(!appcontent || !doc.location) return;
-	
+
 	// nsSimpleURIs don't have a .host, so check this
 	try
 	{
@@ -110,7 +114,7 @@ function SALR_onLoad(e)
 	{
 		var simpleURI = true;
 	}
-	
+
 	if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1 || !persistObject.getPreference("enableContextMenu") || persistObject.getPreference("disabled"))
 	{
 		// Remove the context menu since we're not at Something Awful
@@ -134,7 +138,7 @@ function SALR_onLoad(e)
 		// We're not at Something Awful
 		return;
 	}
-		
+
 	if (persistObject.getPreference("disabled"))
 	{
 		return;
@@ -590,6 +594,7 @@ function handleThreadList(doc, forumid, flags)
 	var advancedThreadFiltering = persistObject.getPreference("advancedThreadFiltering");
 	var ignoredPostIcons = persistObject.getPreference("ignoredPostIcons");
 	var ignoredKeywords = persistObject.getPreference("ignoredKeywords");
+	var superIgnoreUsers = persistObject.getPreference("superIgnore");
 
 	// We'll need lots of variables for this
 	var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox, threadLastPostBox;
@@ -1372,7 +1377,7 @@ function handleShowThread(doc)
 			postIdLink.parentNode.insertBefore(slink, postIdLink);
 			postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
 		}
-		
+
 		var userfilter = doc.location.href.match(/&userid=[0-9]+/);
 		if (userfilter && postIdLink && postid)
 		{
@@ -1424,7 +1429,7 @@ function handleShowThread(doc)
 				}
 			}
 		}
-		
+
 		var userLinks = profileLink.parentNode.parentNode;
 
 		// Add a link to the user's ban history
@@ -1450,7 +1455,7 @@ function handleShowThread(doc)
 			userLinks.appendChild(doc.createTextNode(" "));
 			userLinks.appendChild(li);
 		}
-		
+
 		// Add a link to hide/unhide the user's avatar
 		var avLink = doc.createElement("li");
 		var avAnch = doc.createElement("a");
@@ -2447,7 +2452,7 @@ function SALR_ContextMenuShowing(e)
 
 			var doc = document.getElementById("content").mCurrentBrowser.contentDocument;
 			if (doc.wrappedJSObject) //FF3 fix
-				doc = doc.wrappedJSObject; 
+				doc = doc.wrappedJSObject;
 
 			if(doc.__salastread_processed == true)
 			{
