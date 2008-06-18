@@ -79,6 +79,7 @@ function SALR_init()
 
 	// Fill up the cache
 	persistObject.populateUserDataCache();
+	persistObject.populateThreadDataCache();
 }
 
 // New and improved onload handler wrapper
@@ -783,10 +784,9 @@ function handleThreadList(doc, forumid, flags)
 				thread.className += ' moveup';
 			}
 
-			if (showSALRIcons && !dontHighlightThreads && threadDetails['posted'])
+			if (persistObject.didIPostHere(threadId))
 			{
-				// Don't think this is working right now
-				threadRepliesBox.style.backgroundColor = postedInThreadRe;
+				threadRepliesBox.className += ' salrPostedIn';
 			}
 
 			// Thread highlighting
