@@ -1050,10 +1050,6 @@ function handleShowThread(doc)
 	// used by the context menu to allow options for this thread
 	doc.body.className += " salastread_thread_" + threadid;
 
-	// Neither of these lines are needed anymore
-	//persistObject.iAmReadingThis(threadid);
-	//var lastReadPostCount = persistObject.getLastReadPostCount(threadid);
-
 	// Grab the thread title
 	persistObject.setThreadTitle(threadid, SALR_getPageTitle(doc));
 
