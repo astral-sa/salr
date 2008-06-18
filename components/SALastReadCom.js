@@ -819,13 +819,14 @@ salrPersistObject.prototype = {
 	populateUserDataCache: function()
 	{
 		var statement = this.database.createStatement("SELECT `userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar` FROM `userdata`");
-		var userid;
+		var userid, username;
 		while (statement.executeStep())
 		{
 			userid = statement.getInt32(0);
+			username = statement.getString(1);
 			this.userDataCache[userid] = {};
 			this.userDataCache[userid].userid = userid;
-			this.userDataCache[userid].username = statement.getString(1);
+			this.userDataCache[userid].username = username;
 			this.userDataCache[userid].mod = statement.getInt32(2);
 			this.userDataCache[userid].admin = statement.getInt32(3);
 			this.userDataCache[userid].color = statement.getString(4);
@@ -834,6 +835,7 @@ salrPersistObject.prototype = {
 			this.userDataCache[userid].notes = statement.getString(7);
 			this.userDataCache[userid].ignored = statement.getInt32(8);
 			this.userDataCache[userid].hideavatar = statement.getInt32(9);
+			this.userIDCache[username] = userid;
 		}
 		statement.reset();
 	},
@@ -918,6 +920,7 @@ salrPersistObject.prototype = {
 			this.userDataCache[userid].notes = null;
 			this.userDataCache[userid].ignored = false;
 			this.userDataCache[userid].hideavatar = false;
+			this.userIDCache[username] = userid;
 			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 0, 0, 0, 0, null, 0, 0)");
 			statement.bindInt32Parameter(0, userid);
 			statement.bindStringParameter(1, username);
