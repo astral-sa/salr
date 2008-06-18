@@ -345,13 +345,8 @@ salrPersistObject.prototype = {
 	//
 
 	_needToExpireThreads: true,
-	modCache: null,
-	adminCache: null,
-	ignoredCache: null,
-	coloredCache: null,
-	backgroundCache: null,
-	notedCache: null,
-	avatarCache: null,
+	userDataCache: Array(),
+	userIDCache: Array(),
 
 	// Return a resource pointing to the proper preferences branch
 	get preferences()
@@ -818,20 +813,45 @@ salrPersistObject.prototype = {
 		return build;
 	},
 
+	// Fills the user data cache from the database
+	// @param: nothing
+	// @return: nothing
+	populateUserDataCache: function()
+	{
+		var statement = this.database.createStatement("SELECT `userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar` FROM `userdata` WHERE `mod` = 1");
+		var userid;
+		while (statement.executeStep())
+		{
+			userid = statement.getInt32(0);
+			this.userDataCache[userid] = {};
+			this.userDataCache[userid].username = statement.getString(1);
+			this.userDataCache[userid].mod = statement.getInt32(2);
+			this.userDataCache[userid].admin = statement.getInt32(3);
+			this.userDataCache[userid].color = statement.getString(4);
+			this.userDataCache[userid].background = statement.getString(5);
+			this.userDataCache[userid].status = statement.getInt32(6);
+			this.userDataCache[userid].notes = statement.getString(7);
+			this.userDataCache[userid].ignored = statement.getInt32(8);
+			this.userDataCache[userid].hideavatar = statement.getInt32(9);
+		}
+		statement.reset();
+	},
+
 	// Gets a username from the DB
 	// @param: (int) User ID
 	// @return: (string) username or (null) if not found
 	getUserName: function(userid)
 	{
-		var statement = this.database.createStatement("SELECT `username` FROM `userdata` WHERE `userid` = ?1");
-		statement.bindInt32Parameter(0, userid);
-		var foundusername = null;
-		if (statement.executeStep())
+		var username;
+		if (this.userDataCache[userid] != undefined)
 		{
-			foundusername = statement.getString(0);
+			username = this.userDataCache[userid].username;
 		}
-		statement.reset();
-		return foundusername;
+		else
+		{
+			username = null;
+		}
+		return username;
 	},
 
 	// Gets an id from the DB
@@ -839,15 +859,16 @@ salrPersistObject.prototype = {
 	// @return: (int) User ID or (null) if not found
 	getUserId: function(username)
 	{
-		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `username` = ?1");
-		statement.bindStringParameter(0, username);
-		var founduserid = null;
-		if (statement.executeStep())
+		var userid;
+		if (this.userIDCache[username] != undefined)
 		{
-			founduserid = statement.getInt32(0);
+			userid = this.userIDCache[username];
 		}
-		statement.reset();
-		return founduserid;
+		else
+		{
+			userid = null;
+		}
+		return userid;
 	},
 
 	// Updates a user's name in the DB
@@ -855,10 +876,15 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	setUserName: function(userid, username)
 	{
-		var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1 WHERE `userid` = ?2");
-		statement.bindStringParameter(0, username);
-		statement.bindInt32Parameter(1, userid);
-		statement.execute();
+		this.userIDCache[username] = userid;
+		if (this.userDataCache[userid].username != username)
+		{
+			this.userDataCache[userid].username = username;
+			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1 WHERE `userid` = ?2");
+			statement.bindStringParameter(0, username);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
+		}
 	},
 
 	// Checks to see if the DB already knows about a user
@@ -866,10 +892,7 @@ salrPersistObject.prototype = {
 	// @return: (bool) if user is in DB
 	userExists: function(userid)
 	{
-		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `userid` = ?1");
-		statement.bindInt32Parameter(0, userid);
-		var founduser = statement.execute();
-		return founduser;
+		return (this.userDataCache[userid] != undefined);
 	},
 
 	// Adds a user to the DB
@@ -877,14 +900,29 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	addUser: function(userid, username)
 	{
-		if(!this.userExists(userid))
+		if (!this.userExists(userid))
 		{
-			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, null, 0, 0, 0, 0, 0, null, 0, 0)");
-			statement.bindInt32Parameter(0, userid);
-			statement.execute();
-			if(username)
+			if (username == undefined)
 			{
-				this.setUserName(userid, username);
+				username = null;
+			}
+			this.userDataCache[userid] = {};
+			this.userDataCache[userid].username = username;
+			this.userDataCache[userid].mod = false;
+			this.userDataCache[userid].admin = false;
+			this.userDataCache[userid].color = 0;
+			this.userDataCache[userid].background = 0;
+			this.userDataCache[userid].status = 0;
+			this.userDataCache[userid].notes = null;
+			this.userDataCache[userid].ignored = false;
+			this.userDataCache[userid].hideavatar = false;
+			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 0, 0, 0, 0, null, 0, 0)");
+			statement.bindInt32Parameter(0, userid);
+			statement.bindStringParameter(1, username);
+			statement.execute();
+			if (username != null)
+			{
+				this.userIDCache[username] = userid;
 			}
 		}
 	},
@@ -902,11 +940,10 @@ salrPersistObject.prototype = {
 			if (!statement.executeStep())
 			{
 				statement.reset();
-				statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 1, 0, 0, 0, 0, null, 0, 0)");
-				statement.bindInt32Parameter(0,userid);
-				statement.bindStringParameter(1,username);
-				statement.executeStep();
+				this.addUser(userid, username);
+				this.addMod(userid, username);
 			}
+			this.userDataCache[userid].mod = true;
 			statement.reset();
 		}
 	},
@@ -918,6 +955,7 @@ salrPersistObject.prototype = {
 	{
 		if (this.isMod(userid))
 		{
+			this.userDataCache[userid].mod = false;
 			var statement = this.database.createStatement("UPDATE `userdata` SET `mod` = 0 WHERE `userid` = ?1");
 			statement.bindInt32Parameter(0, userid);
 			statement.executeStep();
@@ -938,11 +976,10 @@ salrPersistObject.prototype = {
 			if (!statement.executeStep())
 			{
 				statement.reset();
-				statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 1, 0, 0, 0, null, 0, 0)");
-				statement.bindInt32Parameter(0,userid);
-				statement.bindStringParameter(1,username);
-				statement.executeStep();
+				this.addUser(userid, username);
+				this.addAdmin(userid, username);
 			}
+			this.userDataCache[userid].admin = true;
 			statement.reset();
 		}
 	},
@@ -954,15 +991,16 @@ salrPersistObject.prototype = {
 	{
 		if(this.isAdmin(userid))
 		{
+			this.userDataCache[userid].admin = false;
 			var statement = this.database.createStatement("UPDATE `userdata` SET `admin` = 0 WHERE `userid` = ?1");
-				statement.bindInt32Parameter(0, userid);
-				statement.executeStep();
-				statement.reset();
+			statement.bindInt32Parameter(0, userid);
+			statement.executeStep();
+			statement.reset();
 		}
 	},
 
 	// Toggle whether a user's avatar is shown or not
-	// @param: (int) User ID
+	// @param: (int) User ID, (string) Username
 	// @return: nothing
 	toggleAvatarHidden: function(userid, username)
 	{
@@ -979,25 +1017,10 @@ salrPersistObject.prototype = {
 		if (!statement.executeStep())
 		{
 			statement.reset();
-			statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 0, 0, 0, 0, null, 0, 1)");
-			statement.bindInt32Parameter(0,userid);
-			statement.bindStringParameter(1,username);
-			statement.executeStep();
+			this.addUser(userid, username);
+			this.toggleAvatarHidden(userid, username);
 		}
-		statement.reset();
-	},
-
-	// Fill up this.modCache with the userids of the mods
-	// @param: none
-	// @return: none
-	populateModCache: function()
-	{
-		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `mod` = 1");
-		this.modCache = Array();
-		while (statement.executeStep())
-		{
-			this.modCache[statement.getInt32(0)] = true;
-		}
+		this.userDataCache[userid].hideavatar = !this.userDataCache[userid].hideavatar;
 		statement.reset();
 	},
 
@@ -1006,25 +1029,7 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Mod or not
 	isMod: function(userid)
 	{
-		if (this.modCache == null)
-		{
-			this.populateModCache();
-		}
-		return (this.modCache[userid] == true);
-	},
-
-	// Fill up this.adminCache with the userids of the admins
-	// @param: none
-	// @return: none
-	populateAdminCache: function()
-	{
-		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `admin` = 1");
-		this.adminCache = Array();
-		while (statement.executeStep())
-		{
-			this.adminCache[statement.getInt32(0)] = true;
-		}
-		statement.reset();
+		return (this.userExists(userid) && this.userDataCache[userid].mod);
 	},
 
 	// Checks if a user id is flagged as an admin
@@ -1032,25 +1037,7 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Admin or not
 	isAdmin: function(userid)
 	{
-		if (this.adminCache == null)
-		{
-			this.populateAdminCache();
-		}
-		return (this.adminCache[userid] == true);
-	},
-
-	// Fill up this.ignoredCache with the userids of ignored users
-	// @param: none
-	// @return: none
-	populateIgnoredCache: function()
-	{
-		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `ignored` = 1");
-		this.ignoredCache = Array();
-		while (statement.executeStep())
-		{
-			this.ignoredCache[statement.getInt32(0)] = true;
-		}
-		statement.reset();
+		return (this.userExists(userid) && this.userDataCache[userid].admin);
 	},
 
 	// Checks if a user id is flagged to be ignored
@@ -1058,25 +1045,7 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Ignored or not
 	isUserIgnored: function(userid)
 	{
-		if (this.ignoredCache == null)
-		{
-			this.populateIgnoredCache();
-		}
-		return (this.ignoredCache[userid] == true);
-	},
-
-	// Fill up this.avatarCache with the userids of users with hidden avatars
-	// @param: none
-	// @return: none
-	populateAvatarCache: function()
-	{
-		var statement = this.database.createStatement("SELECT `userid` FROM `userdata` WHERE `hideavatar` = 1");
-		this.avatarCache = Array();
-		while (statement.executeStep())
-		{
-			this.avatarCache[statement.getInt32(0)] = true;
-		}
-		statement.reset();
+		return (this.userExists(userid) && this.userDataCache[userid].ignored);
 	},
 
 	// Checks if a user id is flagged to have their avatar hidden
@@ -1084,11 +1053,7 @@ salrPersistObject.prototype = {
 	// @return: (boolean) Hidden or not
 	isAvatarHidden: function(userid)
 	{
-		if (this.avatarCache == null)
-		{
-			this.populateAvatarCache();
-		}
-		return (this.avatarCache[userid] == true);
+		return (this.userExists(userid) && this.userDataCache[userid].hideavatar);
 	},
 
 	// Try to figure out the current forum we're in
@@ -1372,7 +1337,7 @@ salrPersistObject.prototype = {
 
 	// Fetches the user's notes from the database
 	// @param: (int) User ID
-	// @returns: (string) Notes about the user, or (vool) false if not found
+	// @returns: (string) Notes about the user, or (bool) false if not found
 	getPosterNotes: function(userid)
 	{
 		var usernotes = false;
