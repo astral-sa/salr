@@ -415,30 +415,38 @@ salrPersistObject.prototype = {
 	// Returns an associative array of the ignored threads with the thread id as the key and the thread title as the value
 	get ignoreList()
 	{
-		var threadid, threadtitle, ignoredThreads = new Array();
-		var statement = this.database.createStatement("SELECT `id`, `title` FROM `threaddata` WHERE `ignore` = 1");
-		while (statement.executeStep())
+		if (this.threadDataCache.length == 0)
 		{
-			threadid = statement.getInt32(0);
-			threadtitle = statement.getString(1);
-			ignoredThreads[threadid] = threadtitle;
+			this.populateThreadDataCache();
 		}
-		return ignoredThreads;
+		var threads = [];
+		for each (threadData in this.threadDataCache)
+		{
+			if (threadData.ignore == 1)
+			{
+				threads[threadData.threadid] = threadData.title;
+			}
+		}
+		return threads;
 	},
 
 	// Returns an associative array of the starred threads with the thread id as the key
 	// and the thread title as the value
 	get starList()
 	{
-		var threadid, threadtitle, starredThreads = new Array();
-		var statement = this.database.createStatement("SELECT `id`, `title` FROM `threaddata` WHERE `star` = 1");
-		while (statement.executeStep())
+		if (this.threadDataCache.length == 0)
 		{
-			threadid = statement.getInt32(0);
-			threadtitle = statement.getString(1);
-			starredThreads[threadid] = threadtitle;
+			this.populateThreadDataCache();
 		}
-		return starredThreads;
+		var threads = [];
+		for each (threadData in this.threadDataCache)
+		{
+			if (threadData.star == 1)
+			{
+				threads[threadData.threadid] = threadData.title;
+			}
+		}
+		return threads;
 	},
 
 	// Returns an associative array of thread icons with the filename as the key and the icon num as the value
@@ -453,34 +461,6 @@ salrPersistObject.prototype = {
 			threadIcons[filename] = iconnum;
 		}
 		return threadIcons;
-	},
-
-	// Returns an associative array of the mods with their userid as the key and name as the value
-	get modList()
-	{
-		var userid, username, mods = new Array();
-		var statement = this.database.createStatement("SELECT `userid`, `username` FROM `userdata` WHERE `mod` = 1");
-		while (statement.executeStep())
-		{
-			userid = statement.getInt32(0);
-			username = statement.getString(1);
-			mods[userid] = username;
-		}
-		return mods;
-	},
-
-	// Returns an associative array of the admins with their userid as the key and name as the value
-	get adminList()
-	{
-		var userid, username, admins = new Array();
-		var statement = this.database.createStatement("SELECT `userid`, `username` FROM `userdata` WHERE `admin` = 1");
-		while (statement.executeStep())
-		{
-			userid = statement.getInt32(0);
-			username = statement.getString(1);
-			admins[userid] = username;
-		}
-		return admins;
 	},
 
 	// Return a string that contains CSS instructions for our settings
@@ -945,6 +925,26 @@ salrPersistObject.prototype = {
 		return (this.threadDataCache[threadid] != undefined);
 	},
 
+	// Adds a thread to the DB and cache
+	// @param: (int) User ID
+	// @return: nothing
+	addThread: function(threadid)
+	{
+		if (!this.threadExists(threadid))
+		{
+			this.threadDataCache[threadid] = {};
+			this.threadDataCache[threadid].threadid = threadid;
+			this.threadDataCache[threadid].title = '';
+			this.threadDataCache[threadid].posted = 0;
+			this.threadDataCache[threadid].ignore = 0;
+			this.threadDataCache[threadid].star = 0;
+			this.threadDataCache[threadid].options = 0;
+			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `title`, `posted`, `ignore`, `star`, `options`) VALUES (?1, null, 0, 0, 0, 0)");
+			statement.bindInt32Parameter(0, userid);
+			statement.execute();
+		}
+	},
+
 	// Checks to see if the DB already knows about a user
 	// @param: (int) User ID
 	// @return: (bool) if user is in DB
@@ -953,7 +953,7 @@ salrPersistObject.prototype = {
 		return (this.userDataCache[userid] != undefined);
 	},
 
-	// Adds a user to the DB
+	// Adds a user to the DB and cache
 	// @param: (int) User ID
 	// @return: nothing
 	addUser: function(userid, username)
@@ -1064,15 +1064,7 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	toggleAvatarHidden: function(userid, username)
 	{
-		var statement;
-		if (this.isAvatarHidden(userid))
-		{
-			statement = this.database.createStatement("UPDATE `userdata` SET `hideavatar` = 0 WHERE `userid` = ?1");
-		}
-		else
-		{
-			statement = this.database.createStatement("UPDATE `userdata` SET `hideavatar` = 1 WHERE `userid` = ?1");
-		}
+		var statement = this.database.createStatement("UPDATE `userdata` SET `hideavatar` = not(`hideavatar`) WHERE `userid` = ?1");
 		statement.bindInt32Parameter(0, userid);
 		if (!statement.executeStep())
 		{
@@ -1222,50 +1214,6 @@ salrPersistObject.prototype = {
 		return tid;
 	},
 
-	// Fetches the total post count as of the last time the thread was read
-	// @param: (int) Thread ID
-	// @returns: (int) Post count
-	getLastReadPostCount: function(threadid)
-	{
-		var lrcount;
-		var statement = this.database.createStatement("SELECT `lastreplyct` FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
-		{
-			lrcount = statement.getInt32(0);
-			if (lrcount < 0) // Incase it's null
-			{
-				lrcount = -1;
-			}
-		}
-		else
-		{
-			lrcount = -1;
-		}
-		statement.reset();
-		return lrcount;
-	},
-
-	// Puts the count of posts in a thread read into the database
-	// @param: (int) Thread ID, (int) Total number of posts read, (bool) Force an Update
-	// @return: (bool) did the call succeed?
-	setLastReadPostCount: function(threadid, lrcount, forceUpdate)
-	{
-		var result = false;
-		if (lrcount > this.getLastReadPostCount(threadid) || (forceUpdate != undefined && forceUpdate == true))
-		{
-			var statement = this.database.createStatement("UPDATE `threaddata` SET `lastreplyct` = ?1 WHERE `id` = ?2");
-				statement.bindInt32Parameter(0,lrcount);
-				statement.bindInt32Parameter(1,threadid);
-			if (statement.executeStep())
-			{
-				var result = true;
-			}
-			statement.reset();
-		}
-		return result;
-	},
-
 	// checks to see if the userid has any custom coloring defined
 	// @param: (int) User Id
 	// @returns: (object) Object contained userid and username
@@ -1288,17 +1236,8 @@ salrPersistObject.prototype = {
 	// @returns: (object) Object contained userid and username
 	isUsernameColored: function(username)
 	{
-		var user = false;
 		var userid = this.getUserId(username);
-		if (this.userExists(userid))
-		{
-			user = {};
-			user.userid = userid;
-			user.username = username;
-			user.color = this.userDataCache[userid].color;
-			user.background = this.userDataCache[userid].background;
-		}
-		return user;
+		return this.isUserIdColored(userid);
 	},
 
 	// Fetches all users that have custom colors or a note defined
@@ -1400,22 +1339,11 @@ salrPersistObject.prototype = {
 	// @return: (bool) status of thread title update
 	getThreadTitle: function(threadid)
 	{
-		var title;
-		var statement = this.database.createStatement("SELECT `title` FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
+		var title = false;
+		if (this.threadExists(threadid))
 		{
-			title = statement.getString(0);
-			if (title == null)
-			{
-				title = false;
-			}
+			title = this.threadDataCache[threadid].title;
 		}
-		else
-		{
-			title = false;
-		}
-		statement.reset();
 		return title;
 	},
 
@@ -1424,18 +1352,16 @@ salrPersistObject.prototype = {
 	// @return: (bool) update success
 	setThreadTitle: function(threadid, title)
 	{
-		var statement = this.database.createStatement("UPDATE `threaddata` SET `title` = ?1 WHERE `id` = ?2");
-		statement.bindStringParameter(0,title);
-		statement.bindInt32Parameter(1,threadid);
-		if (statement.executeStep())
+		var result = false;
+		if (this.threadExists(threadid) && this.threadDataCache[threadid].title != title)
 		{
-			var result = true;
+			this.threadDataCache[threadid].title = title;
+			var statement = this.database.createStatement("UPDATE `threaddata` SET `title` = ?1 WHERE `id` = ?2");
+			statement.bindStringParameter(0,title);
+			statement.bindInt32Parameter(1,threadid);
+			result = statement.executeStep();
+			statement.reset();
 		}
-		else
-		{
-			var result = false;
-		}
-		statement.reset();
 		return result;
 	},
 
@@ -1452,20 +1378,22 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	iPostedHere: function(threadid)
 	{
-		if (!this.threadIsInDB(threadid))
+		if (this.didIPostHere(threadid))
 		{
-			// This shouldn't happen, but it's here just incase
-			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `posted`, `ignore`, `star`) VALUES (?1, 1, 0, 0)");
-			statement.bindInt32Parameter(0,threadid);
-			statement.execute();
-			statement.reset();
+			// We already know we've posted here
+			return;
 		}
-		else
+		if (this.threadExists(threadid))
 		{
 			var statement = this.database.createStatement("UPDATE `threaddata` SET `posted` = 1 WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadid);
 			statement.execute();
-			statement.reset();
+			this.threadDataCache[threadid].posted = true;
+		}
+		else
+		{
+			this.addThread(threadid);
+			this.iPostedHere(threadid);
 		}
 	},
 
@@ -1490,21 +1418,17 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	toggleThreadStar: function(threadid)
 	{
-		var lastviewdt = this.currentTimeStamp;
-		if (this.threadIsInDB(threadid))
+		if (this.threadExists(threadid))
 		{
 			var statement = this.database.createStatement("UPDATE `threaddata` SET `star` = not(`star`) WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadid);
-			statement.executeStep();
-			statement.reset();
+			statement.execute();
+			this.threadDataCache[threadid].star = true;
 		}
 		else
 		{
-			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `lastviewdt`, `posted`, `ignore`, `star`) VALUES (?1, ?2, 0, 0, 1)");
-			statement.bindInt32Parameter(0,threadid);
-			statement.bindStringParameter(1,lastviewdt);
-			statement.execute();
-			statement.reset();
+			this.addThread(threadid);
+			this.toggleThreadStar(threadid);
 		}
 	},
 
@@ -1513,25 +1437,17 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	toggleThreadIgnore: function(threadid)
 	{
-		var lastviewdt = this.currentTimeStamp;
-		if (this.threadIsInDB(threadid))
+		if (this.threadExists(threadid))
 		{
-	//		if(this.getLastReadPostCount(threadid)) {
-				var statement = this.database.createStatement("UPDATE `threaddata` SET `ignore` = not(`ignore`) WHERE `id` = ?1");
-					statement.bindInt32Parameter(0,threadid);
-					statement.execute();
-	//		}
-	//		else
-	//		{
-	//			this.removeThread(threadid);
-	//		}
+			var statement = this.database.createStatement("UPDATE `threaddata` SET `ignore` = not(`ignore`) WHERE `id` = ?1");
+			statement.bindInt32Parameter(0,threadid);
+			statement.execute();
+			this.threadDataCache[threadid].ignore = true;
 		}
 		else
 		{
-			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `lastviewdt`, `posted`, `ignore`, `star`) VALUES (?1, ?2, 0, 1, 0)");
-			statement.bindInt32Parameter(0,threadid);
-			statement.bindStringParameter(1,lastviewdt);
-			statement.execute();
+			this.addThread(threadid);
+			this.toggleThreadIgnore(threadid);
 		}
 	},
 
@@ -1540,42 +1456,12 @@ salrPersistObject.prototype = {
 	// @return: (booler) true on success, false on failure
 	removeThread: function(threadId)
 	{
+		this.threadDataCache.splice(threadId, 1);
 		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `id` = ?1");
 		statement.bindInt32Parameter(0,threadId);
-		if (statement.executeStep())
-		{
-			var result = true;
-		}
-		else
-		{
-			var result = false;
-		}
+		var result = statement.executeStep();
 		statement.reset();
 		return result;
-	},
-
-	// Adds a thread id # to the database and the current time stamp
-	// @param:
-	// @return:
-	iAmReadingThis: function(threadid)
-	{
-		var lastviewdt = this.currentTimeStamp;
-		if (this.threadIsInDB(threadid))
-		{
-			var statement = this.database.createStatement("UPDATE `threaddata` SET `lastviewdt` = ?1 WHERE `id` = ?2");
-			statement.bindStringParameter(0,lastviewdt);
-			statement.bindInt32Parameter(1,threadid);
-			statement.execute();
-			statement.reset();
-		}
-		else
-		{
-			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `lastviewdt`, `posted`, `ignore`, `star`) VALUES (?1, ?2, 0, 0, 0)");
-			statement.bindInt32Parameter(0,threadid);
-			statement.bindStringParameter(1,lastviewdt);
-			statement.execute();
-			statement.reset();
-		}
 	},
 
 	// Checks if a thread id # is in the database
@@ -1631,6 +1517,9 @@ salrPersistObject.prototype = {
 		return result;
 	},
 
+	// Checks if the icon number is already known
+	// @param: (int) Icon Number
+	// @return: (bool) Icon number being known
 	checkIconNumberExist: function(iconNumber)
 	{
 		var statement = this.database.createStatement("SELECT `iconnumber` FROM `posticons` WHERE `iconnumber` = ?1");
