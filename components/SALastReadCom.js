@@ -345,8 +345,10 @@ salrPersistObject.prototype = {
 	//
 
 	_needToExpireThreads: true,
+	mDBConn: null,
 	userDataCache: Array(),
 	userIDCache: Array(),
+	threadDataCache: Array(),
 
 	// Return a resource pointing to the proper preferences branch
 	get preferences()
@@ -361,6 +363,11 @@ salrPersistObject.prototype = {
 	// TODO: Error handling, Improving(?) file handling
 	get database()
 	{
+		if (this.mDBConn != null)
+		{
+			return this.mDBConn;
+		}
+		// the connection hasn't been created yet so we'll connect
 		var fn = this.storedbFileName;
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
@@ -369,7 +376,7 @@ salrPersistObject.prototype = {
 		{
 			try
 			{
-				file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 420);
+				file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 420);  // Woo! 420!
 			}
 			catch (ex)
 			{
@@ -394,7 +401,8 @@ salrPersistObject.prototype = {
 			mDBConn.executeSimpleSQL("CREATE TABLE `posticons` (iconnumber INTEGER PRIMARY KEY, filename VARCHAR(50))");
 			this.prepopulateDB("posticons");
 		}
-		return mDBConn;
+		this.mDBConn = mDBConn;
+		return this.mDBConn;
 	},
 
 	// Returns the current unix timestamp in seconds
@@ -511,6 +519,10 @@ salrPersistObject.prototype = {
 			CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
 			CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
 			CSSFile += this.getPreference('readWithNewDark');
+			CSSFile += ' !important; }\n';
+			CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
+			CSSFile += 'tr.thread.seen td.repliese.salrPostedIn { background-color:';
+			CSSFile += this.getPreference('postedInThreadRe');
 			CSSFile += ' !important; }\n';
 		}
 		if (!this.getPreference('disableGradients'))
@@ -854,6 +866,27 @@ salrPersistObject.prototype = {
 		statement.reset();
 	},
 
+	// Fills the thread data cache from the database
+	// @param: nothing
+	// @return: nothing
+	populateThreadDataCache: function()
+	{
+		var statement = this.database.createStatement("SELECT `id`, `title`, `posted`, `ignore`, `star`, `options` FROM `threaddata`");
+		var threadid;
+		while (statement.executeStep())
+		{
+			userid = statement.getInt32(0);
+			this.threadDataCache[userid] = {};
+			this.threadDataCache[userid].threadid = userid;
+			this.threadDataCache[userid].title = statement.getString(1);
+			this.threadDataCache[userid].posted = statement.getInt32(2);
+			this.threadDataCache[userid].ignore = statement.getInt32(3);
+			this.threadDataCache[userid].star = statement.getInt32(4);
+			this.threadDataCache[userid].options = statement.getInt32(5);
+		}
+		statement.reset();
+	},
+
 	// Gets a username from the DB
 	// @param: (int) User ID
 	// @return: (string) username or (null) if not found
@@ -902,6 +935,14 @@ salrPersistObject.prototype = {
 			statement.bindInt32Parameter(1, userid);
 			statement.execute();
 		}
+	},
+
+	// Checks to see if the DB already knows about a thread
+	// @param: (int) Thread ID
+	// @return: (bool) if thread is in DB
+	threadExists: function(threadid)
+	{
+		return (this.threadDataCache[threadid] != undefined);
 	},
 
 	// Checks to see if the DB already knows about a user
@@ -956,13 +997,13 @@ salrPersistObject.prototype = {
 			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1, `mod` = 1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0,username);
 			statement.bindInt32Parameter(1,userid);
+			this.userDataCache[userid].mod = true;
 			if (!statement.executeStep())
 			{
 				statement.reset();
 				this.addUser(userid, username);
 				this.addMod(userid, username);
 			}
-			this.userDataCache[userid].mod = true;
 			statement.reset();
 		}
 	},
@@ -992,13 +1033,13 @@ salrPersistObject.prototype = {
 			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1, `admin` = 1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0,username);
 			statement.bindInt32Parameter(1,userid);
+			this.userDataCache[userid].admin = true;
 			if (!statement.executeStep())
 			{
 				statement.reset();
 				this.addUser(userid, username);
 				this.addAdmin(userid, username);
 			}
-			this.userDataCache[userid].admin = true;
 			statement.reset();
 		}
 	},
@@ -1447,20 +1488,7 @@ salrPersistObject.prototype = {
 	// @return: (bool) If user posted in thread or not
 	didIPostHere: function(threadid)
 	{
-		var posted;
-		var statement = this.database.createStatement("SELECT `posted` FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
-		{
-			posted = statement.getInt32(0);
-			posted = (posted == true);
-		}
-		else
-		{
-			posted = false;
-		}
-		statement.reset();
-		return posted;
+		return (this.threadExists(threadid) && this.threadDataCache[threadid].posted);
 	},
 
 	// Flag a thread as being posted in
