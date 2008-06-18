@@ -608,13 +608,12 @@ function handleThreadList(doc, forumid, flags)
 
 	// We'll need lots of variables for this
 	var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox, threadLastPostBox;
-	var threadTitle, threadId, threadOPId, threadRe, threadDetails;
+	var threadTitle, threadId, threadOPId, threadRe;
 	var threadLRCount, unvistIcon, lpIcon, lastPostName;
 	var userPosterNote, lastLink, threadReCount, searchString;
 	var starredthreads = persistObject.starList, ignoredthreads = persistObject.ignoreList;
 	var iconlist = persistObject.iconList;
 	var table = document.getElementById('forum');
-	var threadDetails = new Array();
 
 	// We need to reset this every time the page is fully loaded
 	persistObject.setPreference("filteredThreadCount",0);
@@ -673,8 +672,7 @@ function handleThreadList(doc, forumid, flags)
 		if (!threadTitleLink) continue;
 		threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1], 10);
 		threadTitle = threadTitleLink.innerHTML;
-		threadDetails = persistObject.getThreadDetails(threadId);
-		if (threadDetails['ignore'])
+		if (persistObject.isThreadIgnored(threadId))
 		{
 			// If thread is ignored might as well remove it and stop now
 			thread.parentNode.removeChild(thread);
@@ -888,7 +886,7 @@ function handleThreadList(doc, forumid, flags)
 			}
 		}
 
-		if (threadDetails['star'])
+		if (persistObject.isThreadStarred(threadId))
 		{
 			threadTitleBox.className += ' starred';
 		}
