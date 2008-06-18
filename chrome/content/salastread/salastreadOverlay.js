@@ -299,6 +299,17 @@ function SALR_onLoad(e)
 function SALR_PageFinishedLoading(e)
 {
 	var doc = e.originalTarget;
+	if (persistObject.getPreference('reanchorThreadOnLoad'))
+	{
+		if (doc.location.href.match(/\#(.*)$/))
+		{
+			var post = doc.getElementById(doc.location.href.match(/\#(.*)$/)[1]);
+			if (post)
+			{
+				post.scrollIntoView(true);
+			}
+		}
+	}
 	doc.__salastread_loading = false;
 }
 
@@ -1041,7 +1052,8 @@ function handleShowThread(doc)
 	// used by the context menu to allow options for this thread
 	doc.body.className += " salastread_thread_" + threadid;
 
-	persistObject.iAmReadingThis(threadid);
+	// Neither of these lines are needed anymore
+	//persistObject.iAmReadingThis(threadid);
 	//var lastReadPostCount = persistObject.getLastReadPostCount(threadid);
 
 	// Grab the thread title
@@ -1093,6 +1105,7 @@ function handleShowThread(doc)
 	}
 
 	// Grab threads/posts per page
+	// Should this be changed to only update it if it changes?  Is there a penalty for changing it everytime?
 	var perpage = persistObject.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
 	if (perpage)
 	{
@@ -1164,7 +1177,6 @@ function handleShowThread(doc)
 	var userPosterColor, userPosterBG, userPosterNote, userQuote;
 
 	// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
-	var hideEditButtons = persistObject.getPreference('hideEditButtons');
 	var hideReportButtons = persistObject.getPreference('hideReportButtons');
 	var useQuickQuote = persistObject.getPreference('useQuickQuote');
 	var insertPostLastMarkLink = persistObject.getPreference("insertPostLastMarkLink");
@@ -1205,7 +1217,7 @@ function handleShowThread(doc)
 		posterId = profileLink.href.match(/userid=(\d+)/i)[1];
 		if (superIgnoreUsers && persistObject.isUserIgnored(posterId))
 		{
-			// They're ignored but not by the system, this branch should never activate
+			// They're ignored but not by the system
 		}
 
 		if (!inFYAD)
@@ -1377,31 +1389,10 @@ function handleShowThread(doc)
 			postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
 		}
 
-		var userfilter = doc.location.href.match(/&userid=[0-9]+/);
-		if (userfilter && postIdLink && postid)
-		{
-			// We are filtering this thread by userid, so lets change the ? link to take us back to this post in context
-			var filterlink = persistObject.selectSingleNode(doc, postIdLink.parentNode, "A[contains(@href,'&userid=')]");
-			if (filterlink)
-			{
-				filterlink.href = "?goto=post&postid=" + postid
-			}
-		}
-
 		//grab this once up here to avoid repetition
-		if (useQuickQuote || hideEditButtons)
+		if (useQuickQuote)
 		{
 			editbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
-		}
-
-		if (hideEditButtons && editbutton)
-		{
-			if (posterName != username)
-			{
-				editbutton.parentNode.removeChild(editbutton);
-				//so we don't try to add quickquote to non-existant edit buttons
-				editbutton = null;
-			}
 		}
 
 		if (useQuickQuote && !threadClosed)
@@ -1478,17 +1469,6 @@ function handleShowThread(doc)
 		persistObject.processImages(postbody, doc);
 	}
 
-	if (persistObject.getPreference('reanchorThreadOnLoad'))
-	{
-		if (doc.location.href.match(/\#(.*)$/))
-		{
-			var post = doc.getElementById(doc.location.href.match(/\#(.*)$/)[1]);
-			if (post)
-			{
-				post.scrollIntoView(true);
-			}
-		}
-	}
 	doc.__salastread_loading = true;
 	window.addEventListener("load", SALR_PageFinishedLoading, true);
 
