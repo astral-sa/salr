@@ -53,6 +53,8 @@ pref('extensions.salastread.maxHeightOfConvertedImages', -1);
 
 
 //IGNORED
+pref('extensions.salastread.superIgnore', true);
+
 
 //QUICK REPLY
 pref('extensions.salastread.useQuickQuote', true);
