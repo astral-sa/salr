@@ -441,8 +441,6 @@ function handleForumDisplay(doc)
 			username = modarray[i].innerHTML;
 			if (!persistObject.isMod(userid) && !persistObject.isAdmin(userid))
 			{
-				// TODO: Change this to create a array and then merge it with the mod list array
-				// and if different, store it in the database
 				persistObject.addMod(userid, username);
 			}
 		}
@@ -656,11 +654,11 @@ function handleThreadList(doc, forumid, flags)
 		}
 
 		threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'thread_title')]");
-		if(!threadTitleLink)
+		if (!threadTitleLink)
 		{
 			threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
 		}
-		if(!threadTitleLink) continue;
+		if (!threadTitleLink) continue;
 		threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1], 10);
 		threadTitle = threadTitleLink.innerHTML;
 		threadDetails = persistObject.getThreadDetails(threadId);
@@ -672,6 +670,25 @@ function handleThreadList(doc, forumid, flags)
 			persistObject.setThreadTitle(threadId, threadTitle);
 			continue;
 		}
+
+		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
+		threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
+		threadOPLink = threadAuthorBox.getElementsByTagName('a');
+		if (threadOPLink[0])
+		{
+			threadOPId = parseInt(threadOPLink[0].href.match(/userid=(\d+)/i)[1]);
+		}
+
+		if (threadOPId)
+		{
+			// If it was started by someone ignored, hide the thread
+			if (superIgnoreUsers && persistObject.isUserIgnored(threadOPId))
+			{
+				thread.parentNode.removeChild(thread);
+				continue;
+			}
+		}
+
 
 		if (advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP)
 		{
@@ -695,14 +712,6 @@ function handleThreadList(doc, forumid, flags)
 					threadBeGone = true;
 				}
 			}
-		}
-
-		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
-		threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
-		threadOPLink = threadAuthorBox.getElementsByTagName('a');
-		if (threadOPLink[0])
-		{
-			threadOPId = parseInt(threadOPLink[0].href.match(/userid=(\d+)/i)[1]);
 		}
 
 		// We may need to fix the reply count link for this thread
@@ -998,7 +1007,8 @@ function handleShowThread(doc)
 		var threadid = persistObject.getThreadID(doc);
 
 		if (!forumid || !threadid)
-		{	// Feel free to elaborate on this later
+		{
+			// Feel free to elaborate on this later
 			throw false;
 		}
 	}
@@ -1175,6 +1185,7 @@ function handleShowThread(doc)
 	var opColor = persistObject.getPreference("opColor");
 	var opBackground = persistObject.getPreference("opBackground");
 	var opSubText = persistObject.getPreference("opSubText");
+	var superIgnoreUsers = persistObject.getPreference("superIgnore");
 
 	doc.postlinks = new Array;
 
@@ -1192,6 +1203,11 @@ function handleShowThread(doc)
 		curPostId = post.id.match(/post(\d+)/)[1];
 		profileLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
 		posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+		if (superIgnoreUsers && persistObject.isUserIgnored(posterId))
+		{
+			// They're ignored but not by the system, this branch should never activate
+		}
+
 		if (!inFYAD)
 		{
 			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
@@ -1208,29 +1224,6 @@ function handleShowThread(doc)
 			{
 				// We hate this person's avatar and we want to banish it to the depths of Hell
 				titleBox.style.display = "none";
-			}
-			else if (resizeCustomTitleText)
-			{
-				// Adds a scrollbar if they have a really wide custom title
-				titleBox.style.overflow = "auto";
-				titleBox.style.width = "159px";
-				if (titleBox.getElementsByTagName('font').length > 0)
-				{
-					// They likely have a large, red custom title
-					for(f = 0; f < titleBox.getElementsByTagName('font').length; f++)
-					{
-						titleBox.getElementsByTagName('font')[f].style.fontSize = "10px";
-					}
-				}
-				// The new system uses spans but the old stuff hasn't been converted so both branches are needed
-				if (titleBox.getElementsByTagName('span').length > 0)
-				{
-					// They likely have a large, red custom title
-					for(f = 0; f < titleBox.getElementsByTagName('span').length; f++)
-					{
-						titleBox.getElementsByTagName('span')[f].style.fontSize = "10px";
-					}
-				}
 			}
 		}
 
@@ -1334,6 +1327,12 @@ function handleShowThread(doc)
 					else
 					{
 						userQuotedDetails = persistObject.isUsernameColored(userQuoted);
+						userQuotedId = persistObject.getUserId(userQuoted);
+						if (superIgnoreUsers && persistObject.isUserIgnored(userQuotedId))
+						{
+							// They're quoting someone ignored, lets remove the entire post
+							post.className += ' salrPostQuoteIgnored';
+						}
 						if (userQuotedDetails)
 						{
 							anyQuotes[quote].className += ' salrQuoteOf' + userQuotedDetails.userid;
