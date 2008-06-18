@@ -1267,19 +1267,7 @@ salrPersistObject.prototype = {
 	// @returns: (string) Hex Colorcode to color user, or (bool) false if not found
 	getPosterColor: function(userid)
 	{
-		var usercolor = false;
-		if(this.userExists(userid))
-		{
-			var statement = this.database.createStatement("SELECT `color` FROM `userdata` WHERE `userid` = ?1");
-				statement.bindInt32Parameter(0,userid);
-			if (statement.executeStep())
-			{
-				usercolor = statement.getString(0);
-			}
-			statement.reset();
-		}
-
-		return usercolor;
+		return (this.userExists(userid) && this.userDataCache[userid].color);
 	},
 
 	// Sets the foreground color for a user
@@ -1287,12 +1275,13 @@ salrPersistObject.prototype = {
 	// @returns: nothing
 	setPosterColor : function(userid, color)
 	{
-		if(this.userExists(userid))
+		if (this.userExists(userid))
 		{
 			var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
-				statement.bindStringParameter(0, color);
-				statement.bindInt32Parameter(1, userid);
-				statement.execute();
+			statement.bindStringParameter(0, color);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
+			this.userDataCache[userid].color = color;
 		}
 	},
 
@@ -1301,19 +1290,7 @@ salrPersistObject.prototype = {
 	// @returns: (string) Hex Colorcode to color user, or (bool) false if not found
 	getPosterBackground: function(userid)
 	{
-		var userbgcolor = false;
-		if(this.userExists(userid))
-		{
-			var statement = this.database.createStatement("SELECT `background` FROM `userdata` WHERE `userid` = ?1");
-				statement.bindInt32Parameter(0,userid);
-			if (statement.executeStep())
-			{
-				userbgcolor = statement.getString(0);
-			}
-			statement.reset();
-		}
-
-		return userbgcolor;
+		return (this.userExists(userid) && this.userDataCache[userid].background);
 	},
 
 	// Sets the background color for a user
@@ -1321,12 +1298,13 @@ salrPersistObject.prototype = {
 	// @returns: nothing
 	setPosterBackground : function(userid, color)
 	{
-		if(this.userExists(userid))
+		if (this.userExists(userid))
 		{
 			var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
-				statement.bindStringParameter(0, color);
-				statement.bindInt32Parameter(1, userid);
-				statement.execute();
+			statement.bindStringParameter(0, color);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
+			this.userDataCache[userid].background = color;
 		}
 	},
 
@@ -1335,18 +1313,7 @@ salrPersistObject.prototype = {
 	// @returns: (string) Notes about the user, or (bool) false if not found
 	getPosterNotes: function(userid)
 	{
-		var usernotes = false;
-		if(this.userExists(userid))
-		{
-			var statement = this.database.createStatement("SELECT `notes` FROM `userdata` WHERE `userid` = ?1");
-				statement.bindInt32Parameter(0,userid);
-			if (statement.executeStep())
-			{
-				usernotes = statement.getString(0);
-			}
-			statement.reset();
-		}
-		return usernotes;
+		return (this.userExists(userid) && this.userDataCache[userid].notes);
 	},
 
 	// Sets the notes for that user in the database
@@ -1354,14 +1321,17 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	setPosterNotes: function(userid, note)
 	{
-		if(this.userExists(userid))
+		if (this.userExists(userid))
 		{
-				var statement = this.database.createStatement("UPDATE `userdata` SET `notes` = ?1 WHERE `userid` = ?2");
-					statement.bindStringParameter(0, note);
-					statement.bindInt32Parameter(1, userid);
-					statement.execute();
-					statement.reset();
-		} else {
+			var statement = this.database.createStatement("UPDATE `userdata` SET `notes` = ?1 WHERE `userid` = ?2");
+			statement.bindStringParameter(0, note);
+			statement.bindInt32Parameter(1, userid);
+			statement.execute();
+			statement.reset();
+			this.userDataCache[userid].notes = note;
+		}
+		else
+		{
 			this.addUser(userid);
 			this.setPosterNotes(userid, note);
 		}
@@ -1374,7 +1344,7 @@ salrPersistObject.prototype = {
 	{
 		var lastread;
 		var statement = this.database.createStatement("SELECT `lastpostid` FROM `threaddata` WHERE `id` = ?1");
-			statement.bindInt32Parameter(0,threadid);
+		statement.bindInt32Parameter(0,threadid);
 		if (statement.executeStep())
 		{
 			lastread = statement.getString(0);
@@ -1400,8 +1370,8 @@ salrPersistObject.prototype = {
 		if (lastpostid > this.getLastPostID(threadid) || (forceUpdate != undefined && forceUpdate == true))
 		{
 			var statement = this.database.createStatement("UPDATE `threaddata` SET `lastpostid` = ?1 WHERE `id` = ?2");
-				statement.bindStringParameter(0,lastpostid);
-				statement.bindInt32Parameter(1,threadid);
+			statement.bindStringParameter(0,lastpostid);
+			statement.bindInt32Parameter(1,threadid);
 			if (statement.executeStep())
 			{
 				var result = true;
@@ -1418,7 +1388,7 @@ salrPersistObject.prototype = {
 	{
 		var title;
 		var statement = this.database.createStatement("SELECT `title` FROM `threaddata` WHERE `id` = ?1");
-			statement.bindInt32Parameter(0,threadid);
+		statement.bindInt32Parameter(0,threadid);
 		if (statement.executeStep())
 		{
 			title = statement.getString(0);
@@ -1441,8 +1411,8 @@ salrPersistObject.prototype = {
 	setThreadTitle: function(threadid, title)
 	{
 		var statement = this.database.createStatement("UPDATE `threaddata` SET `title` = ?1 WHERE `id` = ?2");
-			statement.bindStringParameter(0,title);
-			statement.bindInt32Parameter(1,threadid);
+		statement.bindStringParameter(0,title);
+		statement.bindInt32Parameter(1,threadid);
 		if (statement.executeStep())
 		{
 			var result = true;
@@ -1462,7 +1432,7 @@ salrPersistObject.prototype = {
 	{
 		var posted;
 		var statement = this.database.createStatement("SELECT `posted` FROM `threaddata` WHERE `id` = ?1");
-			statement.bindInt32Parameter(0,threadid);
+		statement.bindInt32Parameter(0,threadid);
 		if (statement.executeStep())
 		{
 			posted = statement.getInt32(0);
@@ -1485,16 +1455,16 @@ salrPersistObject.prototype = {
 		{
 			// This shouldn't happen, but it's here just incase
 			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `posted`, `ignore`, `star`) VALUES (?1, 1, 0, 0)");
-				statement.bindInt32Parameter(0,threadid);
-				statement.execute();
-				statement.reset();
+			statement.bindInt32Parameter(0,threadid);
+			statement.execute();
+			statement.reset();
 		}
 		else
 		{
 			var statement = this.database.createStatement("UPDATE `threaddata` SET `posted` = 1 WHERE `id` = ?1");
-				statement.bindInt32Parameter(0,threadid);
-				statement.execute();
-				statement.reset();
+			statement.bindInt32Parameter(0,threadid);
+			statement.execute();
+			statement.reset();
 		}
 	},
 
@@ -1505,7 +1475,7 @@ salrPersistObject.prototype = {
 	{
 		var starred = false;
 		var statement = this.database.createStatement("SELECT `star` FROM `threaddata` WHERE `id` = ?1");
-			statement.bindInt32Parameter(0,threadid);
+		statement.bindInt32Parameter(0,threadid);
 		if (statement.executeStep())
 		{
 			starred = statement.getInt32(0);
@@ -1521,7 +1491,7 @@ salrPersistObject.prototype = {
 	isThreadIgnored: function(threadid)
 	{
 		var statement = this.database.createStatement("SELECT `ignore` FROM `threaddata` WHERE `id` = ?1");
-			statement.bindInt32Parameter(0,threadid);
+		statement.bindInt32Parameter(0,threadid);
 		if (statement.executeStep())
 		{
 			var ignored = statement.getInt32(0);
@@ -1570,7 +1540,6 @@ salrPersistObject.prototype = {
 				var statement = this.database.createStatement("UPDATE `threaddata` SET `ignore` = not(`ignore`) WHERE `id` = ?1");
 					statement.bindInt32Parameter(0,threadid);
 					statement.execute();
-					statement.reset();
 	//		}
 	//		else
 	//		{
@@ -1583,7 +1552,6 @@ salrPersistObject.prototype = {
 			statement.bindInt32Parameter(0,threadid);
 			statement.bindStringParameter(1,lastviewdt);
 			statement.execute();
-			statement.reset();
 		}
 	},
 
