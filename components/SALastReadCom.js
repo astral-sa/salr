@@ -349,6 +349,7 @@ salrPersistObject.prototype = {
 	userDataCache: Array(),
 	userIDCache: Array(),
 	threadDataCache: Array(),
+	iconDataCache: Array(),
 
 	// Return a resource pointing to the proper preferences branch
 	get preferences()
@@ -452,15 +453,7 @@ salrPersistObject.prototype = {
 	// Returns an associative array of thread icons with the filename as the key and the icon num as the value
 	get iconList()
 	{
-		var iconnum, filename, threadIcons = new Array();
-		var statement = this.database.createStatement("SELECT `iconnumber`, `filename` FROM `posticons`");
-		while (statement.executeStep())
-		{
-			iconnum = statement.getInt32(0);
-			filename = statement.getString(1);
-			threadIcons[filename] = iconnum;
-		}
-		return threadIcons;
+		return this.iconDataCache;
 	},
 
 	// Return a string that contains CSS instructions for our settings
@@ -735,6 +728,14 @@ salrPersistObject.prototype = {
 		return build;
 	},
 
+	// Calls everything needed to fill the data caches
+	populateDataCaches: function()
+	{
+		this.populateUserDataCache();
+		this.populateThreadDataCache();
+		this.populateIconDataCache();
+	},
+
 	// Fills the user data cache from the database
 	// @param: nothing
 	// @return: nothing
@@ -771,14 +772,31 @@ salrPersistObject.prototype = {
 		var threadid;
 		while (statement.executeStep())
 		{
-			userid = statement.getInt32(0);
-			this.threadDataCache[userid] = {};
-			this.threadDataCache[userid].threadid = userid;
-			this.threadDataCache[userid].title = statement.getString(1);
-			this.threadDataCache[userid].posted = statement.getInt32(2);
-			this.threadDataCache[userid].ignore = statement.getInt32(3);
-			this.threadDataCache[userid].star = statement.getInt32(4);
-			this.threadDataCache[userid].options = statement.getInt32(5);
+			threadid = statement.getInt32(0);
+			this.threadDataCache[threadid] = {};
+			this.threadDataCache[threadid].threadid = threadid;
+			this.threadDataCache[threadid].title = statement.getString(1);
+			this.threadDataCache[threadid].posted = statement.getInt32(2);
+			this.threadDataCache[threadid].ignore = statement.getInt32(3);
+			this.threadDataCache[threadid].star = statement.getInt32(4);
+			this.threadDataCache[threadid].options = statement.getInt32(5);
+		}
+		statement.reset();
+	},
+
+	// Fills the icon data cache from the database
+	// @param: nothing
+	// @return: nothing
+	populateIconDataCache: function()
+	{
+		var statement = this.database.createStatement("SELECT `iconnumber`, `filename` FROM `posticons`");
+		var iconnumber, filename;
+		while (statement.executeStep())
+		{
+			iconnumber = statement.getInt32(0);
+			filename = statement.getString(1);
+			this.iconDataCache[iconnumber] = filename;
+			this.iconDataCache[filename] = iconnumber;
 		}
 		statement.reset();
 	},
@@ -1404,25 +1422,6 @@ salrPersistObject.prototype = {
 		return result;
 	},
 
-	// Checks if a thread id # is in the database
-	// @param:
-	// @return:
-	threadIsInDB: function(threadid)
-	{
-		var statement = this.database.createStatement("SELECT `id` FROM `threaddata` WHERE `id` = ?1");
-		statement.bindInt32Parameter(0,threadid);
-		if (statement.executeStep())
-		{
-			var result = true;
-		}
-		else
-		{
-			var result = false;
-		}
-		statement.reset();
-		return result;
-	},
-
 	// Adds a post icon # and filename to the database
 	// @param: (int) Number used in URL, (string) Filename of icon
 	// @return: nothing
@@ -1430,11 +1429,12 @@ salrPersistObject.prototype = {
 	{
 		if (!this.checkIconNumberExist(iconNumber))
 		{
+			this.iconDataCache[iconNumber] = iconFilename;
+			this.iconDataCache[iconFilename] = iconNumber;
 			var statement = this.database.createStatement("INSERT INTO `posticons` (`iconnumber`, `filename`) VALUES (?1, ?2)");
 			statement.bindInt32Parameter(0,iconNumber);
 			statement.bindStringParameter(1,iconFilename);
 			statement.execute();
-			statement.reset();
 		}
 	},
 
@@ -1443,18 +1443,14 @@ salrPersistObject.prototype = {
 	// @return:
 	getIconNumber: function(iconFilename)
 	{
-		var statement = this.database.createStatement("SELECT `iconnumber` FROM `posticons` WHERE `filename` = ?1");
-		statement.bindStringParameter(0,iconFilename);
-		if (statement.executeStep())
+		if (this.iconDataCache[iconFilename] != undefined)
 		{
-			var result = statement.getInt32(0);
+			return this.iconDataCache[iconFilename];
 		}
 		else
 		{
-			var result = false;
+			return false;
 		}
-		statement.reset();
-		return result;
 	},
 
 	// Checks if the icon number is already known
@@ -1462,18 +1458,7 @@ salrPersistObject.prototype = {
 	// @return: (bool) Icon number being known
 	checkIconNumberExist: function(iconNumber)
 	{
-		var statement = this.database.createStatement("SELECT `iconnumber` FROM `posticons` WHERE `iconnumber` = ?1");
-		statement.bindInt32Parameter(0,iconNumber);
-		if (statement.executeStep())
-		{
-			var result = statement.getInt32(0);
-		}
-		else
-		{
-			var result = false;
-		}
-		statement.reset();
-		return result;
+		return (this.iconDataCache[iconNumber] != undefined)
 	},
 
 	// Several little functions to test if we're in a special needs forum
