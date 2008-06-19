@@ -59,7 +59,7 @@ function SALR_init()
 		needToShowChangeLog = !persistObject.IsDevelopmentRelease;
 		// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 		var buildNum = parseInt(persistObject.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
-		if (buildNum <= 80509) // Put the latest build number to need an SQL patch here
+		if (buildNum < 80619) // Put the latest build number to need an SQL patch here
 		{
 			needToShowChangeLog = true;
 		}
