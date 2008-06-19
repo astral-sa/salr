@@ -78,8 +78,7 @@ function SALR_init()
 	}
 
 	// Fill up the cache
-	persistObject.populateUserDataCache();
-	persistObject.populateThreadDataCache();
+	persistObject.populateDataCaches();
 }
 
 // New and improved onload handler wrapper
