@@ -114,10 +114,30 @@ function checkForSQLPatches(build)
 			statement.reset();
 		}
 	}
-	
+	if (build < 80619)
+	{
+		// Userdata schema changed in a previous version and doesn't look like everyone got it
+		statement = persistObject.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
+		statement.executeStep();
+		var column8 = statement.getColumnName(8);
+		var column9 = statement.getColumnName(9);
+		if (column8 != 'ignored')
+		{
+			statement.reset();
+			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
+		}
+		if (column9 != 'hideavatar')
+		{
+			statement.reset();
+			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
+		}
+		statement.reset();
+	}
+
+
 	// Always do inserts last so that any table altering takes affect first
 	// ====================================================================
-	
+
 	if (build < 70531)
 	{
 		// Toss in coloring for biznatchio, Tivac and duz to see if it breaks anything
