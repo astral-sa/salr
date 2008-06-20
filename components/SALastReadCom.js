@@ -731,9 +731,18 @@ salrPersistObject.prototype = {
 	// Calls everything needed to fill the data caches
 	populateDataCaches: function()
 	{
-		this.populateUserDataCache();
-		this.populateThreadDataCache();
-		this.populateIconDataCache();
+		try
+		{
+			this.populateUserDataCache();
+		} catch (e) { }
+		try
+		{
+			this.populateThreadDataCache();
+		} catch (e) { }
+		try
+		{
+			this.populateIconDataCache();
+		} catch (e) { }
 	},
 
 	// Fills the user data cache from the database
@@ -2030,7 +2039,7 @@ salrPersistObject.prototype = {
 				statement.reset();
 			}
 		}
-		if (build < 80619)
+		if (build < 80620)
 		{
 			// Userdata schema changed in a previous version and doesn't look like everyone got it
 			statement = this.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
