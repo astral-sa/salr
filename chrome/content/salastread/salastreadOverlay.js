@@ -61,7 +61,7 @@ function SALR_init()
 		var buildNum = parseInt(persistObject.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
 		if (buildNum < 80619) // Put the latest build number to need an SQL patch here
 		{
-			needToShowChangeLog = true;
+			persistObject.checkForSQLPatches(buildNum);
 		}
 	}
 

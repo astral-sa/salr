@@ -1978,6 +1978,107 @@ salrPersistObject.prototype = {
 		}
 	},
 
+	// Use this function to apply any needed SQL schema updates and similar changes
+	// @param: (int) Last run build number
+	// @return: nothing
+	checkForSQLPatches: function(build)
+	{
+		var statement;
+		if (build < 70414)
+		{
+			// Userdata schema changed, let's test to make sure it needs to be changed, just incase
+			statement = this.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
+			statement.executeStep();
+			if (statement.getColumnName(4) != 'color')
+			{
+				statement.reset();
+				this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `color` VARCHAR(8)");
+				this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `background` VARCHAR(8)");
+			}
+			else
+			{
+				statement.reset();
+			}
+		}
+		if (build < 70418)
+		{
+			// Not setting a default value makes things harder so let's fix that
+			statement = this.database.executeSimpleSQL("UPDATE `threaddata` SET `star` = 0 WHERE `star` IS NULL");
+			statement = this.database.executeSimpleSQL("UPDATE `threaddata` SET `ignore` = 0 WHERE `ignore` IS NULL");
+			statement = this.database.executeSimpleSQL("UPDATE `threaddata` SET `posted` = 0 WHERE `posted` IS NULL");
+			statement = this.database.executeSimpleSQL("UPDATE `userdata` SET `color` = 0 WHERE `color` IS NULL");
+			statement = this.database.executeSimpleSQL("UPDATE `userdata` SET `background` = 0 WHERE `background` IS NULL");
+		}
+		if (build < 80122)
+		{
+			this.database.executeSimpleSQL("DELETE FROM `posticons`");
+		}
+		if (build < 80509)
+		{
+			try
+			{
+				statement = this.database.createStatement("SELECT * FROM `userdata` WHERE `ignored` = 0");
+				statement.executeStep();
+			}
+			catch(e)
+			{
+				this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
+				this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
+			}
+			finally
+			{
+				statement.reset();
+			}
+		}
+		if (build < 80619)
+		{
+			// Userdata schema changed in a previous version and doesn't look like everyone got it
+			statement = this.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
+			statement.executeStep();
+			try
+			{
+				var column8 = statement.getColumnName(8);
+			}
+			catch (e)
+			{
+				// It throws up an error if it doesn't exist
+				if (column8 != 'ignored')
+				{
+					statement.reset();
+					this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
+				}
+			}
+			try
+			{
+				var column9 = statement.getColumnName(9);
+			}
+			catch (e)
+			{
+				// It throws up an error if it doesn't exist
+				if (column9 != 'hideavatar')
+				{
+					statement.reset();
+					this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
+				}
+			}
+			statement.reset();
+		}
+
+
+		// Always do inserts last so that any table altering takes affect first
+		// ====================================================================
+
+		if (build < 70531)
+		{
+			// Toss in coloring for biznatchio, Tivac and duz to see if it breaks anything
+			this.prepopulateDB("userdata");
+		}
+		if (build < 71128 && build > 70531)
+		{
+			this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
+		}
+	},
+
 	// Toggles the visibility of something
 	// @param: element, (bool) display inline?
 	// @return: nothing

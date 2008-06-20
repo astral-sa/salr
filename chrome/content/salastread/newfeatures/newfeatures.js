@@ -19,7 +19,6 @@ function windowLoad()
 		importOldData();
 		return;
 	}
-	checkForSQLPatches(oldBuild); // 1.0s won't need SQL Patches
 }
 
 function toggleMode() {
@@ -62,91 +61,6 @@ function changeFeature(p) {
 		btnNext.setAttribute("disabled", true);
 	else
 		btnNext.removeAttribute("disabled");
-}
-
-// Use this function to apply any needed SQL schema updates and similar changes
-function checkForSQLPatches(build)
-{
-	var statement;
-	if (build < 70414)
-	{
-		// Userdata schema changed, let's test to make sure it needs to be changed, just incase
-		statement = persistObject.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
-		statement.executeStep();
-		if (statement.getColumnName(4) != 'color')
-		{
-			statement.reset();
-			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `color` VARCHAR(8)");
-			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `background` VARCHAR(8)");
-		}
-		else
-		{
-			statement.reset();
-		}
-	}
-	if (build < 70418)
-	{
-		// Not setting a default value makes things harder so let's fix that
-		statement = persistObject.database.executeSimpleSQL("UPDATE `threaddata` SET `star` = 0 WHERE `star` IS NULL");
-		statement = persistObject.database.executeSimpleSQL("UPDATE `threaddata` SET `ignore` = 0 WHERE `ignore` IS NULL");
-		statement = persistObject.database.executeSimpleSQL("UPDATE `threaddata` SET `posted` = 0 WHERE `posted` IS NULL");
-		statement = persistObject.database.executeSimpleSQL("UPDATE `userdata` SET `color` = 0 WHERE `color` IS NULL");
-		statement = persistObject.database.executeSimpleSQL("UPDATE `userdata` SET `background` = 0 WHERE `background` IS NULL");
-	}
-	if (build < 80122)
-	{
-		persistObject.database.executeSimpleSQL("DELETE FROM `posticons`");
-	}
-	if (build < 80509)
-	{
-		try
-		{
-			statement = persistObject.database.createStatement("SELECT * FROM `userdata` WHERE `ignored` = 0");
-			statement.executeStep();
-		}
-		catch(e)
-		{
-			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
-			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
-		}
-		finally
-		{
-			statement.reset();
-		}
-	}
-	if (build < 80619)
-	{
-		// Userdata schema changed in a previous version and doesn't look like everyone got it
-		statement = persistObject.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
-		statement.executeStep();
-		var column8 = statement.getColumnName(8);
-		var column9 = statement.getColumnName(9);
-		if (column8 != 'ignored')
-		{
-			statement.reset();
-			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
-		}
-		if (column9 != 'hideavatar')
-		{
-			statement.reset();
-			persistObject.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
-		}
-		statement.reset();
-	}
-
-
-	// Always do inserts last so that any table altering takes affect first
-	// ====================================================================
-
-	if (build < 70531)
-	{
-		// Toss in coloring for biznatchio, Tivac and duz to see if it breaks anything
-		persistObject.prepopulateDB("userdata");
-	}
-	if (build < 71128 && build > 70531)
-	{
-		persistObject.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
-	}
 }
 
 // Convert the old 1.0 preferences and thread data to the new 2.0 format
