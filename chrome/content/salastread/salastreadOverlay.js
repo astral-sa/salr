@@ -59,10 +59,7 @@ function SALR_init()
 		needToShowChangeLog = !persistObject.IsDevelopmentRelease;
 		// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 		var buildNum = parseInt(persistObject.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
-		if (buildNum < 80619) // Put the latest build number to need an SQL patch here
-		{
-			persistObject.checkForSQLPatches(buildNum);
-		}
+		persistObject.checkForSQLPatches(buildNum);
 	}
 
 	if (persistObject && persistObject._needToExpireThreads)
@@ -79,6 +76,7 @@ function SALR_init()
 
 	// Fill up the cache
 	persistObject.populateDataCaches();
+	persistObject.LastRunVersion = persistObject.SALRversion;
 }
 
 // New and improved onload handler wrapper
