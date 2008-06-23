@@ -386,23 +386,22 @@ salrPersistObject.prototype = {
 		}
 		var storageService = Components.classes["@mozilla.org/storage/service;1"]
 			.getService(Components.interfaces.mozIStorageService);
-		var mDBConn = storageService.openDatabase(file);
-		if (!mDBConn.tableExists("threaddata"))
+		this.mDBConn = storageService.openDatabase(file);
+		if (!this.mDBConn.tableExists("threaddata"))
 		{
-			mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, options INTEGER)");
+			this.mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, options INTEGER)");
 			this.prepopulateDB("threaddata");
 		}
-		if (!mDBConn.tableExists("userdata"))
+		if (!this.mDBConn.tableExists("userdata"))
 		{
-			mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT, ignored BOOLEAN, hideavatar BOOLEAN)");
-			this.prepopulateDB("userdata");
+			this.mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT, ignored BOOLEAN, hideavatar BOOLEAN)");
+			this.this.prepopulateDB("userdata");
 		}
-		if (!mDBConn.tableExists("posticons"))
+		if (!this.mDBConn.tableExists("posticons"))
 		{
-			mDBConn.executeSimpleSQL("CREATE TABLE `posticons` (iconnumber INTEGER PRIMARY KEY, filename VARCHAR(50))");
+			this.mDBConn.executeSimpleSQL("CREATE TABLE `posticons` (iconnumber INTEGER PRIMARY KEY, filename VARCHAR(50))");
 			this.prepopulateDB("posticons");
 		}
-		this.mDBConn = mDBConn;
 		return this.mDBConn;
 	},
 
@@ -644,6 +643,7 @@ salrPersistObject.prototype = {
 	// @return: (string) Version number, 0.0.0 if no last run version
 	get LastRunVersion()
 	{
+		var lrver;
 		// Check to see if they have a value stored in the old location
 		var prefType = this.pref.getPrefType("salastread.lastRunVersion");
 		if (prefType != this.pref.PREF_INVALID)
@@ -654,11 +654,15 @@ salrPersistObject.prototype = {
 		prefType = this.preferences.getPrefType("lastRunVersion");
 		if (prefType == this.preferences.PREF_INVALID)
 		{
-			var lrver = "0.0.0";
+			lrver = "0.0.0";
 		}
 		else
 		{
-			var lrver = this.getPreference("lastRunVersion");
+			lrver = this.getPreference("lastRunVersion");
+		}
+		if (lrver == '')
+		{
+			lrver = "0.0.0";
 		}
 		return lrver;
 	},
@@ -1966,12 +1970,14 @@ salrPersistObject.prototype = {
 
 	expireThreads: function()
 	{
+		/* Should we even bother expiring threads anymore?
 		var expireLength = this.getPreference("expireMinAge") * 86400; // days * 24 * 60 * 60
 		var rightNow = this.currentTimeStamp;
 		var expireWhen = rightNow - expireLength;
 		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `lastviewdt` < ?1 AND `star` != 1 AND `ignore` != 1");
 		statement.bindStringParameter(0,expireWhen);
 		statement.execute();
+		*/
 	},
 
 	prepopulateDB: function(dbtable)
@@ -1992,6 +1998,10 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	checkForSQLPatches: function(build)
 	{
+		if (build == 0)
+		{
+			return;
+		}
 		var statement;
 		if (build < 70414)
 		{
