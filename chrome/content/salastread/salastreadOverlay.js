@@ -1142,6 +1142,11 @@ function handleShowThread(doc)
 		}
 	}
 
+	if (persistObject.getPreference('quickPostJump'))
+	{
+		doc.addEventListener('keypress', SALR_QuickPostJump, false);
+	}
+
 	if (persistObject.getPreference("replyCountLinkinThreads") && !singlePost)
 	{
 		var replyCountLink = doc.createElement("A");
@@ -2207,6 +2212,52 @@ function releaseQuickQuoteVars()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Navbar & Mouse Gesture Functions ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+function SALR_QuickPostJump(event)
+{
+	try {
+	var targ = event.target;
+	var doc = targ.ownerDocument;
+	var pressed = event.which;
+	var postId, post, rescroll = false;
+	var maxPosts = persistObject.getPreference('postsPerPage');
+	if (doc.location.href.match(/\#pti(\d+)$/))
+	{
+		postId = doc.location.href.match(/\#pti(\d+)$/)[1];
+	}
+	else
+	{
+		postId = '1';
+	}
+	switch (pressed)
+	{
+		case 110: // n
+		case 78:  // N
+			postId++;
+			if (postId  <= maxPosts)
+			{
+				post = doc.getElementById('pti' + postId);
+				rescroll = true;
+			}
+			break;
+		case 112: // p
+		case 80:  // P
+			postId--;
+			if (postId > 0)
+			{
+				post = doc.getElementById('pti' + postId);
+				rescroll = true;
+			}
+			break;
+	}
+	if (rescroll)
+	{
+		post.scrollIntoView(true);
+		doc.location.hash = '#pti' + postId;
+	}
+} catch(e) {dump('error:'+e);}
+}
 
 
 function SALR_DirectionalNavigate(doc, dir)
