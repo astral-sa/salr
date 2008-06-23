@@ -111,6 +111,7 @@ pref('extensions.salastread.insertPostLastMarkLink', true);
 pref('extensions.salastread.insertPostTargetLink', true);
 pref('extensions.salastread.hideReportButtons', false);
 pref('extensions.salastread.highlightQuotes', true);
+pref('extensions.salastread.quickPostJump', false);
 
 //USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
