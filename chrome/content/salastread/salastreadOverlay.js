@@ -2877,7 +2877,7 @@ function SALR_buildForumMenu()
 	var menupopup = document.getElementById("menupopup_SAforums");
 	if (menupopup == null)
 	{
-		var iBefore = document.getElementById("bookmarks-menu");
+		var iBefore = document.getElementById("bookmarksMenu");
 		if (iBefore)
 		{
 			iBefore = iBefore.nextSibling;
