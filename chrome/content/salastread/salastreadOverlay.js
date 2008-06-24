@@ -2877,12 +2877,8 @@ function SALR_buildForumMenu()
 	var menupopup = document.getElementById("menupopup_SAforums");
 	if (menupopup == null)
 	{
-		var iBefore = document.getElementById("bookmarksMenu");
-		if (iBefore)
-		{
-			iBefore = iBefore.nextSibling;
-		}
-		else
+		var iBefore = document.getElementById("tools-menu");
+		if (!iBefore)
 		{
 			iBefore = document.getElementById("main-menubar").lastChild;
 		}
