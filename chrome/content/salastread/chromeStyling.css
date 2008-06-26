@@ -1,6 +1,7 @@
 menupopup.lastread_menu
 {
-    background-color: #fff;
+	-moz-appearance: none;
+	background-color: #fff;
 	background-image: url("chrome://salastread/skin/ps-sa-tag.jpg") !important;
 	background-repeat: no-repeat;
 }
