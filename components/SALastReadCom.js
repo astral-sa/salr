@@ -129,11 +129,14 @@ salrPersistObject.prototype = {
 
 	get forumListXml() { return this._forumListXml; },
 	set forumListXml(value) {
-		this._forumListXml = value;
-		var oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
-						.createInstance(Components.interfaces.nsIDOMSerializer);
-		var xmlstr = oXmlSer.serializeToString(this._forumListXml);
-		SaveFile(this._flfn, xmlstr);
+		if (value != null)
+		{
+			this._forumListXml = value;
+			var oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
+							.createInstance(Components.interfaces.nsIDOMSerializer);
+			var xmlstr = oXmlSer.serializeToString(this._forumListXml);
+			SaveFile(this._flfn, xmlstr);
+		}
 	},
 
 	get gotForumList() { return this._gotForumList; },
@@ -463,10 +466,10 @@ salrPersistObject.prototype = {
 		{
 			// These are for in thread coloring
 			CSSFile += 'table.post tr.seen1 td { background-color:';
-			CSSFile += this.getPreference('seenPostLight');
+			CSSFile += this.getPreference('seenPostDark');
 			CSSFile += ' !important; }\n';
 			CSSFile += 'table.post tr.seen2 td { background-color:';
-			CSSFile += this.getPreference('seenPostDark');
+			CSSFile += this.getPreference('seenPostLight');
 			CSSFile += ' !important; }\n';
 		}
 		if (!this.getPreference('dontHighlightThreads'))
@@ -504,6 +507,10 @@ salrPersistObject.prototype = {
 			CSSFile += 'background-image:url("chrome://salastread/skin/gradient.png") !important;';
 			CSSFile += 'background-repeat:repeat-x !important;';
 			CSSFile += 'background-position:center left !important;}\n';
+		}
+		if (this.getPreference('quickPostJump'))
+		{
+			CSSFile += '#thread table.post.focused { outline: 2px dashed #c1c1c1 !important; }\n';
 		}
 		if (this.getPreference('showUnvisitIcon') && this.getPreference('showGoToLastIcon'))
 		{
@@ -566,13 +573,17 @@ salrPersistObject.prototype = {
 				CSSFile += 'div.bbc-block.salrQuoteOfSelf {';
 				CSSFile += 'background:';
 				CSSFile += selfColor;
-				CSSFile += '};\n';
+				CSSFile += '; }\n';
 			}
 		}
 		if (this.getPreference('resizeCustomTitleText'))
 		{
-			CSSFile += 'dl.userinfo dd.title { overflow:auto; width:159px; }\n';
+			CSSFile += 'dl.userinfo dd.title { width: 159px !important;  overflow: auto !important;}\n';
 			CSSFile += 'dl.userinfo dd.title * { font-size:10px !important; }\n';
+		}
+		if (this.getPreference('hideReportButtons'))
+		{
+			CSSFile += '#thread table.post.salrPostOfSelf ul.postbuttons a[href^=modalert] { display:none; }\n';
 		}
 		if (this.getPreference('superIgnore'))
 		{
