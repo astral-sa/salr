@@ -1082,6 +1082,9 @@ function handleShowThread(doc)
 		}
 	}
 
+	doc.__SALR_numPages = numPages;
+	doc.__SALR_curPage = curPage;
+
 	// Insert the thread paginator
 	if (persistObject.getPreference("enablePageNavigator") && !singlePost)
 	{
@@ -1173,13 +1176,11 @@ function handleShowThread(doc)
 	var userPosterColor, userPosterBG, userPosterNote, userQuote;
 
 	// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
-	var hideReportButtons = persistObject.getPreference('hideReportButtons');
 	var useQuickQuote = persistObject.getPreference('useQuickQuote');
 	var insertPostLastMarkLink = persistObject.getPreference("insertPostLastMarkLink");
 	var insertPostTargetLink = persistObject.getPreference("insertPostTargetLink");
 	var highlightUsernames = persistObject.getPreference("highlightUsernames");
 	var dontHighlightPosts = persistObject.getPreference("dontHighlightPosts");
-	var resizeCustomTitleText = persistObject.getPreference("resizeCustomTitleText");
 	//post colors
 	var seenPostDark = persistObject.getPreference("seenPostDark");
 	var seenPostLight = persistObject.getPreference("seenPostLight");
@@ -1257,7 +1258,12 @@ function handleShowThread(doc)
 		userPosterNote = false;
 
 		//apply this to every post
-		post.className += " salrPostBy" + posterId + " salrPostBy" + posterName;
+		post.className += " salrPostBy" + posterId + " salrPostBy" + escape(posterName);
+		if (posterName == username)
+		{
+			post.className += " salrPostOfSelf";
+		}
+
 
 		//apply custom user coloring
 		if (userNameBox.className.search(/op/) > -1)
@@ -1401,18 +1407,6 @@ function handleShowThread(doc)
 			if (editbutton)
 			{
 				attachQuickQuoteHandler(threadid, doc, persistObject.turnIntoQuickButton(doc, editbutton, forumid), posterName, 1, postid, true);
-			}
-		}
-
-		if (hideReportButtons)
-		{
-			if (posterName == username)
-			{
-				reportbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'modalert.php')]");
-				if(reportbutton)
-				{
-					reportbutton.parentNode.removeChild(reportbutton);
-				}
 			}
 		}
 
@@ -2220,11 +2214,22 @@ function SALR_QuickPostJump(event)
 	var targ = event.target;
 	var doc = targ.ownerDocument;
 	var pressed = event.which;
-	var postId, post, rescroll = false;
+	var postId, post, classChange, rescroll = false;
+	var ctrlKey = event.ctrlKey || event.metaKey;
 	var maxPosts = persistObject.getPreference('postsPerPage');
-	if (doc.location.href.match(/\#pti(\d+)$/))
+	if (doc.__SALR_curFocus)
+	{
+		postId = doc.__SALR_curFocus;
+	}
+	else if (doc.location.href.match(/\#pti(\d+)$/))
 	{
 		postId = doc.location.href.match(/\#pti(\d+)$/)[1];
+	}
+	else if (doc.location.href.match(/\#(post\d+)$/))
+	{
+		postId = doc.location.href.match(/\#(post\d+)$/)[1];
+		postId = doc.getElementById(postId).getElementsByTagName('tr')[0].id;
+		postId = postId.match(/pti(\d+)$/)[1];
 	}
 	else
 	{
@@ -2232,29 +2237,79 @@ function SALR_QuickPostJump(event)
 	}
 	switch (pressed)
 	{
+		case 117: // u
+		case 85: // U
+			doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+			post = doc.getElementById('pti' + postId);
+			rescroll = true;
+			break;
+		case 106: // j
+		case 74: // J
+			// Goto next page
+			if (doc.__SALR_curPage < doc.__SALR_numPages)
+			{
+				doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage + 1));
+			}
+			break;
 		case 110: // n
 		case 78:  // N
+			// Goto next post
 			postId++;
-			if (postId  <= maxPosts)
+			if (postId <= maxPosts)
 			{
+				if (doc.getElementById('pti' + (postId - 1)))
+				{
+					classChange = doc.getElementById('pti' + (postId - 1)).parentNode.parentNode;
+					classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
+					doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+				}
 				post = doc.getElementById('pti' + postId);
 				rescroll = true;
 			}
 			break;
+		case 107: // k
+		case 75: // K
+			// Goto previous page
+			if (doc.__SALR_curPage > 1)
+			{
+				doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage - 1));
+			}
+			break;
 		case 112: // p
 		case 80:  // P
+		case 109: // m
+		case 77:  // M
+			// Goto previous post
 			postId--;
 			if (postId > 0)
 			{
+				if (doc.getElementById('pti' + (postId + 1)))
+				{
+					classChange = doc.getElementById('pti' + (postId + 1)).parentNode.parentNode;
+					classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
+					doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+				}
 				post = doc.getElementById('pti' + postId);
 				rescroll = true;
 			}
+			break;
+		case 101: // e
+		case 69: // E
+			// Activate Quick Edit Post
+			break;
+		case 114: // r
+		case 82: // R
+			// Activate Quick Reply to Thread
+			break;
+		case 113: // q
+		case 81: // Q
+			// Activate Quick Quote Post
 			break;
 	}
 	if (rescroll)
 	{
 		post.scrollIntoView(true);
-		doc.location.hash = '#pti' + postId;
+		doc.__SALR_curFocus = postId;
 	}
 } catch(e) {dump('error:'+e);}
 }
@@ -2657,6 +2712,12 @@ function SALR_menuItemGoTo(event, url, target)
 function grabForumList(doc)
 {
 	var rowList = persistObject.selectNodes(doc, doc, "//select[@name='forumid']/option");
+	if (!rowList || rowList.length < 10)
+	{
+		// Couldn't grab the menu or there wasn't enough there to be correct
+		return;
+	}
+
 	var oDomParser = new DOMParser();
 	var forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
 	var targetEl = forumsDoc.documentElement;
@@ -2857,6 +2918,7 @@ function populateForumMenuForumsFrom(nested_menus, target, src, pinnedForumNumbe
 function SALR_buildForumMenu()
 {
 	// If there are any other SA menus, hide them.  Why? Who knows
+	// Since this now defaults to off, it might not work, keep an eye out if anyone cares
 	if (persistObject.getPreference('hideOtherSAMenus'))
 	{
 		var mmb = document.getElementById("main-menubar");
