@@ -2293,17 +2293,31 @@ function SALR_QuickPostJump(event)
 				rescroll = true;
 			}
 			break;
+		case 111: // o
+		case 79: // O
+			post = doc.getElementById('pti' + postId);
+			rescroll = true;
+			break;
 		case 101: // e
 		case 69: // E
 			// Activate Quick Edit Post
+			var fakeEvent = {};
+			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
+			quickQuoteButtonClick(fakeEvent);
 			break;
 		case 114: // r
 		case 82: // R
 			// Activate Quick Reply to Thread
+			var fakeEvent = {};
+			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
+			quickQuoteButtonClick(fakeEvent);
 			break;
 		case 113: // q
 		case 81: // Q
 			// Activate Quick Quote Post
+			var fakeEvent = {};
+			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
+			quickQuoteButtonClick(fakeEvent);
 			break;
 	}
 	if (rescroll)
