@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.080623');
+pref('extensions.salastread.currentVersion', '1.99.080805');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -111,7 +111,7 @@ pref('extensions.salastread.insertPostLastMarkLink', true);
 pref('extensions.salastread.insertPostTargetLink', true);
 pref('extensions.salastread.hideReportButtons', false);
 pref('extensions.salastread.highlightQuotes', true);
-pref('extensions.salastread.quickPostJump', false);
+pref('extensions.salastread.quickPostJump', true);
 
 //USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
