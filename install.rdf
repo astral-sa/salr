@@ -3,7 +3,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>{fc6339b8-9581-4fc7-b824-dffcb091fcb7}</em:id>
-		<em:version>1.99.080623</em:version>
+		<em:version>1.99.080805</em:version>
 		<em:type>2</em:type>
 		<em:homepageURL>http://salr.bountysource.com/</em:homepageURL>
 		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
@@ -20,18 +20,10 @@
 				<em:maxVersion>3.0.*</em:maxVersion>
 			</Description>
 		</em:targetApplication>
-		<em:targetApplication>
-			<!-- SeaMonkey -->
-			<Description>
-				<em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
-				<em:minVersion>1.5</em:minVersion>
-				<em:maxVersion>1.5a</em:maxVersion>
-			</Description>
-		</em:targetApplication>
 
 		<!-- Front End MetaData -->
 		<em:name>SomethingAwful Last Read Enhancement</em:name>
-		<em:description>Adds "Last Read" support to the Something Awful forums</em:description>
+		<em:description>Customizes the Something Awful forums to make browsing quicker and easier</em:description>
 		<em:creator>Tim Fries (biznatchio)</em:creator>
 		<em:developer>Ben Dusinberre (duz)</em:developer>
 		<em:developer>Pat Cavit (Tivac)</em:developer>
