@@ -189,6 +189,10 @@ function SALR_onLoad(e)
 					pageHandler = handleSupport;
 					break;
 
+				case "stats":
+					pageHandler = handleStats;
+					break;
+
 				case "misc":
 					pageHandler = handleMisc;
 					break;
@@ -241,12 +245,6 @@ function SALR_onLoad(e)
 				screl = doc.createElement("SCRIPT");
 				screl.setAttribute("language","javascript");
 				screl.setAttribute("src","chrome://salastread/content/pageunload.js");
-				head.appendChild(screl);
-
-				// Added by duz for testing events
-				screl = doc.createElement("SCRIPT");
-				screl.setAttribute("language","javascript");
-				screl.setAttribute("src","chrome://salastread/content/salrevents.js");
 				head.appendChild(screl);
 			}
 
@@ -375,8 +373,10 @@ function handleForumDisplay(doc)
 	{
 		// Replace this function once the AJAXified JSON is added to the forums
 		// function will check timestamp which is stored in preferences
-		 grabForumList(doc);
-		 persistObject.gotForumList = true;
+
+		// 080809 Temporarily commented out as forumdisplay has been using a forum list with only the main forums
+		//grabForumList(doc);
+		//persistObject.gotForumList = true;
 	}
 
 	if (flags.inFYAD && !persistObject.getPreference("enableFYAD")) {
@@ -416,6 +416,9 @@ function handleForumDisplay(doc)
 		}
 	}
 
+	doc.__SALR_curPage = curPage;
+	doc.__SALR_maxPage = numPages;
+
 	// Insert the forums paginator
 	if (persistObject.getPreference("enableForumNavigator"))
 	{
@@ -423,10 +426,14 @@ function handleForumDisplay(doc)
 	}
 	if (persistObject.getPreference("gestureEnable"))
 	{
-		doc.__SALR_curPage = curPage;
-		doc.__SALR_maxPage = numPages;
 		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
 		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
+	}
+
+	// Turn on keyboard navigation
+	if (persistObject.getPreference('quickPostJump'))
+	{
+		doc.addEventListener('keypress', SALR_QuickPostJump, false);
 	}
 
 	// Replace post button
@@ -1082,8 +1089,8 @@ function handleShowThread(doc)
 		}
 	}
 
-	doc.__SALR_numPages = numPages;
 	doc.__SALR_curPage = curPage;
+	doc.__SALR_maxPage = numPages;
 
 	// Insert the thread paginator
 	if (persistObject.getPreference("enablePageNavigator") && !singlePost)
@@ -1092,8 +1099,6 @@ function handleShowThread(doc)
 	}
 	if (persistObject.getPreference("gestureEnable"))
 	{
-		doc.__SALR_curPage = curPage;
-		doc.__SALR_maxPage = numPages;
 		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
 		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
 	}
@@ -1762,6 +1767,14 @@ function handleSupport(doc)
 	newImg.parentNode.appendChild(emptyP);
 }
 
+function handleStats(doc)
+{
+	if (doc.getElementsByName('t_forumid'))
+	{
+		// The forum list is here so lets update it
+		grabForumList(doc);
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utility Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2211,11 +2224,16 @@ function releaseQuickQuoteVars()
 function SALR_QuickPostJump(event)
 {
 	try {
+	var ctrlKey = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
+	if (ctrlKey)
+	{
+		// If any special keys were pressed, don't bother processing
+		return;
+	}
 	var targ = event.target;
 	var doc = targ.ownerDocument;
 	var pressed = event.which;
 	var postId, post, classChange, rescroll = false;
-	var ctrlKey = event.ctrlKey || event.metaKey;
 	var maxPosts = persistObject.getPreference('postsPerPage');
 	if (doc.__SALR_curFocus)
 	{
@@ -2246,7 +2264,7 @@ function SALR_QuickPostJump(event)
 		case 106: // j
 		case 74: // J
 			// Goto next page
-			if (doc.__SALR_curPage < doc.__SALR_numPages)
+			if (doc.__SALR_curPage < doc.__SALR_maxPage)
 			{
 				doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage + 1));
 			}
@@ -2269,6 +2287,8 @@ function SALR_QuickPostJump(event)
 			break;
 		case 107: // k
 		case 75: // K
+		case 104: // h
+		case 72: // H
 			// Goto previous page
 			if (doc.__SALR_curPage > 1)
 			{
@@ -2295,6 +2315,7 @@ function SALR_QuickPostJump(event)
 			break;
 		case 111: // o
 		case 79: // O
+			doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
 			post = doc.getElementById('pti' + postId);
 			rescroll = true;
 			break;
@@ -2725,10 +2746,22 @@ function SALR_menuItemGoTo(event, url, target)
 
 function grabForumList(doc)
 {
+	var statsMenu = false;
 	var rowList = persistObject.selectNodes(doc, doc, "//select[@name='forumid']/option");
-	if (!rowList || rowList.length < 10)
+	if (!rowList || rowList.length == 0)
 	{
-		// Couldn't grab the menu or there wasn't enough there to be correct
+		// Can't find the forum list so lets check the other location
+		rowList = persistObject.selectNodes(doc, doc, "//select[@name='t_forumid']/option");
+		if (!rowList)
+		{
+			// Still couldn't find the forum list so lets stop now
+			return
+		}
+		statsMenu = true;
+	}
+	if (rowList.length < 15)
+	{
+		// There's way more then 15 forums so this menu is missing some
 		return;
 	}
 
@@ -2742,7 +2775,7 @@ function grabForumList(doc)
 
 	for (var i=0; i < rowList.length; )
 	{
-		i = addForums(forumsDoc, rowList, i, forumsEl, 0);
+		i = addForums(forumsDoc, rowList, i, forumsEl, 0, statsMenu);
 	}
 
 	persistObject.forumListXml = forumsDoc;
@@ -2752,7 +2785,7 @@ function grabForumList(doc)
 	}
 }
 
-function addForums(forumsDoc, rowList, index, parentEl, depth)
+function addForums(forumsDoc, rowList, index, parentEl, depth, statsMenu)
 {
 	var thisEl = rowList[index];
 	var forumTitle = thisEl.firstChild.nodeValue;
@@ -2764,18 +2797,23 @@ function addForums(forumsDoc, rowList, index, parentEl, depth)
 		return index+1;
 	}
 
-	var elDepth = 0;
+	var dashes = '--', elDepth = 0;
+	if (statsMenu)
+	{
+		dashes = '---';
+	}
 	while (true)
 	{
-		if(forumTitle.indexOf("--") != 0)
+		if(forumTitle.indexOf(dashes) != 0)
 		{
 			break;
 		}
 
-		forumTitle = forumTitle.substring(2);
+		forumTitle = forumTitle.substring(dashes.length);
 		elDepth++;
 	}
-	forumTitle = forumTitle.replace(/^\s+|\s+$/g,"");
+	forumTitle = forumTitle.replace(/^\s+|\s+$/g, '');
+	forumTitle = forumTitle.replace('(no posting)', '');
 	if (elDepth < depth)
 	{
 		return index;
@@ -2803,7 +2841,7 @@ function addForums(forumsDoc, rowList, index, parentEl, depth)
 
 	for (index++; index < rowList.length; )
 	{
-		var i = addForums(forumsDoc, rowList, index, fel, depth+1);
+		var i = addForums(forumsDoc, rowList, index, fel, depth+1, statsMenu);
 
 		if (i == index)
 		{
@@ -2814,6 +2852,7 @@ function addForums(forumsDoc, rowList, index, parentEl, depth)
 	}
 
 	return index;
+
 }
 
 function populateForumMenuFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements) {
