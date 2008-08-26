@@ -70,6 +70,7 @@
 		   <xul:menuitem id="vbcode_underline" style="text-decoration: underline;" label="Underline" oncommand="getvBcode(event, 'underline');"/>
 		   <xul:menuitem id="vbcode_fixed" style="font-family: monospace;" label="Fixed" oncommand="getvBcode(event, 'fixed');"/>
 		   <xul:menuitem id="vbcode_spoiler" label="Spoiler" oncommand="getvBcode(event, 'spoiler');"/>
+			 <xul:menuitem id="vbcode_list" label="List item" oncommand="getvBcode(event, 'listitem');"/>
 		   <xul:menuseparator/>
 		   <xul:menuitem id="vbcode_code" label="Code" oncommand="getvBcode(event, 'code');"/>
 		   <xul:menuitem id="vbcode_code" label="Quote" oncommand="getvBcode(event, 'quote');"/>

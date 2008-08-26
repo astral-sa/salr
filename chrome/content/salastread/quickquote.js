@@ -78,6 +78,10 @@ function checkKeys(e) {
 			case 112: case 80: // "p"
 				getvBcode(e, 'spoiler');
 				break;
+
+			case 56: case 42: // "*" or shift+8
+				getvBcode(e, 'listitem');
+				break;
 		}
 	}
 }
@@ -538,6 +542,20 @@ function insertTags(tag, saveSel, inner, tagEquals)
 		
 		var selStart = msgBox.selectionStart;
 		var selEnd = msgBox.selectionEnd;
+
+		if (tag == "*") { // special case for [*] tags which should to be inside a [list]
+			if (msgBox.value.indexOf("[list]") == -1 || msgBox.value.indexOf("[list]") > selStart)
+			{
+				tagOpen = "[list]\n" + tagOpen;
+			}
+			if (msgBox.value.indexOf("[/list]") < selEnd)
+			{
+				tagClose = "\n[/list]";
+			} else {
+				tagClose = '';
+			}
+		}
+
 		msgBox.focus();
 		if (inner)
 		{
@@ -555,14 +573,7 @@ function insertTags(tag, saveSel, inner, tagEquals)
 		else
 		{
 			msgBox.value = msgBox.value.substring(0, selStart) + tagOpen + tagClose + msgBox.value.substring(selEnd);
-			if (saveSel)
-			{
-				
-			}
-			else
-			{
-				msgBox.setSelectionRange(selStart + tagOpen.length, selStart + tagOpen.length);
-			}
+			msgBox.setSelectionRange(selStart + tagOpen.length, selStart + tagOpen.length);
 		}
 		doPreview();
 	}
@@ -668,6 +679,10 @@ function getvBcode(event, command) {
 		case "fixed":
 			insertTags("fixed", saveSel, str);
 			break;
+
+		case "listitem":
+			insertTags("*", saveSel, str);
+			break;
 		
 		default : alert("vBcode error! No menu option selected.");
 	}
@@ -686,6 +701,9 @@ function doPreview() {
 	vbcode['<u>$1</u>'] = /\[u\](.*?)\[\/u\]/gi;
 	vbcode['<s>$1</s>'] = /\[s\](.*?)\[\/s\]/gi;
 	vbcode['<tt class="bbc">$1</tt>'] = /\[fixed\](.*?)\[\/fixed\]/gi;
+	
+	vbcode['<ul>$1</ul>'] = /\[list\](.*?)\[\/list\]/gi;
+	vbcode['<li />'] = /\[\*\]/gi;
 	
 	markup = markup.replace(/\[sub\]|\[\/sub\]|\[super\]|\[\/super\]/gi, 
 		function(strMatch) {
@@ -707,8 +725,9 @@ function doPreview() {
 	// Spoiler
 	vbcode['<span style="background: #000000;" onmouseover="this.style.color=\'#FFFFFF\';" onmouseout="this.style.color=this.style.backgroundColor=\'#000000\'">$1</span>'] = /\[spoiler\](.*?)\[\/spoiler\]/gi;
 	
-	// Code
-	vbcode['<blockquote><pre><span style="font-family: verdana,arial,helvetica">code:</span><hr />$1<hr /></pre></blockquote>'] = /\[code\](.*?)\[\/code\]/gi;
+	// Code and PHP
+	vbcode['<blockquote><pre><span style="font-family: verdana,arial,helvetica; color:#555555">code:</span><hr />$1<hr /></pre></blockquote>'] = /\[code\](.*?)\[\/code\]/gi;
+	vbcode['<blockquote><pre style="color:#0000bb"><span style="font-family: verdana,arial,helvetica; color:#555555">php:</span><hr />&lt;?<br />$1<br />?&gt;<hr /></pre></blockquote>'] = /\[php\](.*?)\[\/php\]/gi;
 	
 	// Links and images
 	if(document.getElementById("parseurl").checked) {
