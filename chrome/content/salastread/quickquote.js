@@ -59,11 +59,11 @@ function checkKeys(e) {
 				getvBcode(e, 'strike');
 				break;
 			
-			case 45: // numpad -
+			case 45: case 109: // numpad -, normal -/_
 				getvBcode(e, 'sub');
 				break;
 			
-			case 43: // numpad +
+			case 43: case: 107: // numpad +, =/+
 				getvBcode(e, 'super');
 				break;
 				
