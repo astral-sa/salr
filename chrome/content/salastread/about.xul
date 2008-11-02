@@ -39,6 +39,7 @@ function showChangeLog() {
 		<text value="cygnustm"/>
 		<text value="alex.vidal"/>
 		<text value="Pat Cavit (tivac)"/>
+		<text value="astral"/>
 	</vbox>
 	<spring flex="1"/>
 	<image src="chrome://salastread/content/salastread-large.png"/>

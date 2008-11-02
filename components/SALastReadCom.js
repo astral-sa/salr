@@ -15,10 +15,11 @@ function SALR_vidClick(e)
 	}
 
 	//figure out the video type
-	var videoId, videoSrc, videoTLD;
-	var videoIdSearch = link.href.match(/^http\:\/\/(www\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
+	var videoId, videoSrc, videoTLD, yt_intl;
+	var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
 	if (videoIdSearch)
 	{
+		yt_subd = videoIdSearch[1];
 		videoId = videoIdSearch[2];
 		videoSrc = "youtube";
 	}
@@ -49,7 +50,7 @@ function SALR_vidClick(e)
 			embed.setAttribute('quality',"high");
 			embed.setAttribute('bgcolor',"#FFFFFF");
 			embed.setAttribute('wmode', "transparent");
-			embed.setAttribute('src', "http://www.youtube.com/v/" + videoId);
+			embed.setAttribute('src', "http://" + yt_subd + "youtube.com/v/" + videoId);
 			break;
 	}
 	p.appendChild(embed);
@@ -415,7 +416,7 @@ salrPersistObject.prototype = {
 		return Math.floor(rightNow.getTime()/1000);
 	},
 
-	// Returns an associative array of the ignored threads with the thread id as the key and the thread title as the value
+	// Returns an array of the ignored threads with the thread id as the key and the thread title as the value
 	get ignoreList()
 	{
 		if (this.threadDataCache.length == 0)
@@ -433,7 +434,7 @@ salrPersistObject.prototype = {
 		return threads;
 	},
 
-	// Returns an associative array of the starred threads with the thread id as the key
+	// Returns an array of the starred threads with the thread id as the key
 	// and the thread title as the value
 	get starList()
 	{
@@ -898,7 +899,7 @@ salrPersistObject.prototype = {
 			this.threadDataCache[threadid].star = 0;
 			this.threadDataCache[threadid].options = 0;
 			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `title`, `posted`, `ignore`, `star`, `options`) VALUES (?1, null, 0, 0, 0, 0)");
-			statement.bindInt32Parameter(0, userid);
+			statement.bindInt32Parameter(0, threadid);
 			statement.execute();
 		}
 	},
@@ -1420,7 +1421,7 @@ salrPersistObject.prototype = {
 			var statement = this.database.createStatement("UPDATE `threaddata` SET `ignore` = not(`ignore`) WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadid);
 			statement.execute();
-			this.threadDataCache[threadid].ignore = true;
+			this.threadDataCache[threadid].ignore = !this.threadDataCache[threadid].ignore;
 		}
 		else
 		{
@@ -1829,8 +1830,9 @@ salrPersistObject.prototype = {
 					link.parentNode.replaceChild(newImg, link);
 				}
 			}
+
 			if (this.getPreference("enableVideoEmbedder") &&
-				(link.href.search(/^http\:\/\/(www\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/i) > -1 ||
+				(link.href.search(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/i) > -1 ||
 				 link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1))
 			{
 				link.style.backgroundColor = this.getPreference("videoEmbedderBG");

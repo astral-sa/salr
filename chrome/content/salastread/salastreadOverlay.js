@@ -142,7 +142,7 @@ function SALR_onLoad(e)
 		return;
 	}
 
-		if (doc.__salastread_processed)
+	if (doc.__salastread_processed)
 	{
 		// We've already been here
 		return;
@@ -745,6 +745,8 @@ function handleThreadList(doc, forumid, flags)
 
 		// So right click star/ignore works
 		thread.className += " salastread_thread_" + threadId;
+		// So ignore can get a title immediately
+		thread.__salastread_threadtitle = threadTitle;
 
 		// Replace the thread icon with a linked thread icon
 		threadIconBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
@@ -1389,9 +1391,18 @@ function handleShowThread(doc)
 		if (insertPostTargetLink)
 		{
 			slink = doc.createElement("a");
-			slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+forumid;
-			slink.title = "Show Single Post";
-			slink.innerHTML = "1";
+			if (singlePost)
+			{
+				slink.href = "/showthread.php?goto=post&postid="+postid;
+				slink.title = "Back to Thread";
+				slink.innerHTML = "1";
+			}
+			else
+			{
+				slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+forumid;
+				slink.title = "Show Single Post";
+				slink.innerHTML = "1";
+			}
 			postIdLink.parentNode.insertBefore(slink, postIdLink);
 			postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
 		}
@@ -2636,14 +2647,21 @@ function SALR_IgnoreThread()
 	var target = document.getElementById("salastread-context-ignorethread").target;
 	if (threadid)
 	{
+		// Snag the title we saved earlier
+		var threadTitle = target.wrappedJSObject.__salastread_threadtitle;
 		if (confirm("Are you sure you want to ignore thread #"+threadid+"?"))
 		{
+			// Actually use ignoreStatus
 			var ignoreStatus = persistObject.isThreadIgnored(threadid);
-			persistObject.toggleThreadIgnore(threadid);
-			// todo: detect by if there is a "forum" node, to cover bookmark page and control panel
-			if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+			if (ignoreStatus == false)
 			{
-				target.parentNode.removeChild(target);
+				persistObject.toggleThreadIgnore(threadid);
+				persistObject.setThreadTitle(threadid, threadTitle);
+				// todo: detect by if there is a "forum" node, to cover bookmark page and control panel
+				if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+				{
+					target.parentNode.removeChild(target);
+				}
 			}
 		}
 	}
