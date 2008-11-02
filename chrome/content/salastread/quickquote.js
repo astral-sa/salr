@@ -63,7 +63,7 @@ function checkKeys(e) {
 				getvBcode(e, 'sub');
 				break;
 			
-			case 43: case: 107: // numpad +, =/+
+			case 43: case 107: // numpad +, =/+
 				getvBcode(e, 'super');
 				break;
 				
