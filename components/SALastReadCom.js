@@ -15,7 +15,7 @@ function SALR_vidClick(e)
 	}
 
 	//figure out the video type
-	var videoId, videoSrc, videoTLD, yt_intl;
+	var videoId, videoSrc, videoTLD, yt_subd;
 	var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
 	if (videoIdSearch)
 	{
