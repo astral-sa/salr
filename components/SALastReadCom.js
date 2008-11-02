@@ -19,7 +19,7 @@ function SALR_vidClick(e)
 	var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
 	if (videoIdSearch)
 	{
-		yt_subd = videoIdSearch[1];
+		yt_subd = (videoIdSearch[1] == null ? "www." : videoIdSearch[1]);
 		videoId = videoIdSearch[2];
 		videoSrc = "youtube";
 	}
