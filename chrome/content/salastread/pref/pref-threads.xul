@@ -9,6 +9,7 @@
 			<preference id="hideReportButtons" 		name="extensions.salastread.hideReportButtons" 		type="bool"/>
 			<preference id="enableVideoEmbedder" 	name="extensions.salastread.enableVideoEmbedder" 	type="bool"/>
 			<preference id="enablePageNavigator"	name="extensions.salastread.enablePageNavigator" 	type="bool"/>
+			<preference id="enableKeyboardControls"	name="extensions.salastread.quickPostJump"			type="bool"/>
 		</preferences>
 
 		<groupbox>
@@ -18,6 +19,12 @@
 				<checkbox preference="hideReportButtons" 		label="Hide the report button on your own posts" />
 				<checkbox preference="enableVideoEmbedder" 		label="Enable converting of video links to embedded video" />
 				<checkbox preference="enablePageNavigator" 	 	label="Add a page navigator to the lower-right corner of the browser" />
+			</vbox>
+		</groupbox>
+		<groupbox>
+		<caption label="Keyboard Navigation Options"/>
+			<vbox>
+				<checkbox preference="enableKeyboardControls" 	 	label="Enable keyboard navigation of threads" />
 			</vbox>
 		</groupbox>
 
