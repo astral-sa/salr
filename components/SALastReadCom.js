@@ -1739,7 +1739,7 @@ salrPersistObject.prototype = {
 		var convertImages = this.getPreference("convertTextToImage");
 		var dontConvertReadImages = this.getPreference("dontConvertReadImages");
 		var unconvertImages = this.getPreference("unconvertReadImages");
-		var readPost = (postbody.parentNode.className.search(/class/) > -1);
+		var readPost = (postbody.parentNode.className.search(/seen/) > -1);
 		convertImages = (convertImages && !(dontConvertReadImages && readPost));
 		unconvertImages = (unconvertImages && readPost);
 
