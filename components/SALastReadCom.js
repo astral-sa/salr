@@ -1731,7 +1731,7 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	convertSpecialLinks: function(postbody, doc)
 	{
-		var newImg, vidIdSearch, vidid, vidsrc, imgNum, imgLink;
+		var newImg, newLink, vidIdSearch, vidid, vidsrc, imgNum, imgLink;
 		var linksInPost = this.selectNodes(doc, postbody, "descendant::A");
 		var imagesInPost = this.selectNodes(doc, postbody, "descendant::IMG");
 		var maxWidth = this.getPreference("maxWidthOfConvertedImages");
@@ -1741,27 +1741,39 @@ salrPersistObject.prototype = {
 		var unconvertImages = this.getPreference("unconvertReadImages");
 		var readPost = (postbody.parentNode.className.search(/class/) > -1);
 		convertImages = (convertImages && !(dontConvertReadImages && readPost));
-		unconvertImages = (unconvertReadImages && readPost);
+		unconvertImages = (unconvertImages && readPost);
 
 		if (unconvertImages)
 		{
 			for (var j in imagesInPost)
 			{
 				var anImage = imagesInPost[j];
-				if (anImage.parentNode.tagName && (anImage.parentNode.tagName.search(/a/i) > -1))
+				newLink = doc.createElement("a");
+				newLink.href = anImage.src;
+				newLink.title = "Image unconverted by SALR";
+				newLink.innerHTML = "[Image hidden by SALR, click to view]";
+				newLink.style.border = "1px dashed red";
+				if (anImage.parentNode.tagName && (anImage.parentNode.tagName.search(/^a$/i) > -1))
 				{
 					if (anImage.parentNode.href == anImage.src)
 					{
-						anImage.parentNode.replaceChild(doc.createTextNode("Image hidden by SALR, click to view"), anImage);
+						anImage.parentNode.replaceChild(doc.createTextNode("[Image hidden by SALR, click to view"]), anImage);
+					}
+					else
+					{
+						if (anImage.parentNode.parentNode.lastChild == anImage.parentNode)
+						{
+							anImage.parentNode.parentNode.appendChild(newLink);
+						}
+						else
+						{
+							anImage.parentNode.parentNode.insertBefore(newLink, anImage.parentNode.nextSibling);
+						}
+						anImage.parentNode.replaceChild(doc.createTextNode("[Image hidden by SALR, linked below]"), anImage);
 					}
 				}
 				else
 				{
-					newLink = doc.createElement("a");
-					newLink.href = anImage.src;
-					newLink.title = "Image unconverted by SALR";
-					newLink.innerHTML = "Read image hidden by SALR, click to view";
-					newLink.style.border = "1px dashed red";
 					anImage.parentNode.replaceChild(newLink, anImage);
 				}
 			}
