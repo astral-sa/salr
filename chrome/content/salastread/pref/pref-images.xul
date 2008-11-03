@@ -11,7 +11,7 @@
 		<preference id="dontTextToImageIfMayBeNws" 	name="extensions.salastread.dontTextToImageIfMayBeNws" 	type="bool"/>
 		<preference id="dontTextToImageInSpoilers" 	name="extensions.salastread.dontTextToImageInSpoilers" 	type="bool"/>
 		<preference id="dontConvertReadImages" 		name="extensions.salastread.dontConvertReadImages" 		type="bool"/>
-		<preference id="unConvertReadImages" 		name="extensions.salastread.unconvertReadImages" 		type="bool"/>
+		<preference id="unconvertReadImages" 		name="extensions.salastread.unconvertReadImages" 		type="bool"/>
 
 		<preference id="maxWidthOfConvertedImages" 	name="extensions.salastread.maxWidthOfConvertedImages" 	type="int"/>
 		<preference id="maxHeightOfConvertedImages" name="extensions.salastread.maxHeightOfConvertedImages" type="int"/>
