@@ -44,6 +44,7 @@ pref('extensions.salastread.gestureButton', 2);
 //TEXT-TO-IMAGE OPTIONS
 pref('extensions.salastread.convertTextToImage', true);
 pref('extensions.salastread.dontConvertQuotedImages', true);
+pref('extensions.salastread.dontConvertReadImages', true);
 pref('extensions.salastread.thumbnailQuotedImagesInThreads', false);
 pref('extensions.salastread.shrinkTextToImages', true);
 pref('extensions.salastread.dontTextToImageIfMayBeNws', true);

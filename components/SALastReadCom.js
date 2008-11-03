@@ -1735,11 +1735,15 @@ salrPersistObject.prototype = {
 		var linksInPost = this.selectNodes(doc, postbody, "descendant::A");
 		var maxWidth = this.getPreference("maxWidthOfConvertedImages");
 		var maxHeight = this.getPreference("maxHeightOfConvertedImages");
+		var convertImages = this.getPreference("convertTextToImage");
+		var dontConvertReadImages = this.getPreference("dontConvertReadImages");
+		var readPost = (postbody.parentNode.className.search(/class/) > -1);
 		for (var i in linksInPost)
 		{
 			var link = linksInPost[i];
-			if (this.getPreference("convertTextToImage") &&
-				(link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?(%3C\/a%3E)?$/i) > -1))
+			convertImages = (dontConvertReadImages && readPost);
+
+			if (convertImages && (link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?(%3C\/a%3E)?$/i) > -1))
 			{
 				// this doesn't actually work yet
 				//if ((link.src.search(/imagesocket\.com/i) > -1) && (link.src.search(/content\.imagesocket\.com/i) == -1))
