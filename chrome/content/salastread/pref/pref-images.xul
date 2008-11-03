@@ -10,7 +10,9 @@
 		<preference id="shrinkTextToImages" 		name="extensions.salastread.shrinkTextToImages" 		type="bool"/>
 		<preference id="dontTextToImageIfMayBeNws" 	name="extensions.salastread.dontTextToImageIfMayBeNws" 	type="bool"/>
 		<preference id="dontTextToImageInSpoilers" 	name="extensions.salastread.dontTextToImageInSpoilers" 	type="bool"/>
-		
+		<preference id="dontConvertReadImages" 		name="extensions.salastread.dontConvertReadImages" 		type="bool"/>
+		<preference id="unConvertReadImages" 		name="extensions.salastread.unConvertReadImages" 		type="bool"/>
+
 		<preference id="maxWidthOfConvertedImages" 	name="extensions.salastread.maxWidthOfConvertedImages" 	type="int"/>
 		<preference id="maxHeightOfConvertedImages" name="extensions.salastread.maxHeightOfConvertedImages" type="int"/>
 		
@@ -21,15 +23,24 @@
 		<caption label="Text-to-Image Conversion"/>
 		
 		<vbox>
-			<checkbox preference="convertTextToImage" label="Convert links to images to inline images in posts" />
+			<checkbox preference="convertTextToImage" label="Convert links to images into inline images in posts" />
 			
 			<vbox style="margin-left: 20px">
 				<checkbox preference="dontTextToImageIfMayBeNws" label="Don't convert if post contains an NWS/NMS warning" />
 				<checkbox preference="dontTextToImageInSpoilers" label="Don't convert links inside [spoiler] tags" />
+				<checkbox preference="dontConvertReadImages" label="Don't convert links in marked-as-read posts" />
 			</vbox>
+			
 		</vbox>
 	</groupbox>
-	
+
+	<groupbox>
+		<caption label="Image-to-Text Conversion"/>
+		<vbox>
+			<checkbox preference="unconvertReadImages" label="Convert all inline images in read posts into links" />
+		</vbox>
+	</groupbox>
+
 	<groupbox>
 		<caption label="Image Scaling" />
 		<vbox>
