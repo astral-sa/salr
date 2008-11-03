@@ -1757,7 +1757,7 @@ salrPersistObject.prototype = {
 				{
 					if (anImage.parentNode.href == anImage.src)
 					{
-						anImage.parentNode.replaceChild(doc.createTextNode("[Image hidden by SALR, click to view"]), anImage);
+						anImage.parentNode.replaceChild(doc.createTextNode("[Image hidden by SALR, click to view]"), anImage);
 					}
 					else
 					{
