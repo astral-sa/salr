@@ -1733,15 +1733,44 @@ salrPersistObject.prototype = {
 	{
 		var newImg, vidIdSearch, vidid, vidsrc, imgNum, imgLink;
 		var linksInPost = this.selectNodes(doc, postbody, "descendant::A");
+		var imagesInPost = this.selectNodes(doc, postbody, "descendant::IMG");
 		var maxWidth = this.getPreference("maxWidthOfConvertedImages");
 		var maxHeight = this.getPreference("maxHeightOfConvertedImages");
 		var convertImages = this.getPreference("convertTextToImage");
 		var dontConvertReadImages = this.getPreference("dontConvertReadImages");
+		var unconvertImages = this.getPreference("unconvertReadImages");
 		var readPost = (postbody.parentNode.className.search(/class/) > -1);
+		convertImages = (convertImages && !(dontConvertReadImages && readPost));
+		unconvertImages = (unconvertReadImages && readPost);
+
+		if (unconvertImages)
+		{
+			for (var j in imagesInPost)
+			{
+				var anImage = imagesInPost[j];
+				if (anImage.parentNode.tagName && (anImage.parentNode.tagName.search(/a/i) > -1))
+				{
+					if (anImage.parentNode.href == anImage.src)
+					{
+						anImage.parentNode.replaceChild(doc.createTextNode("Image hidden by SALR, click to view"), anImage);
+					}
+				}
+				else
+				{
+					newLink = doc.createElement("a");
+					newLink.href = anImage.src;
+					newLink.title = "Image unconverted by SALR";
+					newLink.innerHTML = "Read image hidden by SALR, click to view";
+					newLink.style.border = "1px dashed red";
+					anImage.parentNode.replaceChild(newLink, anImage);
+				}
+			}
+		}
+
+
 		for (var i in linksInPost)
 		{
 			var link = linksInPost[i];
-			convertImages = (dontConvertReadImages && readPost);
 
 			if (convertImages && (link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?(%3C\/a%3E)?$/i) > -1))
 			{
