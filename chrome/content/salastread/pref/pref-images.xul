@@ -2,35 +2,35 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	
+
 	<prefpane id="images" onpaneload="initImages()">
 	<preferences>
 		<preference id="convertTextToImage" 		name="extensions.salastread.convertTextToImage" 		type="bool"/>
-		
+
 		<preference id="shrinkTextToImages" 		name="extensions.salastread.shrinkTextToImages" 		type="bool"/>
 		<preference id="dontTextToImageIfMayBeNws" 	name="extensions.salastread.dontTextToImageIfMayBeNws" 	type="bool"/>
 		<preference id="dontTextToImageInSpoilers" 	name="extensions.salastread.dontTextToImageInSpoilers" 	type="bool"/>
 		<preference id="dontConvertReadImages" 		name="extensions.salastread.dontConvertReadImages" 		type="bool"/>
-		<preference id="unConvertReadImages" 		name="extensions.salastread.unConvertReadImages" 		type="bool"/>
+		<preference id="unConvertReadImages" 		name="extensions.salastread.unconvertReadImages" 		type="bool"/>
 
 		<preference id="maxWidthOfConvertedImages" 	name="extensions.salastread.maxWidthOfConvertedImages" 	type="int"/>
 		<preference id="maxHeightOfConvertedImages" name="extensions.salastread.maxHeightOfConvertedImages" type="int"/>
-		
+
 		<preference id="thumbnailAllImages" 		name="extensions.salastread.thumbnailAllImages" 		type="bool"/>
 	</preferences>
-	
+
 	<groupbox>
 		<caption label="Text-to-Image Conversion"/>
-		
+
 		<vbox>
 			<checkbox preference="convertTextToImage" label="Convert links to images into inline images in posts" />
-			
+
 			<vbox style="margin-left: 20px">
 				<checkbox preference="dontTextToImageIfMayBeNws" label="Don't convert if post contains an NWS/NMS warning" />
 				<checkbox preference="dontTextToImageInSpoilers" label="Don't convert links inside [spoiler] tags" />
 				<checkbox preference="dontConvertReadImages" label="Don't convert links in marked-as-read posts" />
 			</vbox>
-			
+
 		</vbox>
 	</groupbox>
 
@@ -51,10 +51,10 @@
 						<column />
 						<column />
 					</columns>
-					
+
 					<rows>
 						<description>
-							Enter the values for the maximum height/width you would like SALR to scale images to.  
+							Enter the values for the maximum height/width you would like SALR to scale images to.
 							All dimensions are in pixels, set to 0 to disable scaling in that direction.
 						</description>
 						<row align="center">
@@ -62,7 +62,7 @@
 							<textbox id="maxWidth" preference="maxWidthOfConvertedImages" size="3" />
 							<label value="(px)" control="maxWidth" />
 						</row>
-						
+
 						<row align="center">
 							<label value="Max Height" control="maxHeight"/>
 							<textbox id="maxHeight" preference="maxHeightOfConvertedImages" size="3" />
