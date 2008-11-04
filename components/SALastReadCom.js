@@ -1733,7 +1733,8 @@ salrPersistObject.prototype = {
 	{
 		var newImg, newLink, vidIdSearch, vidid, vidsrc, imgNum, imgLink;
 		var linksInPost = this.selectNodes(doc, postbody, "descendant::A");
-		var imagesInPost = this.selectNodes(doc, postbody, "descendant::IMG[not(contains(@src,'somethingawful.com/forumsystem/emoticons'))]");
+		var imagesInPost = this.selectNodes(doc, postbody,
+		 "descendant::IMG[not(contains(@src,'somethingawful.com/forumsystem/emoticons') or contains(@src,'somethingawful.com/images/smilies'))]");
 		var maxWidth = this.getPreference("maxWidthOfConvertedImages");
 		var maxHeight = this.getPreference("maxHeightOfConvertedImages");
 		var convertImages = this.getPreference("convertTextToImage");
