@@ -115,18 +115,9 @@ function SALR_onLoad(e)
 
 	if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1 || !persistObject.getPreference("enableContextMenu") || persistObject.getPreference("disabled"))
 	{
-		// Remove the context menu since we're not at Something Awful
-		var cacm = document.getElementById("contentAreaContextMenu");
-		var mopt = document.getElementById("salastread-context-menu");
-		var moptsep = document.getElementById("salastread-context-menuseparator");
-		if (mopt)
-		{
-			mopt.style.display = "none";
-		}
-		if (moptsep)
-		{
-			moptsep.style.display = "none";
-		}
+		// We don't actually need to do this.
+		// Right clicking will fire events that do it anyway.
+		//SALR_HideContextMenuItems();
 	}
 	// Set a listener on the context menu
 	else document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
@@ -745,7 +736,7 @@ function handleThreadList(doc, forumid, flags)
 
 		// So right click star/ignore works
 		thread.className += " salastread_thread_" + threadId;
-		// So ignore can get a title immediately
+		// So ignore/star can get a title immediately
 		thread.__salastread_threadtitle = threadTitle;
 
 		// Replace the thread icon with a linked thread icon
@@ -2527,14 +2518,11 @@ function SALR_PageMouseDown(event)
 // Context Menu Functions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-function SALR_ShowContextMenuItem(id)
+function SALR_ShowContextMenuItems()
 {
 	var cacm = document.getElementById("contentAreaContextMenu");
 	var mopt = document.getElementById("salastread-context-menu");
 	var moptsep = document.getElementById("salastread-context-menuseparator");
-
-	cacm.removeChild(mopt);
-	cacm.removeChild(moptsep);
 
 	if(persistObject.getPreference('contextMenuOnBottom') )
 	{
@@ -2547,21 +2535,18 @@ function SALR_ShowContextMenuItem(id)
 		cacm.insertBefore(mopt, moptsep);
 	}
 
-	document.getElementById(id).style.display = "-moz-box";
-	mopt.style.display = "-moz-box";
-	moptsep.style.display = "-moz-box";
+	mopt.setAttribute('hidden', false);
+	moptsep.setAttribute('hidden', false);
+	document.getElementById("salastread-context-ignorethread").setAttribute('hidden', false);
+	document.getElementById("salastread-context-starthread").setAttribute('hidden', false);
 }
 
 function SALR_HideContextMenuItems()
 {
-	document.getElementById("salastread-context-menu").style.display = "none";
-	document.getElementById("salastread-context-menuseparator").style.display = "none";
-	var pu = document.getElementById("salastread-context-menupopup");
-	for (var i=0; i < pu.childNodes.length; i++)
-	{
-		pu.childNodes[i].style.display = "none";
-		pu.childNodes[i].data = "";
-	}
+	document.getElementById("salastread-context-menu").setAttribute('hidden', true);
+	document.getElementById("salastread-context-menuseparator").setAttribute('hidden', true);
+	document.getElementById("salastread-context-ignorethread").setAttribute('hidden', true);
+	document.getElementById("salastread-context-starthread").setAttribute('hidden', true);
 }
 
 function SALR_ContextMenuShowing(e)
@@ -2578,8 +2563,6 @@ function SALR_ContextMenuShowing(e)
 
 			if(doc.__salastread_processed == true)
 			{
-				//SALR_ContextVis_IgnoreThisThread(doc);
-				//SALR_ContextVis_StarThisThread(doc);
 				if (persistObject.getPreference("enableContextMenu"))
 					SALR_ContextVis();
 			}
@@ -2609,14 +2592,10 @@ function SALR_ContextVis()
 				document.getElementById("salastread-context-starthread").data = threadid;
 				document.getElementById("salastread-context-starthread").target = target;
 				document.getElementById("salastread-context-starthread").label = (persistObject.isThreadStarred(threadid) ? 'Unstar' : 'Star') + " This Thread (" + threadid + ")";
-				// Need to set labels before these functions are called - FF3
-				SALR_ShowContextMenuItem("salastread-context-ignorethread");
-				// The whole function doesn't need to run again, though. Just one line:
-				//SALR_ShowContextMenuItem("salastread-context-starthread");
-				document.getElementById("salastread-context-starthread").style.display = "-moz-box";
+				SALR_ShowContextMenuItems();
 			}
 		}
-			target = target.parentNode;
+		target = target.parentNode;
 	}
 }
 
@@ -2626,12 +2605,23 @@ function SALR_StarThread()
 	var target = document.getElementById("salastread-context-starthread").target;
 	if (threadid)
 	{
+		var threadTitle;
+		 // Snag the title we saved earlier
+		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+			threadTitle = target.wrappedJSObject.__salastread_threadtitle;
+		else
+			threadTitle = persistObject.getThreadTitle(threadid);
+		
 		var starStatus = persistObject.isThreadStarred(threadid);
 		persistObject.toggleThreadStar(threadid);
 
+		if (starStatus == false) // we just starred it
+			persistObject.setThreadTitle(threadid, threadTitle);
+
 		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
 		{
-			target.ownerDocument.location = target.ownerDocument.location;
+			// Don't refresh the page. Why would we refresh the page?
+			//target.ownerDocument.location = target.ownerDocument.location;
 		}
 		else
 		{
@@ -2647,8 +2637,12 @@ function SALR_IgnoreThread()
 	var target = document.getElementById("salastread-context-ignorethread").target;
 	if (threadid)
 	{
-		// Snag the title we saved earlier
-		var threadTitle = target.wrappedJSObject.__salastread_threadtitle;
+		var threadTitle;
+		 // Snag the title we saved earlier
+		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+			threadTitle = target.wrappedJSObject.__salastread_threadtitle;
+		else
+			threadTitle = persistObject.getThreadTitle(threadid);
 		if (confirm("Are you sure you want to ignore thread #"+threadid+"?"))
 		{
 			// Actually use ignoreStatus

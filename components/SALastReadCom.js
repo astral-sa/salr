@@ -1402,7 +1402,7 @@ salrPersistObject.prototype = {
 			var statement = this.database.createStatement("UPDATE `threaddata` SET `star` = not(`star`) WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadid);
 			statement.execute();
-			this.threadDataCache[threadid].star = true;
+			this.threadDataCache[threadid].star = !this.threadDataCache[threadid].star;
 		}
 		else
 		{
