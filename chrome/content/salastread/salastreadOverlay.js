@@ -2608,7 +2608,12 @@ function SALR_StarThread()
 		var threadTitle;
 		 // Snag the title we saved earlier
 		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-			threadTitle = target.wrappedJSObject.__salastread_threadtitle;
+		{	
+			if (target.wrappedJSObject) //FF2&3 compatibility
+				threadTitle = target.wrappedJSObject.__salastread_threadtitle;
+			else
+				threadTitle = target.__salastread_threadtitle;
+		}
 		else
 			threadTitle = persistObject.getThreadTitle(threadid);
 		
@@ -2640,7 +2645,12 @@ function SALR_IgnoreThread()
 		var threadTitle;
 		 // Snag the title we saved earlier
 		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-			threadTitle = target.wrappedJSObject.__salastread_threadtitle;
+		{	
+			if (target.wrappedJSObject) //FF2&3 compatibility
+				threadTitle = target.wrappedJSObject.__salastread_threadtitle;
+			else
+				threadTitle = target.__salastread_threadtitle;
+		}
 		else
 			threadTitle = persistObject.getThreadTitle(threadid);
 		if (confirm("Are you sure you want to ignore thread #"+threadid+"?"))
