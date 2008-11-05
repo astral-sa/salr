@@ -1048,6 +1048,9 @@ function handleShowThread(doc)
 	doc.body.className += " salastread_thread_" + threadid;
 
 	// Grab the thread title
+	/* Note: it will only actually happen if the thread's already in the cache.
+		Perhaps we can remove this call?
+	*/
 	persistObject.setThreadTitle(threadid, SALR_getPageTitle(doc));
 
 	// Grab the go to dropdown
@@ -2615,7 +2618,7 @@ function SALR_StarThread()
 				threadTitle = target.__salastread_threadtitle;
 		}
 		else
-			threadTitle = persistObject.getThreadTitle(threadid);
+			threadTitle = SALR_getPageTitle(target.ownerDocument);
 		
 		var starStatus = persistObject.isThreadStarred(threadid);
 		persistObject.toggleThreadStar(threadid);
@@ -2652,7 +2655,7 @@ function SALR_IgnoreThread()
 				threadTitle = target.__salastread_threadtitle;
 		}
 		else
-			threadTitle = persistObject.getThreadTitle(threadid);
+			threadTitle = SALR_getPageTitle(target.ownerDocument);
 		if (confirm("Are you sure you want to ignore thread #"+threadid+"?"))
 		{
 			// Actually use ignoreStatus
