@@ -141,33 +141,33 @@ function hexChanged(hex) {
 		redChanged(hexred, false);
 		greenChanged(hexgreen, false);
 		blueChanged(hexblue, false);
-		updateRGB();
+		updateRGB(false);
 	} catch (er) {}
 }
 
 function redChanged(val, update) {
 	document.getElementById("red").value = Math.round(val);
 	if (update) {
-		updateRGB();
+		updateRGB(true);
 	}
 }
 
 function greenChanged(val, update) {
 	document.getElementById("green").value = Math.round(val);
 	if (update) {
-		updateRGB();
+		updateRGB(true);
 	}
 }
 
 function blueChanged(val, update) {
 	document.getElementById("blue").value = Math.round(val);
 	if (update) {
-		updateRGB();
+		updateRGB(true);
 	}
 }
 
 //UPDATING FUNCTIONS
-function updateRGB() {
+function updateRGB(updatehex) {
 	var hsb = RGBtoHSB(
 		Number(document.getElementById("red").value),
 		Number(document.getElementById("green").value),
@@ -179,6 +179,21 @@ function updateRGB() {
 	saturationChanged(hsb[1], false);
 	brightnessChanged(hsb[2], false);
 	updateSatBri(true);
+
+	if (updatehex)
+	{
+		var rgbs = [Number(document.getElementById("red").value),
+			Number(document.getElementById("green").value),
+			Number(document.getElementById("blue").value)];
+
+		var hex = rgbToHex(rgbs);
+		updateHex(hex);
+
+		if (window.arguments && window.arguments[0]) {
+			window.arguments[0].value = '#' + hex;
+			updateThumbnail(hex);
+		}
+	}
 }
 
 function updateSatBri(skipupdate) {
