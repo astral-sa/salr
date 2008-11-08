@@ -934,7 +934,8 @@ salrPersistObject.prototype = {
 			this.userDataCache[userid].notes = null;
 			this.userDataCache[userid].ignored = false;
 			this.userDataCache[userid].hideavatar = false;
-			this.userIDCache[username] = userid;
+			//This is already below (and done more safely)
+			//this.userIDCache[username] = userid;
 			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 0, 0, 0, 0, null, 0, 0)");
 			statement.bindInt32Parameter(0, userid);
 			statement.bindStringParameter(1, username);
@@ -1241,18 +1242,21 @@ salrPersistObject.prototype = {
 	// @returns: nothing
 	setPosterColor : function(userid, color)
 	{
-		if (this.userExists(userid) && this.userDataCache[userid].color != color)
+		if (this.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
-			statement.bindStringParameter(0, color);
-			statement.bindInt32Parameter(1, userid);
-			statement.execute();
-			this.userDataCache[userid].color = color;
+			if (this.userDataCache[userid].color != color)
+			{
+				var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
+				statement.bindStringParameter(0, color);
+				statement.bindInt32Parameter(1, userid);
+				statement.execute();
+				this.userDataCache[userid].color = color;
+			}
 		}
 		else
 		{
 			this.addUser(userid);
-			this.setPosterColor(userid, note);
+			this.setPosterColor(userid, color);
 		}
 	},
 
@@ -1269,18 +1273,21 @@ salrPersistObject.prototype = {
 	// @returns: nothing
 	setPosterBackground : function(userid, color)
 	{
-		if (this.userExists(userid) && this.userDataCache[userid].background != color)
+		if (this.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
-			statement.bindStringParameter(0, color);
-			statement.bindInt32Parameter(1, userid);
-			statement.execute();
-			this.userDataCache[userid].background = color;
+			if (this.userDataCache[userid].background != color)
+			{
+				var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
+				statement.bindStringParameter(0, color);
+				statement.bindInt32Parameter(1, userid);
+				statement.execute();
+				this.userDataCache[userid].background = color;
+			}
 		}
 		else
 		{
 			this.addUser(userid);
-			this.setPosterBackground(userid, note);
+			this.setPosterBackground(userid, color);
 		}
 	},
 

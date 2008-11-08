@@ -152,7 +152,6 @@ function deleteUser()
 	for (var i in items)
 	{
 		var userid = items[i].value;
-
 		persistObject.setPosterColor(userid, "0");
 		persistObject.setPosterBackground(userid, "0");
 		persistObject.setPosterNotes(userid, "");
