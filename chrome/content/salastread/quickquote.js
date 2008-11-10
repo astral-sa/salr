@@ -135,27 +135,28 @@ function showDebugData(event) {
 }
 
 //grab the actual SA reply page in case we don't have a formkey saved
-function startPostTextGrab(getFormKeyOnly, postid) {
+function startPostTextGrab(getFormKeyOnly, postid)
+{
 	pageGetter = new XMLHttpRequest();
 	getter_isquote = 1;
 	getter_getFormKeyOnly = getFormKeyOnly;
-	
+
 	if(!postid) {
 		postid = window.opener.__salastread_quotepostid;
 	}
-	
+
 	var targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&postid=" + postid;
 	if(postid == null) {
 		getter_isquote = 0;
 		targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" + window.opener.__salastread_quotethreadid;
 	}
-	
+
 	if(window.__salastread_quickpost_forumid) {
 		getter_isquote = 0;
 		targeturl = "http://forums.somethingawful.com/newthread.php?forumid=" + window.__salastread_quickpost_forumid;
 		getter_getFormKeyOnly = 1;
 	}
-	
+
 	if(window.__salastread_is_edit) {
 		getter_isquote = 1;
 		targeturl = "http://forums.somethingawful.com/editpost.php?s=&action=editpost&postid=" + postid;
@@ -167,7 +168,8 @@ function startPostTextGrab(getFormKeyOnly, postid) {
 }
 
 //callback for startPostTextGrab
-function postTextGrabCallback() {
+function postTextGrabCallback()
+{
 	try {
 		if(pageGetter.readyState == 2) {
 			if(pageGetter.status != 200) {
@@ -181,33 +183,41 @@ function postTextGrabCallback() {
 	} catch(ex) {}
 }
 
-function finalizeTextGrab(restext) {
+function finalizeTextGrab(restext)
+{
 	var before = document.getElementById("messagearea").value
 		before = before.replace(quoteWaitString, "");
-	
+
 	var el = document.getElementById("replypage").contentDocument.body;
 		el.innerHTML = restext;
 	var tnode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//TEXTAREA[@name='message']");
 	document.getElementById("messagearea").value = before + tnode.value;
 	doPreview();
-	
+
 	var fknode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='formkey']");
-	if(fknode) {
+	if (fknode)
+	{
 		sa_formkey = fknode.value;
 		persistObject.__cachedFormKey = sa_formkey;
 	}
-	
+
+	var fcnode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='form_cookie']");
+	if (fcnode)
+	{
+		window.__salastread_form_cookie = fcnode.value;
+	}
+
 	if(!isDetached) {
 		document.getElementById("submit-swap").removeAttribute('disabled');
 		document.getElementById("submit-normal").removeAttribute('disabled');
 	}
-	
+
 	if(window.__salastread_is_edit) {
 		document.title = 'Quick Edit';
 		document.getElementById('qrtitle').setAttribute('value', 'Quick Edit');
 		document.getElementById('previewbtn').disabled = true;
 	}
-	
+
 	if(window.__salastread_quickpost_forumid) {
 		//This is a Quick Post window - look the part!
 		document.title = 'Quick Post';
@@ -241,7 +251,7 @@ function finalizeTextGrab(restext) {
 			}
 		}
 	}
-	
+
 	return;
 	
 	//what is this and why is it being bypassed?
@@ -404,7 +414,8 @@ function doSubmit(subtype) {
 		document.getElementById("signature").checked,
 		subtype,
 		sa_formkey,
-		attachedFileName
+		attachedFileName,
+		window.__salastread_form_cookie
 	);
 }
 

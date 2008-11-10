@@ -2097,7 +2097,7 @@ function quickQuoteButtonClick(evt)
 	return false;
 }
 
-function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signature, subtype, formkey, attachfile)
+function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signature, subtype, formkey, attachfile, form_cookie)
 {
 	try
 	{
@@ -2152,7 +2152,11 @@ function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signatur
 		quickQuoteAddHidden(doc, newform,"MAX_FILE_SIZE", "2097152");
 		quickQuoteAddHidden(doc, newform,"formkey", formkey);
 
-		if (attachfile!="")
+		if (form_cookie != "")
+		{
+			quickQuoteAddHidden(doc, newform,"form_cookie", form_cookie);
+		}
+		if (attachfile != "")
 		{
 			quickQuoteAddFile(doc, newform,"attachment", attachfile);
 		}
