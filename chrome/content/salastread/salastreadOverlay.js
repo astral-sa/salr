@@ -873,7 +873,7 @@ function handleThreadList(doc, forumid, flags)
 			{
 				anchorTop.insertBefore(thread,anchorUnreadStickies);
 			}
-			else if (iAmASticky && !iHaveNewPosts)
+			else if (iAmASticky && !iHaveNewPosts && !flags.inUserCP)
 			{
 				anchorTop.insertBefore(thread,anchorReadStickies);
 			}
