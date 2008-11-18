@@ -1437,6 +1437,8 @@ function handleShowThread(doc)
 		{
 			var li = doc.createElement("li");
 			var a = doc.createElement("a");
+			if (a.wrappedJSObject)
+				a = a.wrappedJSObject;
 			a.id = curPostId + "_" + posterId;
 			a.href ="#" + posterName;
 			a.innerHTML = "Add Coloring/Note";

@@ -1633,6 +1633,8 @@ salrPersistObject.prototype = {
 			navDiv.appendChild(prevButton);
 		}
 		var pageSel = doc.createElement("select");
+		if (pageSel.wrappedJSObject)
+			pageSel = pageSel.wrappedJSObject;
 		pageSel.size = 1;
 		for (var pp=1; pp<=numPages; pp++)
 		{
@@ -1642,7 +1644,7 @@ salrPersistObject.prototype = {
 			if (pp==curPage) topt.selected = true;
 			pageSel.appendChild(topt);
 		}
-		if (curPage == 1)
+		if (curPage == 1 && !doc.baseURI.match(/pagenumber=(\d+)/))
 		{
 			pageSel.onchange = function() { doc.location = doc.baseURI + "&pagenumber="+this.value; };
 		}
