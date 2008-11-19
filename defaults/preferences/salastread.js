@@ -15,6 +15,7 @@ pref('extensions.salastread.sortReplyList', true);
 //VIDEO EMBEDDER
 pref('extensions.salastread.enableVideoEmbedder', false);
 pref('extensions.salastread.videoEmbedderBG', '#ffcccc');
+pref('extensions.salastread.enableHQvideoembeds', false);
 
 //OPTIONS DIALOG
 //

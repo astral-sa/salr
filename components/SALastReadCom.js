@@ -47,10 +47,11 @@ function SALR_vidClick(e)
 			embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en');
 			break;
 		case "youtube":
+			var hqstring = this.__salr_hq ? '&ap=%2526fmt%3D18' : '';			
 			embed.setAttribute('quality',"high");
 			embed.setAttribute('bgcolor',"#FFFFFF");
 			embed.setAttribute('wmode', "transparent");
-			embed.setAttribute('src', "http://" + yt_subd + "youtube.com/v/" + videoId);
+			embed.setAttribute('src', "http://" + yt_subd + "youtube.com/v/" + videoId + hqstring);
 			break;
 	}
 	p.appendChild(embed);
@@ -1891,6 +1892,7 @@ salrPersistObject.prototype = {
 				 link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1))
 			{
 				link.style.backgroundColor = this.getPreference("videoEmbedderBG");
+				link.__salr_hq = this.getPreference("enableHQvideoembeds");
 				link.addEventListener('click', SALR_vidClick, false);
 			}
 		}
