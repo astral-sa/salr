@@ -3166,7 +3166,7 @@ function SALR_StarredThreadMenuShowing() {
 	if (!menupopup.firstChild)
 	{
 		var menuel = document.createElement("menuitem");
-			menuel.setAttribute("label", "No have no threads starred.");
+			menuel.setAttribute("label", "You have no threads starred.");
 			menuel.setAttribute("disabled", "true");
 		menupopup.appendChild(menuel);
 	}
