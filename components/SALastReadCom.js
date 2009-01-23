@@ -47,7 +47,7 @@ function SALR_vidClick(e)
 			embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en');
 			break;
 		case "youtube":
-			var hqstring = this.__salr_hq ? '&ap=%2526fmt%3D18' : '';			
+			var hqstring = this.__salr_hq ? '&ap=%2526fmt%3D18' : '';
 			embed.setAttribute('quality',"high");
 			embed.setAttribute('bgcolor',"#FFFFFF");
 			embed.setAttribute('wmode', "transparent");
@@ -498,7 +498,7 @@ salrPersistObject.prototype = {
 			CSSFile += this.getPreference('readWithNewDark');
 			CSSFile += ' !important; }\n';
 			CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
-			CSSFile += 'tr.thread.seen td.repliese.salrPostedIn { background-color:';
+			CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
 			CSSFile += this.getPreference('postedInThreadRe');
 			CSSFile += ' !important; }\n';
 		}
