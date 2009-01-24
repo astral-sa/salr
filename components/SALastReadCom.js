@@ -1718,7 +1718,7 @@ salrPersistObject.prototype = {
 		}
 		else
 		{
-			if (doc.location.hash == "") // If no anchor, just add it to the end
+			if (doc.baseURI.search('#') == -1) // If no anchor, just add it to the end
 			{
 				result = doc.baseURI + "&" + replacement;
 			}
