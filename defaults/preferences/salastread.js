@@ -114,7 +114,6 @@ pref('extensions.salastread.insertPostLastMarkLink', true);
 pref('extensions.salastread.insertPostTargetLink', true);
 pref('extensions.salastread.hideReportButtons', false);
 pref('extensions.salastread.highlightQuotes', true);
-pref('extensions.salastread.quickPostJump', true);
 
 //USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
@@ -154,3 +153,20 @@ pref('extensions.salastread.enableDebugMarkup', false);
 pref('extensions.salastread.scrollPostEnable', false);
 pref('extensions.salastread.showThreadsWithNewPostsFirst', false);
 pref('extensions.salastread.showThreadsWithNewPostsFirstCP', false);
+
+
+// Keyboard Navigation Options
+pref('extensions.salastread.quickPostJump', true);
+pref('extensions.salastread.kb.reanchor', 'u');
+pref('extensions.salastread.kb.reanchorAlt', 'o');
+pref('extensions.salastread.kb.nextPage', 'j');
+pref('extensions.salastread.kb.nextPageAlt', 'j');
+pref('extensions.salastread.kb.nextPost', 'n');
+pref('extensions.salastread.kb.nextPostAlt', 'n');
+pref('extensions.salastread.kb.prevPage', 'k');
+pref('extensions.salastread.kb.prevPageAlt', 'h');
+pref('extensions.salastread.kb.prevPost', 'p');
+pref('extensions.salastread.kb.prevPostAlt', 'm');
+pref('extensions.salastread.kb.quickEdit', 'e');
+pref('extensions.salastread.kb.quickReply', 'r');
+pref('extensions.salastread.kb.quickQuote', 'q');
