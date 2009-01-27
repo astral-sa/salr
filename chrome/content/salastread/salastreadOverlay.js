@@ -2264,24 +2264,24 @@ function SALR_QuickPostJump(event)
 	{
 		postId = '1';
 	}
-	switch (pressed)
+	switch (String.fromCharCode(pressed).toLowerCase())
 	{
-		case 117: // u
-		case 85: // U
+		case salr.getPreference('kb.reanchor'):
+		case salr.getPreference('kb.reanchorAlt'):
 			doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
 			post = doc.getElementById('pti' + postId);
 			rescroll = true;
 			break;
-		case 106: // j
-		case 74: // J
+		case salr.getPreference('kb.nextPage'):
+		case salr.getPreference('kb.nextPageAlt'):
 			// Goto next page
 			if (doc.__SALR_curPage < doc.__SALR_maxPage)
 			{
 				doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage + 1));
 			}
 			break;
-		case 110: // n
-		case 78:  // N
+			case salr.getPreference('kb.nextPost'):
+			case salr.getPreference('kb.nextPostAlt'):
 			// Goto next post
 			postId++;
 			if (postId <= maxPosts)
@@ -2296,20 +2296,16 @@ function SALR_QuickPostJump(event)
 				rescroll = true;
 			}
 			break;
-		case 107: // k
-		case 75: // K
-		case 104: // h
-		case 72: // H
+		case salr.getPreference('kb.prevPage'):
+		case salr.getPreference('kb.prevPageAlt'):
 			// Goto previous page
 			if (doc.__SALR_curPage > 1)
 			{
 				doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage - 1));
 			}
 			break;
-		case 112: // p
-		case 80:  // P
-		case 109: // m
-		case 77:  // M
+		case salr.getPreference('kb.prevPost'):
+		case salr.getPreference('kb.prevPostAlt'):
 			// Goto previous post
 			postId--;
 			if (postId > 0)
@@ -2324,28 +2320,19 @@ function SALR_QuickPostJump(event)
 				rescroll = true;
 			}
 			break;
-		case 111: // o
-		case 79: // O
-			doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
-			post = doc.getElementById('pti' + postId);
-			rescroll = true;
-			break;
-		case 101: // e
-		case 69: // E
+		case salr.getPreference('kb.quickEdit'):
 			// Activate Quick Edit Post
 			var fakeEvent = {};
 			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
 			quickQuoteButtonClick(fakeEvent);
 			break;
-		case 114: // r
-		case 82: // R
+		case salr.getPreference('kb.quickReply'):
 			// Activate Quick Reply to Thread
 			var fakeEvent = {};
 			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
 			quickQuoteButtonClick(fakeEvent);
 			break;
-		case 113: // q
-		case 81: // Q
+		case salr.getPreference('kb.quickQuote'):
 			// Activate Quick Quote Post
 			var fakeEvent = {};
 			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
@@ -2617,7 +2604,7 @@ function SALR_StarThread()
 		var threadTitle;
 		 // Snag the title we saved earlier
 		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-		{	
+		{
 			if (target.wrappedJSObject) //FF2&3 compatibility
 				threadTitle = target.wrappedJSObject.__salastread_threadtitle;
 			else
@@ -2625,7 +2612,7 @@ function SALR_StarThread()
 		}
 		else
 			threadTitle = SALR_getPageTitle(target.ownerDocument);
-		
+
 		var starStatus = persistObject.isThreadStarred(threadid);
 		persistObject.toggleThreadStar(threadid);
 
@@ -2654,7 +2641,7 @@ function SALR_IgnoreThread()
 		var threadTitle;
 		 // Snag the title we saved earlier
 		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-		{	
+		{
 			if (target.wrappedJSObject) //FF2&3 compatibility
 				threadTitle = target.wrappedJSObject.__salastread_threadtitle;
 			else
