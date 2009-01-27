@@ -30,8 +30,8 @@ window {
 .messagearea {
  font-family: "Courier New", monospace;
  font-size: 10pt;
- height: 300px;
-} 
+ height: 300px !important;
+}
 .qqcbox {
  font-family: Tahoma, Arial, Helvetica, sans-serif;
  font-size: 9pt;
