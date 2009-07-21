@@ -100,6 +100,9 @@ function SALR_onLoad(e)
 	var appcontent = document.getElementById("appcontent"); // browser
 	var doc = e.originalTarget; // document
 
+	if (doc.wrappedJSObject) // Match things up for FF3.1 beta
+		doc = doc.wrappedJSObject;
+		
 	if(!appcontent || !doc.location) return;
 
 	// nsSimpleURIs don't have a .host, so check this
@@ -2027,6 +2030,8 @@ function quickQuoteButtonClick(evt)
 {
 	var doc = evt.originalTarget.ownerDocument;
 	var quotebutton = evt.originalTarget;
+	if (quotebutton.wrappedJSObject) // FF 3.1 wraps this up! FF3.0.x didn't.
+		quotebutton = quotebutton.wrappedJSObject;
 	var threadid = quotebutton.__salastread_threadid;
 	var forumid = quotebutton.SALR_forumid;
 	var postername = quotebutton.__salastread_postername;
@@ -2436,7 +2441,11 @@ function SALR_DirectionalNavigate(doc, dir)
 function SALR_PageMouseUp(event)
 {
 	var targ = event.target;
+	if (targ.wrappedJSObject)
+		targ=targ.wrappedJSObject;
 	var doc = targ.ownerDocument;
+	if (doc.wrappedJSObject)
+		doc=doc.wrappedJSObject;
 	if (targ && targ.SALR_isGestureElement == true)
 	{
 		doc.body.addEventListener('contextmenu', SALR_GestureContextMenu, false);
@@ -2463,7 +2472,7 @@ function SALR_GestureContextMenu(event)
 {
 	var targ = event.target;
 	var doc = targ.ownerDocument;
-		doc.body.removeEventListener('contextmenu', SALR_GestureContextMenu, false);
+	doc.body.removeEventListener('contextmenu', SALR_GestureContextMenu, false);
 	if (event.preventDefault)
 	{
 		event.preventDefault();
@@ -2474,6 +2483,8 @@ function SALR_GestureContextMenu(event)
 function SALR_PageMouseDown(event)
 {
 	var doc = event.target.ownerDocument;
+	if (doc.wrappedJSObject)
+		doc = doc.wrappedJSObject;
 	var gn = doc.getElementById("salastread_gesturenavtop");
 	if (gn)
 	{
@@ -2552,11 +2563,9 @@ function SALR_ContextMenuShowing(e)
 		SALR_HideContextMenuItems();
 		try
 		{
-
 			var doc = document.getElementById("content").mCurrentBrowser.contentDocument;
 			if (doc.wrappedJSObject) //FF3 fix
 				doc = doc.wrappedJSObject;
-
 			if(doc.__salastread_processed == true)
 			{
 				if (persistObject.getPreference("enableContextMenu"))
