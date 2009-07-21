@@ -97,9 +97,9 @@ function grabComplete() {
 */
 
 function emotRegex(s) {
-	emotRe = /src="(.*?)".*?<br \/>(.*?)<\/td>/i;
+	emotRe = /<div class="text">(.*?)<\/div>[\s\S]*?src="(.*?)"/i;
 	emotRe.exec(s);
-	persistObject.emoticons.push(new Array(RegExp.$2, RegExp.$1));
+	persistObject.emoticons.push(new Array(RegExp.$1, RegExp.$2));
 }
 
 function getEmoticonsFromServer() {
@@ -108,12 +108,12 @@ function getEmoticonsFromServer() {
 			xht.open("GET", "http://forums.somethingawful.com/misc.php?s=&action=showsmilies", false);
 			xht.send(null);
 		var restext = xht.responseText;
-		
+
 		persistObject.emoticons = new Array();
-		
-		emotRe = /<td class="smtxt">(.*?)<\/td>/gi;
+
+		emotRe = /<li class="smilie">([\s\S]*?)<img.*?>/gi;
 		emotArray = restext.match(emotRe);
-		
+
 		emotArray.forEach(emotRegex);
 		persistObject.emoticons.sort();
 	} catch(e) {
