@@ -2248,6 +2248,8 @@ function SALR_QuickPostJump(event)
 	}
 	var targ = event.target;
 	var doc = targ.ownerDocument;
+	if (doc.wrappedJSObject) // Match things up for FF3.5
+		doc = doc.wrappedJSObject;
 	var pressed = event.which;
 	var postId, post, classChange, rescroll = false;
 	var maxPosts = persistObject.getPreference('postsPerPage');
