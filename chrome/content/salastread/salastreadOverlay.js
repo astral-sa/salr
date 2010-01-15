@@ -2061,7 +2061,7 @@ function quickQuoteButtonClick(evt)
 
 	//Has this person already bookmarked this thread?
 	//Check for the bookmark/unbookmark button
-	bookmarkbutton = persistObject.selectSingleNode(doc,doc,"//ul[contains(@class, 'postbuttons')]//a[contains(@href, 'action=remove')]");
+	bookmarkbutton = persistObject.selectSingleNode(doc,doc,"//ul[contains(@class, 'postbuttons')]//img[@class='unbookmark']");
 	if (bookmarkbutton)
 	{
 	  window.__salastread_bookmarked = true;
