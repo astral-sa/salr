@@ -604,13 +604,16 @@ function handleThreadList(doc, forumid, flags)
 	var ignoredKeywords = persistObject.getPreference("ignoredKeywords");
 	var superIgnoreUsers = persistObject.getPreference("superIgnore");
 
+	// This should eventually be redone and moved to the flags section.
+	if (typeof(flags.inUserCP) === undefined)
+		flags.inUserCP = false;
+
 	// We'll need lots of variables for this
 	var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox, threadLastPostBox;
 	var threadTitle, threadId, threadOPId, threadRe;
 	var threadLRCount, unvistIcon, lpIcon, lastPostName;
 	var userPosterNote, lastLink, threadReCount, searchString;
 	var starredthreads = persistObject.starList, ignoredthreads = persistObject.ignoreList;
-	var iconlist = persistObject.iconList;
 	var table = document.getElementById('forum');
 
 	// We need to reset this every time the page is fully loaded
@@ -697,7 +700,6 @@ function handleThreadList(doc, forumid, flags)
 			}
 		}
 
-
 		if (advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP)
 		{
 			// Check for ignored keywords
@@ -742,30 +744,15 @@ function handleThreadList(doc, forumid, flags)
 		// So ignore/star can get a title immediately
 		thread.__salastread_threadtitle = threadTitle;
 
-		// Replace the thread icon with a linked thread icon
+		// Is this icon ignored?
 		threadIconBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
-		if (flags && forumid && !flags.inDump && threadIconBox.firstChild.src.search(/posticons\/(.*)/i) > -1)
+		if (flags && forumid && advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.src.search(/posticons\/(.*)/i) > -1)
 		{
-			iconFilename = threadIconBox.firstChild.src.match(/posticons\/(.*)/i)[1];
-			if (iconlist[iconFilename] != undefined)
+			var iconnum = threadIconBox.firstChild.src.match(/#(\d+)$/)[1];
+			if (ignoredPostIcons.search(iconnum) > -1 && thread.style.visibility != "hidden")
 			{
-				iconGo = doc.createElement("a");
-				iconGo.setAttribute("href", "/forumdisplay.php?forumid=" + forumid + "&posticon=" + iconlist[iconFilename]);
-				iconGo.appendChild(threadIconBox.removeChild(threadIconBox.firstChild));
-				iconGo.firstChild.style.border = "none";
-				threadIconBox.appendChild(iconGo);
-			}
-
-			if (advancedThreadFiltering && !flags.inArchives&& !flags.inDump && !flags.inUserCP)
-			{
-				// Is this icon ignored?
-				searchString = "(^|\\s)" + iconlist[iconFilename] + ",";
-				searchString = new RegExp(searchString , "gi");
-				if (ignoredPostIcons.search(searchString) > -1 && thread.style.visibility != "hidden")
-				{
-					persistObject.toggleVisibility(thread,false);
-					filteredThreadCount(doc,1);
-				}
+				persistObject.toggleVisibility(thread,false);
+				filteredThreadCount(doc,1);
 			}
 		}
 
@@ -3324,7 +3311,7 @@ function clickToggleIgnoreIcon(event)
 			var prefIgnoredPostIcons = persistObject.getPreference("ignoredPostIcons");
 			var prefIgnoredKeywords = persistObject.getPreference("ignoredKeywords");
 			var anyLeft, anyLeftIn, searchString, threadBeGone;
-			var threadList, thread, threadIcon, threadIconFile, iconList;
+			var threadList, thread, threadIcon;
 
 			afMainIcons = doc.getElementById("filtericons");
 			afIgnoredIcons = doc.getElementById("ignoredicons");
@@ -3397,7 +3384,6 @@ function clickToggleIgnoreIcon(event)
 
 			// Cycle through the threads and actively update their visibility
 			threadList = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
-			iconList = persistObject.iconList;
 
 			for (var i in threadList)
 			{
@@ -3405,11 +3391,10 @@ function clickToggleIgnoreIcon(event)
 				threadIcon = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
 				threadBeGone = false;
 				iconMatch = false;
-
 				if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
 				{
-					threadIconFile = threadIcon.src.match(/posticons\/(.*)/i)[1];
-					if (iconList[threadIconFile] == iconToIgnoreId)
+					var iconnum = threadIcon.src.match(/#(\d+)$/)[1];
+					if (iconnum == iconToIgnoreId)
 					{
 						if (afIgnoring)
 						{
@@ -3530,16 +3515,12 @@ function clickIgnoreKeywordSave(event)
 				// No keyword match, I could reveal it, but is it icon-ignored?
 				if (!threadBeGone && prefIgnoredPostIcons && thread.style.visibility == "hidden")
 				{
-					var iconList = persistObject.iconList;
 					var threadIcon = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
 
 					if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
 					{
-						threadIconFile = threadIcon.src.match(/posticons\/(.*)/i)[1];
-						searchString = "(^|\\s)" + iconList[threadIconFile] + ",";
-						searchString = new RegExp(searchString , "gi");
-
-						if (prefIgnoredPostIcons.search(searchString) > -1)
+						var iconnum = threadIcon.src.match(/#(\d+)$/)[1];
+						if (prefIgnoredPostIcons.search(iconnum) > -1)
 						{
 							threadBeGone = true;
 						}
