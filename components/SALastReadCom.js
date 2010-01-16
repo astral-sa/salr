@@ -464,16 +464,6 @@ salrPersistObject.prototype = {
 	get generateDynamicCSS()
 	{
 		var CSSFile = '';
-		if (!this.getPreference('dontHighlightPosts'))
-		{
-			// These are for in thread coloring
-			CSSFile += 'table.post tr.seen1 td { background-color:';
-			CSSFile += this.getPreference('seenPostDark');
-			CSSFile += ' !important; }\n';
-			CSSFile += 'table.post tr.seen2 td { background-color:';
-			CSSFile += this.getPreference('seenPostLight');
-			CSSFile += ' !important; }\n';
-		}
 		if (!this.getPreference('dontHighlightThreads'))
 		{
 			CSSFile += 'tr.thread.seen td { background-color:';
@@ -551,6 +541,70 @@ salrPersistObject.prototype = {
 			CSSFile += 'height:12px !important;';
 			CSSFile += '}\n';
 		}
+		return CSSFile;
+	},
+
+	// Return a string that contains ShowThread CSS instructions for our settings
+	generateDynamicShowThreadCSS: function(inFYAD, inBYOB)
+	{
+		var CSSFile = '';
+		if (!this.getPreference('dontHighlightPosts'))
+		{
+			// "Normal" colors
+			if (!inFYAD && !inBYOB)
+			{
+				// These are for in thread coloring
+				CSSFile += 'table.post tr.seen1 td { background-color:';
+				CSSFile += this.getPreference('seenPostDark');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'table.post tr.seen2 td { background-color:';
+				CSSFile += this.getPreference('seenPostLight');
+				CSSFile += ' !important; }\n';
+				// These are for unseen posts
+				CSSFile += 'table.post tr.altcolor2 td { background-color:';
+				CSSFile += this.getPreference('unseenPostDark');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'table.post tr.altcolor1 td { background-color:';
+				CSSFile += this.getPreference('unseenPostLight');
+				CSSFile += ' !important; }\n';
+			}
+			// "FYAD" colors
+			else if (!inBYOB)
+			{
+				// These are for in thread coloring
+				CSSFile += 'table.post tr.seen1 td { background-color:';
+				CSSFile += this.getPreference('seenPostDarkFYAD');
+				CSSFile += '; }\n';
+				CSSFile += 'table.post tr.seen2 td { background-color:';
+				CSSFile += this.getPreference('seenPostLightFYAD');
+				CSSFile += '; }\n';
+				// These are for unseen posts
+				CSSFile += 'table.post tr.altcolor2 td { background-color:';
+				CSSFile += this.getPreference('unseenPostDarkFYAD');
+				CSSFile += '; }\n';
+				CSSFile += 'table.post tr.altcolor1 td { background-color:';
+				CSSFile += this.getPreference('unseenPostLightFYAD');
+				CSSFile += '; }\n';
+			}
+			// "BYOB" colors
+			else
+			{
+				// These are for in thread coloring
+				CSSFile += 'table.post tr.seen1 td { background-color:';
+				CSSFile += this.getPreference('seenPostLightBYOB');
+				CSSFile += '; }\n';
+				CSSFile += 'table.post tr.seen2 td { background-color:';
+				CSSFile += this.getPreference('seenPostDarkBYOB');
+				CSSFile += '; }\n';
+				// These are for unseen posts
+				CSSFile += 'table.post tr.altcolor2 td { background-color:';
+				CSSFile += this.getPreference('unseenPostDarkBYOB');
+				CSSFile += '; }\n';
+				CSSFile += 'table.post tr.altcolor1 td { background-color:';
+				CSSFile += this.getPreference('unseenPostLightBYOB');
+				CSSFile += '; }\n';
+			}
+		}
 		if (this.getPreference('highlightQuotes'))
 		{
 			var selfColor = 0;
@@ -591,7 +645,6 @@ salrPersistObject.prototype = {
 		{
 			CSSFile += 'table.salrPostQuoteIgnored { display:none !important; }\n';
 		}
-
 		return CSSFile;
 	},
 
@@ -1501,7 +1554,7 @@ salrPersistObject.prototype = {
 	},
 	inBYOB: function(forumid)
 	{
-		return (forumid == 174 || forumid == 176 || forumid == 194);
+		return (forumid == 174 || forumid == 176 || forumid == 194 || forumid == 208);
 	},
 	inDump: function(forumid)
 	{

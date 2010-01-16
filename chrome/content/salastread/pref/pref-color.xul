@@ -31,27 +31,27 @@
 			<preference id="readWithNewDarkFYAD" 	name="extensions.salastread.readWithNewDarkFYAD" 	type="string"/>
 			<preference id="readWithNewLightFYAD" 	name="extensions.salastread.readWithNewLightFYAD" 	type="string"/>
 			<preference id="seenPostDarkFYAD" 		name="extensions.salastread.seenPostDarkFYAD" 		type="string"/>
-			<preference id="seePostLightFYAD" 		name="extensions.salastread.seePostLightFYAD" 		type="string"/>
+			<preference id="seenPostLightFYAD" 		name="extensions.salastread.seenPostLightFYAD" 		type="string"/>
 			<preference id="unreadDarkFYAD" 		name="extensions.salastread.unreadDarkFYAD" 		type="string"/>
 			<preference id="unreadLightFYAD" 		name="extensions.salastread.unreadLightFYAD" 		type="string"/>
 			<preference id="unseenPostDarkFYAD" 	name="extensions.salastread.unseenPostDarkFYAD" 	type="string"/>
 			<preference id="unseenPostLightFYAD" 	name="extensions.salastread.unseenPostLightFYAD" 	type="string"/>
 			<preference id="highlightQuotePostFYAD" name="extensions.salastread.highlightQuotePostFYAD" type="string"/>
 
-			<!-- BYOB Thread Colors (Unused atm) -->
-			<!-- Then we should comment them out.
+			<!-- BYOB Thread Colors -->
 			<preference id="postedInThreadReBYOB" 	name="extensions.salastread.postedInThreadReBYOB" 	type="string"/>
 			<preference id="readDarkBYOB" 			name="extensions.salastread.readDarkBYOB" 			type="string"/>
 			<preference id="readLightBYOB" 			name="extensions.salastread.readLightBYOB" 			type="string"/>
 			<preference id="readWithNewDarkBYOB" 	name="extensions.salastread.readWithNewDarkBYOB" 	type="string"/>
 			<preference id="readWithNewLightBYOB" 	name="extensions.salastread.readWithNewLightBYOB" 	type="string"/>
 			<preference id="seenPostDarkBYOB" 		name="extensions.salastread.seenPostDarkBYOB" 		type="string"/>
-			<preference id="seePostLightBYOB" 		name="extensions.salastread.seePostLightBYOB" 		type="string"/>
+			<preference id="seenPostLightBYOB" 		name="extensions.salastread.seenPostLightBYOB" 		type="string"/>
 			<preference id="unreadDarkBYOB" 		name="extensions.salastread.unreadDarkBYOB" 		type="string"/>
 			<preference id="unreadLightBYOB" 		name="extensions.salastread.unreadLightBYOB" 		type="string"/>
 			<preference id="unseenPostDarkBYOB" 	name="extensions.salastread.unseenPostDarkBYOB" 	type="string"/>
 			<preference id="unseenPostLightBYOB" 	name="extensions.salastread.unseenPostLightBYOB" 	type="string"/>
-			-->
+			<preference id="highlightQuotePostBYOB" name="extensions.salastread.highlightQuotePostBYOB" type="string"/>
+			
 			<!-- Coloring Toggles -->
 			<preference id="dontHighlightThreads" 	name="extensions.salastread.dontHighlightThreads" 	type="bool"/>
 			<preference id="dontHighlightPosts" 	name="extensions.salastread.dontHighlightPosts" 	type="bool"/>
@@ -79,7 +79,7 @@
 					<menupopup>
 						<menuitem label="Normal" 	value=""/>
 						<menuitem label="FYAD"		value="FYAD"/>
-						<!--<menuitem label="BYOB"		value="BYOB"/>-->
+						<menuitem label="BYOB"		value="BYOB"/>
 					</menupopup>
 				</menulist>
 				<button label="Load Default Colors" oncommand="loadDefaultColors()"/>

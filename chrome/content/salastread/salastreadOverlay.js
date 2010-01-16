@@ -1033,6 +1033,9 @@ function handleShowThread(doc)
 		return;
 	}
 
+	// Add our ShowThread CSS
+	persistObject.insertDynamicCSS(doc, persistObject.generateDynamicShowThreadCSS(inFYAD, inBYOB));
+
 	doc.body.className += " salastread_forum" + forumid;
 	// used by the context menu to allow options for this thread
 	doc.body.className += " salastread_thread_" + threadid;
