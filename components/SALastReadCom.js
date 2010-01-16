@@ -676,7 +676,12 @@ salrPersistObject.prototype = {
 		if (this.getPreference('highlightQuotes'))
 		{
 			var selfColor = 0;
-			var quotedColor = this.getPreference("highlightQuotePost");
+			var forum = '';
+			if (inBYOB)
+				forum = 'BYOB';
+			else if (inFYAD)
+				forum = 'FYAD';
+			var quotedColor = this.getPreference("highlightQuotePost"+forum);
 			var selfDetails = this.isUsernameColored(this.getPreference('username'));
 
 			// I may have given my posts a custom background
