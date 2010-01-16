@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.100114');
+pref('extensions.salastread.currentVersion', '1.99.100116');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -103,17 +103,17 @@ pref('extensions.salastread.highlightQuotePost', '#c691d9');
 pref('extensions.salastread.highlightQuotePostFYAD', '#af7fc0');
 
 //BYOB colors
-pref('extensions.salastread.seenPostDarkBYOB', '#b9e7e7');
-pref('extensions.salastread.seenPostLightBYOB', '#c7b9e7');
-pref('extensions.salastread.unseenPostDarkBYOB', '#CCFFFF');
-pref('extensions.salastread.unseenPostLightBYOB', '#CCCCFF');
-//BYOB forumdisplay colors - NYI
-pref('extensions.salastread.readWithNewDarkBYOB', '#CCFFFF');
-pref('extensions.salastread.readWithNewLightBYOB', '#CCCCFF');
-pref('extensions.salastread.readDarkBYOB', '#b9e7e7');
-pref('extensions.salastread.readLightBYOB', '#c7b9e7');
-pref('extensions.salastread.unreadDarkBYOB', '#CCFFFF');
-pref('extensions.salastread.unreadLightBYOB', '#CCCCFF');
+pref('extensions.salastread.seenPostLightBYOB', '#b9e7e7');
+pref('extensions.salastread.seenPostDarkBYOB', '#c7b9e7');
+pref('extensions.salastread.unseenPostLightBYOB', '#CCFFFF');
+pref('extensions.salastread.unseenPostDarkBYOB', '#CCCCFF');
+//BYOB forumdisplay colors
+pref('extensions.salastread.readWithNewLightBYOB', '#CCFFFF');
+pref('extensions.salastread.readWithNewDarkBYOB', '#CCCCFF');
+pref('extensions.salastread.readLightBYOB', '#b9e7e7');
+pref('extensions.salastread.readDarkBYOB', '#c7b9e7');
+pref('extensions.salastread.unreadLightBYOB', '#CCFFFF');
+pref('extensions.salastread.unreadDarkBYOB', '#CCCCFF');
 pref('extensions.salastread.postedInThreadReBYOB', '#fcfd99');
 pref('extensions.salastread.highlightQuotePostBYOB', '#c691d9');
 

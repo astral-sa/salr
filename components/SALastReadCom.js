@@ -460,37 +460,105 @@ salrPersistObject.prototype = {
 		return this.iconDataCache;
 	},
 
-	// Return a string that contains CSS instructions for our settings
-	get generateDynamicCSS()
+	// Return a string that contains thread list CSS instructions for our settings
+	generateDynamicThreadListCSS: function(inFYAD, inBYOB)
 	{
 		var CSSFile = '';
 		if (!this.getPreference('dontHighlightThreads'))
 		{
-			CSSFile += 'tr.thread.seen td { background-color:';
-			CSSFile += this.getPreference('readLight');
-			CSSFile += ' !important; }\n';
-			CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
-			CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
-			CSSFile += this.getPreference('readDark');
-			CSSFile += ' !important; }\n';
-			CSSFile += 'tr.thread.category0 td { background-color:';
-			CSSFile += this.getPreference('readLight');
-			CSSFile += ' !important; }\n';
-			CSSFile += 'tr.thread.category0 td.icon, tr.thread.category0 td.author,';
-			CSSFile += 'tr.thread.category0 td.views, tr.thread.category0 td.lastpost { background-color:';
-			CSSFile += this.getPreference('readDark');
-			CSSFile += ' !important; }\n';
-			CSSFile += 'tr.thread.seen.newposts td { background-color:';
-			CSSFile += this.getPreference('readWithNewLight');
-			CSSFile += ' !important; }\n';
-			CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
-			CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
-			CSSFile += this.getPreference('readWithNewDark');
-			CSSFile += ' !important; }\n';
-			CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
-			CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
-			CSSFile += this.getPreference('postedInThreadRe');
-			CSSFile += ' !important; }\n';
+			// Color types
+			if (inFYAD)
+			{
+				CSSFile += 'tr.thread td { background-color:';
+				CSSFile += this.getPreference('unreadLightFYAD');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread td.icon, tr.thread td.author,';
+				CSSFile += 'tr.thread td.views, tr.thread td.lastpost { background-color:';
+				CSSFile += this.getPreference('unreadDarkFYAD');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen td { background-color:';
+				CSSFile += this.getPreference('readLightFYAD');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
+				CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
+				CSSFile += this.getPreference('readDarkFYAD');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td { background-color:';
+				CSSFile += this.getPreference('readWithNewLightFYAD');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
+				CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
+				CSSFile += this.getPreference('readWithNewDarkFYAD');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
+				CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
+				CSSFile += this.getPreference('postedInThreadReFYAD');
+				CSSFile += ' !important; }\n';
+			}
+			else if (inBYOB)
+			{
+				CSSFile += 'tr.thread td { background-color:';
+				CSSFile += this.getPreference('unreadLightBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread td.icon, tr.thread td.author,';
+				CSSFile += 'tr.thread td.views, tr.thread td.lastpost { background-color:';
+				CSSFile += this.getPreference('unreadDarkBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen td { background-color:';
+				CSSFile += this.getPreference('readLightBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
+				CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
+				CSSFile += this.getPreference('readDarkBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td { background-color:';
+				CSSFile += this.getPreference('readWithNewLightBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
+				CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
+				CSSFile += this.getPreference('readWithNewDarkBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
+				CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
+				CSSFile += this.getPreference('postedInThreadReBYOB');
+				CSSFile += ' !important; }\n';
+			}
+			else
+			{
+				CSSFile += 'tr.thread td { background-color:';
+				CSSFile += this.getPreference('unreadLight');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread td.icon, tr.thread td.author,';
+				CSSFile += 'tr.thread td.views, tr.thread td.lastpost { background-color:';
+				CSSFile += this.getPreference('unreadDark');
+				CSSFile += ' !important; }\n';			
+				CSSFile += 'tr.thread.seen td { background-color:';
+				CSSFile += this.getPreference('readLight');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
+				CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
+				CSSFile += this.getPreference('readDark');
+				CSSFile += ' !important; }\n';
+				//category0 stuff is for usercp/bookmarks
+				CSSFile += 'tr.thread.category0 td { background-color:';
+				CSSFile += this.getPreference('readLight');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.category0 td.icon, tr.thread.category0 td.author,';
+				CSSFile += 'tr.thread.category0 td.views, tr.thread.category0 td.lastpost { background-color:';
+				CSSFile += this.getPreference('readDark');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td { background-color:';
+				CSSFile += this.getPreference('readWithNewLight');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
+				CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
+				CSSFile += this.getPreference('readWithNewDark');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
+				CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
+				CSSFile += this.getPreference('postedInThreadRe');
+				CSSFile += ' !important; }\n';
+			}
 		}
 		if (!this.getPreference('disableGradients'))
 		{
@@ -550,26 +618,26 @@ salrPersistObject.prototype = {
 		var CSSFile = '';
 		if (!this.getPreference('dontHighlightPosts'))
 		{
-			// "Normal" colors
-			if (!inFYAD && !inBYOB)
+			// "BYOB" colors
+			if (inBYOB)
 			{
 				// These are for in thread coloring
 				CSSFile += 'table.post tr.seen1 td { background-color:';
-				CSSFile += this.getPreference('seenPostDark');
-				CSSFile += ' !important; }\n';
+				CSSFile += this.getPreference('seenPostDarkBYOB');
+				CSSFile += '; }\n';
 				CSSFile += 'table.post tr.seen2 td { background-color:';
-				CSSFile += this.getPreference('seenPostLight');
-				CSSFile += ' !important; }\n';
+				CSSFile += this.getPreference('seenPostLightBYOB');
+				CSSFile += '; }\n';
 				// These are for unseen posts
 				CSSFile += 'table.post tr.altcolor2 td { background-color:';
-				CSSFile += this.getPreference('unseenPostDark');
-				CSSFile += ' !important; }\n';
+				CSSFile += this.getPreference('unseenPostLightBYOB');
+				CSSFile += '; }\n';
 				CSSFile += 'table.post tr.altcolor1 td { background-color:';
-				CSSFile += this.getPreference('unseenPostLight');
-				CSSFile += ' !important; }\n';
+				CSSFile += this.getPreference('unseenPostDarkBYOB');
+				CSSFile += '; }\n';
 			}
 			// "FYAD" colors
-			else if (!inBYOB)
+			else if (inFYAD)
 			{
 				// These are for in thread coloring
 				CSSFile += 'table.post tr.seen1 td { background-color:';
@@ -586,23 +654,23 @@ salrPersistObject.prototype = {
 				CSSFile += this.getPreference('unseenPostLightFYAD');
 				CSSFile += '; }\n';
 			}
-			// "BYOB" colors
+			// "Normal" colors
 			else
 			{
 				// These are for in thread coloring
 				CSSFile += 'table.post tr.seen1 td { background-color:';
-				CSSFile += this.getPreference('seenPostLightBYOB');
-				CSSFile += '; }\n';
+				CSSFile += this.getPreference('seenPostDark');
+				CSSFile += ' !important; }\n';
 				CSSFile += 'table.post tr.seen2 td { background-color:';
-				CSSFile += this.getPreference('seenPostDarkBYOB');
-				CSSFile += '; }\n';
+				CSSFile += this.getPreference('seenPostLight');
+				CSSFile += ' !important; }\n';
 				// These are for unseen posts
 				CSSFile += 'table.post tr.altcolor2 td { background-color:';
-				CSSFile += this.getPreference('unseenPostDarkBYOB');
-				CSSFile += '; }\n';
+				CSSFile += this.getPreference('unseenPostDark');
+				CSSFile += ' !important; }\n';
 				CSSFile += 'table.post tr.altcolor1 td { background-color:';
-				CSSFile += this.getPreference('unseenPostLightBYOB');
-				CSSFile += '; }\n';
+				CSSFile += this.getPreference('unseenPostLight');
+				CSSFile += ' !important; }\n';
 			}
 		}
 		if (this.getPreference('highlightQuotes'))

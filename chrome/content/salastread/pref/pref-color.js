@@ -1,4 +1,7 @@
 var backgrounds = { '' : '#FFFFFF', 'FYAD' : '#FF9999', 'BYOB' : '#9999FF' };
+var myprefs = Components.classes["@mozilla.org/preferences;1"].
+		getService(Components.interfaces.nsIPrefService).
+		getBranch("extensions.salastread.");
 
 function loadColors() {
 	//check the dropdown's value
@@ -25,7 +28,13 @@ function loadColors() {
 function loadDefaultColors() {
 	//check the dropdown's value
 	var forum = document.getElementById("forumtype").selectedItem.value;
-	
+	var forumname = document.getElementById("forumtype").selectedItem.label;
+
+	// Make sure this is what they want
+	var doit = confirm("Are you sure you want to reset the " + forumname + " colors to their defaults?\nThis will apply immediately and cannot be undone.");
+	if (!doit)
+		return;
+
 	//go through all the TDs, uses their class to know what pref they belong to
 	var tds = document.getElementById("sampletableholder").getElementsByTagNameNS("http://www.w3.org/1999/xhtml","td");
 	for(var i in tds) {
@@ -33,9 +42,11 @@ function loadDefaultColors() {
 		var pref = document.getElementById(td.className + forum);
 		if(pref) {
 			try {
-				//reset the actual pref value
-				pref.reset();
-				//reset the pref value if a change hasn't been saved
+				// Reset the preference values for the specified forum
+				var handyname = pref.name.substring(22);
+				if (myprefs.prefHasUserValue(handyname))
+					myprefs.clearUserPref(handyname);
+				// Reset any unsaved color changes for the specified forum
 				pref.value = pref.valueFromPreferences;
 			} catch (e) {}
 		}

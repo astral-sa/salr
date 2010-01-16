@@ -210,9 +210,6 @@ function SALR_onLoad(e)
 				SALR_insertCSS(doc, "chrome://salastread/content/css/pageNavigator.css");
 			}
 
-			// Insert our dynamic CSS into the head
-			persistObject.insertDynamicCSS(doc, persistObject.generateDynamicCSS);
-
 			// Insert a text link to open the options menu
 			if (persistObject.getPreference('showTextConfigLink'))
 			{
@@ -377,6 +374,9 @@ function handleForumDisplay(doc)
 		// We're in FYAD and FYAD support has been turned off
 		return;
 	}
+	
+	// Add our thread list CSS
+	persistObject.insertDynamicCSS(doc, persistObject.generateDynamicThreadListCSS(flags.inFYAD,flags.inBYOB));
 
 	// Start a transaction to try and reduce the likelihood of database corruption
 	var ourTransaction = false;
@@ -553,6 +553,9 @@ function handleForumDisplay(doc)
 // Do anything needed to the subscribed threads list
 function handleSubscriptions(doc)
 {
+	// Add our thread list CSS
+	persistObject.insertDynamicCSS(doc, persistObject.generateDynamicThreadListCSS(false,false));
+
 	var cpusernav = persistObject.selectSingleNode(doc, doc, "//ul[contains(@id,'usercpnav')]");
 	if (!cpusernav) {
 		// Don't see the control panel menu so stop
