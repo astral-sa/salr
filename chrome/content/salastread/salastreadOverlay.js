@@ -478,12 +478,6 @@ function handleForumDisplay(doc)
 		{
 			if ((postIcons[i].href.search(/posticon=(\d+)/i) > -1) && (postIcons[i].firstChild.src.search(/posticons\/(.*)/i) > -1))
 			{
-			// TODO: Change this to store the icons as an array and merge them with the post icon list array
-			// and if different, store it in the database
-				iconNumber = parseInt(postIcons[i].href.match(/posticon=(\d+)/i)[1]);
-				iconFilename = postIcons[i].firstChild.src.match(/posticons\/(.*)/i)[1];
-				persistObject.addIcon(iconNumber, iconFilename);
-
 				// Additional stuff for advanced thread filtering
 				if (prefAdvancedThreadFiltering && !flags.inArchives)
 				{

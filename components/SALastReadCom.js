@@ -1581,45 +1581,6 @@ salrPersistObject.prototype = {
 		return result;
 	},
 
-	// Adds a post icon # and filename to the database
-	// @param: (int) Number used in URL, (string) Filename of icon
-	// @return: nothing
-	addIcon: function(iconNumber, iconFilename)
-	{
-		if (!this.checkIconNumberExist(iconNumber))
-		{
-			this.iconDataCache[iconNumber] = iconFilename;
-			this.iconDataCache[iconFilename] = iconNumber;
-			var statement = this.database.createStatement("INSERT INTO `posticons` (`iconnumber`, `filename`) VALUES (?1, ?2)");
-			statement.bindInt32Parameter(0,iconNumber);
-			statement.bindStringParameter(1,iconFilename);
-			statement.execute();
-		}
-	},
-
-	// Gets the icon number out of the database
-	// @param:
-	// @return:
-	getIconNumber: function(iconFilename)
-	{
-		if (this.iconDataCache[iconFilename] != undefined)
-		{
-			return this.iconDataCache[iconFilename];
-		}
-		else
-		{
-			return false;
-		}
-	},
-
-	// Checks if the icon number is already known
-	// @param: (int) Icon Number
-	// @return: (bool) Icon number being known
-	checkIconNumberExist: function(iconNumber)
-	{
-		return (this.iconDataCache[iconNumber] != undefined)
-	},
-
 	// Several little functions to test if we're in a special needs forum
 	inFYAD: function(forumid)
 	{
