@@ -656,17 +656,17 @@ salrPersistObject.prototype = {
 				// These are for in thread coloring
 				CSSFile += 'table.post tr.seen1 td { background-color:';
 				CSSFile += this.getPreference('seenPostDark');
-				CSSFile += ' !important; }\n';
+				CSSFile += '; }\n';
 				CSSFile += 'table.post tr.seen2 td { background-color:';
 				CSSFile += this.getPreference('seenPostLight');
-				CSSFile += ' !important; }\n';
+				CSSFile += '; }\n';
 				// These are for unseen posts
 				CSSFile += 'table.post tr.altcolor2 td { background-color:';
 				CSSFile += this.getPreference('unseenPostDark');
-				CSSFile += ' !important; }\n';
+				CSSFile += '; }\n';
 				CSSFile += 'table.post tr.altcolor1 td { background-color:';
 				CSSFile += this.getPreference('unseenPostLight');
-				CSSFile += ' !important; }\n';
+				CSSFile += '; }\n';
 			}
 		}
 		if (this.getPreference('highlightQuotes'))
