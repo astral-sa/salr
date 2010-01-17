@@ -568,10 +568,6 @@ salrPersistObject.prototype = {
 			CSSFile += 'background-repeat:repeat-x !important;';
 			CSSFile += 'background-position:center left !important;}\n';
 		}
-		if (this.getPreference('quickPostJump'))
-		{
-			CSSFile += '#thread table.post.focused { outline: 2px dashed #c1c1c1 !important; }\n';
-		}
 		if (this.getPreference('showUnvisitIcon') && this.getPreference('showGoToLastIcon'))
 		{
 			CSSFile += 'td.title div.lastseen {';
@@ -717,6 +713,10 @@ salrPersistObject.prototype = {
 		if (this.getPreference('superIgnore'))
 		{
 			CSSFile += 'table.salrPostQuoteIgnored { display:none !important; }\n';
+		}
+		if (this.getPreference('quickPostJump'))
+		{
+			CSSFile += '#thread table.post.focused { outline: 2px dashed #c1c1c1 !important; }\n';
 		}
 		return CSSFile;
 	},
