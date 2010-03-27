@@ -1335,6 +1335,11 @@ salrPersistObject.prototype = {
 		return tid;
 	},
 
+	inArchives: function(doc)
+	{
+		return false;
+	},
+	
 	// checks to see if the userid has any custom coloring defined
 	// @param: (int) User Id
 	// @returns: (object) Object contained userid and username

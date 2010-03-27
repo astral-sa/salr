@@ -1020,6 +1020,7 @@ function handleShowThread(doc)
 	var inDump = persistObject.inDump(forumid);
 	var inAskTell = persistObject.inAskTell(forumid);
 	var inGasChamber = persistObject.inGasChamber(forumid);
+	// Obsolete:
 	var inArchives = (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1);
 	var singlePost = (doc.location.search.search(/action=showpost/i) > -1);
 	var username = unescape(persistObject.getPreference('username'));
@@ -1208,14 +1209,21 @@ function handleShowThread(doc)
 			// They're ignored but not by the system
 		}
 
-		if (!inFYAD)
-		{
-			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
-		}
-		else
+		if (inFYAD && !inArchives)
 		{
 			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//DIV[contains(@class,'title')]//following-sibling::B");
 		}
+		else
+		{
+			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
+		}
+
+		//workaround for archives + fyad-type forum, since we can't detect we're in an archived thread at the moment
+		if (userNameBox == null)
+		{
+			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
+		}
+
 		titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
 
 		if (titleBox)
