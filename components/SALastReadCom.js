@@ -527,33 +527,57 @@ salrPersistObject.prototype = {
 			{
 				CSSFile += 'tr.thread td { background-color:';
 				CSSFile += this.getPreference('unreadLight');
-				CSSFile += ' !important; }\n';
+				CSSFile += '; }\n';
 				CSSFile += 'tr.thread td.icon, tr.thread td.author,';
 				CSSFile += 'tr.thread td.views, tr.thread td.lastpost { background-color:';
 				CSSFile += this.getPreference('unreadDark');
-				CSSFile += ' !important; }\n';			
+				CSSFile += '; }\n';
+
+//bookmarks need a special color if they're unread
+//blue
+				CSSFile += 'tr.thread.category0 td { background-color:';
+				CSSFile += this.getPreference('readWithNewLight');
+				CSSFile += '; }\n'; //marking this and the below as important will cause blue-star threads with new posts to show up as blue instead of green
+				CSSFile += 'tr.thread.category0 td.icon, tr.thread.category0 td.author,';
+				CSSFile += 'tr.thread.category0 td.views, tr.thread.category0 td.lastpost { background-color:';
+				CSSFile += this.getPreference('readWithNewDark');
+				CSSFile += '; }\n';
+//red for unread
+				CSSFile += 'tr.thread.category1 td { background-color:#f2dcdc; }\n';
+				CSSFile += 'tr.thread.category1 td.icon, tr.thread.category1 td.author,';
+				CSSFile += 'tr.thread.category1 td.views, tr.thread.category1 td.lastpost { background-color:#e3cfcf; }\n';
+//yellow for unread
+				CSSFile += 'tr.thread.category2 td { background-color:#f2f2dc; }\n';
+				CSSFile += 'tr.thread.category2 td.icon, tr.thread.category2 td.author,';
+				CSSFile += 'tr.thread.category2 td.views, tr.thread.category2 td.lastpost { background-color:#e2e2cd; }\n';
+
+
 				CSSFile += 'tr.thread.seen td { background-color:';
 				CSSFile += this.getPreference('readLight');
-				CSSFile += ' !important; }\n';
+				CSSFile += '; }\n';
 				CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
 				CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
 				CSSFile += this.getPreference('readDark');
-				CSSFile += ' !important; }\n';
-				//category0 stuff is for usercp/bookmarks
-				CSSFile += 'tr.thread.category0 td { background-color:';
-				CSSFile += this.getPreference('readLight');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.category0 td.icon, tr.thread.category0 td.author,';
-				CSSFile += 'tr.thread.category0 td.views, tr.thread.category0 td.lastpost { background-color:';
-				CSSFile += this.getPreference('readDark');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen.newposts td { background-color:';
+				CSSFile += '; }\n';
+		
+				CSSFile += 'tr.thread.newposts td { background-color:';
 				CSSFile += this.getPreference('readWithNewLight');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
-				CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
+				CSSFile += '; }\n';
+				CSSFile += 'tr.thread.newposts td.icon, tr.thread.newposts td.author,';
+				CSSFile += 'tr.thread.newposts td.views, tr.thread.newposts td.lastpost { background-color:';
 				CSSFile += this.getPreference('readWithNewDark');
-				CSSFile += ' !important; }\n';
+				CSSFile += '; }\n';
+
+//red with new
+				CSSFile += 'tr.thread.category1.newposts td { background-color:#f2dcdc; }\n';
+				CSSFile += 'tr.thread.category1.newposts td.icon, tr.thread.category1.newposts td.author,';
+				CSSFile += 'tr.thread.category1.newposts td.views, tr.thread.category1.newposts td.lastpost { background-color:#e3cfcf; }\n';
+//yellow with new
+				CSSFile += 'tr.thread.category2.newposts td { background-color:#f2f2dc; }\n';
+				CSSFile += 'tr.thread.category2.newposts td.icon, tr.thread.category2.newposts td.author,';
+				CSSFile += 'tr.thread.category2.newposts td.views, tr.thread.category2.newposts td.lastpost { background-color:#e2e2cd; }\n';
+
+
 				CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
 				CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
 				CSSFile += this.getPreference('postedInThreadRe');
