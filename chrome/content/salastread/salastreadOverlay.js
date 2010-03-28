@@ -2695,7 +2695,11 @@ function SALR_menuItemCommand(event, el, etype)
 
 	if(target != "none")
 	{
-		SALR_menuItemGoTo(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"),target);
+		// Temporary (?) workaround until the forumid=search shortcut works again
+		if (el.getAttribute("forumnum") == "search")
+			SALR_menuItemGoTo(event,"http://forums.somethingawful.com/f/search",target);
+		else
+			SALR_menuItemGoTo(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"),target);
 	}
 }
 
