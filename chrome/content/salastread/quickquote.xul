@@ -77,6 +77,7 @@
 		   <xul:menuseparator/>
 		   <xul:menuitem id="vbcode_img" label="Image" oncommand="getvBcode(event, 'img');"/>
 		   <xul:menuitem id="vbcode_urltag" label="URL" oncommand="getvBcode(event, 'urltag');"/>
+		   <xul:menuitem id="vbcode_video" label="Video" oncommand="getvBcode(event, 'video');"/>
           </xul:menupopup>
          </xul:button>
 

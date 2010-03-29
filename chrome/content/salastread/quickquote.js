@@ -650,43 +650,47 @@ function getvBcode(event, command) {
 				}
 			}
 			break;
-		
+
+		case "video":
+			insertTags("video", saveSel, str);
+			break;
+
 		case "bold":
 			insertTags("b", saveSel, str);
 			break;
-		
+
 		case "code":
 			insertTags("code", saveSel, str);
 			break;
-		
+
 		case "quote":
 			insertTags("quote", saveSel, str);
 			break;
-		
+
 		case "italic":
 			insertTags("i", saveSel, str);
 			break;
-		
+
 		case "underline":
 			insertTags("u", saveSel, str);
 			break;
-		
+
 		case "strike":
 			insertTags("s", saveSel, str);
 			break;
-		
+
 		case "sub":
 			insertTags("sub", saveSel, str);
 			break;
-		
+
 		case "super":
 			insertTags("super", saveSel, str);
 			break;
-			
+
 		case "spoiler":
 			insertTags("spoiler", saveSel, str);
 			break;
-			
+
 		case "fixed":
 			insertTags("fixed", saveSel, str);
 			break;
@@ -694,7 +698,7 @@ function getvBcode(event, command) {
 		case "listitem":
 			insertTags("*", saveSel, str);
 			break;
-		
+
 		default : alert("vBcode error! No menu option selected.");
 	}
 }
@@ -728,44 +732,97 @@ function doPreview() {
 			if(strMatch.match(/\[\/.*?\]/gi)) {
 				strReturn = "</span>";
 			}
-			
+
 			return strReturn;
 		}
 	);
-	
+
 	// Spoiler
 	vbcode['<span style="background: #000000;" onmouseover="this.style.color=\'#FFFFFF\';" onmouseout="this.style.color=this.style.backgroundColor=\'#000000\'">$1</span>'] = /\[spoiler\](.*?)\[\/spoiler\]/gi;
-	
+
 	// Code and PHP
 	vbcode['<blockquote><pre><span style="font-family: verdana,arial,helvetica; color:#555555">code:</span><hr />$1<hr /></pre></blockquote>'] = /\[code\](.*?)\[\/code\]/gi;
 	vbcode['<blockquote><pre style="color:#0000bb"><span style="font-family: verdana,arial,helvetica; color:#555555">php:</span><hr />&lt;?<br />$1<br />?&gt;<hr /></pre></blockquote>'] = /\[php\](.*?)\[\/php\]/gi;
-	
+
 	// Links and images
 	if(document.getElementById("parseurl").checked) {
 		markup = markup.replace(/(^|\s)((((ht|f)tps?:\/\/)|(www|ftp)\.)[a-zA-Z0-9\.\#\@\:%&_/\?\=\~\-]+)/gim, "$1<a href=\"$2\" target=\"_blank\">$2</a>");
 	}
-	
+
 	vbcode['<a href="$1" target=\"_blank\">$2</a>'] = /\[url=([^\]]+)\](.*?)\[\/url\]/gi;
 	vbcode['<a href="$1" target=\"_blank\">$1</a>'] = /\[url\](.*?)\[\/url\]/gi;
 	vbcode['<a href="mailto:$1">$1</a>'] = /\[email\](.*?)\[\/email\]/gi;
 	vbcode['<img src="$1" alt="$1" />'] = /\[img\](.*?)\[\/img\]/gi;
 	vbcode['<a title="$1" target=\"_blank\"><img width="100" border="0" src="$1" alt="$1"/></a>'] = /\[timg\](.*?)\[\/timg\]/gi;
-	
+
+	// Video
+	markup = markup.replace(/\[video(\stype="(.*?)")?(.*?)\](.*?)\[\/video\]/gi,
+		function (str, vidtypestr, vidtype, vidgarbage, vidinfo, offset, s)
+		{
+			var vidreturn = null;
+			var vidurl = null;
+			var viderr = '';
+
+			// User has entered stupid stuff
+			if (vidgarbage.length > 0)
+				viderr = "You entered extra stuff in your video tag that isn't a type.";
+			// If there is a type specified in the video tag
+			else if (vidtypestr.length > 0)
+			{
+				switch(vidtype)
+				{
+					case "youtube":
+						vidurl = 'http://www.youtube.com/watch?v=' + vidinfo;
+						break;
+
+					case "yahoo":
+						vidurl = 'http://video.yahoo.com/watch/' + vidinfo.replace(":", "/");
+						break;
+
+					case "foxnews":
+						vidurl = 'http://www.foxnews.com/video/index.html?playerId=011008&streamingFormat=FLASH&referralObject=' + vidinfo + '&referralPlaylistId=playlist';
+						break;
+
+					case "cnn":
+						vidurl = 'http://www.cnn.com/video/?' + vidinfo;
+						break;
+
+					default:
+						viderr = "'" + vidtype + "' is not a supported video type.";
+				}
+			}
+			// no type specified
+			else
+			{
+				// quick and extremely dirty check for approved domain words
+				if (vidinfo.match(/http\:\/\/(?:[^\/]*?youtube\.com\/|video\.yahoo\.com\/|[^\/]*?foxnews\.com\/video\/|[^\/]*?cnn\.com\/video\/)/))
+					vidurl = vidinfo;
+				else
+					viderr = 'Unsupported domain for video tag.';
+			}
+			if (vidurl)
+				vidreturn = '<img src="http://i.somethingawful.com/core/icon/fsilk/film_link.png" /><a href="' + vidurl + '" target=\"_blank\">' + vidurl + '</a>';
+			else
+				vidreturn = '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />' + viderr + '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />';
+			return vidreturn;
+		}
+	);
+
 	// Smileys
 	if(!document.getElementById("disablesmilies").checked) {
-		
+
 		if(typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null) {
 			getEmoticonsFromServer();
 		}
-		
+
 		vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/emot-goatse.gif"/>'] = /&amp;submit/gi;
 		vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/smile.gif"/>'] = /:\)/gi;
 		vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/frown.gif"/>'] = /:\(/gi;
 		vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/wink.gif"/>'] = /;\)/gi;
 		vbcode['<img src="http://i.somethingawful.com/mjolnir/images/livestock~01-14-04-whore.gif"/>'] = /;-\*/gi;
-		
+
 		var matches = markup.match(/\:(\w+|\?)\:/gi);
-		
+
 		if(matches) {
 			for(var i = 0; i < matches.length; i++) {
 				for(var j = 0; j < persistObject.emoticons.length; j++) {
@@ -779,9 +836,9 @@ function doPreview() {
 			}
 		}
 	}
-	
+
 	markup = markup.replace(/\n/g, "<br />");
-	
+
 	for(var rplc in vbcode) {
 		markup = markup.replace(vbcode[rplc], rplc);
 	}
@@ -792,17 +849,17 @@ function doPreview() {
 		quoteSegment[key] = quoteSegment[key].replace(
 			 /\[quote="?([^\]]+?)"?\](.*?)/gi,
 			'<blockquote class="qb2"><h4>$1 posted:</h4><p>$2');
-		
+
 		quoteSegment[key] = quoteSegment[key].replace(
 			/\[quote\](.*?)/gi,
 			'<blockquote class="qb2"><h4>quote:</h4><p>$1');
 		
 	}
 	markup = quoteSegment.join('</p></blockquote>');
-	
+
 	var iframe = document.getElementById("previewiframe").contentWindow;
 		iframe.scrollBy(0, iframe.document.body.scrollHeight);
-	
+
 	preview.innerHTML = "<p>"+ markup +"</p>";
 }
 
