@@ -1224,7 +1224,11 @@ function handleShowThread(doc)
 			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
 		}
 
+		// Standard template
 		titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+		// If that doesn't work, try FYAD template
+		if (titleBox == null)
+			titleBox = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
 
 		if (titleBox)
 		{
@@ -1960,7 +1964,12 @@ function clickToggleAvatar()
 		posterId = profileLink.href.match(/userid=(\d+)/i)[1];
 		if (posterId == idToToggle)
 		{
+			// Standard template
 			titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+			// If that doesn't work, try FYAD template
+			if (titleBox == null)
+				titleBox = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
+
 			toggleLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#ToggleAvatar#')]");
 			if (alreadyHidden)
 			{
