@@ -215,7 +215,8 @@ function finalizeTextGrab(restext)
 	if(window.__salastread_is_edit) {
 		document.title = 'Quick Edit';
 		document.getElementById('qrtitle').setAttribute('value', 'Quick Edit');
-		document.getElementById('previewbtn').disabled = true;
+		// Edit previews available as of SAVB-2.0.12d
+		//document.getElementById('previewbtn').disabled = true;
 	}
 
 	if(window.__salastread_quickpost_forumid) {
