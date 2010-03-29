@@ -2709,6 +2709,9 @@ function SALR_menuItemCommand(event, el, etype)
 			SALR_menuItemGoTo(event,"http://forums.somethingawful.com/f/search",target);
 		else
 			SALR_menuItemGoTo(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"),target);
+		// Try to block Firefox's default right-click menu for this element, if applicable.
+		if (event.cancelable)
+			event.preventDefault();
 	}
 }
 
