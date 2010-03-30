@@ -3,7 +3,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>{fc6339b8-9581-4fc7-b824-dffcb091fcb7}</em:id>
-		<em:version>1.99.100328</em:version>
+		<em:version>1.99.100329</em:version>
 		<em:type>2</em:type>
 		<em:homepageURL>http://salr.bountysource.com/</em:homepageURL>
 		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
