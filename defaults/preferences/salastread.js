@@ -15,7 +15,10 @@ pref('extensions.salastread.sortReplyList', true);
 //VIDEO EMBEDDER
 pref('extensions.salastread.enableVideoEmbedder', false);
 pref('extensions.salastread.videoEmbedderBG', '#ffcccc');
-pref('extensions.salastread.enableHQvideoembeds', false);
+pref('extensions.salastread.videoEmbedQuality', 'normal');
+pref('extensions.salastread.videoEmbedSize', 'medium');
+pref('extensions.salastread.videoEmbedCustomWidth', 640);
+pref('extensions.salastread.videoEmbedCustomHeight', 385);
 
 //OPTIONS DIALOG
 //

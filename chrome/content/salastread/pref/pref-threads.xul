@@ -3,12 +3,15 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<prefpane id="threads">
+	<prefpane id="threads" onpaneload="var cs=!document.getElementById('customsize').selected; document.getElementById('videoEmbedCustomWidthbox').disabled=cs; document.getElementById('videoEmbedCustomHeightbox').disabled=cs">
 		<preferences>
 			<preference id="reanchorThreadOnLoad" 	name="extensions.salastread.reanchorThreadOnLoad" 	type="bool"/>
 			<preference id="hideReportButtons" 		name="extensions.salastread.hideReportButtons" 		type="bool"/>
 			<preference id="enableVideoEmbedder" 	name="extensions.salastread.enableVideoEmbedder" 	type="bool"/>
-			<preference id="enableHQvideoembeds" 	name="extensions.salastread.enableHQvideoembeds" 	type="bool"/>
+			<preference id="videoEmbedQuality" 	name="extensions.salastread.videoEmbedQuality" 	type="string"/>
+			<preference id="videoEmbedSize" 	name="extensions.salastread.videoEmbedSize" 	type="string"/>
+			<preference id="videoEmbedCustomWidth" 	name="extensions.salastread.videoEmbedCustomWidth" 	type="int"/>
+			<preference id="videoEmbedCustomHeight" 	name="extensions.salastread.videoEmbedCustomHeight" 	type="int"/>
 			<preference id="enablePageNavigator"	name="extensions.salastread.enablePageNavigator" 	type="bool"/>
 			<preference id="enableKeyboardControls"	name="extensions.salastread.quickPostJump"			type="bool"/>
 		</preferences>
@@ -18,8 +21,6 @@
 			<vbox>
 				<checkbox preference="reanchorThreadOnLoad" 	label="Reanchor threads to targetted post after all images have loaded" />
 				<checkbox preference="hideReportButtons" 		label="Hide the report button on your own posts" />
-				<checkbox preference="enableVideoEmbedder" 		label="Enable converting of video links to embedded video" />
-					<checkbox preference="enableHQvideoembeds" 	label="Force HQ embeds for YouTube videos (experimental)" style="margin-left: 20px;" />
 				<checkbox preference="enablePageNavigator" 	 	label="Add a page navigator to the lower-right corner of the browser" />
 			</vbox>
 		</groupbox>
@@ -27,6 +28,55 @@
 		<caption label="Keyboard Navigation Options"/>
 			<vbox>
 				<checkbox preference="enableKeyboardControls" 	 	label="Enable keyboard navigation of threads" />
+			</vbox>
+		</groupbox>
+		<groupbox>
+		<caption label="Video Embed Options"/>
+			<vbox>
+				<checkbox preference="enableVideoEmbedder" label="Enable converting of video links to embedded video" />
+				<separator class="thin" />
+				<!--<caption label="Embedded Youtube Player Settings:" />
+				<separator class="thin" />-->
+				<hbox>
+					<vbox>
+						<groupbox style="margin-left: 5px;">
+							<caption label="YouTube Player Size" />
+							<radiogroup id="radio_videoEmbedSize" preference="videoEmbedSize"
+									onclick="var cs=!document.getElementById('customsize').selected; document.getElementById('videoEmbedCustomWidthbox').disabled=cs; document.getElementById('videoEmbedCustomHeightbox').disabled=cs">
+								<radio id="tiny" value="tiny" label="Tiny (480x295)" />
+								<radio id="small" value="small" label="Small (560x340)" />
+								<radio id="medium" value="medium" label="Medium (640x385)" />
+								<radio id="large" value="large" label="Large (853x505)" />
+								<radio id="gigantic" value="gigantic" label="Gigantic (1280x745)" />
+								<radio id="customsize" value="custom" label="Custom:" />
+								<hbox align="center">
+								<vbox>
+									<label value="Width:" control="videoEmbedCustomWidthbox" />
+									<textbox id="videoEmbedCustomWidthbox" preference="videoEmbedCustomWidth" size="4" maxlength="5" />
+									</vbox>
+									<vbox align="end">
+									<separator />
+									<label value="x" />
+									</vbox>
+									<vbox>
+									<label value="Height:" control="videoEmbedCustomHeightbox" />
+									<textbox id="videoEmbedCustomHeightbox" preference="videoEmbedCustomHeight" size="4" maxlength="5" />
+									</vbox>
+								</hbox>
+							</radiogroup>
+						</groupbox>
+					</vbox>
+					<vbox>
+						<groupbox>
+							<caption label="YouTube Player Default Quality" />
+							<radiogroup id="radio_videoEmbedQuality" preference="videoEmbedQuality">
+								<radio id="normal" value="normal" label="360p (choose if you have a slower connection)" />
+								<!--<radio id="hq" value="hq" label="480p" />Someday the API might support this. !-->
+								<radio id="hd" value="hd" label="720p (choose if you have a faster connection)" />
+							</radiogroup>
+						</groupbox>
+					</vbox>
+				</hbox>
 			</vbox>
 		</groupbox>
 

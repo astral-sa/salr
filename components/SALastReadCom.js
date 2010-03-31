@@ -47,11 +47,54 @@ function SALR_vidClick(e)
 			embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en');
 			break;
 		case "youtube":
-			var hqstring = this.__salr_hq ? '&ap=%2526fmt%3D18' : '';
+			// Figure out quality and size to use
+			var vidqual = PersistObject.getPreference("videoEmbedQuality");
+			var qualstring = '';
+			if (vidqual == "hd")
+				qualstring = '&hd=1';
+			/*else if (vidqual == "hq") // If youtube actually let you embed 480p specifically, something that actually worked would go here.
+				qualstring = '&ap=%2526fmt%3D35';*/
+			var vidsize = PersistObject.getPreference("videoEmbedSize");
+			var vidwidth, vidheight;
+
+			if (vidsize == "gigantic")
+			{
+				vidwidth = 1280;
+				vidheight = 745;
+			}
+			else if (vidsize == "large")
+			{
+				vidwidth = 853;
+				vidheight = 505;
+			}
+			else if (vidsize == "medium")
+			{
+				vidwidth = 640;
+				vidheight = 385;
+			}
+			else if (vidsize == "small")
+			{
+				vidwidth = 560;
+				vidheight = 340;
+			}
+			else if (vidsize == "tiny")
+			{
+				vidwidth = 480;
+				vidheight = 295;
+			}
+			else //if (vidsize == "custom")
+			{
+				vidwidth = PersistObject.getPreference("videoEmbedCustomWidth");
+				vidheight = PersistObject.getPreference("videoEmbedCustomHeight");
+			}
+
+			embed.setAttribute('width', vidwidth);
+			embed.setAttribute('height', vidheight);
 			embed.setAttribute('quality',"high");
+			embed.setAttribute('allowfullscreen', "true");
 			embed.setAttribute('bgcolor',"#FFFFFF");
 			embed.setAttribute('wmode', "transparent");
-			embed.setAttribute('src', "http://" + yt_subd + "youtube.com/v/" + videoId + hqstring);
+			embed.setAttribute('src', "http://" + yt_subd + "youtube.com/v/" + videoId + '&fs=1' + qualstring);
 			break;
 	}
 	p.appendChild(embed);
@@ -2008,7 +2051,6 @@ salrPersistObject.prototype = {
 				 link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1))
 			{
 				link.style.backgroundColor = this.getPreference("videoEmbedderBG");
-				link.__salr_hq = this.getPreference("enableHQvideoembeds");
 				link.addEventListener('click', SALR_vidClick, false);
 			}
 		}
