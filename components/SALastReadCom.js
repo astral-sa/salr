@@ -44,7 +44,8 @@ function SALR_vidClick(e)
 	{
 		case "google":
 			embed.setAttribute('flashvars', '');
-			embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en');
+			embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en&fs=true');
+			embed.setAttribute('allowfullscreen', "true");
 			break;
 		case "youtube":
 			// Figure out quality and size to use
