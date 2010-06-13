@@ -2019,15 +2019,15 @@ function SALR_insertCSS(doc, url)
 
 function attachQuickQuoteHandler(threadid,doc,quotebutton,postername,hasQuote,postid,isedit)
 {
-   quotebutton.__salastread_threadid = threadid;
-   quotebutton.__salastread_postid = postid;
-   quotebutton.__salastread_postername = postername;
-   quotebutton.__salastread_hasQuote = hasQuote;
-   if (isedit != undefined)
-   {
+	quotebutton.__salastread_threadid = threadid;
+	quotebutton.__salastread_postid = postid;
+	quotebutton.__salastread_postername = postername;
+	quotebutton.__salastread_hasQuote = hasQuote;
+	if (isedit != undefined)
 		quotebutton.is_edit = true;
-   }
-   quotebutton.addEventListener("click", quickQuoteButtonClick, true);
+	else
+		quotebutton.is_edit = false;
+	quotebutton.addEventListener("click", quickQuoteButtonClick, true);
 }
 
 function quickQuoteButtonClick(evt)
@@ -2084,6 +2084,8 @@ function quickQuoteButtonClick(evt)
 			//try to re-add the quote in case the quickquote window's attachment was lost
 			if(hasQuote)
 			{
+				// update the edit status (situation: edit window open -> clicked something else)
+				quickquotewin.__salastread_is_edit = is_edit;
 				quickquotewin.addQuoteFromPost(window.__salastread_quotepostid);
 			}
 			quickquotewin.focus();
@@ -2104,7 +2106,6 @@ function quickQuoteButtonClick(evt)
 		quickquotewin.__salastread_quickpost_forumid = forumid;
 		quickquotewin.__salastread_is_edit = is_edit;
 	}
-
 	return false;
 }
 
