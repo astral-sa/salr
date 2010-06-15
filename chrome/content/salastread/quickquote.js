@@ -9,7 +9,7 @@ var attachedFileName = "";
 var imageShackResult = null;
 var isDetached = false;
 
-var quoteWaitString = "[[ Please wait, retrieving post quote... ]]";
+var quoteWaitString = "[[ Please wait, retrieving information... ]]";
 
 function detachFromDocument() {
 	isDetached = true;
@@ -134,7 +134,7 @@ function showDebugData(event) {
 	}
 }
 
-//grab the actual SA reply page in case we don't have a formkey saved
+// grab the actual SA reply page - we need a form key and a form cookie
 function startPostTextGrab(getFormKeyOnly, postid)
 {
 	pageGetter = new XMLHttpRequest();
@@ -146,20 +146,28 @@ function startPostTextGrab(getFormKeyOnly, postid)
 	}
 
 	var targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&postid=" + postid;
-	if(postid == null) {
+
+	if (postid == null) {
 		getter_isquote = 0;
 		targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" + window.opener.__salastread_quotethreadid;
 	}
 
-	if(window.__salastread_quickpost_forumid) {
+	if (window.__salastread_quickpost_forumid)
+	{
 		getter_isquote = 0;
 		targeturl = "http://forums.somethingawful.com/newthread.php?forumid=" + window.__salastread_quickpost_forumid;
 		getter_getFormKeyOnly = 1;
-	}
 
-	if(window.__salastread_is_edit) {
+		//This is a Quick Post window - look the part!
+		document.title = 'Quick Post';
+		document.getElementById('qrtitle').setAttribute('value', 'Quick Post');
+	}
+	else if (window.__salastread_is_edit)
+	{
 		getter_isquote = 1;
 		targeturl = "http://forums.somethingawful.com/editpost.php?s=&action=editpost&postid=" + postid;
+		document.title = 'Quick Edit';
+		document.getElementById('qrtitle').setAttribute('value', 'Quick Edit');
 	}
 	//alert("targeturl = "+targeturl);
 	pageGetter.open("GET", targeturl, true);
@@ -176,21 +184,32 @@ function postTextGrabCallback()
 				alert("Failed to communicate with forums.somethingawful.com");
 				pageGetter.abort();
 			}
-		} else if(pageGetter.readyState == 4) {
+		} else if (pageGetter.readyState == 4) {
 			var respText = pageGetter.responseText;
-			finalizeTextGrab(respText);
+			if (respText)
+				finalizeTextGrab(respText);
+			else
+				alert("Failed to communicate with forums.somethingawful.com");
 		}
 	} catch(ex) {}
 }
 
 function finalizeTextGrab(restext)
 {
-	var before = document.getElementById("messagearea").value
+	var before = document.getElementById("messagearea").value;
 		before = before.replace(quoteWaitString, "");
 
 	var el = document.getElementById("replypage").contentDocument.body;
 		el.innerHTML = restext;
 	var tnode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//TEXTAREA[@name='message']");
+
+	// Temporary
+	if (tnode === null)
+	{
+		alert("Something has gone horribly wrong. Don't do what you were doing.");
+		return;
+	}
+
 	document.getElementById("messagearea").value = before + tnode.value;
 	doPreview();
 
@@ -212,17 +231,9 @@ function finalizeTextGrab(restext)
 		document.getElementById("submit-normal").removeAttribute('disabled');
 	}
 
-	if(window.__salastread_is_edit) {
-		document.title = 'Quick Edit';
-		document.getElementById('qrtitle').setAttribute('value', 'Quick Edit');
-		// Edit previews available as of SAVB-2.0.12d
-		//document.getElementById('previewbtn').disabled = true;
-	}
-
-	if(window.__salastread_quickpost_forumid) {
-		//This is a Quick Post window - look the part!
-		document.title = 'Quick Post';
-		document.getElementById('qrtitle').setAttribute('value', 'Quick Post');
+	// Post Thread stuff
+	if (window.__salastread_quickpost_forumid)
+	{
 		document.getElementById('quickpostoptions').setAttribute('collapsed', 'false');
 		//Uh, also load the post icons
 		var iconz = selectNodes(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='iconid']");
@@ -254,7 +265,7 @@ function finalizeTextGrab(restext)
 	}
 
 	return;
-	
+	/* Possibly remove this stuff soon
 	//what is this and why is it being bypassed?
 	var fkeygettext = restext;
 	if(getter_isquote == 1 && getter_getFormKeyOnly == false) {
@@ -298,7 +309,7 @@ function finalizeTextGrab(restext)
 		document.getElementById("submit-swap").disabled = false;
 		document.getElementById("submit-normal").disabled = false;
 	}
-	return;
+	return; */
 }
 
 function getQuoteIntroText() {
@@ -339,7 +350,7 @@ function qpSetPostIcon(e) {
 function addQuoteFromPost(postid) {
 	var textarea = document.getElementById("messagearea");
 		textarea.value = textarea.value.replace(/[\r\n]*$/, "") + "\n\n" + quoteWaitString;
-	
+
 	startPostTextGrab(false, postid);
 }
 
@@ -358,7 +369,7 @@ function importData() {
 		
 		//put in the please wait message every time, there's always something to wait on (:rolleyes:)
 		messagearea.value = quoteWaitString;
-		
+
 		//if we don't have a cached form key go get it
 		if(persistObject.__cachedFormKey) {
 			startPostTextGrab(false);
