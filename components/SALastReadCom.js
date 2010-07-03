@@ -15,13 +15,16 @@ function SALR_vidClick(e)
 	}
 
 	//figure out the video type
-	var videoId, videoSrc, videoTLD, yt_subd;
-	var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
+	var videoId, videoSrc, videoTLD, yt_subd, yt_starttime, yt_start;
+	//var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
+	var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)(?:(?:.*)?t=(?:(\d*)m)?(?:(\d{0,2})s)?)?/);
 	if (videoIdSearch)
 	{
 		yt_subd = (videoIdSearch[1] == null ? "www." : videoIdSearch[1]);
 		videoId = videoIdSearch[2];
 		videoSrc = "youtube";
+		yt_starttime = (videoIdSearch[3] == null ? 0 : parseInt(videoIdSearch[3])) * 60 + (videoIdSearch[4] == null ? 0 : parseInt(videoIdSearch[4]));
+		yt_start = yt_starttime == 0 ? '' : '&start=' + yt_starttime;
 	}
 	else
 	{
@@ -95,7 +98,7 @@ function SALR_vidClick(e)
 			embed.setAttribute('allowfullscreen', "true");
 			embed.setAttribute('bgcolor',"#FFFFFF");
 			embed.setAttribute('wmode', "transparent");
-			embed.setAttribute('src', "http://" + yt_subd + "youtube.com/v/" + videoId + '&fs=1' + qualstring);
+			embed.setAttribute('src', "http://" + yt_subd + "youtube.com/v/" + videoId + '&fs=1' + qualstring + yt_start);
 			break;
 	}
 	p.appendChild(embed);
@@ -159,7 +162,7 @@ salrPersistObject.prototype = {
 //_xpcom_categories: [{ category: "app-startup", service: true }],
 
 	// QueryInterface implementation
-	QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIHelloWorld]),
+	QueryInterface: XPCOMUtils.generateQI(),
 
 	// This property is superseded by .preferences, do not use for new code
 	// this property has been left in for legacy compatability

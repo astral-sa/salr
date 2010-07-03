@@ -3,9 +3,8 @@ var persistObject = null;
 function initUsers()
 {
 	//we'll need this persistObject all over, better create it now
-	persistObject = Components.classes["@evercrest.com/salastread/persist-object;1"]
-		.createInstance(Components.interfaces.nsISupports);
-	persistObject = persistObject.wrappedJSObject;
+	persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
+					.getService().wrappedJSObject;
 
 	//get usernames/ids
 	var users = persistObject.getCustomizedPosters();

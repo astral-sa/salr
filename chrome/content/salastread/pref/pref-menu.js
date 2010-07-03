@@ -18,10 +18,9 @@ function pinnedListInit() {
 	while (upf.firstChild) {
 		upf.removeChild(upf.firstChild);
 	}
-	
-	var pobj = Components.classes["@evercrest.com/salastread/persist-object;1"]
-				.createInstance(Components.interfaces.nsISupports);
-		pobj = pobj.wrappedJSObject;
+
+	var pobj = Components.classes['@evercrest.com/salastread/persist-object;1']  
+					.getService().wrappedJSObject;
 	
 	var flxml = pobj.forumListXml;
 	var pinnedstr = document.getElementById("menuPinnedForums").value;
@@ -196,9 +195,8 @@ function addSepClick() {
 }
 
 function addURLClick() {
-	var pobj = Components.classes["@evercrest.com/salastread/persist-object;1"]
-				.createInstance(Components.interfaces.nsISupports);
-		pobj = pobj.wrappedJSObject;
+	var pobj = Components.classes['@evercrest.com/salastread/persist-object;1']  
+					.getService().wrappedJSObject;
 	
 	var url = prompt("Please enter the URL you wish to link to.");
 	if (url) {

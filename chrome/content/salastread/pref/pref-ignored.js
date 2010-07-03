@@ -2,9 +2,8 @@ var persistObject;
 
 //general init
 function ignoreInit() {
-	persistObject = Components.classes["@evercrest.com/salastread/persist-object;1"]
-					.createInstance(Components.interfaces.nsISupports);
-	persistObject = persistObject.wrappedJSObject;
+	persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
+					.getService().wrappedJSObject;
 	
 	updateIgnoredThreadList();
 }

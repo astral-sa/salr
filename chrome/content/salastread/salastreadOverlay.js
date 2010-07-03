@@ -20,8 +20,10 @@ var salastread_savedQuickReplyThreadId = "";
 // This starts it all. Called once, on browser load, plan accordingly.
 try
 {
-	persistObject = Components.classes["@evercrest.com/salastread/persist-object;1"].createInstance(Components.interfaces.nsISupports);
-	persistObject = persistObject.wrappedJSObject;
+
+var persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
+					.getService().wrappedJSObject;
+
 	if (!persistObject)
 	{
 		throw "Failed to create persistObject.";
@@ -2040,7 +2042,7 @@ function quickQuoteButtonClick(evt)
 	var forumid = quotebutton.SALR_forumid;
 	var postername = quotebutton.__salastread_postername;
 	var hasQuote = quotebutton.__salastread_hasQuote;
-	var is_edit = quotebutton.is_edit;
+	var post_is_edit = quotebutton.is_edit;
 
 	if(persistObject.__QuickQuoteWindowObject && !persistObject.__QuickQuoteWindowObject.closed)
 	{
@@ -2085,7 +2087,7 @@ function quickQuoteButtonClick(evt)
 			if(hasQuote)
 			{
 				// update the edit status (situation: edit window open -> clicked something else)
-				quickquotewin.__salastread_is_edit = is_edit;
+				quickquotewin.__salastread_is_edit = post_is_edit;
 				quickquotewin.addQuoteFromPost(window.__salastread_quotepostid);
 			}
 			quickquotewin.focus();
@@ -2104,7 +2106,7 @@ function quickQuoteButtonClick(evt)
 	{
 		persistObject.__QuickQuoteWindowObject = quickquotewin;
 		quickquotewin.__salastread_quickpost_forumid = forumid;
-		quickquotewin.__salastread_is_edit = is_edit;
+		quickquotewin.__salastread_is_edit = post_is_edit;
 	}
 	return false;
 }
