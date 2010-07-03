@@ -1,7 +1,23 @@
 //<script>
 var persistObject = Components.classes["@evercrest.com/salastread/persist-object;1"]
                       .createInstance(Components.interfaces.nsISupports).wrappedJSObject;
+var isWindows = (navigator.platform.indexOf("Win") != -1);
+		persistObject._isWindows = isWindows;
+		try {
+			if ( persistObject.getPreference('databaseStoragePath').indexOf("%profile%")==0 ) {
+				persistObject._dbfn = persistObject.GetUserProfileDirectory(persistObject.getPreference('databaseStoragePath').substring(9), persistObject._isWindows );
+			} else {
+				persistObject._dbfn = persistObject.getPreference('databaseStoragePath');
+			}
 
+			if ( persistObject.getPreference('forumListStoragePath').indexOf("%profile%")==0 ) {
+				persistObject._flfn = persistObject.GetUserProfileDirectory( persistObject.getPreference('forumListStoragePath').substring(9), persistObject._isWindows );
+			} else {
+				persistObject._flfn = persistObject.getPreference('forumListStoragePath');
+			}
+		} catch (e) {
+			persistObject._starterr = e + "\nLine: " + e.lineNumber;
+		}
 var hasSpellCheck = false;
 
 var attachedFileName = "";
