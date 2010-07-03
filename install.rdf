@@ -3,7 +3,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>{fc6339b8-9581-4fc7-b824-dffcb091fcb7}</em:id>
-		<em:version>1.99.100330</em:version>
+		<em:version>1.99.100702</em:version>
 		<em:type>2</em:type>
 		<em:homepageURL>http://salr.bountysource.com/</em:homepageURL>
 		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
@@ -16,15 +16,15 @@
 			<!-- Firefox -->
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				<em:minVersion>2.0</em:minVersion>
-				<em:maxVersion>3.7.*</em:maxVersion>
+				<em:minVersion>3.0</em:minVersion>
+				<em:maxVersion>4.0.*</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 
 		<!-- Front End MetaData -->
 		<em:name>SomethingAwful Last Read Enhancement</em:name>
 		<em:description>Customizes the Something Awful forums to make browsing quicker and easier</em:description>
-		<em:creator>Tim Fries (biznatchio)</em:creator>
+		<em:developer>Tim Fries (biznatchio)</em:creator>
 		<em:developer>Ben Dusinberre (duz)</em:developer>
 		<em:developer>Pat Cavit (Tivac)</em:developer>
 		<em:developer>Will Hutcheson (RedKazan)</em:developer>

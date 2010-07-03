@@ -104,10 +104,6 @@ function SALR_vidClick(e)
 	link.parentNode.insertBefore(p, link.nextSibling);
 }
 
-const SALR_CONTRACTID = "@evercrest.com/salastread/persist-object;1";
-const SALR_CID = Components.ID("{f5d9093b-8210-4a26-89ba-4c987de04efc}");
-const nsISupports = Components.interfaces.nsISupports;
-
 function ReadFile(fn)
 {
 	var file = Components.classes["@mozilla.org/file/local;1"]
@@ -148,12 +144,23 @@ function SaveFile(fn, fdata)
 	outputStream.close();
 }
 
-// The PersistObject defintion itself
-function salrPersistObject()
-{
-}
+// We use XPCOMUtils to register ourselves
+Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");  
 
+// The PersistObject defintion itself
+function salrPersistObject() {}
 salrPersistObject.prototype = {
+	// properties required for XPCOM registration:
+	classDescription: "SALR XPCOM Component",  
+	classID: Components.ID("{f5d9093b-8210-4a26-89ba-4c987de04efc}"),  
+	contractID: "@evercrest.com/salastread/persist-object;1",  
+
+// [optional] an array of categories to register this component in.  
+//_xpcom_categories: [{ category: "app-startup", service: true }],
+
+	// QueryInterface implementation
+	QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIHelloWorld]),
+
 	// This property is superseded by .preferences, do not use for new code
 	// this property has been left in for legacy compatability
 	get pref() {
@@ -315,15 +322,6 @@ salrPersistObject.prototype = {
 
 	IsDebugEnabled: function() {
 		return this.IsDevelopmentRelease;
-	},
-
-	// XPCOM Glue stuff
-	QueryInterface: function(iid)
-	{
-		if (!iid.equals(nsISupports)) {
-			throw Components.results.NS_ERROR_NO_INTERFACE;
-		}
-		return this;
 	},
 
 	get wrappedJSObject() { return this; },
@@ -2047,6 +2045,22 @@ salrPersistObject.prototype = {
 				}
 			}
 
+			// Special handling for links with timgs inside
+			if (this.getPreference("fixTimgLinks"))
+			{
+				if (link.firstChild.className && (link.firstChild.className == "timg" || link.firstChild.className == "timg_container" || link.firstChild.className == "timg loading")) // timg_container, timg loading, timg
+				{
+					var timgbr = doc.createElement("br");
+					var timglink = doc.createElement("a");
+					timglink.setAttribute('href',link.href);
+					timglink.setAttribute('target','_blank');
+					timglink.innerHTML = link.href;
+					timglink.style.fontSize = "10px";
+					link.parentNode.insertBefore(timgbr, link.nextSibling);
+					link.parentNode.insertBefore(timglink, timgbr.nextSibling);
+				}
+			}
+
 			if (this.getPreference("enableVideoEmbedder") &&
 				(link.href.search(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/i) > -1 ||
 				 link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1))
@@ -2354,51 +2368,12 @@ salrPersistObject.prototype = {
 	// Don't forget the trailing comma when adding a new function/property
 };
 
-// Component registration
-var PersistModule = new Object();
-
-PersistModule.registerSelf = function(compMgr, fileSpec, location, type)
-{
-   compMgr = compMgr.QueryInterface(Components.interfaces.nsIComponentRegistrar);
-   compMgr.registerFactoryLocation(SALR_CID,
-                                   "salrPersistObject",
-                                   SALR_CONTRACTID,
-                                   fileSpec,
-                                   location,
-                                   type);
-}
-
-PersistModule.getClassObject = function(compMgr, cid, iid)
-{
-   if (!cid.equals(SALR_CID))
-      throw Components.results.NS_ERROR_NO_INTERFACE;
-   if (!iid.equals(Components.interfaces.nsIFactory))
-      throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
-   return PersistFactory;
-}
-
-PersistModule.CanUnload = function(compMgr)
-{
-   return true;
-}
-
-// Returns the singleton object when needed.
-var PersistFactory = new Object();
-
-PersistFactory.createInstance = function(outer, iid)
-{
-   if (outer != null)
-      throw Components.results.NS_ERROR_NO_AGGREGATION;
-   if (!iid.equals(nsISupports))
-      throw Components.results.NS_ERROR_NO_INTERFACE;
-   return PersistObject;
-}
-
-// XPCOM Registration Function -- called by Firefox
-function NSGetModule(compMgr, fileSpec)
-{
-   return PersistModule;
-}
+// More XPCOM Registration Stuff
+// Compatible with 3.x and 4.0
+if (XPCOMUtils.generateNSGetFactory)
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([salrPersistObject]);
+else
+    var NSGetModule = XPCOMUtils.generateNSGetModule([salrPersistObject]);
 
 // This creates the singleton object we use for settings persistence
 var PersistObject = new salrPersistObject();
