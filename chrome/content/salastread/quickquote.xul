@@ -45,7 +45,7 @@
          <xul:row>
           <xul:checkbox class="qqcbox" id="parseurl" tabindex="3" label="Parse URLs" checked="true" oncommand="doPreview();"/>
           <xul:checkbox class="qqcbox" id="subscribe" tabindex="5" label="Subscribe"/>
-          <xul:checkbox class="qqcbox" id="preview" tabindex="7" label="Live Preview" oncommand="togglePreview();"/>
+          <xul:checkbox class="qqcbox" id="preview" tabindex="7" label="Live Preview" oncommand="togglePreview(true);"/>
          </xul:row>
          <xul:row>
           <xul:checkbox class="qqcbox" id="disablesmilies" tabindex="4" label="Disable Smilies" oncommand="doPreview();"/>

@@ -102,6 +102,57 @@ function emotRegex(s) {
 	persistObject.emoticons.push(new Array(RegExp.$1, RegExp.$2));
 }
 
+var emoteGetter = null;
+
+function getEmoticonsFromServerASync()
+{
+	emoteGetter = new XMLHttpRequest();
+	emoteGetter.open("GET", "http://forums.somethingawful.com/misc.php?s=&action=showsmilies", true);
+	emoteGetter.onreadystatechange = getEmoticonsCallback;
+	emoteGetter.send(null);
+}
+
+function getEmoticonsCallback()
+{
+	try {
+		if (emoteGetter.readyState == 2)
+		{
+			if(emoteGetter.status != 200)
+			{
+				emoteGetter.abort();
+				persistObject.gettingemoticons = false;
+				alert("Failed to communicate with forums.somethingawful.com for emoticons");
+			}
+		}
+		else if (emoteGetter.readyState == 4)
+		{
+			var respText = emoteGetter.responseText;
+			if (respText)
+				finalizeEmotesGrab(respText);
+			else
+			{
+				persistObject.gettingemoticons = false;
+				alert("Failed to communicate with forums.somethingawful.com for emoticons");
+			}
+		}
+	} catch(ex) {}
+}
+
+function finalizeEmotesGrab(restext)
+{
+	persistObject.emoticons = new Array();
+
+	emotRe = /<li class="smilie">([\s\S]*?)<img.*?>/gi;
+	emotArray = restext.match(emotRe);
+
+	emotArray.forEach(emotRegex);
+	persistObject.emoticons.sort();
+	persistObject.gettingemoticons = false;
+
+	// Make sure we see the emoticons we just got.
+	doPreview();
+}
+
 function getEmoticonsFromServer() {
 	try {
 		var xht = new XMLHttpRequest();
@@ -120,6 +171,7 @@ function getEmoticonsFromServer() {
 		alert("getEmoticonsFromServer() error:\n" + e);
 		persistObject.emoticons = null;
 	}
+	persistObject.gettingemoticons = false;
 }
 
 var pageGetter = null;
@@ -179,8 +231,8 @@ function startPostTextGrab(getFormKeyOnly, postid)
 function postTextGrabCallback()
 {
 	try {
-		if(pageGetter.readyState == 2) {
-			if(pageGetter.status != 200) {
+		if (pageGetter.readyState == 2) {
+			if (pageGetter.status != 200) {
 				alert("Failed to communicate with forums.somethingawful.com");
 				pageGetter.abort();
 			}
@@ -203,15 +255,14 @@ function finalizeTextGrab(restext)
 		el.innerHTML = restext;
 	var tnode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//TEXTAREA[@name='message']");
 
-	// Temporary
+	// There was a response, but it wasn't what we expected.
 	if (tnode === null)
 	{
-		alert("Something has gone horribly wrong. Don't do what you were doing.");
+		alert("Something has gone horribly wrong. Please close the quick post window and try again.");
 		return;
 	}
 
 	document.getElementById("messagearea").value = before + tnode.value;
-	doPreview();
 
 	var fknode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='formkey']");
 	if (fknode)
@@ -230,6 +281,10 @@ function finalizeTextGrab(restext)
 		document.getElementById("submit-swap").removeAttribute('disabled');
 		document.getElementById("submit-normal").removeAttribute('disabled');
 	}
+
+	// Only update the preview if we need to
+	if (document.getElementById("preview").checked)
+		doPreview();
 
 	// Post Thread stuff
 	if (window.__salastread_quickpost_forumid)
@@ -382,14 +437,14 @@ function importData() {
 		} else {
 			startPostTextGrab(true);
 		}
-		
+
 		messagearea.focus();
-		
+
 		if(typeof(opener.sbOverlay) != "undefined" || typeof(Components.classes["@mozilla.org/spellbound;1"]) != "undefined") {
 			hasSpellCheck = true;
 			document.getElementById("spellcheckbutton").style.display = "-moz-box";
 		}
-		
+
 		if(persistObject.getPreference('quickQuoteSubscribeDefault') || window.opener.__salastread_bookmarked) {
 			document.getElementById("subscribe").setAttribute("checked",true);
 		}
@@ -401,10 +456,10 @@ function importData() {
 		if(persistObject.getPreference('quickQuoteSignatureDefault') && !window.opener.__salastread_alreadypostedinthread) {
 			document.getElementById("signature").setAttribute("checked",true);
 		}
-		
+
 		if(persistObject.getPreference('quickQuoteLivePreview')) {
 			document.getElementById("preview").setAttribute("checked",true);
-			togglePreview();
+			togglePreview(false);
 		}
 	} catch(e) { 
 		alert(e); 
@@ -468,10 +523,11 @@ function clearChildrenFrom(xid) {
 
 function getEmoticons() {
 	try {
-		if(typeof(persistObject.emoticons) == "undefined" || persistObject.emoticons == null) {
-			//alert("here");
+		if (persistObject.gettingemoticons != true && (typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null)) {
+			persistObject.gettingemoticons = true;
 			getEmoticonsFromServer();
 		}
+
 		clearChildrenFrom("menu_a");
 		clearChildrenFrom("menu_d");
 		clearChildrenFrom("menu_g");
@@ -716,6 +772,10 @@ function getvBcode(event, command) {
 }
 
 function doPreview() {
+	// Get out of here if we don't have a preview window open.
+	if (document.getElementById("preview").checked == false)
+		return;
+
 	var preview = document.getElementById("previewiframe").contentDocument.getElementById("messagepreview");
 	var markup = document.getElementById("messagearea").value;
 	
@@ -821,27 +881,30 @@ function doPreview() {
 	);
 
 	// Smileys
-	if(!document.getElementById("disablesmilies").checked) {
-
-		if(typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null) {
-			getEmoticonsFromServer();
+	if(!document.getElementById("disablesmilies").checked)
+	{
+		if (persistObject.gettingemoticons != true && (typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null)) {
+			persistObject.gettingemoticons = true;
+			getEmoticonsFromServerASync();
 		}
+		else if (persistObject.gettingemoticons == false && !(typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null))
+		{
+			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/emot-goatse.gif"/>'] = /&amp;submit/gi;
+			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/smile.gif"/>'] = /:\)/gi;
+			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/frown.gif"/>'] = /:\(/gi;
+			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/wink.gif"/>'] = /;\)/gi;
+			vbcode['<img src="http://i.somethingawful.com/mjolnir/images/livestock~01-14-04-whore.gif"/>'] = /;-\*/gi;
 
-		vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/emot-goatse.gif"/>'] = /&amp;submit/gi;
-		vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/smile.gif"/>'] = /:\)/gi;
-		vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/frown.gif"/>'] = /:\(/gi;
-		vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/wink.gif"/>'] = /;\)/gi;
-		vbcode['<img src="http://i.somethingawful.com/mjolnir/images/livestock~01-14-04-whore.gif"/>'] = /;-\*/gi;
+			var matches = markup.match(/\:(\w+|\?)\:/gi);
 
-		var matches = markup.match(/\:(\w+|\?)\:/gi);
-
-		if(matches) {
-			for(var i = 0; i < matches.length; i++) {
-				for(var j = 0; j < persistObject.emoticons.length; j++) {
-					var thisemot = persistObject.emoticons[j];
-					if(thisemot[0]!=null && thisemot[0].length>0) {
-						if(matches[i] == thisemot[0]) {
-							markup = markup.replace(matches[i], '<img src="' + thisemot[1] + '"/>');
+			if (matches) {
+				for (var i = 0; i < matches.length; i++) {
+					for (var j = 0; j < persistObject.emoticons.length; j++) {
+						var thisemot = persistObject.emoticons[j];
+						if (thisemot[0]!=null && thisemot[0].length>0) {
+							if (matches[i] == thisemot[0]) {
+								markup = markup.replace(matches[i], '<img src="' + thisemot[1] + '"/>');
+							}
 						}
 					}
 				}
@@ -875,15 +938,16 @@ function doPreview() {
 	preview.innerHTML = "<p>"+ markup +"</p>";
 }
 
-function togglePreview() {
-	if(document.getElementById("preview").checked) {
+function togglePreview(doupdatepreview)
+{
+	if (document.getElementById("preview").checked)
 		document.getElementById("previewbox").removeAttribute('collapsed');
-	} else {
+	else
 		document.getElementById("previewbox").setAttribute('collapsed', 'true');
-	}
-	
+
 	persistObject.setPreference('quickQuoteLivePreview', document.getElementById("preview").checked);
-	
+
 	window.sizeToContent();
-	doPreview();
+	if (doupdatepreview == true)
+		doPreview();
 }
