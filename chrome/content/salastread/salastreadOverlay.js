@@ -20,7 +20,7 @@ var salastread_savedQuickReplyThreadId = "";
 // This starts it all. Called once, on browser load, plan accordingly.
 try
 {
-	var persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
+	persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
 					.getService().wrappedJSObject;
 	if (!persistObject)
 	{
