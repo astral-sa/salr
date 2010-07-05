@@ -29,9 +29,11 @@ function initUsers()
 				persistObject.addUser(userid, username);
 				addListUser(listBox, userid, username);
 			}
-			else if (!persistObject.isUserIdColored(userid) && !persistObject.getPosterNotes(userid))
+			else
 			{
-				addListUser(listBox, userid, username);
+				var udata = persistObject.isUserIdColored(userid);
+				if (udata.color == 0 && udata.background == 0 && !persistObject.getPosterNotes(userid))
+					addListUser(listBox, userid, username);
 			}
 		}
 	}
@@ -134,11 +136,38 @@ function addUser()
 	//only accepts integers right now
 	if (result && !isNaN(text.value) && text.value != 0)
 	{
-		persistObject.addUser(text.value);
-		persistObject.setPosterNotes(text.value, "New User");
-
 		var listBox = document.getElementById("userColoring");
-		addListUser(listBox, text.value, null);
+		if (!persistObject.userExists(text.value))
+		{
+			persistObject.addUser(text.value);
+			persistObject.setPosterNotes(text.value, "New User");
+
+			addListUser(listBox, text.value, null);
+		}
+		else
+		{
+			var udata = persistObject.isUserIdColored(text.value);
+			// user is in the database, but has no info set
+			if (udata.color == 0 && udata.background == 0 && !persistObject.getPosterNotes(text.value))
+			{
+				// Make sure we aren't already working with this id
+				var foundit = false;
+				for (var i = 0; i < listBox.childNodes.length; ++i)
+				{
+					if (listBox.childNodes[i].value == text.value)
+					{
+						foundit = true;
+						break;
+					}
+				}
+				if (foundit == false)
+					addListUser(listBox, text.value, udata.username);
+				else
+					alert("Error: User already has custom highlighting.");
+			}
+			else // user is in the database, but has color set
+				alert("Error: User already has custom highlighting.");
+		}
 	}
 }
 
