@@ -2051,7 +2051,7 @@ salrPersistObject.prototype = {
 			// Special handling for links with timgs inside
 			if (this.getPreference("fixTimgLinks"))
 			{
-				if (link.firstChild.className && (link.firstChild.className == "timg" || link.firstChild.className == "timg_container" || link.firstChild.className == "timg loading")) // timg_container, timg loading, timg
+				if (link.firstChild && (link.firstChild.className == "timg" || link.firstChild.className == "timg_container" || link.firstChild.className == "timg loading")) // timg_container, timg loading, timg
 				{
 					var timgbr = doc.createElement("br");
 					var timglink = doc.createElement("a");
