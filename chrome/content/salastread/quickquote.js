@@ -110,6 +110,8 @@ function getEmoticonsFromServerASync()
 	emoteGetter = new XMLHttpRequest();
 	emoteGetter.open("GET", "http://forums.somethingawful.com/misc.php?s=&action=showsmilies", true);
 	emoteGetter.onreadystatechange = getEmoticonsCallback;
+	// Ensure this load flag is set to prevent issues with third-party cookies being disabled
+	emoteGetter.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
 	emoteGetter.send(null);
 }
 
@@ -158,6 +160,8 @@ function getEmoticonsFromServer() {
 	try {
 		var xht = new XMLHttpRequest();
 			xht.open("GET", "http://forums.somethingawful.com/misc.php?s=&action=showsmilies", false);
+			// Ensure this load flag is set to prevent issues with third-party cookies being disabled
+			xht.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
 			xht.send(null);
 		var restext = xht.responseText;
 
@@ -225,6 +229,8 @@ function startPostTextGrab(getFormKeyOnly, postid)
 	//alert("targeturl = "+targeturl);
 	pageGetter.open("GET", targeturl, true);
 	pageGetter.onreadystatechange = postTextGrabCallback;
+	// Ensure this load flag is set to prevent issues with third-party cookies being disabled
+	pageGetter.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
 	pageGetter.send(null);
 }
 
@@ -257,9 +263,10 @@ function finalizeTextGrab(restext)
 	var tnode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//TEXTAREA[@name='message']");
 
 	// There was a response, but it wasn't what we expected.
+	// This can be caused by not accepting third-party cookies, but we add a load flag that should fix that.
 	if (tnode === null)
 	{
-		alert("Something has gone horribly wrong. Please close the quick post window and try again.");
+		alert("SALR got a response it didn't expect. Please close the quick post window and try again.");
 		return;
 	}
 
