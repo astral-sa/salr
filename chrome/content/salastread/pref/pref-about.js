@@ -1,4 +1,9 @@
-function aboutInit() {
+function aboutInit()
+{
+	// Display version number from preferences
+	var salrv = document.getElementById("salrVersion").value;
+	document.getElementById("salrVersionText").setAttribute("value", "Version " + salrv);
+	
 	//get total # of seconds from prefs and give string a default value
 	var timeSpent = document.getElementById("timeSpentOnForums").value;
 	var tsstr = "none";
