@@ -18,7 +18,7 @@ function initUsers()
 		addListUser(listBox, users[i].userid, users[i].username);
 	}
 
-	if ("arguments" in window && window.arguments.length > 0)
+	if ("arguments" in window && window.arguments.length > 0 && window.arguments[1].args)
 	{
 		if (window.arguments[1].args.action == "addUser")
 		{
