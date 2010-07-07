@@ -10,11 +10,6 @@
  overflow: hidden;
 }
 
-.cbbox-colorselection {
- left: 30px;
- top: 30px;
-}
-
 .cbbox-hue {
  -moz-box-sizing: content-box;
  background-image: url('chrome://salastread/content/colorpicker/huebar.png');

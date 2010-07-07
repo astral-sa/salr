@@ -197,8 +197,8 @@ function updateRGB(updatehex) {
 }
 
 function updateSatBri(skipupdate) {
-	document.getElementById("colorselection").style.left = (Math.round( (internalSat/100)*255 ) - Math.floor(SELWIDTH/2))+ "px";
-	document.getElementById("colorselection").style.top = (Math.round( 255 - ((internalBri/100)*255) ) - Math.floor(SELHEIGHT/2))+ "px";
+	document.getElementById("colorselection").left = (Math.round( (internalSat/100)*255 ) - Math.floor(SELWIDTH/2));
+	document.getElementById("colorselection").top = (Math.round( 255 - ((internalBri/100)*255) ) - Math.floor(SELHEIGHT/2));
 	if (!skipupdate) {
 		updateFromHSB();
 	}

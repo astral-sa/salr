@@ -15,8 +15,8 @@
 
 	<hbox>
 		<stack class="box-inset cbbox-hsb" id="selbox" onclick="imageClick(event);">
-			<image src="chrome://salastread/content/colorpicker/hsboverlay.png" 	onclick="imageClick(event);"/>
-			<image src="chrome://salastread/content/colorpicker/colorselection.png" onclick="imageClick(event);" id="colorselection" class="cbbox-colorselection"/>
+			<image src="chrome://salastread/content/colorpicker/hsboverlay.png" onclick="imageClick(event);"/>
+			<image src="chrome://salastread/content/colorpicker/colorselection.png" left="30" top="30" onclick="imageClick(event);" id="colorselection"/>
 		</stack>
 		<vbox class="box-inset cbbox-hue" id="hsbox" onclick="hueClick(event);">
 			<image src="chrome://salastread/content/colorpicker/hueselection.png" id="huesel" class="cbbox-huesel" />
