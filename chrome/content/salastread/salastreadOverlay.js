@@ -1673,9 +1673,10 @@ function handleMisc(doc)
 									{
 										row.childNodes[1].firstChild.style.fontWeight = "bold";
 									}
+									userPriority = 3;
 								}
-
-								userPriority = 3;
+								if ((userColoring.background && userColoring.background != "0") || persistObject.getPosterNotes(posterId))
+									userPriority = 3;
 							}
 							else if (userPriority == 1)
 							{
