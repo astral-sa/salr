@@ -1,3 +1,12 @@
+#salr-toolbarbutton
+{
+	list-style-image: url("chrome://salastread/skin/sa-24.png");
+}
+
+toolbar[iconsize="small"] #salr-toolbarbutton {
+	list-style-image: url("chrome://salastread/skin/sa.png");
+}
+
 menupopup.lastread_menu
 {
 	-moz-appearance: none;
