@@ -8,10 +8,14 @@ function SALR_vidClick(e)
 	var link = e.target;
 
 	//if they click again hide the video
-	var video = link.nextSibling.firstChild;
-	if(video && video.className == 'salr_video') {
+	if (link.nextSibling)
+	{
+		var video = link.nextSibling.firstChild;
+		if (video && video.className == 'salr_video')
+		{
 			link.parentNode.removeChild(link.nextSibling);
 			return;
+		}
 	}
 
 	//figure out the video type
@@ -2051,7 +2055,7 @@ salrPersistObject.prototype = {
 			// Special handling for links with timgs inside
 			if (this.getPreference("fixTimgLinks"))
 			{
-				if (link.firstChild && (link.firstChild.className == "timg" || link.firstChild.className == "timg_container" || link.firstChild.className == "timg loading")) // timg_container, timg loading, timg
+				if (link.firstChild && (link.firstChild.className == "timg" || link.firstChild.className == "timg_container" || link.firstChild.className == "timg loading"))
 				{
 					var timgbr = doc.createElement("br");
 					var timglink = doc.createElement("a");
@@ -2061,6 +2065,9 @@ salrPersistObject.prototype = {
 					timglink.style.fontSize = "10px";
 					link.parentNode.insertBefore(timgbr, link.nextSibling);
 					link.parentNode.insertBefore(timglink, timgbr.nextSibling);
+					// Add a newline between timgs to make it pretty
+					if (timglink.nextSibling.firstChild && (timglink.nextSibling.firstChild.className == "timg" || timglink.nextSibling.firstChild.className == "timg_container" || timglink.nextSibling.firstChild.className == "timg loading"))
+						link.parentNode.insertBefore(timgbr.cloneNode(false), timglink.nextSibling);
 				}
 			}
 
