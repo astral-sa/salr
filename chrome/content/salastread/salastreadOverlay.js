@@ -652,6 +652,11 @@ function handleThreadList(doc, forumid, flags)
 	{
 		var thread = threadlist[i];
 		threadTitleBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
+		if (!threadTitleBox)
+		{
+			// Either the page didn't finish loading or SA didn't send the full page.
+			return;
+		}
 		if (threadTitleBox.getElementsByTagName('a')[0].className.search(/announcement/i) > -1)
 		{
 			if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
@@ -681,6 +686,11 @@ function handleThreadList(doc, forumid, flags)
 
 		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
 		threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
+		if (!threadAuthorBox || !threadRepliesBox)
+		{
+			// Either the page didn't finish loading or SA didn't send the full page.
+			return;
+		}
 		threadOPLink = threadAuthorBox.getElementsByTagName('a');
 		if (threadOPLink[0])
 		{
@@ -756,7 +766,7 @@ function handleThreadList(doc, forumid, flags)
 		var divLastSeen = persistObject.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
 		if (divLastSeen)
 		{
-			// Thread is read so lets work our magic
+			// Thread is read so let's work our magic
 			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
 			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
 
@@ -927,6 +937,11 @@ function handleThreadList(doc, forumid, flags)
 
 			// Then color the Killed By column
 			threadLastPostBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'lastpost')]");
+			if (!threadLastPostBox)
+			{
+				// Either the page didn't finish loading or SA didn't send the full page.
+				return;
+			}
 			lastPostLink = threadLastPostBox.getElementsByTagName('a');
 			if (lastPostLink[0])
 			{
@@ -3184,7 +3199,7 @@ function SALR_buildForumMenu()
 		menupopup.id = "menupopup_SAforums";
 		menupopup.className = "lastread_menu";
 		salrMenu.appendChild(menupopup);
-		document.getElementById("main-menubar").insertBefore(salrMenu, iBefore);
+		iBefore.parentNode.insertBefore(salrMenu, iBefore);
 		menupopup.addEventListener("popupshowing", SALR_SAMenuShowing, false);
 	}
 
