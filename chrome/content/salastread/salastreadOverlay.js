@@ -657,7 +657,8 @@ function handleThreadList(doc, forumid, flags)
 			// Either the page didn't finish loading or SA didn't send the full page.
 			return;
 		}
-		if (threadTitleBox.getElementsByTagName('a')[0].className.search(/announcement/i) > -1)
+		var ttb_a0 = threadTitleBox.getElementsByTagName('a')[0];
+		if (ttb_a0 && ttb_a0.className.search(/announcement/i) > -1)
 		{
 			if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
 			{
@@ -1439,16 +1440,6 @@ function handleShowThread(doc)
 
 		var userLinks = profileLink.parentNode.parentNode;
 
-		// Add a link to the user's ban history
-		var banHistLink = doc.createElement("li");
-		var banHistAnchor = doc.createElement("a");
-		banHistAnchor.href = "/banlist.php?userid=" + posterId;
-		banHistAnchor.title = "Show poster's ban/probation history.";
-		banHistAnchor.innerHTML = "Ban History";
-		banHistLink.appendChild(banHistAnchor);
-		userLinks.appendChild(doc.createTextNode(" "));
-		userLinks.appendChild(banHistLink);
-
 		// Add user coloring/note links
 		if (highlightUsernames)
 		{
@@ -1482,6 +1473,9 @@ function handleShowThread(doc)
 		avLink.appendChild(avAnch);
 		userLinks.appendChild(doc.createTextNode(" "));
 		userLinks.appendChild(avLink);
+
+		// Add a space for the Rap Sheet link added afterwards by forum JS:
+		userLinks.appendChild(doc.createTextNode(" "));
 
 		postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
 		persistObject.convertSpecialLinks(postbody, doc);
