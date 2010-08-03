@@ -365,9 +365,8 @@ function handleForumDisplay(doc)
 		// Replace this function once the AJAXified JSON is added to the forums
 		// function will check timestamp which is stored in preferences
 
-		// 080809 Temporarily commented out as forumdisplay has been using a forum list with only the main forums
-		//grabForumList(doc);
-		//persistObject.gotForumList = true;
+		grabForumList(doc);
+		persistObject.gotForumList = true;
 	}
 
 	if (flags.inFYAD && !persistObject.getPreference("enableFYAD")) {
