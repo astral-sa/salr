@@ -2502,6 +2502,11 @@ function SALR_PageMouseDown(event)
 	var doc = event.target.ownerDocument;
 	if (doc.wrappedJSObject)
 		doc = doc.wrappedJSObject;
+
+	// Suppress gesture nav on embeds
+	if (event.target.nodeName.toLowerCase() == 'embed')
+		return;
+
 	var gn = doc.getElementById("salastread_gesturenavtop");
 	if (gn)
 	{
