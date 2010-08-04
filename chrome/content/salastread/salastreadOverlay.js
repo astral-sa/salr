@@ -102,7 +102,7 @@ function SALR_onLoad(e)
 
 	if (doc.wrappedJSObject) // Match things up for FF3.1 beta
 		doc = doc.wrappedJSObject;
-		
+
 	if(!appcontent || !doc.location) return;
 
 	// nsSimpleURIs don't have a .host, so check this
@@ -643,10 +643,6 @@ function handleThreadList(doc, forumid, flags)
 		}
 	}
 
-	// Does this thread listing have broken reply count links due to "&amp;"s in the JavaScript?
-	//  Note: This can be removed when this is fixed forum-side. - RedKazan
-	var brokenReplyCounts = persistObject.selectSingleNode(doc, doc, "HTML/HEAD/SCRIPT[contains(./text(),'&amp;action=whoposted&amp;')]");
-
 	for (var i in threadlist)
 	{
 		var thread = threadlist[i];
@@ -729,13 +725,6 @@ function handleThreadList(doc, forumid, flags)
 					threadBeGone = true;
 				}
 			}
-		}
-
-		// We may need to fix the reply count link for this thread
-		//  Note: This can be removed when this is fixed forum-side. - RedKazan
-		if (brokenReplyCounts)
-		{
-			threadRepliesBox.firstChild.href="javascript:void(window.open('misc.php?s=&action=whoposted&threadid=" + threadId + "', 'whoposted', 'toolbar=no,scrollbars=yes,resizable=yes,width=230,height=200'))";
 		}
 
 		lastLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[./text() = 'Last']");
@@ -1873,14 +1862,6 @@ function addHighlightedUser(e)
 	SALR_runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
 }
 
-// Function called by the onclick of the button that shows up for starred and archived threads
-function unstarButtonPress(e)
-{
-	var archivedUnstarButtonInput = e.originalTarget;
-	persistObject.toggleThreadStar(archivedUnstarButtonInput.id);
-	archivedUnstarButtonInput.parentNode.parentNode.parentNode.removeChild(archivedUnstarButtonInput.parentNode.parentNode);
-}
-
 function SALR_IncTimer()
 {
    SALR_PageTimerCount++;
@@ -1908,34 +1889,6 @@ function parsePLTagsInEdit(tarea)
 {
    var xtxt = tarea.value;
    tarea.value = convertPLTag(xtxt);
-}
-
-function removeThread(evt) {
-	var threadid = this.id.match(/unread_(\d+)/)[1];
-
-	persistObject.removeThread(threadid);
-
-	//head up from the link: div.newposts, div.title_links, div.title_rel, td.title, tr.thread
-	var tr = this.parentNode.parentNode.parentNode.parentNode.parentNode;
-
-	for (var i = 0; i < tr.childNodes.length;i++)
-	{
-		var node = tr.childNodes[i];
-		if (node.nodeName != "#text")
-		{
-			node.style.backgroundColor = "";
-			node.style.backgroundImage = "";
-			node.style.backgroundRepeat = "";
-
-			if(node.className == "replies")
-			{
-				node.innerHTML = node.innerHTML.replace(/\s\(\d+\)/i, "");
-			}
-		}
-	}
-
-	//remove div.newposts from div.title
-	this.parentNode.parentNode.removeChild(this.parentNode);
 }
 
 // Event catcher for clicking on the Mark Unseen box
@@ -2254,118 +2207,118 @@ function releaseQuickQuoteVars()
 function SALR_QuickPostJump(event)
 {
 	try {
-	var ctrlKey = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
-	if (ctrlKey)
-	{
-		// If any special keys were pressed, don't bother processing
-		return;
-	}
-	var targ = event.target;
-	var doc = targ.ownerDocument;
-	if (doc.wrappedJSObject) // Match things up for FF3.5
-		doc = doc.wrappedJSObject;
-	var pressed = event.which;
-	var postId, post, classChange, rescroll = false;
-	var maxPosts = persistObject.getPreference('postsPerPage');
-	if (doc.__SALR_curFocus)
-	{
-		postId = doc.__SALR_curFocus;
-	}
-	else if (doc.location.href.match(/\#pti(\d+)$/))
-	{
-		postId = doc.location.href.match(/\#pti(\d+)$/)[1];
-	}
-	else if (doc.location.href.match(/\#(post\d+)$/))
-	{
-		postId = doc.location.href.match(/\#(post\d+)$/)[1];
-		postId = doc.getElementById(postId).getElementsByTagName('tr')[0].id;
-		postId = postId.match(/pti(\d+)$/)[1];
-	}
-	else
-	{
-		postId = '1';
-	}
-	switch (String.fromCharCode(pressed).toLowerCase())
-	{
-		case persistObject.getPreference('kb.reanchor'):
-		case persistObject.getPreference('kb.reanchorAlt'):
-			doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
-			post = doc.getElementById('pti' + postId);
-			rescroll = true;
-			break;
-		case persistObject.getPreference('kb.nextPage'):
-		case persistObject.getPreference('kb.nextPageAlt'):
-			// Goto next page
-			if (doc.__SALR_curPage < doc.__SALR_maxPage)
-			{
-				doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage + 1));
-			}
-			break;
-		case persistObject.getPreference('kb.nextPost'):
-		case persistObject.getPreference('kb.nextPostAlt'):
-			// Goto next post
-			postId++;
-			if (postId <= maxPosts)
-			{
-				if (doc.getElementById('pti' + (postId - 1)))
-				{
-					classChange = doc.getElementById('pti' + (postId - 1)).parentNode.parentNode;
-					classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
-					doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
-				}
+		var ctrlKey = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
+		if (ctrlKey)
+		{
+			// If any special keys were pressed, don't bother processing
+			return;
+		}
+		var targ = event.target;
+		var doc = targ.ownerDocument;
+		if (doc.wrappedJSObject) // Match things up for FF3.5
+			doc = doc.wrappedJSObject;
+		var pressed = event.which;
+		var postId, post, classChange, rescroll = false;
+		var maxPosts = persistObject.getPreference('postsPerPage');
+		if (doc.__SALR_curFocus)
+		{
+			postId = doc.__SALR_curFocus;
+		}
+		else if (doc.location.href.match(/\#pti(\d+)$/))
+		{
+			postId = doc.location.href.match(/\#pti(\d+)$/)[1];
+		}
+		else if (doc.location.href.match(/\#(post\d+)$/))
+		{
+			postId = doc.location.href.match(/\#(post\d+)$/)[1];
+			postId = doc.getElementById(postId).getElementsByTagName('tr')[0].id;
+			postId = postId.match(/pti(\d+)$/)[1];
+		}
+		else
+		{
+			postId = '1';
+		}
+		switch (String.fromCharCode(pressed).toLowerCase())
+		{
+			case persistObject.getPreference('kb.reanchor'):
+			case persistObject.getPreference('kb.reanchorAlt'):
+				doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
 				post = doc.getElementById('pti' + postId);
 				rescroll = true;
-			}
-			break;
-		case persistObject.getPreference('kb.prevPage'):
-		case persistObject.getPreference('kb.prevPageAlt'):
-			// Goto previous page
-			if (doc.__SALR_curPage > 1)
-			{
-				doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage - 1));
-			}
-			break;
-		case persistObject.getPreference('kb.prevPost'):
-		case persistObject.getPreference('kb.prevPostAlt'):
-			// Goto previous post
-			postId--;
-			if (postId > 0)
-			{
-				if (doc.getElementById('pti' + (postId + 1)))
+				break;
+			case persistObject.getPreference('kb.nextPage'):
+			case persistObject.getPreference('kb.nextPageAlt'):
+				// Goto next page
+				if (doc.__SALR_curPage < doc.__SALR_maxPage)
 				{
-					classChange = doc.getElementById('pti' + (postId + 1)).parentNode.parentNode;
-					classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
-					doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+					doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage + 1));
 				}
-				post = doc.getElementById('pti' + postId);
-				rescroll = true;
-			}
-			break;
-		case persistObject.getPreference('kb.quickEdit'):
-			// Activate Quick Edit Post
-			var fakeEvent = {};
-			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
-			quickQuoteButtonClick(fakeEvent);
-			break;
-		case persistObject.getPreference('kb.quickReply'):
-			// Activate Quick Reply to Thread
-			var fakeEvent = {};
-			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
-			quickQuoteButtonClick(fakeEvent);
-			break;
-		case persistObject.getPreference('kb.quickQuote'):
-			// Activate Quick Quote Post
-			var fakeEvent = {};
-			fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
-			quickQuoteButtonClick(fakeEvent);
-			break;
-	}
-	if (rescroll)
-	{
-		post.scrollIntoView(true);
-		doc.__SALR_curFocus = postId;
-	}
-} catch(e) {dump('error:'+e);}
+				break;
+			case persistObject.getPreference('kb.nextPost'):
+			case persistObject.getPreference('kb.nextPostAlt'):
+				// Goto next post
+				postId++;
+				if (postId <= maxPosts)
+				{
+					if (doc.getElementById('pti' + (postId - 1)))
+					{
+						classChange = doc.getElementById('pti' + (postId - 1)).parentNode.parentNode;
+						classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
+						doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+					}
+					post = doc.getElementById('pti' + postId);
+					rescroll = true;
+				}
+				break;
+			case persistObject.getPreference('kb.prevPage'):
+			case persistObject.getPreference('kb.prevPageAlt'):
+				// Goto previous page
+				if (doc.__SALR_curPage > 1)
+				{
+					doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage - 1));
+				}
+				break;
+			case persistObject.getPreference('kb.prevPost'):
+			case persistObject.getPreference('kb.prevPostAlt'):
+				// Goto previous post
+				postId--;
+				if (postId > 0)
+				{
+					if (doc.getElementById('pti' + (postId + 1)))
+					{
+						classChange = doc.getElementById('pti' + (postId + 1)).parentNode.parentNode;
+						classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
+						doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+					}
+					post = doc.getElementById('pti' + postId);
+					rescroll = true;
+				}
+				break;
+			case persistObject.getPreference('kb.quickEdit'):
+				// Activate Quick Edit Post
+				var fakeEvent = {};
+				fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
+				quickQuoteButtonClick(fakeEvent);
+				break;
+			case persistObject.getPreference('kb.quickReply'):
+				// Activate Quick Reply to Thread
+				var fakeEvent = {};
+				fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
+				quickQuoteButtonClick(fakeEvent);
+				break;
+			case persistObject.getPreference('kb.quickQuote'):
+				// Activate Quick Quote Post
+				var fakeEvent = {};
+				fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
+				quickQuoteButtonClick(fakeEvent);
+				break;
+		}
+		if (rescroll)
+		{
+			post.scrollIntoView(true);
+			doc.__SALR_curFocus = postId;
+		}
+	} catch(e) {dump('error:'+e);}
 }
 
 
