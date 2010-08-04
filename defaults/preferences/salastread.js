@@ -11,6 +11,7 @@ pref('extensions.salastread.newPostCountUseOneLine', false);
 pref('extensions.salastread.replyCountLinkinThreads', true);
 pref('extensions.salastread.sortReplyList', true);
 pref('extensions.salastread.fixTimgLinks', false);
+pref('extensions.salastread.hideThreadSearchBox', false);
 
 //VIDEO EMBEDDER
 pref('extensions.salastread.enableVideoEmbedder', false);

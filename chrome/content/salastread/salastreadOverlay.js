@@ -1146,21 +1146,68 @@ function handleShowThread(doc)
 		doc.addEventListener('keypress', SALR_QuickPostJump, false);
 	}
 
-	if (persistObject.getPreference("replyCountLinkinThreads") && !singlePost)
+	var searchThis = persistObject.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
+	if (searchThis)
 	{
-		var replyCountLink = doc.createElement("A");
-		replyCountLink.href="javascript:void(window.open('misc.php?s=&action=whoposted&threadid=" + threadid + "#fromthread', 'whoposted', 'toolbar=no,scrollbars=yes,resizable=yes,width=230,height=200'))";
-		replyCountLink.innerHTML = "Who posted?";
-		replyCountLink.style.fontSize = "10px";
-		replyCountLink.style.cssFloat = "left";
-		replyCountLink.style.marginLeft = "8px";
-		replyCountLink.style.color = "#FFFFFF";
-		// Plug it in right after the "Search thread:" form
-		var searchThis = persistObject.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
-		if (searchThis)
+		if (persistObject.getPreference("replyCountLinkinThreads"))
 		{
+			var replyCountLink = doc.createElement("A");
+			replyCountLink.href="javascript:void(window.open('misc.php?s=&action=whoposted&threadid=" + threadid + "#fromthread', 'whoposted', 'toolbar=no,scrollbars=yes,resizable=yes,width=230,height=200'))";
+			replyCountLink.innerHTML = "Who posted?";
+			replyCountLink.style.fontSize = "10px";
+			replyCountLink.style.cssFloat = "left";
+			replyCountLink.style.marginLeft = "8px";
+			replyCountLink.style.color = "#FFFFFF";
+			// Plug it in right after the "Search thread:" form
 			searchThis.parentNode.insertBefore(replyCountLink,searchThis.nextSibling);
 			searchThis.parentNode.insertBefore(doc.createTextNode(" "),searchThis.nextSibling);
+		}
+		// SA's "Search thread" box is disabled; add our own
+		if (!persistObject.getPreference("hideThreadSearchBox") && searchThis.firstChild.nodeName == '#text')
+		{
+			var newSearchBox = doc.createElement('form');
+			newSearchBox.action = 'http://forums.somethingawful.com/f/search/submit';
+			newSearchBox.method = 'post';
+			newSearchBox.className = 'threadsearch'; 
+			var newSearchDiv = doc.createElement('div');
+			newSearchBox.appendChild(newSearchDiv);
+			quickQuoteAddHidden(doc,newSearchDiv,'forumids',forumid);
+			quickQuoteAddHidden(doc,newSearchDiv,'groupmode','0');
+			quickQuoteAddHidden(doc,newSearchDiv,'opt_search_posts','on');
+			quickQuoteAddHidden(doc,newSearchDiv,'opt_search_titles','on');
+			quickQuoteAddHidden(doc,newSearchDiv,'perpage','20');
+			quickQuoteAddHidden(doc,newSearchDiv,'search_mode','ext');
+			quickQuoteAddHidden(doc,newSearchDiv,'show_post_previews','1');
+			quickQuoteAddHidden(doc,newSearchDiv,'sortmode','1');
+			quickQuoteAddHidden(doc,newSearchDiv,'uf_posts','on');
+			quickQuoteAddHidden(doc,newSearchDiv,'userid_filters','');
+			quickQuoteAddHidden(doc,newSearchDiv,'username_filter','type a username');
+			var newSearchText = doc.createElement('input');
+			newSearchText.size='25';
+
+			// Don't accidentally trigger keyboard navigation
+			newSearchText.onkeypress = function(evt)
+			{
+				// User hit enter
+				if (evt.keyCode == 13)
+				{
+					quickQuoteAddHidden(doc,newSearchBox,'keywords','threadid:'+threadid+' '+newSearchText.value);
+					newSearchBox.submit();
+					return false;
+				}
+				evt.stopPropagation();
+			}
+			newSearchDiv.appendChild(newSearchText);
+			var newSearchButton = doc.createElement('input');
+			newSearchButton.type='button';
+			newSearchButton.value='Search thread';
+			newSearchButton.onclick = function()
+			{
+				quickQuoteAddHidden(doc,newSearchBox,'keywords','threadid:'+threadid+' '+newSearchText.value);
+				newSearchBox.submit();
+			}
+			newSearchDiv.appendChild(newSearchButton);
+			searchThis.parentNode.insertBefore(newSearchBox,searchThis.nextSibling);
 		}
 	}
 
