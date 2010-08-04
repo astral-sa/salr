@@ -7,4 +7,4 @@ style	chrome://global/content/customizeToolbar.xul  chrome://salastread/content/
 # Component Registration for Firefox 4
 component {f5d9093b-8210-4a26-89ba-4c987de04efc} components/SALastReadCom.js
 contract @evercrest.com/salastread/persist-object;1 {f5d9093b-8210-4a26-89ba-4c987de04efc}
-category profile-after-change @evercrest.com/salastread/persist-object;1 service,@evercrest.com/salastread/persist-object;1
+#category profile-after-change @evercrest.com/salastread/persist-object;1 service,@evercrest.com/salastread/persist-object;1

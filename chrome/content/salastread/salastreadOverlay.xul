@@ -42,6 +42,7 @@
 			<menupopup id="salastread-context-menupopup">
 				<menuitem id="salastread-context-ignorethread" label="Ignore This Thread" accesskey="i" oncommand="SALR_IgnoreThread();" hidden="true" />
 				<menuitem id="salastread-context-starthread" label="Star This Thread" accesskey="s" oncommand="SALR_StarThread();" hidden="true" />
+				<menuitem id="salastread-context-unreadthread" label="Mark This Thread Unread" accesskey="u" oncommand="SALR_UnreadThread();" hidden="true" />
 			</menupopup>
 		</menu>
 		<menuseparator id="salastread-context-menuseparator" hidden="true" position="2"/>

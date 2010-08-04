@@ -1789,8 +1789,8 @@ function handleStats(doc)
 {
 	if (doc.getElementsByName('t_forumid'))
 	{
-		// The forum list is here so lets update it
-		grabForumList(doc);
+		// The forum list is here so let's update it
+		//grabForumList(doc);
 	}
 }
 
@@ -2546,7 +2546,7 @@ function SALR_PageMouseDown(event)
 // Context Menu Functions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-function SALR_ShowContextMenuItems()
+function SALR_ShowContextMenuItems(showunread)
 {
 	var cacm = document.getElementById("contentAreaContextMenu");
 	var mopt = document.getElementById("salastread-context-menu");
@@ -2567,6 +2567,8 @@ function SALR_ShowContextMenuItems()
 	moptsep.setAttribute('hidden', false);
 	document.getElementById("salastread-context-ignorethread").setAttribute('hidden', false);
 	document.getElementById("salastread-context-starthread").setAttribute('hidden', false);
+	if (showunread)
+		document.getElementById("salastread-context-unreadthread").setAttribute('hidden', false);
 }
 
 function SALR_HideContextMenuItems()
@@ -2575,6 +2577,7 @@ function SALR_HideContextMenuItems()
 	document.getElementById("salastread-context-menuseparator").setAttribute('hidden', true);
 	document.getElementById("salastread-context-ignorethread").setAttribute('hidden', true);
 	document.getElementById("salastread-context-starthread").setAttribute('hidden', true);
+	document.getElementById("salastread-context-unreadthread").setAttribute('hidden', true);
 }
 
 function SALR_ContextMenuShowing(e)
@@ -2618,7 +2621,21 @@ function SALR_ContextVis()
 				document.getElementById("salastread-context-starthread").data = threadid;
 				document.getElementById("salastread-context-starthread").target = target;
 				document.getElementById("salastread-context-starthread").label = (persistObject.isThreadStarred(threadid) ? 'Unstar' : 'Star') + " This Thread (" + threadid + ")";
-				SALR_ShowContextMenuItems();
+				document.getElementById("salastread-context-unreadthread").data = threadid;
+				document.getElementById("salastread-context-unreadthread").target = target;
+				document.getElementById("salastread-context-unreadthread").label = "Mark This Thread Unread (" + threadid + ")";
+				var pageName = target.ownerDocument.location.pathname.match(/^\/(\w+)\.php/i);
+				if (pageName)
+				{
+					switch(pageName[1])
+					{
+						case "showthread":
+							SALR_ShowContextMenuItems(true);
+							break;
+						default:
+							SALR_ShowContextMenuItems(false);
+					}
+				}
 			}
 		}
 		target = target.parentNode;
@@ -2697,6 +2714,33 @@ function SALR_IgnoreThread()
 	}
 }
 
+function SALR_UnreadThread()
+{
+	var threadid = document.getElementById("salastread-context-unreadthread").data;
+	var target = document.getElementById("salastread-context-unreadthread").target;
+	if (threadid)
+	{
+		var xhr = new XMLHttpRequest();
+		var xhrparams = "json=1&action=resetseen&threadid="+threadid;
+		xhr.open("POST", "http://forums.somethingawful.com/showthread.php", true);
+		// Ensure this load flag is set to prevent issues with third-party cookies being disabled
+		xhr.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
+		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhr.setRequestHeader("Content-length", xhrparams.length);
+		xhr.setRequestHeader("Connection", "close");
+		xhr.onreadystatechange = function()
+		{
+			if (xhr.readyState == 4 && xhr.status == 200)
+			{
+				if (xhr.responseText.match(/threadid/))
+					alert("Thread #" + threadid + " marked as unread.");
+				else
+					alert("Something went wrong! Please try again.");
+			}
+		}
+		xhr.send(xhrparams);
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SA Drop Down Menu Functions /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
