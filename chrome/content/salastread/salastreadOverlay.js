@@ -1169,6 +1169,7 @@ function handleShowThread(doc)
 			newSearchBox.action = 'http://forums.somethingawful.com/f/search/submit';
 			newSearchBox.method = 'post';
 			newSearchBox.className = 'threadsearch'; 
+			newSearchBox.title = 'Search thread box added by SALR';
 			var newSearchDiv = doc.createElement('div');
 			newSearchBox.appendChild(newSearchDiv);
 			quickQuoteAddHidden(doc,newSearchDiv,'forumids',forumid);
