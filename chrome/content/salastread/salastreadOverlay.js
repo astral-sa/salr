@@ -2010,7 +2010,8 @@ function handleBodyClassing(doc)
 	{
 		addclass += " somethingawfulforum_"+phmatch[1]+"_php";
 	}
-	docbody.className += addclass;
+	if (docbody)
+		docbody.className += addclass;
 }
 
 function SALR_insertCSS(doc, url)
