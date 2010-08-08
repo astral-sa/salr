@@ -119,9 +119,9 @@ function iframeDCL() {
    if (imageurl && (thumburl || !useThumb)) {
       var result = "";
       if (useThumb) {
-         result = "[URL="+imageurl+"#via=salr][IMG]"+thumburl+"[/IMG][/URL]";
+         result = "[URL="+imageurl+"][IMG]"+thumburl+"[/IMG][/URL]";
       } else {
-         result = "[IMG]"+imageurl+"#via=salr[/IMG]";
+         result = "[IMG]"+imageurl+"[/IMG]";
       }
       window.opener.imageShackResult = result;
       window.close();
