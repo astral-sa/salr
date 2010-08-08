@@ -63,3 +63,14 @@ function aboutInit()
 	//update the element
 	document.getElementById("timespent").setAttribute("value", tsstr);
 }
+
+function openSALRThread()
+{
+	var tab = window.opener.gBrowser.addTab("http://forums.somethingawful.com/showthread.php?goto=post&postid=380530062");
+	window.opener.gBrowser.selectedTab = tab; 
+}
+function openSALRProjectPage()
+{
+	var tab = window.opener.gBrowser.addTab("http://salr.bountysource.com");
+	window.opener.gBrowser.selectedTab = tab; 
+}
