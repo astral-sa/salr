@@ -1185,14 +1185,16 @@ function handleShowThread(doc)
 			quickQuoteAddHidden(doc,newSearchDiv,'userid_filters','');
 			quickQuoteAddHidden(doc,newSearchDiv,'username_filter','type a username');
 			var newSearchText = doc.createElement('input');
-			newSearchText.size='25';
-			newSearchText.value='Added by SALR';
+			newSearchText.size = '25';
+			newSearchText.value = 'Added by SALR';
+			newSearchText.style.fontStyle = 'italic';
 			newSearchText.style.color = '#BBBBBB';
 			newSearchText.__unfocused = true;
 			newSearchText.onfocus = function()
 			{
 				if (newSearchText.__unfocused == true)
 				{
+					newSearchText.style.fontStyle = 'normal';
 					newSearchText.style.color = '';
 					newSearchText.value = '';
 					newSearchText.__unfocused = false;
