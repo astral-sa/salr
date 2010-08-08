@@ -396,6 +396,8 @@ function handleForumDisplay(doc)
 			pageList = pageList[0];
 		}
 		var numPages = pageList.innerHTML.match(/\((\d+)\)/);
+		if (!numPages)
+			return;
 		var curPage = persistObject.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
 		if (pageList.childNodes.length > 1) // Are there pages
 		{
