@@ -16,7 +16,8 @@
 
 		<hbox>
 			<spacer flex="1"/>
-			<button id="unignore_thread_button" label="Unignore Thread" disabled="true" oncommand="unignoreThreads()" />
+			<button id="unignore_selectall_button" label="Select All Threads" disabled="true" oncommand="selectAllThreads()" />
+			<button id="unignore_thread_button" label="Unignore Selected Thread" disabled="true" oncommand="unignoreThreads()" />
 		</hbox>
 	</prefpane>
 </overlay>
