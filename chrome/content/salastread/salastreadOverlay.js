@@ -1167,6 +1167,8 @@ function handleShowThread(doc)
 		// SA's "Search thread" box is disabled; add our own
 		if (!persistObject.getPreference("hideThreadSearchBox") && searchThis.firstChild.nodeName == '#text')
 		{
+			// Prevent weird zoom behavior
+			searchThis.parentNode.style.overflow = "hidden";
 			var newSearchBox = doc.createElement('form');
 			newSearchBox.action = 'http://forums.somethingawful.com/f/search/submit';
 			newSearchBox.method = 'post';
