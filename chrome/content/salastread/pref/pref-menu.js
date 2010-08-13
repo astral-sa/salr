@@ -1,10 +1,15 @@
-function menuInit() {
-	try {
+function menuInit()
+{
+	try
+	{
 		pinnedListInit();
 		mcbSet();
-	} catch(e) {
+	}
+	catch(e)
+	{
 		alert("init error: "+e);
 	}
+	document.getElementById('salastreadpref').__SAMenuChanged = false;
 }
 
 function pinnedListInit() {
@@ -246,5 +251,25 @@ function pinnedListChanged() {
 		document.getElementById("menuPinnedForums").value = menustr;
 	} else {
 		document.getElementById("menuPinnedForums").value = ",";
+	}
+	document.getElementById('salastreadpref').__SAMenuChanged = true;
+}
+
+function RebuildSAMenus()
+{
+	if (document.getElementById('salastreadpref').__SAMenuChanged == true)
+	{
+		// Get all browser windows
+		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]  
+					   .getService(Components.interfaces.nsIWindowMediator);  
+		var enumerator = wm.getEnumerator("navigator:browser");  
+		while(enumerator.hasMoreElements()) {  
+			var win = enumerator.getNext();
+
+			// Rebuild SA menus in all browser windows
+			win.SALR_buildForumMenu();
+			win.SALR_buildToolbarButtonMenu();
+		}
+		document.getElementById('salastreadpref').__SAMenuChanged = false;
 	}
 }

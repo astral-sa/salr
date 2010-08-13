@@ -6,7 +6,10 @@
 <prefwindow id="salastreadpref" 
 			title="SALR Preferences" 
 			type="prefwindow"
-			xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+			xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+			ondialogaccept="SALR_Prefs_Accept();"
+			ondialogcancel="SALR_Prefs_Close();"
+			onclose="SALR_Prefs_Close();">
 
 	<prefpane 	id="general" 
 				label="General" 
