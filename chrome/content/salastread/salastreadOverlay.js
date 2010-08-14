@@ -1558,14 +1558,14 @@ function handleEditPost(doc)
 
 function handleNewReply(doc)
 {
-	var threadlink = persistObject.selectSingleNode(doc, doc.body, "DIV[contains(@id, 'container')]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/SPAN[1]/B/A[contains(@href,'showthread.php')][contains(@href,'threadid=')]");
+	var threadlink = persistObject.selectSingleNode(doc, doc.body, "DIV[contains(@id, 'container')]//div[@class='breadcrumbs']//A[contains(@href,'showthread.php')][contains(@href,'threadid=')]");
 	if (threadlink)
 	{
 		var tlmatch = threadlink.href.match( /threadid=(\d+)/ );
-		if ( tlmatch )
+		if (tlmatch)
 		{
 			var threadid = tlmatch[1];
-			if ( salastread_needRegReplyFill )
+			if (salastread_needRegReplyFill)
 			{
 				var msgEl = persistObject.selectSingleNode(doc, doc.body, "//TEXTAREA[@name='message']");
 				if (msgEl)
@@ -1574,8 +1574,9 @@ function handleNewReply(doc)
 				}
 				salastread_needRegReplyFill = false;
 			}
-			var postbtn = persistObject.selectNodes(doc, doc.body, "//FORM[@name='vbform'][contains(@action,'newreply.php')]//INPUT[@type='submit'][@name='submit']")[0];
-			if (postbtn) {
+			var postbtn = persistObject.selectSingleNode(doc, doc.body, "//FORM[@name='vbform']//INPUT[@name='submit']");
+			if (postbtn)
+			{
 				postbtn.addEventListener("click", function() { markThreadReplied(threadid); }, true);
 				postbtn.style.backgroundColor = persistObject.getPreference('postedInThreadRe');
 			}
@@ -1585,6 +1586,7 @@ function handleNewReply(doc)
 	{
 		if (salastread_savedQuickReply!="")
 		{
+			// TODO: Check if the stuff immediately below is broken.
 			var forgeCheck = persistObject.selectSingleNode(doc, doc.body, "TABLE/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[2]/TD[1]/FONT[contains(text(),'have been forged')]");
 			if (forgeCheck)
 			{
