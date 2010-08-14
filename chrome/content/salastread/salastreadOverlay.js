@@ -192,6 +192,12 @@ function SALR_onLoad(e)
 					break;
 			}
 		}
+		else
+		{
+			// Search results
+			if (doc.location.pathname == '/f/search/result')
+				pageHandler = handleSearch;
+		}
 
 		// Don't try to format the page if it's not supported
 		if (pageHandler)
@@ -302,14 +308,14 @@ function SALR_PageFinishedLoading(e)
 
 function salastread_windowOnBeforeUnload(e)
 {
-	if(e.originalTarget == window.__salastread_quotedoc)
+	if (window.__salastread_quotedoc && e.originalTarget == window.__salastread_quotedoc)
 	{
 		if(quickQuoteSubmitting)
 		{
 			return true;
 		}
 
-		if(quickquotewin && !quickquotewin.closed)
+		if (quickquotewin && !quickquotewin.closed)
 		{
 			quickquotewin.detachFromDocument();
 		}
@@ -319,15 +325,15 @@ function salastread_windowOnBeforeUnload(e)
 
 function salastread_windowOnUnload(e)
 {
-   if ( e.originalTarget == window.__salastread_quotedoc )
-   {
-      releaseQuickQuoteVars();
-   }
-   if ( e.originalTarget.__salastread_processed )
-   {
-      SALR_DecTimer();
-      persistObject.SaveTimerValue();
-   }
+	if (window.__salastread_quotedoc && e.originalTarget == window.__salastread_quotedoc)
+	{
+		releaseQuickQuoteVars();
+	}
+	if (e.originalTarget.__salastread_processed)
+	{
+		SALR_DecTimer();
+		persistObject.SaveTimerValue();
+	}
 }
 
 
@@ -1848,6 +1854,46 @@ function handleStats(doc)
 	}
 }
 
+function handleSearch(doc)
+{
+	// Add support for mouse gestures / pagination
+	if (persistObject.getPreference("gestureEnable"))
+	{
+		var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pager')]");
+		if (pageList)
+		{
+			if (pageList.length > 1)
+			{
+				pageList = pageList[pageList.length-1];
+			}
+			else
+			{
+				pageList = pageList[0];
+			}
+			var numPages = pageList.innerHTML.match(/\((\d+)\)/);
+			if (!numPages)
+				return;
+			var curPage = persistObject.selectSingleNode(doc, doc, "//a[contains(@class,'current')]");
+			if (pageList.childNodes.length > 1) // Are there pages
+			{
+				numPages = parseInt(numPages[1], 10);
+				curPage = parseInt(curPage.innerHTML, 10);
+			}
+			else
+			{
+				numPages = 1;
+				curPage = 1;
+			}
+		}
+
+		doc.__SALR_curPage = curPage;
+		doc.__SALR_maxPage = numPages;
+
+		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
+		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utility Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2395,6 +2441,9 @@ function SALR_DirectionalNavigate(doc, dir)
 	var perpage = "&perpage=" + persistObject.getPreference("postsPerPage");
 	var forumid = doc.location.href.match(/forumid=[0-9]+/);
 	var posticon = doc.location.href.match(/posticon=[0-9]+/);
+	var inSearch = (doc.location.pathname == '/f/search/result');
+	var searchid = doc.location.href.match(/qid=[0-9]+/);
+
 	if (!posticon)
 	{
 		posticon = "&posticon=0";
@@ -2424,20 +2473,16 @@ function SALR_DirectionalNavigate(doc, dir)
 	{
 		var threadForum = doc.__SALR_forumid;
 
-		if(curPage == 1 && !threadForum)
+		if ((curPage == 1 && !threadForum) || inSearch)
 		{
 			doc.location = urlbase + "/index.php";
 		}
 		else
 		{
 			if (threadForum)
-			{
 				doc.location = urlbase + "/forumdisplay.php?s=&forumid=" + threadForum;
-			}
 			else
-			{
 				doc.location = urlbase + "/forumdisplay.php?s=&" + forumid + posticon;
-			}
 		}
 	}
 	else if (dir == "left")
@@ -2446,13 +2491,11 @@ function SALR_DirectionalNavigate(doc, dir)
 		{
 			var threadid = doc.__SALR_threadid;
 			if (threadid)
-			{
 				doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage - 1);
-			}
+			else if (inSearch)
+				doc.location = urlbase + "/f/search/result?" + searchid + "&p=" + (curPage - 1);
 			else
-			{
 				doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage - 1);
-			}
 		}
 	}
 	else if (dir == "right")
@@ -2462,13 +2505,11 @@ function SALR_DirectionalNavigate(doc, dir)
 		{
 			var threadid = doc.__SALR_threadid;
 			if (threadid)
-			{
 				doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage + 1);
-			}
+			else if (inSearch)
+				doc.location = urlbase + "/f/search/result?" + searchid + "&p=" + (curPage + 1);
 			else
-			{
 				doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage + 1);
-			}
 		}
 	}
 }
