@@ -393,7 +393,7 @@ function handleForumDisplay(doc)
 	var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
 	if (pageList)
 	{
-		if (pageList.length >  1)
+		if (pageList.length > 1)
 		{
 			pageList = pageList[pageList.length-1];
 		}
@@ -402,11 +402,12 @@ function handleForumDisplay(doc)
 			pageList = pageList[0];
 		}
 		var numPages = pageList.innerHTML.match(/\((\d+)\)/);
-		if (!numPages)
-			return;
 		var curPage = persistObject.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
 		if (pageList.childNodes.length > 1) // Are there pages
 		{
+			// Suppress a page-load error
+			if (!numPages)
+				return;
 			numPages = parseInt(numPages[1], 10);
 			curPage = parseInt(curPage.innerHTML, 10);
 		}
