@@ -864,15 +864,17 @@ function handleThreadList(doc, forumid, flags)
 			var iAmASticky = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'sticky')]");
 			var iHaveNewPosts = (thread.className.search(/moveup/i) > -1);
 
-			if (iAmASticky && iHaveNewPosts)
+			if (iAmASticky)
 			{
-				anchorTop.insertBefore(thread,anchorUnreadStickies);
+				if (!flags.inUserCP)
+				{
+					if (iHaveNewPosts)
+						anchorTop.insertBefore(thread,anchorUnreadStickies);
+					else
+						anchorTop.insertBefore(thread,anchorReadStickies);
+				}
 			}
-			else if (iAmASticky && !iHaveNewPosts && !flags.inUserCP)
-			{
-				anchorTop.insertBefore(thread,anchorReadStickies);
-			}
-			else if (!iAmASticky && iHaveNewPosts)
+			else if (iHaveNewPosts)
 			{
 				anchorTop.insertBefore(thread,anchorThreads);
 			}
