@@ -83,31 +83,32 @@
 
          <xul:button class="qqbutton" id="emoticonbutton" image="chrome://salastread/skin/cool.gif" tabindex="9" type="menu">
           <xul:menupopup id="emoticonmenu" onpopupshowing="getEmoticons();">
-           <xul:menu id="menu_a" label="ABC">
+		   <xul:menuitem id="menu_wait" label="Loading Emoticons..."/>
+           <xul:menu id="menu_a" label="ABC" hidden="true">
             <xul:menupopup />
            </xul:menu>
-           <xul:menu id="menu_d" label="DEF">
+           <xul:menu id="menu_d" label="DEF" hidden="true">
             <xul:menupopup />
            </xul:menu>
-           <xul:menu id="menu_g" label="GHI">
+           <xul:menu id="menu_g" label="GHI" hidden="true">
             <xul:menupopup />
            </xul:menu>
-           <xul:menu id="menu_j" label="JKL">
+           <xul:menu id="menu_j" label="JKL" hidden="true">
             <xul:menupopup />
            </xul:menu>
-           <xul:menu id="menu_m" label="MNO">
+           <xul:menu id="menu_m" label="MNO" hidden="true">
             <xul:menupopup />
            </xul:menu>
-           <xul:menu id="menu_p" label="PQR">
+           <xul:menu id="menu_p" label="PQR" hidden="true">
             <xul:menupopup />
            </xul:menu>
-           <xul:menu id="menu_s" label="STU">
+           <xul:menu id="menu_s" label="STU" hidden="true">
             <xul:menupopup />
            </xul:menu>
-           <xul:menu id="menu_v" label="VWX">
+           <xul:menu id="menu_v" label="VWX" hidden="true">
             <xul:menupopup />
            </xul:menu>
-           <xul:menu id="menu_y" label="YZ#">
+           <xul:menu id="menu_y" label="YZ#" hidden="true">
             <xul:menupopup />
            </xul:menu>
           </xul:menupopup>

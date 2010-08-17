@@ -154,29 +154,40 @@ function finalizeEmotesGrab(restext)
 
 	// Make sure we see the emoticons we just got.
 	doPreview();
+
+	// Update emoticon list
+	updateEmoticonList();
 }
 
-function getEmoticonsFromServer() {
-	try {
-		var xht = new XMLHttpRequest();
-			xht.open("GET", "http://forums.somethingawful.com/misc.php?s=&action=showsmilies", false);
-			// Ensure this load flag is set to prevent issues with third-party cookies being disabled
-			xht.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
-			xht.send(null);
-		var restext = xht.responseText;
-
-		persistObject.emoticons = new Array();
-
-		emotRe = /<li class="smilie">([\s\S]*?)<img.*?>/gi;
-		emotArray = restext.match(emotRe);
-
-		emotArray.forEach(emotRegex);
-		persistObject.emoticons.sort();
-	} catch(e) {
-		alert("getEmoticonsFromServer() error:\n" + e);
-		persistObject.emoticons = null;
+function updateEmoticonList()
+{
+	clearChildrenFrom("menu_a");
+	clearChildrenFrom("menu_d");
+	clearChildrenFrom("menu_g");
+	clearChildrenFrom("menu_j");
+	clearChildrenFrom("menu_m");
+	clearChildrenFrom("menu_p");
+	clearChildrenFrom("menu_s");
+	clearChildrenFrom("menu_v");
+	clearChildrenFrom("menu_y");
+	var menu = document.getElementById("emoticonmenu");
+	//while(menu.firstChild!=null) {
+	//   menu.removeChild(menu.firstChild);
+	//}
+	for (var i = 0; i < persistObject.emoticons.length; i++)
+	{
+		var thisemot = persistObject.emoticons[i];
+		if (thisemot[0] != null && thisemot[0].length > 0)
+		{
+			addMenuItem(menu, thisemot[0], thisemot[1]);
+		}
 	}
-	persistObject.gettingemoticons = false;
+	var children = menu.childNodes;
+	for (var i = 0; i < children.length; i++)
+	{
+		children[i].hidden = false;
+	}
+	document.getElementById("menu_wait").hidden = true;
 }
 
 var pageGetter = null;
@@ -530,32 +541,16 @@ function clearChildrenFrom(xid) {
 }
 
 function getEmoticons() {
-	try {
-		if (persistObject.gettingemoticons != true && (typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null)) {
+	try
+	{
+		if (persistObject.gettingemoticons != true && (typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null))
+		{
 			persistObject.gettingemoticons = true;
-			getEmoticonsFromServer();
+			getEmoticonsFromServerASync();
 		}
-
-		clearChildrenFrom("menu_a");
-		clearChildrenFrom("menu_d");
-		clearChildrenFrom("menu_g");
-		clearChildrenFrom("menu_j");
-		clearChildrenFrom("menu_m");
-		clearChildrenFrom("menu_p");
-		clearChildrenFrom("menu_s");
-		clearChildrenFrom("menu_v");
-		clearChildrenFrom("menu_y");
-		var menu = document.getElementById("emoticonmenu");
-		//while(menu.firstChild!=null) {
-		//   menu.removeChild(menu.firstChild);
-		//}
-		for(var i = 0; i < persistObject.emoticons.length; i++) {
-			var thisemot = persistObject.emoticons[i];
-			if(thisemot[0] != null && thisemot[0].length > 0) {
-				addMenuItem(menu, thisemot[0], thisemot[1]);
-			}
-		}
-	} catch(e) {
+	}
+	catch(e)
+	{
 		alert(e);
 	}
 }
