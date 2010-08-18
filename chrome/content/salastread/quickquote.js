@@ -548,6 +548,11 @@ function getEmoticons() {
 			persistObject.gettingemoticons = true;
 			getEmoticonsFromServerASync();
 		}
+		else
+		{
+			if (persistObject.gettingemoticons == false)
+				updateEmoticonList();
+		}
 	}
 	catch(e)
 	{
