@@ -103,12 +103,12 @@
 		</groupbox>
 		
 		<popupset>
-			<popup id="colorPopup">
+			<menupopup id="colorPopup">
 				<menuitem label="Foreground Color" accesskey="f" oncommand="changeColor('color');"/>
 				<menuitem label="Background Color" accesskey="b" oncommand="changeColor('backgroundColor');"/>
 				<menuseparator />
 				<menuitem label="User Note" accesskey="n" oncommand="editNote();"/>
-			</popup>
+			</menupopup>
 		</popupset>
 	
 	</prefpane>
