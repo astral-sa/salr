@@ -1846,7 +1846,7 @@ function handleSupport(doc)
 	var newLink = doc.createElement('a');
 	emptyP.appendChild(newLink);
 	emptyP.style.textAlign = "center";
-	newLink.href = "https://salr.bountysource.com/development";
+	newLink.href = "https://trac.assembla.com/SALR/newticket";
 	newLink.innerHTML = "Click here to report a problem with SA Last Read instead";
 	var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
 	supportTable.parentNode.replaceChild(newImg, supportTable);

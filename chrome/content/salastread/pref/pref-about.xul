@@ -45,7 +45,7 @@
 					<separator/>
 					<hbox>
 						<description id="forumlink" class="text-link" value= "SALR Thread" onclick="openSALRThread()" />
-						<description id="bslink" class="text-link" value= "BountySource Page" onclick="openSALRProjectPage()" />
+						<description id="bslink" class="text-link" value= "SALR Project Page" onclick="openSALRProjectPage()" />
 					</hbox>
 				</vbox>
 				<spacer flex="1"/>

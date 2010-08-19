@@ -71,6 +71,6 @@ function openSALRThread()
 }
 function openSALRProjectPage()
 {
-	var tab = window.opener.gBrowser.addTab("http://salr.bountysource.com");
+	var tab = window.opener.gBrowser.addTab("http://trac.assembla.com/SALR/wiki");
 	window.opener.gBrowser.selectedTab = tab; 
 }
