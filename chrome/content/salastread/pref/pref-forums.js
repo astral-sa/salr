@@ -1,7 +1,9 @@
-function initForums() {
+function initForums()
+{
 	toggleNewReCount();
 	toggleUnvisitIcon();
 	toggleLastReadIcon();
+	togglePromoteStickiesInCP();
 }
 
 function toggleNewReCount() {
@@ -34,6 +36,14 @@ function toggleUnvisitIcon() {
 		document.getElementById("unvisitIcon").disabled = true;
 		document.getElementById("unvisitIconDefault").disabled = true;
 	}
+}
+
+function togglePromoteStickiesInCP()
+{
+	if (document.getElementById("showThreadsWNPCP").checked && !document.getElementById("showThreadsWNPCP").disabled)
+		document.getElementById("promoteStickiesWNPCP").disabled = false;
+	else
+		document.getElementById("promoteStickiesWNPCP").disabled = true;
 }
 
 function lastReadIconDefault() {

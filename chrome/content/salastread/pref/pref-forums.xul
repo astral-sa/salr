@@ -11,6 +11,7 @@
 			<preference id="newPostCountUseOneLine" 	name="extensions.salastread.newPostCountUseOneLine" type="bool" inverted="true"/>
 			<preference id="showThreadsWithNewPostsFirst" name="extensions.salastread.showThreadsWithNewPostsFirst" type="bool" />
 			<preference id="showThreadsWithNewPostsFirstCP" name="extensions.salastread.showThreadsWithNewPostsFirstCP" type="bool" />
+			<preference id="showThreadsWithNewPostsFirstCPStickies" name="extensions.salastread.showThreadsWithNewPostsFirstCPStickies" type="bool" />
 
 			<preference id="showSALRIcons"				name="extensions.salastread.showSALRIcons" 			type="bool"/>
 			<preference id="showGoToLastIcon"			name="extensions.salastread.showGoToLastIcon" 		type="bool"/>
@@ -35,8 +36,9 @@
 
 			<checkbox preference="disableNewReCount" 		label="Show new replies count in the replies column" oncommand="toggleNewReCount()" id="newReCount" />
 			<checkbox preference="newPostCountUseOneLine" 	label="Show new replies count on a new line" style="margin-left: 20px;" id="newReCountNewLine" />
-			<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first" />
-			<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads in bookmark list with new posts first" />
+			<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first in the thread list" />
+			<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads with new posts first in the bookmark list" oncommand="togglePromoteStickiesInCP()" id="showThreadsWNPCP" />
+			<checkbox preference="showThreadsWithNewPostsFirstCPStickies" label="Move stickies with new posts to the top of the bookmark list" style="margin-left: 20px;" id="promoteStickiesWNPCP" />
 			<checkbox preference="swapIconOrder" 			label="Swap the Mark Unvisited and Go To Last Post icon order" />
 			<checkbox preference="advancedThreadFiltering" 	label="Enable advanced thread filtering" />
 		</groupbox>

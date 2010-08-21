@@ -171,6 +171,7 @@ pref('extensions.salastread.enableDebugMarkup', false);
 pref('extensions.salastread.scrollPostEnable', false);
 pref('extensions.salastread.showThreadsWithNewPostsFirst', false);
 pref('extensions.salastread.showThreadsWithNewPostsFirstCP', false);
+pref('extensions.salastread.showThreadsWithNewPostsFirstCPStickies', false);
 
 
 // Keyboard Navigation Options

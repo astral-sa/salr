@@ -603,6 +603,7 @@ function handleThreadList(doc, forumid, flags)
 	var showSALRIcons = persistObject.getPreference("showSALRIcons");
 	var showTWNP = persistObject.getPreference('showThreadsWithNewPostsFirst');
 	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP');
+	var showTWNPCPS = persistObject.getPreference('showThreadsWithNewPostsFirstCPStickies');
 	var postsPerPage = persistObject.getPreference('postsPerPage');
 	var advancedThreadFiltering = persistObject.getPreference("advancedThreadFiltering");
 	var ignoredPostIcons = persistObject.getPreference("ignoredPostIcons");
@@ -866,16 +867,16 @@ function handleThreadList(doc, forumid, flags)
 
 			if (iAmASticky)
 			{
-				if (!flags.inUserCP)
+				if (iHaveNewPosts)
 				{
-					if (iHaveNewPosts)
-						anchorTop.insertBefore(thread,anchorUnreadStickies);
+					if (flags.inUserCP && !showTWNPCPS)
+						anchorTop.insertBefore(thread,anchorThreads);
 					else
-						anchorTop.insertBefore(thread,anchorReadStickies);
+						anchorTop.insertBefore(thread,anchorUnreadStickies);
 				}
-				else if (iHaveNewPosts)
+				else if (!flags.inUserCP)
 				{
-					anchorTop.insertBefore(thread,anchorThreads);
+					anchorTop.insertBefore(thread,anchorReadStickies);
 				}
 			}
 			else if (iHaveNewPosts)
