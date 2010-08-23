@@ -1820,7 +1820,9 @@ salrPersistObject.prototype = {
 				if (doc.location.pathname == "/showthread.php")
 				{
 					var threadid = doc.evaluate("//DIV[contains(@class,'pages')]//A[contains(@href,'threadid=')]", doc, null, 9, null).singleNodeValue.href.match(/threadid=(\d+)/i)[1];
-					doc.location = doc.location.pathname+"?threadid="+threadid+"&pagenumber="+this.value;
+					var hasuserid = doc.baseURI.match(/userid=(\w+)/);
+					var uidstring = (!hasuserid) ? '' : '&' + hasuserid[0];
+					doc.location = doc.location.pathname+"?threadid="+threadid+"&pagenumber="+this.value+uidstring;
 				}
 				else
 				{
