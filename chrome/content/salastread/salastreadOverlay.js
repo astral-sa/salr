@@ -1272,6 +1272,8 @@ function handleShowThread(doc)
 	var opSubText = persistObject.getPreference("opSubText");
 	var superIgnoreUsers = persistObject.getPreference("superIgnore");
 
+	var threadMarkedPostedIn = false;
+
 	doc.postlinks = new Array;
 
 	// Loop through each post
@@ -1349,6 +1351,11 @@ function handleShowThread(doc)
 		if (posterName == username)
 		{
 			post.className += " salrPostOfSelf";
+			if (threadMarkedPostedIn == false)
+			{
+				markThreadReplied(threadid);
+				threadMarkedPostedIn = true;
+			}
 		}
 
 
