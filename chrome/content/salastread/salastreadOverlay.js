@@ -486,6 +486,7 @@ function handleForumDisplay(doc)
 		{
 			if ((postIcons[i].href.search(/posticon=(\d+)/i) > -1) && (postIcons[i].firstChild.src.search(/posticons\/(.*)/i) > -1))
 			{
+				iconNumber = parseInt(postIcons[i].href.match(/posticon=(\d+)/i)[1]);
 				// Additional stuff for advanced thread filtering
 				if (prefAdvancedThreadFiltering && !flags.inArchives)
 				{
