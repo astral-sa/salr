@@ -1515,6 +1515,19 @@ function handleShowThread(doc)
 
 		var userLinks = profileLink.parentNode.parentNode;
 
+		if (singlePost)
+		{
+			// Add a link to the user's ban history
+			var banHistLink = doc.createElement("li");
+			var banHistAnchor = doc.createElement("a");
+			banHistAnchor.href = "/banlist.php?userid=" + posterId;
+			banHistAnchor.title = "Show poster's ban/probation history.";
+			banHistAnchor.innerHTML = "Rap Sheet";
+			banHistLink.appendChild(banHistAnchor);
+			userLinks.appendChild(doc.createTextNode(" "));
+			userLinks.appendChild(banHistLink);
+		}
+
 		// Add user coloring/note links
 		if (highlightUsernames)
 		{
