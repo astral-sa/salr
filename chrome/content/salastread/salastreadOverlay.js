@@ -190,6 +190,10 @@ function SALR_onLoad(e)
 				case "misc":
 					pageHandler = handleMisc;
 					break;
+					
+				case "member":
+					pageHandler = handleProfileView;
+					break;
 			}
 		}
 		else
@@ -1883,6 +1887,22 @@ function handleStats(doc)
 		// The forum list is here so let's update it
 		//grabForumList(doc);
 	}
+}
+
+function handleProfileView(doc)
+{
+	var postSearchLink = persistObject.selectSingleNode(doc, doc, "//A[contains(./text(),'find posts by user')]");
+	if (!postSearchLink)
+		return;
+	var userid = postSearchLink.href.match(/userid=(\d+)/i)[1];
+	var newLink = doc.createElement('a');
+	newLink.href = "/banlist.php?userid=" + userid;
+	newLink.title = "Show poster's ban/probation history.";
+	newLink.innerHTML = "Rap Sheet";
+	newLink.style.color = "#FFFFFF";
+	postSearchLink.parentNode.appendChild(doc.createTextNode(" ("));
+	postSearchLink.parentNode.appendChild(newLink);
+	postSearchLink.parentNode.appendChild(doc.createTextNode(")"));
 }
 
 function handleSearch(doc)
