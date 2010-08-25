@@ -21,7 +21,7 @@ function SALR_vidClick(e)
 	//figure out the video type
 	var videoId, videoSrc, videoTLD, yt_subd, yt_starttime, yt_start;
 	//var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
-	var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)(?:(?:.*)?t=(?:(\d*)m)?(?:(\d{0,2})s)?)?/);
+	var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)(?:(?:.*)?t=(?:(\d*)m)?(?:(\d*)s)?)?/);
 	if (videoIdSearch)
 	{
 		yt_subd = (videoIdSearch[1] == null ? "www." : videoIdSearch[1]);
