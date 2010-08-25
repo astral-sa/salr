@@ -77,26 +77,63 @@
 		
 		<groupbox>
 			<caption label="Custom User Highlighting and Notes" />
-			
+
 			<hbox>
-				<listbox id="userColoring" context="colorPopup" seltype="multiple" flex="1">
-					<listcols>
-						<listcol/>
-						<listcol/>
-						<listcol flex="1"/>
-					</listcols>
+				<vbox flex="1">
+					<listbox id="userColoring" context="colorPopup" seltype="multiple" flex="1" onselect="updateCustomizePane()">
+						<listcols>
+							<listcol/>
+							<listcol/>
+							<listcol flex="1"/>
+						</listcols>
+						
+						<listhead>
+							<listheader label="User ID"/>
+							<listheader label="User Name" />
+							<listheader label="Note" />
+						</listhead>
+					</listbox>
 					
-					<listhead>
-						<listheader label="User ID"/>
-						<listheader label="User Name" />
-						<listheader label="Note" />
-					</listhead>
-				</listbox>
-				
-				<vbox>
-					<button label="Add User" align="start" oncommand="addUser();"/>
-					<spacer flex="1"/>
-					<button label="Delete User" align="end" oncommand="deleteUser();"/>
+					<hbox>
+						<button label="Add User" oncommand="addUser();"/>
+						<button label="Delete User" id="deleteuserbutton" oncommand="deleteUser();"/>
+						<spacer flex="1"/>
+					</hbox>
+				</vbox>
+				<vbox id="customizevbox" align="center">
+
+					<hbox flex="1">
+						<text value="Hello" id="customizelabel" style="font-weight: bold"/>
+					</hbox>
+					<separator/>
+					<vbox align="end" >
+						<hbox id="foregroundcolorhbox">
+							<label value="Foreground Color:" id="fgcolorpickerlabel"/>
+							<button class="colorpicker-button"
+									id="fgcolorpickerbutton"
+									oncommand="colorClicked(this.firstChild, 'fgcolor')">
+								<box class="colorpickerthumbnail" id="fgthumbnail"/>
+								<image class="colorpickerdroparrow" src="chrome://global/skin/arrow/arrow-dn.gif"/>
+							</button>
+						</hbox>
+
+						<hbox id="backgroundcolorhbox">
+							<label value="Background Color:"/>
+							<button class="colorpicker-button"
+									id="bgcolorpickerbutton"
+									oncommand="colorClicked(this.firstChild, 'bgcolor')">
+								<box class="colorpickerthumbnail" id="bgthumbnail"/>
+								<image class="colorpickerdroparrow" src="chrome://global/skin/arrow/arrow-dn.gif"/>
+							</button>
+						</hbox>
+					</vbox>
+					<separator/>
+					<vbox>
+						<label value="User Note:"/>
+						<textbox id="usernotebox" multiline="true" rows="3"/>
+						<button label="Update Note" align="end" oncommand="updateNote();"/>
+					</vbox>
+					<spacer flex="3"/>
 				</vbox>
 			</hbox>
 			
