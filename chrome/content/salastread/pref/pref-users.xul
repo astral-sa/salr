@@ -107,7 +107,7 @@
 					</hbox>
 					<separator/>
 					<vbox align="end" >
-						<hbox id="foregroundcolorhbox">
+						<hbox align="center" id="foregroundcolorhbox">
 							<label value="Foreground Color:" id="fgcolorpickerlabel"/>
 							<button class="colorpicker-button"
 									id="fgcolorpickerbutton"
@@ -117,7 +117,7 @@
 							</button>
 						</hbox>
 
-						<hbox id="backgroundcolorhbox">
+						<hbox align="center" id="backgroundcolorhbox">
 							<label value="Background Color:"/>
 							<button class="colorpicker-button"
 									id="bgcolorpickerbutton"
