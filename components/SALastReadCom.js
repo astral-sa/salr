@@ -327,10 +327,6 @@ salrPersistObject.prototype = {
 		}
 	},
 
-	IsDebugEnabled: function() {
-		return this.IsDevelopmentRelease;
-	},
-
 	get wrappedJSObject() { return this; },
 
 	//
@@ -398,7 +394,7 @@ salrPersistObject.prototype = {
 	// Here begins new functions for the 2.0 rewrite
 	//
 
-	_needToExpireThreads: true,
+	_needToRunOnce: true,
 	mDBConn: null,
 	userDataCache: Array(),
 	userIDCache: Array(),
@@ -2221,18 +2217,6 @@ salrPersistObject.prototype = {
 */
 		button.parentNode.insertBefore(quickbutton, button);
 		return quickbutton;
-	},
-
-	expireThreads: function()
-	{
-		/* Should we even bother expiring threads anymore?
-		var expireLength = this.getPreference("expireMinAge") * 86400; // days * 24 * 60 * 60
-		var rightNow = this.currentTimeStamp;
-		var expireWhen = rightNow - expireLength;
-		var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `lastviewdt` < ?1 AND `star` != 1 AND `ignore` != 1");
-		statement.bindStringParameter(0,expireWhen);
-		statement.execute();
-		*/
 	},
 
 	prepopulateDB: function(dbtable)

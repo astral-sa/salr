@@ -1,1916 +1,362 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Globals ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// gSALR will (hopefully) be our only global object
+var gSALR = {
+	// the service formerly known as persistObject
+	service: null,
 
+	// keeps track of how many SA timer-tracked pages are open
+	timerPageCount: 0,
 
-var persistObject = null;
-var needToShowChangeLog = false;
-var salastread_needRegReplyFill = false;
-var SALR_debugLog = new Array();
-var SALR_PageTimerCount = 0;
-var quickquotewin = null;
-var quickQuoteSubmitting = false;
-var salastread_savedQuickReply = "";
-var salastread_savedQuickReplyThreadId = "";
-
+	// SALR init - called with each new browser window opened
+	init: function()
+	{
+		window.addEventListener('load', gSALR.windowOnLoad, true);
+		window.addEventListener('beforeunload', gSALR.windowOnBeforeUnload, true);
+		window.addEventListener('unload', gSALR.windowOnUnload, true);
+	},
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Core Funtions & Events /////////////////////////////////////////////////////////////////////////////////////////////
 
-
-// This starts it all. Called once, on browser load, plan accordingly.
-try
-{
-	persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
-					.getService().wrappedJSObject;
-	if (!persistObject)
+	windowOnLoad: function(e)
 	{
-		throw "Failed to create persistObject.";
-	}
-	SALR_init();
-
-	window.addEventListener('load', SALR_windowOnload, true);
-	window.addEventListener('beforeunload', salastread_windowOnBeforeUnload, true);
-	window.addEventListener('unload', salastread_windowOnUnload, true);
-}
-catch (e)
-{
-	alert("SALastRead init error: "+e);
-	if (persistObject)
-	{
-		alert("persistObject._starterr =\n" + persistObject._starterr);
-	}
-}
-
-function SALR_init()
-{
-	// This should get changed to something better eventually
-	var isWindows = (navigator.platform.indexOf("Win") != -1);
-	persistObject.ProfileInit(isWindows);
-
-	if (persistObject._starterr)
-	{
-		throw "SALR Startup Error";
-	}
-
-	setInterval(SALR_TimerTick, 1000);
-
-	if (persistObject && persistObject.LastRunVersion != persistObject.SALRversion)
-	{
-		needToShowChangeLog = !persistObject.IsDevelopmentRelease;
-		// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
-		var buildNum = parseInt(persistObject.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
-		persistObject.checkForSQLPatches(buildNum);
-	}
-
-	if (persistObject && persistObject._needToExpireThreads)
-	{
-		persistObject.expireThreads();
-		persistObject._needToExpireThreads = false;
-	}
-
-	if (needToShowChangeLog == true)
-	{
-		needToShowChangeLog = false;
-		showChangelogWindow();
-	}
-
-	// Fill up the cache
-	persistObject.populateDataCaches();
-	persistObject.LastRunVersion = persistObject.SALRversion;
-}
-
-// New and improved onload handler wrapper
-
-function SALR_windowOnload(e)
-{
-	if (document.getElementById('appcontent'))
-	{
-		window.addEventListener('DOMContentLoaded', SALR_onLoad, true);
-	}
-	if (persistObject.getPreference("showSAForumMenu") && (document.getElementById("salr-menu") == null))
-	{
-		SALR_buildForumMenu();
-	}
-}
-
-// New and improved onload handler
-
-function SALR_onLoad(e)
-{
-	var appcontent = document.getElementById("appcontent"); // browser
-	var doc = e.originalTarget; // document
-
-	if (doc.wrappedJSObject) // Match things up for FF3.1 beta
-		doc = doc.wrappedJSObject;
-
-	if(!appcontent || !doc.location) return;
-
-	// nsSimpleURIs don't have a .host, so check this
-	try
-	{
-		doc.location.host;
-		var simpleURI = false;
-	}
-	catch (ex)
-	{
-		var simpleURI = true;
-	}
-
-	if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1 || !persistObject.getPreference("enableContextMenu") || persistObject.getPreference("disabled"))
-	{
-		// We don't actually need to do this.
-		// Right clicking will fire events that do it anyway.
-		//SALR_HideContextMenuItems();
-	}
-	// Set a listener on the context menu
-	else document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", SALR_ContextMenuShowing, false);
-
-	if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1)
-	{
-		// We're not at Something Awful
-		return;
-	}
-
-	if (persistObject.getPreference("disabled"))
-	{
-		return;
-	}
-
-	if (doc.__salastread_processed)
-	{
-		// We've already been here
-		return;
-	}
-
-	try
-	{
-		var pageHandler;
-		var pageName = doc.location.pathname.match(/^\/(\w+)\.php/i);
-		if (pageName)
+		try
 		{
-			switch(pageName[1])
+			gSALR.service = Components.classes['@evercrest.com/salastread/persist-object;1'].getService().wrappedJSObject;
+			if (!gSALR.service)
 			{
-				case "index":
-					pageHandler = handleIndex;
-					break;
-
-				case "usercp":
-				case "bookmarkthreads":
-					pageHandler = handleSubscriptions;
-					break;
-
-				case "account":
-					pageHandler = handleAccount;
-					break;
-
-				case "forumdisplay":
-					pageHandler = handleForumDisplay;
-					break;
-
-				case "showthread":
-					pageHandler = handleShowThread;
-					break;
-
-				case "newreply":
-					pageHandler = handleNewReply;
-					break;
-
-				case "editpost":
-					pageHandler = handleEditPost;
-					break;
-
-				case "supportmail":
-					pageHandler = handleSupport;
-					break;
-
-				case "stats":
-					pageHandler = handleStats;
-					break;
-
-				case "misc":
-					pageHandler = handleMisc;
-					break;
-					
-				case "member":
-					pageHandler = handleProfileView;
-					break;
-			}
-		}
-		else
-		{
-			// Search results
-			if (doc.location.pathname == '/f/search/result')
-				pageHandler = handleSearch;
-		}
-
-		// Don't try to format the page if it's not supported
-		if (pageHandler)
-		{
-			// Append custom CSS files to the head
-			if (persistObject.getPreference("gestureEnable"))
-			{
-				SALR_insertCSS(doc, "chrome://salastread/content/css/gestureStyling.css");
-			}
-			if (persistObject.getPreference("removeHeaderAndFooter"))
-			{
-				SALR_insertCSS(doc, "chrome://salastread/content/css/removeHeaderAndFooter.css");
-			}
-			if (persistObject.getPreference("enablePageNavigator") || persistObject.getPreference("enableForumNavigator"))
-			{
-				SALR_insertCSS(doc, "chrome://salastread/content/css/pageNavigator.css");
+				throw "Failed to create SALR service.";
 			}
 
-			// Insert a text link to open the options menu
-			if (persistObject.getPreference('showTextConfigLink'))
+			// Anything that only needs to be run once (instead of for each browser window opened) should be placed within this code block.
+			if (gSALR.service._needToRunOnce)
 			{
-				SALR_insertConfigLink(doc);
-			}
+				// This should get changed to something better eventually
+				var isWindows = (navigator.platform.indexOf("Win") != -1);
+				gSALR.service.ProfileInit(isWindows);
+				if (gSALR.service._starterr)
+					throw "SALR Startup Error";
 
-			// Remove the page title prefix/postfix
-			if (persistObject.getPreference("removePageTitlePrefix"))
-			{
-				doc.title = SALR_getPageTitle(doc);
-			}
+				setInterval(gSALR.timerTick, 1000);
 
-			// Call the proper handler for this type of page
-			pageHandler(doc);
-
-			handleBodyClassing(doc);
-
-			var screl;
-			var head = doc.getElementsByTagName('head')[0];
-			if (head)
-			{
-				// XXX: The unload prevents FF 1.5 from using Quick Back Button.
-				//      SALR needs to work with it, but this works to prevent trouble in the meantime.
-				screl = doc.createElement("SCRIPT");
-				screl.setAttribute("language","javascript");
-				screl.setAttribute("src","chrome://salastread/content/pageunload.js");
-				head.appendChild(screl);
-			}
-
-			SALR_IncTimer();
-		}
-
-		if (persistObject.getPreference('enableDebugMarkup'))
-		{
-			var dbg = doc.createElement("DIV");
-			dbg.innerHTML = SALR_debugLog.join("<br>");
-			doc.body.appendChild(dbg);
-		}
-
-		doc.__salastread_processed = true;
-	}
-	catch(ex)
-	{
-		if(!e.runSilent)
-		{
-			if (typeof(ex) == "object")
-			{
-				var errstr = "";
-				for ( var tn in ex )
+				var needToShowChangeLog = false;
+				if (gSALR.service.LastRunVersion != gSALR.service.SALRversion)
 				{
-					errstr += tn + ": " + ex[tn] + "\n";
+					//needToShowChangeLog = !gSALR.service.IsDevelopmentRelease;
+					needToShowChangeLog = true;
+					// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
+					var buildNum = parseInt(gSALR.service.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
+					gSALR.service.checkForSQLPatches(buildNum);
+				}
+				if (needToShowChangeLog == true)
+				{
+					needToShowChangeLog = false;
+					//openDialog("chrome://salastread/content/newfeatures/newfeatures.xul", "SALR_newfeatures", "chrome,centerscreen,dialog=no");
+					// This requires a timeout to function correctly.
+					setTimeout(gSALR.openChangelogTab, 10);
 				}
 
-				if (!persistObject || !persistObject.getPreference('suppressErrors'))
+				// Fill up the cache
+				gSALR.service.populateDataCaches();
+				gSALR.service.LastRunVersion = gSALR.service.SALRversion;
+
+				gSALR.service._needToRunOnce = false;
+			}
+		}
+		catch (e)
+		{
+			alert("SALastRead init error: "+e);
+			if (gSALR.service)
+			{
+				alert("gSALR.service._starterr =\n" + gSALR.service._starterr);
+			}
+		}
+		if (document.getElementById('appcontent'))
+			window.addEventListener('DOMContentLoaded', gSALR.onDOMLoad, true);
+		if (gSALR.service.getPreference("showSAForumMenu") && (document.getElementById("salr-menu") == null))
+			SALR_buildForumMenu();
+	},
+
+	openChangelogTab: function()
+	{
+		gBrowser.selectedTab = gBrowser.addTab("chrome://salastread/content/changelog.xul");
+	},
+
+	onDOMLoad: function(e)
+	{
+		var appcontent = document.getElementById("appcontent"); // browser
+		var doc = e.originalTarget; // document
+
+		if(!appcontent || !doc.location) return;
+
+		// nsSimpleURIs don't have a .host, so check this
+		try
+		{
+			doc.location.host;
+			var simpleURI = false;
+		}
+		catch (ex)
+		{
+			var simpleURI = true;
+		}
+
+		// Bail if we need to
+		if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) == -1 || gSALR.service.getPreference("disabled"))
+		{
+			return;
+		}
+		if (doc.__salastread_processed)
+		{
+			return;
+		}
+
+		// Set a listener on the context menu
+		if (gSALR.service.getPreference("enableContextMenu") && gSALR.service.getPreference("disabled") == false)
+			document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", gSALR.contextMenuShowing, false);
+
+		// Find the proper page handler
+		try
+		{
+			var pageHandler;
+			var pageName = doc.location.pathname.match(/^\/(\w+)\.php/i);
+			if (pageName)
+			{
+				switch(pageName[1])
 				{
-					alert("SALastRead application err: "+errstr);
+					case "index":
+						pageHandler = gSALR.handleIndex;
+						break;
+
+					case "usercp":
+					case "bookmarkthreads":
+						pageHandler = gSALR.handleSubscriptions;
+						break;
+
+					case "account":
+						pageHandler = gSALR.handleAccount;
+						break;
+
+					case "forumdisplay":
+						pageHandler = gSALR.handleForumDisplay;
+						break;
+
+					case "showthread":
+						pageHandler = gSALR.handleShowThread;
+						break;
+
+					case "newreply":
+						pageHandler = gSALR.handleNewReply;
+						break;
+
+					case "editpost":
+						pageHandler = gSALR.handleEditPost;
+						break;
+
+					case "supportmail":
+						pageHandler = gSALR.handleSupport;
+						break;
+
+					case "stats":
+						pageHandler = gSALR.handleStats;
+						break;
+
+					case "misc":
+						pageHandler = gSALR.handleMisc;
+						break;
+						
+					case "member":
+						pageHandler = gSALR.handleProfileView;
+						break;
 				}
-				else
+			}
+			else
+			{
+				// Search results
+				if (doc.location.pathname == '/f/search/result')
+					pageHandler = gSALR.handleSearch;
+			}
+
+			// Don't try to format the page if it's not supported
+			if (pageHandler)
+			{
+				// Append custom CSS files to the head
+				if (gSALR.service.getPreference("gestureEnable"))
+					gSALR.insertCSS(doc, "chrome://salastread/content/css/gestureStyling.css");
+				if (gSALR.service.getPreference("removeHeaderAndFooter"))
+					gSALR.insertCSS(doc, "chrome://salastread/content/css/removeHeaderAndFooter.css");
+				if (gSALR.service.getPreference("enablePageNavigator") || gSALR.service.getPreference("enableForumNavigator"))
+					gSALR.insertCSS(doc, "chrome://salastread/content/css/pageNavigator.css");
+
+				// Insert a text link to open the options menu
+				if (gSALR.service.getPreference('showTextConfigLink'))
+					gSALR.insertSALRConfigLink(doc);
+
+				// Remove the page title prefix/postfix
+				if (gSALR.service.getPreference("removePageTitlePrefix"))
+					doc.title = gSALR.getPageTitle(doc);
+
+				// Call the proper handler for this type of page
+				pageHandler(doc);
+
+				gSALR.handleBodyClassing(doc);
+
+				var screl;
+				var head = doc.getElementsByTagName('head')[0];
+				if (head)
 				{
-					if (!persistObject || !persistObject.getPreference('suppressErrors'))
+					// XXX: The unload prevents FF 1.5 from using Quick Back Button.
+					//      SALR needs to work with it, but this works to prevent trouble in the meantime.
+					screl = doc.createElement("SCRIPT");
+					screl.setAttribute("language","javascript");
+					screl.setAttribute("src","chrome://salastread/content/pageunload.js");
+					head.appendChild(screl);
+				}
+
+				gSALR.timerPageCount++;
+			}
+
+			if (gSALR.service.getPreference('enableDebugMarkup'))
+			{
+				var dbg = doc.createElement("DIV");
+				dbg.innerHTML = SALR_debugLog.join("<br>");
+				doc.body.appendChild(dbg);
+			}
+
+			doc.__salastread_processed = true;
+		}
+		catch(ex)
+		{
+			if(!e.runSilent)
+			{
+				if (typeof(ex) == "object")
+				{
+					var errstr = "";
+					for ( var tn in ex )
 					{
-						alert("SALastRead application err: "+ex);
+						errstr += tn + ": " + ex[tn] + "\n";
+					}
+
+					if (!gSALR.service || !gSALR.service.getPreference('suppressErrors'))
+					{
+						alert("SALastRead application err: "+errstr);
+					}
+					else
+					{
+						if (!gSALR.service || !gSALR.service.getPreference('suppressErrors'))
+						{
+							alert("SALastRead application err: "+ex);
+						}
 					}
 				}
 			}
-		}
-		else
-		{
-			throw ex;
-		}
-	}
-}
-
-function SALR_PageFinishedLoading(e)
-{
-	var doc = e.originalTarget;
-	if (persistObject.getPreference('reanchorThreadOnLoad'))
-	{
-		if (doc.location.href.match(/\#(.*)$/))
-		{
-			var post = doc.getElementById(doc.location.href.match(/\#(.*)$/)[1]);
-			if (post)
+			else
 			{
-				post.scrollIntoView(true);
+				throw ex;
 			}
 		}
-	}
-	doc.__salastread_loading = false;
-}
+	},
 
-function salastread_windowOnBeforeUnload(e)
-{
-	if (window.__salastread_quotedoc && e.originalTarget == window.__salastread_quotedoc)
+	pageFinishedLoading: function(e)
 	{
-		if(quickQuoteSubmitting)
+		// Only called for showthread pages
+		window.removeEventListener("load", gSALR.pageFinishedLoading, true);
+		var doc = e.originalTarget;
+		if (gSALR.service.getPreference('reanchorThreadOnLoad'))
 		{
+			if (doc.location.href.match(/\#(.*)$/))
+			{
+				var post = doc.getElementById(doc.location.href.match(/\#(.*)$/)[1]);
+				if (post)
+				{
+					post.scrollIntoView(true);
+				}
+			}
+		}
+		doc.__salastread_loading = false;
+	},
+
+	windowOnBeforeUnload: function(e)
+	{
+		if (window.__salastread_quotedoc && e.originalTarget == window.__salastread_quotedoc)
+		{
+			if(quickQuoteSubmitting)
+			{
+				return true;
+			}
+
+			if (quickquotewin && !quickquotewin.closed)
+			{
+				quickquotewin.detachFromDocument();
+			}
 			return true;
 		}
+	},
 
-		if (quickquotewin && !quickquotewin.closed)
+	windowOnUnload: function(e)
+	{
+		if (window.__salastread_quotedoc && e.originalTarget == window.__salastread_quotedoc)
 		{
-			quickquotewin.detachFromDocument();
+			releaseQuickQuoteVars();
 		}
-		return true;
-	}
-}
-
-function salastread_windowOnUnload(e)
-{
-	if (window.__salastread_quotedoc && e.originalTarget == window.__salastread_quotedoc)
-	{
-		releaseQuickQuoteVars();
-	}
-	if (e.originalTarget.__salastread_processed)
-	{
-		SALR_DecTimer();
-		persistObject.SaveTimerValue();
-	}
-}
-
+		if (e.originalTarget.__salastread_processed)
+		{
+			gSALR.timerPageCount--;
+			gSALR.service.SaveTimerValue();
+		}
+	},
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Page Handlers ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-// Do anything needed to the post list in a forum
-function handleForumDisplay(doc)
-{
-	var failed, i, e;  // Little variables that'll get reused
-	var forumid = persistObject.getForumID(doc);
-	if (forumid === false)
+	// Do anything needed to the post list in a forum
+	handleForumDisplay: function(doc)
 	{
-		// Can't determine forum id so stop
-		return;
-	}
-	// The following forums have special needs that must be dealt with
-	var flags = {
-		"inFYAD" : persistObject.inFYAD(forumid),
-		"inBYOB" : persistObject.inBYOB(forumid),
-		"inDump" : persistObject.inDump(forumid),
-		"inAskTell" : persistObject.inAskTell(forumid),
-		"inGasChamber" : persistObject.inGasChamber(forumid),
-		"inArchives" : (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1)
-	};
-
-	if (doc.getElementById('forum') == null) {
-		// /!\ Forum table isn't there, abort! /!\
-		return;
-	}
-
-	if (!persistObject.gotForumList)
-	{
-		// Replace this function once the AJAXified JSON is added to the forums
-		// function will check timestamp which is stored in preferences
-
-		grabForumList(doc);
-		persistObject.gotForumList = true;
-	}
-
-	if (flags.inFYAD && !persistObject.getPreference("enableFYAD")) {
-		// We're in FYAD and FYAD support has been turned off
-		return;
-	}
-	
-	// Add our thread list CSS
-	persistObject.insertDynamicCSS(doc, persistObject.generateDynamicThreadListCSS(flags.inFYAD,flags.inBYOB));
-
-	// Start a transaction to try and reduce the likelihood of database corruption
-	var ourTransaction = false;
-	if (persistObject.database.transactionInProgress) {
-		ourTransaction = true;
-		persistObject.database.beginTransactionAs(persistObject.database.TRANSACTION_DEFERRED);
-	}
-
-	var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-	if (pageList)
-	{
-		if (pageList.length > 1)
+		var failed, i, e;  // Little variables that'll get reused
+		var forumid = gSALR.service.getForumID(doc);
+		if (forumid === false)
 		{
-			pageList = pageList[pageList.length-1];
-		}
-		else
-		{
-			pageList = pageList[0];
-		}
-		var numPages = pageList.innerHTML.match(/\((\d+)\)/);
-		var curPage = persistObject.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
-		if (pageList.childNodes.length > 1) // Are there pages
-		{
-			// Suppress a page-load error
-			if (!numPages)
-				return;
-			numPages = parseInt(numPages[1], 10);
-			curPage = parseInt(curPage.innerHTML, 10);
-		}
-		else
-		{
-			numPages = 1;
-			curPage = 1;
-		}
-	}
-
-	doc.__SALR_curPage = curPage;
-	doc.__SALR_maxPage = numPages;
-
-	// Insert the forums paginator
-	if (persistObject.getPreference("enableForumNavigator"))
-	{
-		persistObject.addPagination(doc);
-	}
-	if (persistObject.getPreference("gestureEnable"))
-	{
-		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
-		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
-	}
-
-	// Turn on keyboard navigation
-	if (persistObject.getPreference('quickPostJump'))
-	{
-		doc.addEventListener('keypress', SALR_QuickPostJump, false);
-	}
-
-	// Replace post button
-	if (persistObject.getPreference("useQuickQuote") && !flags.inGasChamber)
-	{
-		var postbutton = persistObject.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
-		if (postbutton)
-		{
-			attachQuickQuoteHandler(undefined,doc,persistObject.turnIntoQuickButton(doc, postbutton, forumid),"",0);
-		}
-	}
-
-	// Snag Forum Moderators
-	if (!flags.inGasChamber && !flags.inArchives)
-	{
-		var modarray = doc.getElementById('mods').getElementsByTagName('a');
-		var modcount = modarray.length;
-		for (i = 0; i < modcount; i++)
-		{
-			userid = modarray[i].href.match(/userid=(\d+)/i)[1];
-			username = modarray[i].innerHTML;
-			if (!persistObject.isMod(userid) && !persistObject.isAdmin(userid))
-			{
-				persistObject.addMod(userid, username);
-			}
-		}
-	}
-
-	// Advanced thread filtering interface
-	var prefAdvancedThreadFiltering = persistObject.getPreference("advancedThreadFiltering");
-	if (prefAdvancedThreadFiltering && !flags.inDump && !flags.inArchives)
-	{
-		rebuildFilterBox(doc);
-	}
-
-	if (!flags.inDump)
-	{
-		// Capture and store the post icon # -> post icon filename relationship
-		var filterIcons = doc.getElementById("filtericons");
-		var iconNumber, iconFilename;
-		var postIcons = persistObject.selectNodes(doc, filterIcons, "A[contains(@href,'posticon=')]");
-		var divIcon, seperator, divClone, afIgnoredIcons, anyLeft, allIgnored, noneIgnored, searchString;
-		var atLeastOneIgnored = false;
-		var prefIgnoredPostIcons = persistObject.getPreference("ignoredPostIcons");
-		var prefIgnoredKeywords = persistObject.getPreference("ignoredKeywords");
-
-		for (i in postIcons)
-		{
-			if ((postIcons[i].href.search(/posticon=(\d+)/i) > -1) && (postIcons[i].firstChild.src.search(/posticons\/(.*)/i) > -1))
-			{
-				iconNumber = parseInt(postIcons[i].href.match(/posticon=(\d+)/i)[1]);
-				// Additional stuff for advanced thread filtering
-				if (prefAdvancedThreadFiltering && !flags.inArchives)
-				{
-					// First move all the existing icons and their spacers into a div for easy handling
-					divIcon = doc.createElement("div");
-					postIcons[i].parentNode.insertBefore(divIcon,postIcons[i]);
-					seperator = postIcons[i].nextSibling;
-					divIcon.appendChild(postIcons[i]);
-					divIcon.appendChild(seperator);
-					divIcon.style.visibility = "visible";
-					divIcon.style.display = "inline";
-
-					// Now make a copy of that div and stick it down in the ignored icons div, hidden
-					divClone = divIcon.cloneNode(true);
-					afIgnoredIcons = doc.getElementById("ignoredicons");
-					afIgnoredIcons.appendChild(divClone);
-
-					searchString = "(^|\\s)" + iconNumber + ",";
-					searchString = new RegExp(searchString , "gi");
-
-					// Is this icon ignored already?
-					if (prefIgnoredPostIcons.search(searchString) > -1)
-					{
-						persistObject.toggleVisibility(divIcon,true);
-						atLeastOneIgnored = true;
-					}
-					else
-					{
-						persistObject.toggleVisibility(divClone,true);
-					}
-
-					// Add the appropriate click events
-					postIcons[i].parentNode.addEventListener("click", clickToggleIgnoreIcon, false);
-					divClone.addEventListener("click", clickToggleIgnoreIcon, false);
-				}
-			}
-		}
-
-		// Little bit of house cleaning after cycling through the icons
-		if (prefAdvancedThreadFiltering && !flags.inArchives)
-		{
-			allIgnored = doc.getElementById("alliconsignored");
-			noneIgnored = doc.getElementById("noiconsignored");
-
-			// Hide or show the placeholder labels
-			anyLeft = persistObject.selectSingleNode(doc, filterIcons, "DIV[contains(@style,'visibility: visible; display: inline;')]");
-			if (!anyLeft && allIgnored.style.visibility == "hidden")
-			{
-				persistObject.toggleVisibility(allIgnored,true);
-			}
-			if (atLeastOneIgnored && noneIgnored.style.visibility == "visible")
-			{
-				persistObject.toggleVisibility(noneIgnored,true);
-			}
-		}
-	}
-
-	handleThreadList(doc, forumid, flags);
-
-	if (ourTransaction)
-	{
-		// Finish off the transaction
-		persistObject.database.commitTransaction();
-	}
-}
-
-// Do anything needed to the subscribed threads list
-function handleSubscriptions(doc)
-{
-	// Add our thread list CSS
-	persistObject.insertDynamicCSS(doc, persistObject.generateDynamicThreadListCSS(false,false));
-
-	var cpusernav = persistObject.selectSingleNode(doc, doc, "//ul[contains(@id,'usercpnav')]");
-	if (!cpusernav) {
-		// Don't see the control panel menu so stop
-		return;
-	}
-
-	if (persistObject.getPreference("username") == '')
-	{
-		var username = persistObject.selectSingleNode(doc,doc,"//div[contains(@class, 'breadcrumbs')]/b");
-		if (username)
-		{
-			username = escape(username.textContent.substr(52));
-			persistObject.setPreference("username", username);
-		}
-	}
-
-	handleThreadList(doc, null, { "inUserCP" : true });
-}
-
-//handle highlighting of user cp/forum listings
-function handleThreadList(doc, forumid, flags)
-{
-	//get preferences once
-	var dontHighlightThreads = persistObject.getPreference("dontHighlightThreads");
-	var disableNewReCount = persistObject.getPreference("disableNewReCount");
-	var newPostCountUseOneLine = persistObject.getPreference("newPostCountUseOneLine");
-	var disableGradients = persistObject.getPreference("disableGradients");
-	var showUnvisitIcon = persistObject.getPreference("showUnvisitIcon");
-	var swapIconOrder = persistObject.getPreference("swapIconOrder");
-	var showGoToLastIcon = persistObject.getPreference("showGoToLastIcon");
-	var alwaysShowGoToLastIcon = persistObject.getPreference("alwaysShowGoToLastIcon");
-	var readWithNewLight = persistObject.getPreference("readWithNewLight");
-	var readWithNewDark = persistObject.getPreference("readWithNewDark");
-	var readLight = persistObject.getPreference("readLight");
-	var readDark = persistObject.getPreference("readDark");
-	var postedInThreadRe = persistObject.getPreference("postedInThreadRe");
-	var modColor = persistObject.getPreference("modColor");
-	var modBackground = persistObject.getPreference("modBackground");
-	var adminColor = persistObject.getPreference("adminColor");
-	var adminBackground = persistObject.getPreference("adminBackground");
-	var highlightUsernames = persistObject.getPreference("highlightUsernames");
-	var dontBoldNames = persistObject.getPreference("dontBoldNames");
-	var showSALRIcons = persistObject.getPreference("showSALRIcons");
-	var showTWNP = persistObject.getPreference('showThreadsWithNewPostsFirst');
-	var showTWNPCP = persistObject.getPreference('showThreadsWithNewPostsFirstCP');
-	var showTWNPCPS = persistObject.getPreference('showThreadsWithNewPostsFirstCPStickies');
-	var postsPerPage = persistObject.getPreference('postsPerPage');
-	var advancedThreadFiltering = persistObject.getPreference("advancedThreadFiltering");
-	var ignoredPostIcons = persistObject.getPreference("ignoredPostIcons");
-	var ignoredKeywords = persistObject.getPreference("ignoredKeywords");
-	var superIgnoreUsers = persistObject.getPreference("superIgnore");
-
-	// This should eventually be redone and moved to the flags section.
-	if (typeof(flags.inUserCP) === undefined)
-		flags.inUserCP = false;
-
-	// We'll need lots of variables for this
-	var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox, threadLastPostBox;
-	var threadTitle, threadId, threadOPId, threadRe;
-	var threadLRCount, unvistIcon, lpIcon, lastPostName;
-	var userPosterNote, lastLink, threadReCount, searchString;
-	var starredthreads = persistObject.starList, ignoredthreads = persistObject.ignoreList;
-	var table = document.getElementById('forum');
-
-	// We need to reset this every time the page is fully loaded
-	persistObject.setPreference("filteredThreadCount",0);
-
-	// Here be where we work on the thread rows
-	var threadlist = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
-
-	// These are insertion points for thread sorting
-	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
-	{
-		var anchorTop = persistObject.selectSingleNode(doc, doc, "//table[@id='forum']/tbody");
-
-		if (anchorTop)
-		{
-			var anchorAnnouncement = doc.createElement("tr");
-			anchorTop.insertBefore(anchorAnnouncement,threadlist[0]);
-			var anchorUnreadStickies = doc.createElement("tr");
-			anchorTop.insertBefore(anchorUnreadStickies,threadlist[0]);
-			var anchorReadStickies = doc.createElement("tr");
-			anchorTop.insertBefore(anchorReadStickies,threadlist[0]);
-			var anchorThreads = doc.createElement("tr");
-			anchorTop.insertBefore(anchorThreads,threadlist[0]);
-		}
-		else
-		{
-			// Oh dear there are no threads to sort!
-			// Change these options for now so that it doesn't error later
-			showTWNP = false;
-			showTWNPCP = false;
-		}
-	}
-
-	for (var i in threadlist)
-	{
-		var thread = threadlist[i];
-		threadTitleBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
-		if (!threadTitleBox)
-		{
-			// Either the page didn't finish loading or SA didn't send the full page.
+			// Can't determine forum id so stop
 			return;
 		}
-		var ttb_a0 = threadTitleBox.getElementsByTagName('a')[0];
-		if (ttb_a0 && ttb_a0.className.search(/announcement/i) > -1)
-		{
-			if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
-			{
-				anchorTop.insertBefore(thread,anchorAnnouncement);
-			}
-			// It's an announcement so skip the rest
-			continue;
-		}
+		// The following forums have special needs that must be dealt with
+		var flags = {
+			"inFYAD" : gSALR.service.inFYAD(forumid),
+			"inBYOB" : gSALR.service.inBYOB(forumid),
+			"inDump" : gSALR.service.inDump(forumid),
+			"inAskTell" : gSALR.service.inAskTell(forumid),
+			"inGasChamber" : gSALR.service.inGasChamber(forumid),
+			"inArchives" : (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1)
+		};
 
-		threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'thread_title')]");
-		if (!threadTitleLink)
-		{
-			threadTitleLink = persistObject.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
-		}
-		if (!threadTitleLink) continue;
-		threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1], 10);
-		threadTitle = threadTitleLink.innerHTML;
-		if (persistObject.isThreadIgnored(threadId))
-		{
-			// If thread is ignored might as well remove it and stop now
-			thread.parentNode.removeChild(thread);
-			// Update the title just incase we don't know what it is
-			persistObject.setThreadTitle(threadId, threadTitle);
-			continue;
-		}
-
-		threadAuthorBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
-		threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
-		if (!threadAuthorBox || !threadRepliesBox)
-		{
-			// Either the page didn't finish loading or SA didn't send the full page.
+		if (doc.getElementById('forum') == null) {
+			// /!\ Forum table isn't there, abort! /!\
 			return;
 		}
-		threadOPLink = threadAuthorBox.getElementsByTagName('a');
-		if (threadOPLink[0])
+
+		if (!gSALR.service.gotForumList)
 		{
-			threadOPId = parseInt(threadOPLink[0].href.match(/userid=(\d+)/i)[1]);
+			// Replace this function once the AJAXified JSON is added to the forums
+			// function will check timestamp which is stored in preferences
+
+			grabForumList(doc);
+			gSALR.service.gotForumList = true;
 		}
 
-		if (threadOPId)
-		{
-			// If it was started by someone ignored, hide the thread
-			if (superIgnoreUsers && persistObject.isUserIgnored(threadOPId))
-			{
-				thread.parentNode.removeChild(thread);
-				continue;
-			}
+		if (flags.inFYAD && !gSALR.service.getPreference("enableFYAD")) {
+			// We're in FYAD and FYAD support has been turned off
+			return;
+		}
+		
+		// Add our thread list CSS
+		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicThreadListCSS(flags.inFYAD,flags.inBYOB));
+
+		// Start a transaction to try and reduce the likelihood of database corruption
+		var ourTransaction = false;
+		if (gSALR.service.database.transactionInProgress) {
+			ourTransaction = true;
+			gSALR.service.database.beginTransactionAs(gSALR.service.database.TRANSACTION_DEFERRED);
 		}
 
-		if (advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP)
-		{
-			// Check for ignored keywords
-			var keywordList = ignoredKeywords.split("|");
-			var threadBeGone = false;
-
-			for (var j in keywordList)
-			{
-				var keywords = keywordList[j];
-				if (!keywords || threadBeGone)
-				{
-					continue;
-				}
-				searchString = new RegExp(keywords, "gi");
-
-				if (threadTitle.search(searchString) > -1 && thread.style.visibility != "hidden")
-				{
-					persistObject.toggleVisibility(thread,false);
-					filteredThreadCount(doc,1);
-					threadBeGone = true;
-				}
-			}
-		}
-
-		lastLink = persistObject.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[./text() = 'Last']");
-		if (lastLink)
-		{
-			threadReCount = parseInt(threadRepliesBox.textContent, 10) + 1;
-			lastPageNum = Math.ceil(threadReCount / postsPerPage);
-			lastLink.innerHTML += ' (' + lastPageNum + ')';
-		}
-
-		// So right click star/ignore works
-		thread.className += " salastread_thread_" + threadId;
-		// So ignore/star can get a title immediately
-		thread.__salastread_threadtitle = threadTitle;
-
-		// Is this icon ignored?
-		threadIconBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
-		if (flags && forumid && advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.src.search(/posticons\/(.*)/i) > -1)
-		{
-			var iconnum = threadIconBox.firstChild.src.match(/#(\d+)$/)[1];
-			if (ignoredPostIcons.search(iconnum) > -1 && thread.style.visibility != "hidden")
-			{
-				persistObject.toggleVisibility(thread,false);
-				filteredThreadCount(doc,1);
-			}
-		}
-
-		var divLastSeen = persistObject.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
-		if (divLastSeen)
-		{
-			// Thread is read so let's work our magic
-			var iconMarkUnseen = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
-			var iconJumpLastRead = persistObject.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
-
-			// For thread sorting later
-			if (iconJumpLastRead && ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP)))
-			{
-				thread.className += ' moveup';
-			}
-
-			if (persistObject.didIPostHere(threadId))
-			{
-				threadRepliesBox.className += ' salrPostedIn';
-			}
-
-			// Thread highlighting
-			if (!dontHighlightThreads)
-			{
-				if (iconJumpLastRead)
-				{
-					thread.className += ' newposts';
-				}
-				if (iconMarkUnseen)
-				{
-					// Ask/Tell and maybe other forums forget this at times
-					if (thread.className.match(/(^|\s)seen(\s|$)/i) == null)
-					{
-						thread.className += ' seen';
-					}
-					// And to make sure it removes the post count properly
-					if (!disableNewReCount)
-					{
-						iconMarkUnseen.addEventListener("click", clickMarkUnseen, false);
-					}
-				}
-			}
-
-			//SALR replacing forums buttons
-			if (!disableNewReCount && iconJumpLastRead)
-			{
-				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B");
-				threadRe = threadRe.cloneNode(true);
-				threadRe.style.fontWeight = "normal";
-				threadRe.style.fontSize = "75%";
-				if (newPostCountUseOneLine)
-				{
-					threadRepliesBox.innerHTML += "&nbsp;(";
-					threadRepliesBox.appendChild(threadRe);
-					threadRepliesBox.innerHTML += ")";
-				}
-				else
-				{
-					threadRepliesBox.innerHTML += "<br />(";
-					threadRepliesBox.appendChild(threadRe);
-					threadRepliesBox.innerHTML += ")";
-				}
-			}
-
-			// Remove the new replies count from the default box if we are showing the custom icon
-			if (showGoToLastIcon && iconJumpLastRead)
-			{
-				threadRe = persistObject.selectSingleNode(doc, iconJumpLastRead, "B");
-				iconJumpLastRead.removeChild(threadRe);
-			}
-
-
-			if (alwaysShowGoToLastIcon && !iconJumpLastRead)
-			{
-				iconJumpLastRead = doc.createElement("a");
-				iconJumpLastRead.title = "Jump to last read post";
-				iconJumpLastRead.href = "/showthread.php?threadid=" + threadId + "&goto=newpost";
-				iconJumpLastRead.className = "count";
-				if (disableNewReCount)
-				{
-					threadRe = doc.createElement("b");
-					threadRe.innerHTML = "0";
-					iconJumpLastRead.appendChild(threadRe);
-				}
-				divLastSeen.appendChild(iconJumpLastRead);
-			}
-
-			if (showUnvisitIcon && !showGoToLastIcon && iconJumpLastRead)
-			{
-				// Fix up the background gradient on the default Jump To Last link
-				divLastSeen.style.background = 'url(chrome://salastread/skin/lastseen-gradient.gif)';
-			}
-
-			// Switch the Mark as Unseen and Jump to Last Read icon order
-			if (swapIconOrder && iconMarkUnseen && iconJumpLastRead)
-			{
-				divLastSeen.insertBefore(iconJumpLastRead, iconMarkUnseen);
-			}
-		}
-
-		// Sort the threads, new stickies, then stickies, then new threads, then threads
-		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
-		{
-			var iAmASticky = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'sticky')]");
-			var iHaveNewPosts = (thread.className.search(/moveup/i) > -1);
-
-			if (iAmASticky)
-			{
-				if (iHaveNewPosts)
-				{
-					if (flags.inUserCP && !showTWNPCPS)
-						anchorTop.insertBefore(thread,anchorThreads);
-					else
-						anchorTop.insertBefore(thread,anchorUnreadStickies);
-				}
-				else if (!flags.inUserCP)
-				{
-					anchorTop.insertBefore(thread,anchorReadStickies);
-				}
-			}
-			else if (iHaveNewPosts)
-			{
-				anchorTop.insertBefore(thread,anchorThreads);
-			}
-		}
-
-		if (persistObject.isThreadStarred(threadId))
-		{
-			threadTitleBox.className += ' starred';
-		}
-
-		if (highlightUsernames)
-		{
-			var userColoring, threadLastPostBox, lastPostId;
-			var posterColor, posterBG;
-
-			// First color the Author column
-			if (threadOPId)
-			{
-				posterColor = false;
-				posterBG = false;
-
-				if (persistObject.isMod(threadOPId))
-				{
-					posterColor = modColor;
-					posterBG =  modBackground;
-				}
-
-				if (persistObject.isAdmin(threadOPId))
-				{
-					posterColor = adminColor;
-					posterBG =  adminBackground;
-				}
-
-				userColoring = persistObject.isUserIdColored(threadOPId);
-				if (userColoring)
-				{
-					if (userColoring.color && userColoring.color != "0")
-					{
-						posterColor = userColoring.color;
-					}
-					if (userColoring.background && userColoring.background != "0")
-					{
-						posterBG = userColoring.background;
-					}
-				}
-
-				if (posterBG != false && posterBG != "0")
-				{
-					threadAuthorBox.style.backgroundColor = posterBG;
-				}
-				if (posterColor != false && posterColor != "0")
-				{
-					threadAuthorBox.getElementsByTagName("a")[0].style.color = posterColor;
-					if (!dontBoldNames)
-					{
-						threadAuthorBox.getElementsByTagName("a")[0].style.fontWeight = "bold";
-					}
-				}
-			}
-
-			// Then color the Killed By column
-			threadLastPostBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'lastpost')]");
-			if (!threadLastPostBox)
-			{
-				// Either the page didn't finish loading or SA didn't send the full page.
-				return;
-			}
-			lastPostLink = threadLastPostBox.getElementsByTagName('a');
-			if (lastPostLink[0])
-			{
-				lastPostId = persistObject.getUserId(lastPostLink[0].innerHTML);
-			}
-
-			if (lastPostId)
-			{
-				posterColor = false;
-				posterBG = false;
-
-				if (persistObject.isMod(lastPostId))
-				{
-					posterColor = modColor;
-					posterBG =  modBackground;
-				}
-
-				if (persistObject.isAdmin(lastPostId))
-				{
-					posterColor = adminColor;
-					posterBG =  adminBackground;
-				}
-
-				userColoring = persistObject.isUserIdColored(lastPostId);
-				if (userColoring)
-				{
-					if (userColoring.color && userColoring.color != "0")
-					{
-						posterColor = userColoring.color;
-					}
-					if (userColoring.background && userColoring.background != "0")
-					{
-						posterBG = userColoring.background;
-					}
-				}
-
-				if (posterBG != false && posterBG != "0")
-				{
-					threadLastPostBox.style.backgroundColor = posterBG;
-				}
-				if (posterColor != false && posterColor != "0")
-				{
-					threadLastPostBox.getElementsByTagName("a")[0].style.color = posterColor;
-				}
-			}
-		}
-	}
-
-	// Clean up insertion points for thread sorting
-	if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
-	{
-		anchorTop.removeChild(anchorAnnouncement);
-		anchorTop.removeChild(anchorUnreadStickies);
-		anchorTop.removeChild(anchorReadStickies);
-		anchorTop.removeChild(anchorThreads);
-	}
-}
-
-function handleShowThread(doc)
-{
-	var failed, i, e; // Little variables that'll get reused
-	if (doc.getElementById('thread') == null)
-	{
-		// If there is no thread div then abort since something's not right
-		return;
-	}
-
-	try
-	{
-		var forumid = persistObject.getForumID(doc);
-		var threadid = persistObject.getThreadID(doc);
-
-		if (!forumid || !threadid)
-		{
-			// Feel free to elaborate on this later
-			throw false;
-		}
-	}
-	catch(e)
-	{
-		// Can't get the forum or thread id so abort for now
-		return;
-	}
-
-	doc.__SALR_forumid = forumid;
-	doc.__SALR_threadid = threadid;
-
-	// The following forums have special needs that must be dealt with
-	var inFYAD = persistObject.inFYAD(forumid);
-	var inBYOB = persistObject.inBYOB(forumid);
-	var inDump = persistObject.inDump(forumid);
-	var inAskTell = persistObject.inAskTell(forumid);
-	var inGasChamber = persistObject.inGasChamber(forumid);
-	// Obsolete:
-	var inArchives = (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1);
-	var singlePost = (doc.location.search.search(/action=showpost/i) > -1);
-	var username = unescape(persistObject.getPreference('username'));
-
-	if (inFYAD && !persistObject.getPreference("enableFYAD"))
-	{
-		// We're in FYAD and FYAD support has been turned off
-		return;
-	}
-
-	// Add our ShowThread CSS
-	persistObject.insertDynamicCSS(doc, persistObject.generateDynamicShowThreadCSS(inFYAD, inBYOB));
-
-	doc.body.className += " salastread_forum" + forumid;
-	// used by the context menu to allow options for this thread
-	doc.body.className += " salastread_thread_" + threadid;
-
-	// Grab the thread title
-	/* Note: it will only actually happen if the thread's already in the cache.
-		Perhaps we can remove this call?
-	*/
-	persistObject.setThreadTitle(threadid, SALR_getPageTitle(doc));
-
-	// Grab the go to dropdown
-	if (!persistObject.gotForumList && !singlePost)
-	{
-		grabForumList(doc);
-		persistObject.gotForumList = true;
-	}
-
-	var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-	if (pageList[0])
-	{
-		if (pageList.length >  1)
-		{
-			pageList = pageList[pageList.length-1];
-		}
-		else
-		{
-			pageList = pageList[0];
-		}
-		var numPages = pageList.innerHTML.match(/\((\d+)\)/);
-		var curPage = persistObject.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
-		if (pageList.childNodes.length > 1) // Are there pages
-		{
-			numPages = parseInt(numPages[1], 10);
-			curPage = parseInt(curPage.innerHTML, 10);
-		}
-		else
-		{
-			numPages = 1;
-			curPage = 1;
-		}
-	}
-
-	doc.__SALR_curPage = curPage;
-	doc.__SALR_maxPage = numPages;
-
-	// Insert the thread paginator
-	if (persistObject.getPreference("enablePageNavigator") && !singlePost)
-	{
-		persistObject.addPagination(doc);
-	}
-	if (persistObject.getPreference("gestureEnable"))
-	{
-		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
-		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
-	}
-
-	// Grab threads/posts per page
-	// Should this be changed to only update it if it changes?  Is there a penalty for changing it everytime?
-	var perpage = persistObject.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
-	if (perpage)
-	{
-		perpage = perpage.href.match(/perpage=(\d+)/i)[1];
-		persistObject.setPreference("postsPerPage", perpage);
-	}
-	else
-	{
-		perpage = 0;
-	}
-
-	// Check if the thread is closed
-	if (persistObject.selectSingleNode(doc, doc, "//A[contains(@href,'action=newreply&threadid')]//IMG[contains(@src,'closed')]") == null)
-	{
-		var threadClosed = false;
-	}
-	else
-	{
-		var threadClosed = true;
-	}
-
-	// Replace post button
-	if (persistObject.getPreference("useQuickQuote") && !inGasChamber)
-	{
-		var postbuttons = persistObject.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newthread')]");
-		if (postbuttons.length > 0)
-		{
-			for (i in postbuttons)
-			{
-				attachQuickQuoteHandler(undefined,doc,persistObject.turnIntoQuickButton(doc, postbuttons[i], forumid),"",0);
-			}
-		}
-		if (!threadClosed)
-		{
-			var replybuttons = persistObject.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
-			if (replybuttons.length > 0)
-			{
-				for (i in replybuttons)
-				{
-					attachQuickQuoteHandler(threadid,doc,persistObject.turnIntoQuickButton(doc, replybuttons[i], forumid),"",0);
-				}
-			}
-		}
-	}
-
-	if (persistObject.getPreference('quickPostJump'))
-	{
-		doc.addEventListener('keypress', SALR_QuickPostJump, false);
-	}
-
-	var searchThis = persistObject.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
-	if (searchThis)
-	{
-		if (persistObject.getPreference("replyCountLinkinThreads"))
-		{
-			var replyCountLink = doc.createElement("A");
-			replyCountLink.href="javascript:void(window.open('misc.php?s=&action=whoposted&threadid=" + threadid + "#fromthread', 'whoposted', 'toolbar=no,scrollbars=yes,resizable=yes,width=230,height=200'))";
-			replyCountLink.innerHTML = "Who posted?";
-			replyCountLink.style.fontSize = "10px";
-			replyCountLink.style.cssFloat = "left";
-			replyCountLink.style.marginLeft = "8px";
-			replyCountLink.style.color = "#FFFFFF";
-			// Plug it in right after the "Search thread:" form
-			searchThis.parentNode.insertBefore(replyCountLink,searchThis.nextSibling);
-			searchThis.parentNode.insertBefore(doc.createTextNode(" "),searchThis.nextSibling);
-		}
-		// SA's "Search thread" box is disabled; add our own
-		if (!persistObject.getPreference("hideThreadSearchBox") && searchThis.firstChild.nodeName == '#text')
-		{
-			// Prevent weird zoom behavior
-			searchThis.parentNode.style.overflow = "hidden";
-			var newSearchBox = doc.createElement('form');
-			newSearchBox.action = 'http://forums.somethingawful.com/f/search/submit';
-			newSearchBox.method = 'post';
-			newSearchBox.className = 'threadsearch'; 
-			var newSearchDiv = doc.createElement('div');
-			newSearchBox.appendChild(newSearchDiv);
-			quickQuoteAddHidden(doc,newSearchDiv,'forumids',forumid);
-			quickQuoteAddHidden(doc,newSearchDiv,'groupmode','0');
-			quickQuoteAddHidden(doc,newSearchDiv,'opt_search_posts','on');
-			quickQuoteAddHidden(doc,newSearchDiv,'opt_search_titles','on');
-			quickQuoteAddHidden(doc,newSearchDiv,'perpage','20');
-			quickQuoteAddHidden(doc,newSearchDiv,'search_mode','ext');
-			quickQuoteAddHidden(doc,newSearchDiv,'show_post_previews','1');
-			quickQuoteAddHidden(doc,newSearchDiv,'sortmode','1');
-			quickQuoteAddHidden(doc,newSearchDiv,'uf_posts','on');
-			quickQuoteAddHidden(doc,newSearchDiv,'userid_filters','');
-			quickQuoteAddHidden(doc,newSearchDiv,'username_filter','type a username');
-			var newSearchText = doc.createElement('input');
-			newSearchText.size = '25';
-			newSearchText.value = 'Added by SALR';
-			newSearchText.style.fontStyle = 'italic';
-			newSearchText.style.color = '#BBBBBB';
-			newSearchText.__unfocused = true;
-			newSearchText.onfocus = function()
-			{
-				if (newSearchText.__unfocused == true)
-				{
-					newSearchText.style.fontStyle = 'normal';
-					newSearchText.style.color = '';
-					newSearchText.value = '';
-					newSearchText.__unfocused = false;
-				}
-			}
-
-			// Don't accidentally trigger keyboard navigation
-			newSearchText.onkeypress = function(evt)
-			{
-				// User hit enter
-				if (evt.keyCode == 13)
-				{
-					quickQuoteAddHidden(doc,newSearchBox,'keywords','threadid:'+threadid+' '+newSearchText.value);
-					newSearchBox.submit();
-					return false;
-				}
-				evt.stopPropagation();
-			}
-			newSearchDiv.appendChild(newSearchText);
-			var newSearchButton = doc.createElement('input');
-			newSearchButton.type='button';
-			newSearchButton.value='Search thread';
-			newSearchButton.onclick = function()
-			{
-				quickQuoteAddHidden(doc,newSearchBox,'keywords','threadid:'+threadid+' '+newSearchText.value);
-				newSearchBox.submit();
-			}
-			newSearchDiv.appendChild(newSearchButton);
-			searchThis.parentNode.insertBefore(newSearchBox,searchThis.nextSibling);
-		}
-	}
-
-	// get the posts to iterate through
-	var postlist = persistObject.selectNodes(doc, doc, "//table[contains(@id,'post')]");
-
-	var curPostId, colorDark = true, colorOfPost, postIdLink, resetLink, profileLink, posterId, postbody, postRow, f, linksUL, storeUserLink;
-	var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton, reportbutton;
-	var userPosterColor, userPosterBG, userPosterNote, userQuote;
-
-	// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
-	var useQuickQuote = persistObject.getPreference('useQuickQuote');
-	var insertPostLastMarkLink = persistObject.getPreference("insertPostLastMarkLink");
-	var insertPostTargetLink = persistObject.getPreference("insertPostTargetLink");
-	var highlightUsernames = persistObject.getPreference("highlightUsernames");
-	var dontHighlightPosts = persistObject.getPreference("dontHighlightPosts");
-	//post colors
-	var seenPostDark = persistObject.getPreference("seenPostDark");
-	var seenPostLight = persistObject.getPreference("seenPostLight");
-	//standard user colors
-	var modColor = persistObject.getPreference("modColor");
-	var modBackground = persistObject.getPreference("modBackground");
-	var modSubText = persistObject.getPreference("modSubText");
-	var adminColor = persistObject.getPreference("adminColor");
-	var adminBackground = persistObject.getPreference("adminBackground");
-	var adminSubText = persistObject.getPreference("adminSubText");
-	var opColor = persistObject.getPreference("opColor");
-	var opBackground = persistObject.getPreference("opBackground");
-	var opSubText = persistObject.getPreference("opSubText");
-	var superIgnoreUsers = persistObject.getPreference("superIgnore");
-
-	var threadMarkedPostedIn = false;
-
-	doc.postlinks = new Array;
-
-	// Loop through each post
-	for (i in postlist)
-	{
-		var post = postlist[i];
-
-		if (post.className.indexOf("ignored") > -1)
-		{
-			// User is ignored by the system so skip doing anything else
-			continue;
-		}
-
-		curPostId = post.id.match(/post(\d+)/)[1];
-		profileLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
-		posterId = profileLink.href.match(/userid=(\d+)/i)[1];
-		if (superIgnoreUsers && persistObject.isUserIgnored(posterId))
-		{
-			// They're ignored but not by the system
-		}
-
-		if (inFYAD && !inArchives)
-		{
-			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//DIV[contains(@class,'title')]//following-sibling::B");
-		}
-		else
-		{
-			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
-		}
-
-		//workaround for archives + fyad-type forum, since we can't detect we're in an archived thread at the moment
-		if (userNameBox == null)
-		{
-			userNameBox = persistObject.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
-		}
-
-		// Standard template
-		titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
-		// If that doesn't work, try FYAD template
-		if (titleBox == null)
-			titleBox = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
-
-		if (titleBox)
-		{
-			if (persistObject.isAvatarHidden(posterId))
-			{
-				// We hate this person's avatar and we want to banish it to the depths of Hell
-				titleBox.style.display = "none";
-			}
-		}
-
-		//Check to see if there's a mod or admin star
-		posterImg = false;
-		posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
-		if (userNameBox.getElementsByTagName('img').length > 0 && !inArchives)
-		{
-			posterImg = userNameBox.getElementsByTagName('img')[0].title;
-			if (posterImg == 'Admin')
-			{
-				persistObject.addAdmin(posterId, posterName);
-			}
-			else if (posterImg == 'Moderator')
-			{
-				persistObject.addMod(posterId, posterName);
-			}
-		}
-
-		posterColor = false;
-		posterBG = false;
-		posterNote = false;
-		userPosterNote = false;
-
-		//apply this to every post
-		post.className += " salrPostBy" + posterId + " salrPostBy" + escape(posterName);
-		if (posterName == username)
-		{
-			post.className += " salrPostOfSelf";
-			if (threadMarkedPostedIn == false)
-			{
-				markThreadReplied(threadid);
-				threadMarkedPostedIn = true;
-			}
-		}
-
-
-		//apply custom user coloring
-		if (userNameBox.className.search(/op/) > -1)
-		{
-			posterColor = opColor;
-			posterBG = opBackground;
-			posterNote = opSubText;
-			post.className += " salrPostByOP";
-		}
-		if (persistObject.isMod(posterId))
-		{
-			if(posterImg == 'Moderator' || inArchives)
-			{
-				posterColor = modColor;
-				posterBG = modBackground;
-				posterNote = modSubText;
-				post.className += " salrPostByMod";
-			}
-			else if (!inArchives)
-			{
-				persistObject.removeMod(posterId);
-			}
-		}
-		if (persistObject.isAdmin(posterId))
-		{
-			if(posterImg == "Admin" || inArchives)
-			{
-				posterColor = adminColor;
-				posterBG = adminBackground;
-				posterNote = adminSubText;
-				post.className += " salrPostByAdmin";
-			}
-			else if (!inArchives)
-			{
-				persistObject.removeAdmin(posterId);
-			}
-		}
-		var dbUser = persistObject.isUserIdColored(posterId);
-		if (dbUser)
-		{
-			if (!dbUser.username)
-			{
-				persistObject.setUserName(posterId, posterName);
-			}
-			if (dbUser.color && dbUser.color != "0")
-			{
-				posterColor = dbUser.color;
-			}
-			if (dbUser.background && dbUser.background != "0")
-			{
-				posterBG = dbUser.background;
-			}
-		}
-
-		if (posterBG != "0")
-		{
-			persistObject.colorPost(doc, posterBG, posterId);
-		}
-
-		// Check for quotes that need to be colored
-		if (persistObject.getPreference('highlightQuotes'))
-		{
-			var userQuoted;
-			var anyQuotes = persistObject.selectNodes(doc, post, "TBODY//TR/TD/DIV[contains(@class,'bbc-block')]");
-			for (quote in anyQuotes)
-			{
-				userQuoted = anyQuotes[quote].textContent.match(/(.*) posted:/);
-				if (userQuoted)
-				{
-					userQuoted = userQuoted[1];
-					if (userQuoted == username)
-					{
-						anyQuotes[quote].className += ' salrQuoteOfSelf';
-					}
-					else
-					{
-						userQuotedDetails = persistObject.isUsernameColored(userQuoted);
-						userQuotedId = persistObject.getUserId(userQuoted);
-						if (superIgnoreUsers && persistObject.isUserIgnored(userQuotedId))
-						{
-							// They're quoting someone ignored, lets remove the entire post
-							post.className += ' salrPostQuoteIgnored';
-						}
-						if (userQuotedDetails)
-						{
-							anyQuotes[quote].className += ' salrQuoteOf' + userQuotedDetails.userid;
-							persistObject.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
-						}
-					}
-				}
-			}
-		}
-
-		userPosterNote = persistObject.getPosterNotes(posterId);
-		if (highlightUsernames && posterColor != false && posterColor != "0")
-		{
-			userNameBox.style.color = posterColor;
-		}
-		if (posterNote || userPosterNote)
-		{
-			newNoteBox = doc.createElement("p");
-			newNoteBox.style.fontSize = "80%";
-			newNoteBox.style.margin = "0";
-			newNoteBox.style.padding = "0";
-			newNoteBox.innerHTML = posterNote ? posterNote : '';
-			newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
-			userNameBox.appendChild(newNoteBox);
-		}
-
-		postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
-		if (!postIdLink)
-		{
-			postIdLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#post')]");
-		}
-		if (!postIdLink) continue;
-
-		postid = postIdLink.href.match(/#post(\d+)/i)[1];
-		if (insertPostTargetLink)
-		{
-			slink = doc.createElement("a");
-			if (singlePost)
-			{
-				slink.href = "/showthread.php?goto=post&postid="+postid;
-				slink.title = "Back to Thread";
-				slink.innerHTML = "1";
-			}
-			else
-			{
-				slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+forumid;
-				slink.title = "Show Single Post";
-				slink.innerHTML = "1";
-			}
-			postIdLink.parentNode.insertBefore(slink, postIdLink);
-			postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
-		}
-
-		//grab this once up here to avoid repetition
-		if (useQuickQuote)
-		{
-			editbutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
-		}
-
-		if (useQuickQuote && !threadClosed)
-		{
-			quotebutton = persistObject.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
-			if (quotebutton)
-			{
-				attachQuickQuoteHandler(threadid, doc, persistObject.turnIntoQuickButton(doc, quotebutton, forumid), posterName, 1, postid);
-			}
-			if (editbutton)
-			{
-				attachQuickQuoteHandler(threadid, doc, persistObject.turnIntoQuickButton(doc, editbutton, forumid), posterName, 1, postid, true);
-			}
-		}
-
-		var userLinks = profileLink.parentNode.parentNode;
-
-		if (singlePost)
-		{
-			// Add a link to the user's ban history
-			var banHistLink = doc.createElement("li");
-			var banHistAnchor = doc.createElement("a");
-			banHistAnchor.href = "/banlist.php?userid=" + posterId;
-			banHistAnchor.title = "Show poster's ban/probation history.";
-			banHistAnchor.innerHTML = "Rap Sheet";
-			banHistLink.appendChild(banHistAnchor);
-			userLinks.appendChild(doc.createTextNode(" "));
-			userLinks.appendChild(banHistLink);
-		}
-
-		// Add user coloring/note links
-		if (highlightUsernames)
-		{
-			var li = doc.createElement("li");
-			var a = doc.createElement("a");
-			if (a.wrappedJSObject)
-				a = a.wrappedJSObject;
-			a.id = curPostId + "_" + posterId;
-			a.href ="#" + posterName;
-			a.innerHTML = "Add Coloring/Note";
-			a.onclick = addHighlightedUser;
-			li.appendChild(a);
-			userLinks.appendChild(doc.createTextNode(" "));
-			userLinks.appendChild(li);
-		}
-
-		// Add a link to hide/unhide the user's avatar
-		var avLink = doc.createElement("li");
-		var avAnch = doc.createElement("a");
-		avAnch.href = "#ToggleAvatar#" + posterId + "#" + posterName;
-		avAnch.title = "Toggle displaying this poster's avatar.";
-		if (persistObject.isAvatarHidden(posterId))
-		{
-			avAnch.innerHTML = "Show Avatar";
-		}
-		else
-		{
-			avAnch.innerHTML = "Hide Avatar";
-		}
-		avAnch.addEventListener("click", clickToggleAvatar, false);
-		avLink.appendChild(avAnch);
-		userLinks.appendChild(doc.createTextNode(" "));
-		userLinks.appendChild(avLink);
-
-		// Add a space for the Rap Sheet link added afterwards by forum JS:
-		userLinks.appendChild(doc.createTextNode(" "));
-
-		postbody = persistObject.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
-		persistObject.convertSpecialLinks(postbody, doc);
-		persistObject.processImages(postbody, doc);
-	}
-
-	doc.__salastread_loading = true;
-	window.addEventListener("load", SALR_PageFinishedLoading, true);
-
-}
-
-function handleEditPost(doc)
-{
-	var submitbtn = persistObject.selectNodes(doc, doc.body, "//INPUT[@type='submit'][@value='Save Changes']")[0];
-	var tarea = persistObject.selectNodes(doc, doc.body, "//TEXTAREA[@name='message']")[0];
-	if (submitbtn && tarea) {
-		submitbtn.addEventListener("click", function() { parsePLTagsInEdit(tarea); }, true);
-		submitbtn.style.backgroundColor = persistObject.getPreference('postedInThreadRe');
-	}
-}
-
-function handleNewReply(doc)
-{
-	var threadlink = persistObject.selectSingleNode(doc, doc.body, "DIV[contains(@id, 'container')]//div[@class='breadcrumbs']//A[contains(@href,'showthread.php')][contains(@href,'threadid=')]");
-	if (threadlink)
-	{
-		var tlmatch = threadlink.href.match( /threadid=(\d+)/ );
-		if (tlmatch)
-		{
-			var threadid = tlmatch[1];
-			if (salastread_needRegReplyFill)
-			{
-				var msgEl = persistObject.selectSingleNode(doc, doc.body, "//TEXTAREA[@name='message']");
-				if (msgEl)
-				{
-					msgEl.value = salastread_savedQuickReply;
-				}
-				salastread_needRegReplyFill = false;
-			}
-			var postbtn = persistObject.selectSingleNode(doc, doc.body, "//FORM[@name='vbform']//INPUT[@name='submit']");
-			if (postbtn)
-			{
-				postbtn.addEventListener("click", function() { markThreadReplied(threadid); }, true);
-				postbtn.style.backgroundColor = persistObject.getPreference('postedInThreadRe');
-			}
-		}
-	}
-	else
-	{
-		if (salastread_savedQuickReply!="")
-		{
-			// TODO: Check if the stuff immediately below is broken.
-			var forgeCheck = persistObject.selectSingleNode(doc, doc.body, "TABLE/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[2]/TD[1]/FONT[contains(text(),'have been forged')]");
-			if (forgeCheck)
-			{
-				persistObject.__cachedFormKey = "";
-				var reqMsg = doc.createElement("P");
-				reqMsg.style.fontFamily = "Verdana, Arial, Helvetica";
-				reqMsg.style.fontSize = "80%";
-				reqMsg.style.backgroundColor = "#fcfd99";
-				reqMsg.style.border = "1px solid black";
-				reqMsg.style.padding = "2px 2px 2px 2px";
-				reqMsg.appendChild(
-					doc.createTextNode("Message from SA Last Read: Quick Reply appears to have worked incorrectly. To open your reply in a regular forum reply page, click ")
-				);
-				var regReplyLink = doc.createElement("A");
-				regReplyLink.onclick = setRegReplyFillOn;
-				regReplyLink.href = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
-				salastread_savedQuickReplyThreadId;
-				regReplyLink.innerHTML = "here.";
-				reqMsg.appendChild(regReplyLink);
-				forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
-			}
-			else
-			{
-				salastread_savedQuickReply = "";
-				salastread_savedQuickReplyThreadId = "";
-			}
-		}
-	}
-}
-
-function handleIndex(doc)
-{
-	if (persistObject.getPreference("username") == '')
-	{
-		var username = persistObject.selectSingleNode(doc,doc,"//div[contains(@class, 'mainbodytextsmall')]//b");
-		username = escape(username.textContent);
-		persistObject.setPreference("username", username);
-	}
-}
-
-function handleAccount(doc)
-{
-	var action;
-	if ((action = doc.location.search.match(/action=(\w+)/i)) != null)
-	{
-		if (action[1] == "logout")
-		{
-			persistObject.setPreference("username", '');
-			persistObject.setPreference("userId", 0);
-		}
-	}
-	else
-	{
-		// There is no action specified, we may be logging in
-		var div = doc.getElementById("main_wide");
-		if (div)
-		{
-			var loginMsg = persistObject.selectSingleNode(doc, div, "DIV[contains(./text(),'GLUE')]");
-			if (loginMsg)
-			{
-				var name = loginMsg.firstChild.textContent.match(/GLUE GLUEEEEE GLUUUUUUEEE, (.*)!  GLUUUEEE/);
-				// Note that there are 2 spaces after the !, the extra space doesn't show up on the page but it's in the raw HTML
-				if (name)
-				{
-					name = name[1];
-					persistObject.setPreference("username", name);
-				}
-			}
-		}
-	}
-}
-
-function handleMisc(doc)
-{
-	var action;
-	if ((action = doc.location.search.match(/action=(\w+)/i)) != null)
-	{
-		// Handle the "Who posted?" list window
-		if (action[1] == "whoposted")
-		{
-			var posterTable = persistObject.selectSingleNode(doc,doc,"//DIV[@id='main_stretch']/DIV/TABLE/TBODY");
-			var threadId = parseInt(doc.location.search.match(/threadid=(\d+)/i)[1], 10);
-			if (posterTable && threadId)
-			{
-				var highlightUsernames = persistObject.getPreference("highlightUsernames");
-				var sortReplyList = persistObject.getPreference("sortReplyList");
-
-				// Make some headers for sorting users by importance
-				// Custom colored users, then admins, then mods
-				if (sortReplyList)
-				{
-					var headerUsers = posterTable.firstChild;
-					headerUsers.firstChild.textContent = "Normal Users";
-
-					var headerMods = posterTable.firstChild.cloneNode(true);
-					headerMods.firstChild.textContent = "Moderators";
-					posterTable.insertBefore(headerMods,posterTable.firstChild);
-
-					var headerAdmins = posterTable.firstChild.cloneNode(true);
-					headerAdmins.firstChild.textContent = "Administrators";
-					posterTable.insertBefore(headerAdmins,posterTable.firstChild);
-
-					var headerCustom = posterTable.firstChild.cloneNode(true);
-					headerCustom.firstChild.textContent = "Users of Interest";
-					posterTable.insertBefore(headerCustom,posterTable.firstChild);
-
-					var customPosted, adminPosted, modPosted;
-				}
-
-				// Cycle through all the users listed and do whatever
-				var rows = persistObject.selectNodes(doc, posterTable, "TR");
-				for (var i in rows)
-				{
-					var posterId;
-					var row = rows[i];
-
-					// Skip the labels
-					if (row.className == "smalltext" || row.childNodes[1].className == "smalltext")
-					{
-						continue;
-					}
-
-					// Linkify all the post counts to lead to the thread filtered for that poster
-					posterId = parseInt(row.childNodes[1].firstChild.href.match(/userid=(\d+)/i)[1], 10);
-				//	if (posterId)
-				//	{
-				//		row.childNodes[3].innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
-				//			+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].innerHTML + "</a>";
-				//	}
-
-					if ((highlightUsernames || sortReplyList) && posterId)
-					{
-						var userPriority = 0;
-
-						if (persistObject.isMod(posterId))
-						{
-							userPriority = 1;
-						}
-						if (persistObject.isAdmin(posterId))
-						{
-							userPriority = 2;
-						}
-
-						// Check for user-defined name coloring and/or mod/admin coloring
-						if (highlightUsernames)
-						{
-							var userColoring = persistObject.isUserIdColored(posterId);
-							if (userColoring)
-							{
-								if (userColoring.color && userColoring.color != "0")
-								{
-									row.childNodes[1].firstChild.style.color = userColoring.color;
-									if (!persistObject.getPreference("dontBoldNames"))
-									{
-										row.childNodes[1].firstChild.style.fontWeight = "bold";
-									}
-									userPriority = 3;
-								}
-								if ((userColoring.background && userColoring.background != "0") || persistObject.getPosterNotes(posterId))
-									userPriority = 3;
-							}
-							else if (userPriority == 1)
-							{
-								row.childNodes[1].firstChild.style.color = persistObject.getPreference("modColor");
-								if (!persistObject.getPreference("dontBoldNames"))
-								{
-									row.childNodes[1].firstChild.style.fontWeight = "bold";
-								}
-							}
-							else if (userPriority == 2)
-							{
-								row.childNodes[1].firstChild.style.color = persistObject.getPreference("adminColor");
-								if (!persistObject.getPreference("dontBoldNames"))
-								{
-									row.childNodes[1].firstChild.style.fontWeight = "bold";
-								}
-							}
-						}
-
-						// Sort them to the appropriate header
-						if (sortReplyList)
-						{
-							switch (userPriority)
-							{
-								// Note for clarity: we are inserting the user BEFORE the headers referenced below,
-								//   not after, thats why header and bool checks don't match up
-								case 1:
-									posterTable.insertBefore(row, headerUsers);
-									modPosted = true;
-									break;
-								case 2:
-									posterTable.insertBefore(row, headerMods);
-									adminPosted = true;
-									break;
-								case 3:
-									posterTable.insertBefore(row, headerAdmins);
-									customPosted = true;
-									break;
-							}
-						}
-					}
-				}
-
-				// If we didn't sort any users to a particular header, remove it
-				if (sortReplyList)
-				{
-					if (!customPosted)
-					{
-						posterTable.removeChild(headerCustom);
-					}
-					if (!adminPosted)
-					{
-						posterTable.removeChild(headerAdmins);
-					}
-					if (!modPosted)
-					{
-						posterTable.removeChild(headerMods);
-					}
-				}
-
-				// If we came here from a link inside the thread, we dont want the link at the bottom to take us back to page 1
-				if (doc.location.hash.search(/fromthread/i) > -1)
-				{
-					var closeLink = persistObject.selectSingleNode(doc, doc, "//A[contains(./text(),'show thread')]");
-					closeLink.parentNode.innerHTML = "<a style=\"color: rgb(255, 255, 255) ! important;\" onclick=\"self.close();\" href=\"#\">" + closeLink.innerHTML + "</a>";
-				}
-			}
-		}
-	}
-}
-
-function handleSupport(doc)
-{
-	if (doc.getElementById('content') == null)
-	{
-		// If there is no content div then abort since something's not right
-		return;
-	}
-	if (doc.getElementById('content').getElementsByTagName('iframe')[0].src.search(/supportfaq/) == -1)
-	{
-		// The iframe isn't there so something's changed
-		return;
-	}
-	var newImg = doc.createElement('img');
-	newImg.src = "chrome://salastread/skin/techsupport.jpg";
-	var newText = doc.createElement('p');
-	newText.innerHTML = "Please disable SA Last Read before reporting a problem with the forums";
-	newText.style.textAlign = "center";
-	var emptyP = doc.createElement('p');
-	var newLink = doc.createElement('a');
-	emptyP.appendChild(newLink);
-	emptyP.style.textAlign = "center";
-	newLink.href = "https://trac.assembla.com/SALR/newticket";
-	newLink.innerHTML = "Click here to report a problem with SA Last Read instead";
-	var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
-	supportTable.parentNode.replaceChild(newImg, supportTable);
-	newImg.parentNode.appendChild(newText);
-	newImg.parentNode.appendChild(emptyP);
-}
-
-function handleStats(doc)
-{
-	if (doc.getElementsByName('t_forumid'))
-	{
-		// The forum list is here so let's update it
-		//grabForumList(doc);
-	}
-}
-
-function handleProfileView(doc)
-{
-	var postSearchLink = persistObject.selectSingleNode(doc, doc, "//A[contains(./text(),'find posts by user')]");
-	if (!postSearchLink)
-		return;
-	var userid = postSearchLink.href.match(/userid=(\d+)/i)[1];
-	var newLink = doc.createElement('a');
-	newLink.href = "/banlist.php?userid=" + userid;
-	newLink.title = "Show poster's ban/probation history.";
-	newLink.innerHTML = "Rap Sheet";
-	newLink.style.color = "#FFFFFF";
-	postSearchLink.parentNode.appendChild(doc.createTextNode(" ("));
-	postSearchLink.parentNode.appendChild(newLink);
-	postSearchLink.parentNode.appendChild(doc.createTextNode(")"));
-}
-
-function handleSearch(doc)
-{
-	// Add support for mouse gestures / pagination
-	if (persistObject.getPreference("gestureEnable"))
-	{
-		var pageList = persistObject.selectNodes(doc, doc, "//DIV[contains(@class,'pager')]");
+		var pageList = gSALR.service.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
 		if (pageList)
 		{
 			if (pageList.length > 1)
@@ -1922,9 +368,699 @@ function handleSearch(doc)
 				pageList = pageList[0];
 			}
 			var numPages = pageList.innerHTML.match(/\((\d+)\)/);
-			if (!numPages)
+			var curPage = gSALR.service.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
+			if (pageList.childNodes.length > 1) // Are there pages
+			{
+				// Suppress a page-load error
+				if (!numPages)
+					return;
+				numPages = parseInt(numPages[1], 10);
+				curPage = parseInt(curPage.innerHTML, 10);
+			}
+			else
+			{
+				numPages = 1;
+				curPage = 1;
+			}
+		}
+
+		doc.__SALR_curPage = curPage;
+		doc.__SALR_maxPage = numPages;
+
+		// Insert the forums paginator
+		if (gSALR.service.getPreference("enableForumNavigator"))
+		{
+			gSALR.service.addPagination(doc);
+		}
+		if (gSALR.service.getPreference("gestureEnable"))
+		{
+			doc.body.addEventListener('mousedown', gSALR.pageMouseDown, false);
+			doc.body.addEventListener('mouseup', gSALR.pageMouseUp, false);
+		}
+
+		// Turn on keyboard navigation
+		if (gSALR.service.getPreference('quickPostJump'))
+		{
+			doc.addEventListener('keypress', gSALR.quickPostJump, false);
+		}
+
+		// Replace post button
+		if (gSALR.service.getPreference("useQuickQuote") && !flags.inGasChamber)
+		{
+			var postbutton = gSALR.service.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
+			if (postbutton)
+			{
+				attachQuickQuoteHandler(undefined,doc,gSALR.service.turnIntoQuickButton(doc, postbutton, forumid),"",0);
+			}
+		}
+
+		// Snag Forum Moderators
+		if (!flags.inGasChamber && !flags.inArchives)
+		{
+			var modarray = doc.getElementById('mods').getElementsByTagName('a');
+			var modcount = modarray.length;
+			for (i = 0; i < modcount; i++)
+			{
+				userid = modarray[i].href.match(/userid=(\d+)/i)[1];
+				username = modarray[i].innerHTML;
+				if (!gSALR.service.isMod(userid) && !gSALR.service.isAdmin(userid))
+				{
+					gSALR.service.addMod(userid, username);
+				}
+			}
+		}
+
+		// Advanced thread filtering interface
+		var prefAdvancedThreadFiltering = gSALR.service.getPreference("advancedThreadFiltering");
+		if (prefAdvancedThreadFiltering && !flags.inDump && !flags.inArchives)
+		{
+			gSALR.rebuildFilterBox(doc);
+		}
+
+		if (!flags.inDump)
+		{
+			// Capture and store the post icon # -> post icon filename relationship
+			var filterIcons = doc.getElementById("filtericons");
+			var iconNumber, iconFilename;
+			var postIcons = gSALR.service.selectNodes(doc, filterIcons, "A[contains(@href,'posticon=')]");
+			var divIcon, seperator, divClone, afIgnoredIcons, anyLeft, allIgnored, noneIgnored, searchString;
+			var atLeastOneIgnored = false;
+			var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
+			var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
+
+			for (i in postIcons)
+			{
+				if ((postIcons[i].href.search(/posticon=(\d+)/i) > -1) && (postIcons[i].firstChild.src.search(/posticons\/(.*)/i) > -1))
+				{
+					iconNumber = parseInt(postIcons[i].href.match(/posticon=(\d+)/i)[1]);
+					// Additional stuff for advanced thread filtering
+					if (prefAdvancedThreadFiltering && !flags.inArchives)
+					{
+						// First move all the existing icons and their spacers into a div for easy handling
+						divIcon = doc.createElement("div");
+						postIcons[i].parentNode.insertBefore(divIcon,postIcons[i]);
+						seperator = postIcons[i].nextSibling;
+						divIcon.appendChild(postIcons[i]);
+						divIcon.appendChild(seperator);
+						divIcon.style.visibility = "visible";
+						divIcon.style.display = "inline";
+
+						// Now make a copy of that div and stick it down in the ignored icons div, hidden
+						divClone = divIcon.cloneNode(true);
+						afIgnoredIcons = doc.getElementById("ignoredicons");
+						afIgnoredIcons.appendChild(divClone);
+
+						searchString = "(^|\\s)" + iconNumber + ",";
+						searchString = new RegExp(searchString , "gi");
+
+						// Is this icon ignored already?
+						if (prefIgnoredPostIcons.search(searchString) > -1)
+						{
+							gSALR.service.toggleVisibility(divIcon,true);
+							atLeastOneIgnored = true;
+						}
+						else
+						{
+							gSALR.service.toggleVisibility(divClone,true);
+						}
+
+						// Add the appropriate click events
+						postIcons[i].parentNode.addEventListener("click", gSALR.clickToggleIgnoreIcon, false);
+						divClone.addEventListener("click", gSALR.clickToggleIgnoreIcon, false);
+					}
+				}
+			}
+
+			// Little bit of house cleaning after cycling through the icons
+			if (prefAdvancedThreadFiltering && !flags.inArchives)
+			{
+				allIgnored = doc.getElementById("alliconsignored");
+				noneIgnored = doc.getElementById("noiconsignored");
+
+				// Hide or show the placeholder labels
+				anyLeft = gSALR.service.selectSingleNode(doc, filterIcons, "DIV[contains(@style,'visibility: visible; display: inline;')]");
+				if (!anyLeft && allIgnored.style.visibility == "hidden")
+				{
+					gSALR.service.toggleVisibility(allIgnored,true);
+				}
+				if (atLeastOneIgnored && noneIgnored.style.visibility == "visible")
+				{
+					gSALR.service.toggleVisibility(noneIgnored,true);
+				}
+			}
+		}
+
+		gSALR.handleThreadList(doc, forumid, flags);
+
+		if (ourTransaction)
+		{
+			// Finish off the transaction
+			gSALR.service.database.commitTransaction();
+		}
+	},
+
+	// Do anything needed to the subscribed threads list
+	handleSubscriptions: function(doc)
+	{
+		// Add our thread list CSS
+		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicThreadListCSS(false,false));
+
+		var cpusernav = gSALR.service.selectSingleNode(doc, doc, "//ul[contains(@id,'usercpnav')]");
+		if (!cpusernav) {
+			// Don't see the control panel menu so stop
+			return;
+		}
+
+		if (gSALR.service.getPreference("username") == '')
+		{
+			var username = gSALR.service.selectSingleNode(doc,doc,"//div[contains(@class, 'breadcrumbs')]/b");
+			if (username)
+			{
+				username = escape(username.textContent.substr(52));
+				gSALR.service.setPreference("username", username);
+			}
+		}
+
+		gSALR.handleThreadList(doc, null, { "inUserCP" : true });
+	},
+
+	handleIndex: function(doc)
+	{
+		if (gSALR.service.getPreference("username") == '')
+		{
+			var username = gSALR.service.selectSingleNode(doc,doc,"//div[contains(@class, 'mainbodytextsmall')]//b");
+			username = escape(username.textContent);
+			gSALR.service.setPreference("username", username);
+		}
+	},
+
+	//handle highlighting of user cp/forum listings
+	handleThreadList: function(doc, forumid, flags)
+	{
+		//get preferences once
+		var dontHighlightThreads = gSALR.service.getPreference("dontHighlightThreads");
+		var disableNewReCount = gSALR.service.getPreference("disableNewReCount");
+		var newPostCountUseOneLine = gSALR.service.getPreference("newPostCountUseOneLine");
+		var disableGradients = gSALR.service.getPreference("disableGradients");
+		var showUnvisitIcon = gSALR.service.getPreference("showUnvisitIcon");
+		var swapIconOrder = gSALR.service.getPreference("swapIconOrder");
+		var showGoToLastIcon = gSALR.service.getPreference("showGoToLastIcon");
+		var alwaysShowGoToLastIcon = gSALR.service.getPreference("alwaysShowGoToLastIcon");
+		var readWithNewLight = gSALR.service.getPreference("readWithNewLight");
+		var readWithNewDark = gSALR.service.getPreference("readWithNewDark");
+		var readLight = gSALR.service.getPreference("readLight");
+		var readDark = gSALR.service.getPreference("readDark");
+		var postedInThreadRe = gSALR.service.getPreference("postedInThreadRe");
+		var modColor = gSALR.service.getPreference("modColor");
+		var modBackground = gSALR.service.getPreference("modBackground");
+		var adminColor = gSALR.service.getPreference("adminColor");
+		var adminBackground = gSALR.service.getPreference("adminBackground");
+		var highlightUsernames = gSALR.service.getPreference("highlightUsernames");
+		var dontBoldNames = gSALR.service.getPreference("dontBoldNames");
+		var showSALRIcons = gSALR.service.getPreference("showSALRIcons");
+		var showTWNP = gSALR.service.getPreference('showThreadsWithNewPostsFirst');
+		var showTWNPCP = gSALR.service.getPreference('showThreadsWithNewPostsFirstCP');
+		var showTWNPCPS = gSALR.service.getPreference('showThreadsWithNewPostsFirstCPStickies');
+		var postsPerPage = gSALR.service.getPreference('postsPerPage');
+		var advancedThreadFiltering = gSALR.service.getPreference("advancedThreadFiltering");
+		var ignoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
+		var ignoredKeywords = gSALR.service.getPreference("ignoredKeywords");
+		var superIgnoreUsers = gSALR.service.getPreference("superIgnore");
+
+		// This should eventually be redone and moved to the flags section.
+		if (typeof(flags.inUserCP) === undefined)
+			flags.inUserCP = false;
+
+		// We'll need lots of variables for this
+		var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox, threadLastPostBox;
+		var threadTitle, threadId, threadOPId, threadRe;
+		var threadLRCount, unvistIcon, lpIcon, lastPostName;
+		var userPosterNote, lastLink, threadReCount, searchString;
+		var starredthreads = gSALR.service.starList, ignoredthreads = gSALR.service.ignoreList;
+		var table = document.getElementById('forum');
+
+		// We need to reset this every time the page is fully loaded
+		gSALR.service.setPreference("filteredThreadCount",0);
+
+		// Here be where we work on the thread rows
+		var threadlist = gSALR.service.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
+
+		// These are insertion points for thread sorting
+		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+		{
+			var anchorTop = gSALR.service.selectSingleNode(doc, doc, "//table[@id='forum']/tbody");
+
+			if (anchorTop)
+			{
+				var anchorAnnouncement = doc.createElement("tr");
+				anchorTop.insertBefore(anchorAnnouncement,threadlist[0]);
+				var anchorUnreadStickies = doc.createElement("tr");
+				anchorTop.insertBefore(anchorUnreadStickies,threadlist[0]);
+				var anchorReadStickies = doc.createElement("tr");
+				anchorTop.insertBefore(anchorReadStickies,threadlist[0]);
+				var anchorThreads = doc.createElement("tr");
+				anchorTop.insertBefore(anchorThreads,threadlist[0]);
+			}
+			else
+			{
+				// Oh dear there are no threads to sort!
+				// Change these options for now so that it doesn't error later
+				showTWNP = false;
+				showTWNPCP = false;
+			}
+		}
+
+		for (var i in threadlist)
+		{
+			var thread = threadlist[i];
+			threadTitleBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
+			if (!threadTitleBox)
+			{
+				// Either the page didn't finish loading or SA didn't send the full page.
 				return;
-			var curPage = persistObject.selectSingleNode(doc, doc, "//a[contains(@class,'current')]");
+			}
+			var ttb_a0 = threadTitleBox.getElementsByTagName('a')[0];
+			if (ttb_a0 && ttb_a0.className.search(/announcement/i) > -1)
+			{
+				if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+				{
+					anchorTop.insertBefore(thread,anchorAnnouncement);
+				}
+				// It's an announcement so skip the rest
+				continue;
+			}
+
+			threadTitleLink = gSALR.service.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'thread_title')]");
+			if (!threadTitleLink)
+			{
+				threadTitleLink = gSALR.service.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
+			}
+			if (!threadTitleLink) continue;
+			threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1], 10);
+			threadTitle = threadTitleLink.innerHTML;
+			if (gSALR.service.isThreadIgnored(threadId))
+			{
+				// If thread is ignored might as well remove it and stop now
+				thread.parentNode.removeChild(thread);
+				// Update the title just incase we don't know what it is
+				gSALR.service.setThreadTitle(threadId, threadTitle);
+				continue;
+			}
+
+			threadAuthorBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class, 'author')]");
+			threadRepliesBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
+			if (!threadAuthorBox || !threadRepliesBox)
+			{
+				// Either the page didn't finish loading or SA didn't send the full page.
+				return;
+			}
+			threadOPLink = threadAuthorBox.getElementsByTagName('a');
+			if (threadOPLink[0])
+			{
+				threadOPId = parseInt(threadOPLink[0].href.match(/userid=(\d+)/i)[1]);
+			}
+
+			if (threadOPId)
+			{
+				// If it was started by someone ignored, hide the thread
+				if (superIgnoreUsers && gSALR.service.isUserIgnored(threadOPId))
+				{
+					thread.parentNode.removeChild(thread);
+					continue;
+				}
+			}
+
+			if (advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP)
+			{
+				// Check for ignored keywords
+				var keywordList = ignoredKeywords.split("|");
+				var threadBeGone = false;
+
+				for (var j in keywordList)
+				{
+					var keywords = keywordList[j];
+					if (!keywords || threadBeGone)
+					{
+						continue;
+					}
+					searchString = new RegExp(keywords, "gi");
+
+					if (threadTitle.search(searchString) > -1 && thread.style.visibility != "hidden")
+					{
+						gSALR.service.toggleVisibility(thread,false);
+						gSALR.filteredThreadCount(doc,1);
+						threadBeGone = true;
+					}
+				}
+			}
+
+			lastLink = gSALR.service.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[./text() = 'Last']");
+			if (lastLink)
+			{
+				threadReCount = parseInt(threadRepliesBox.textContent, 10) + 1;
+				lastPageNum = Math.ceil(threadReCount / postsPerPage);
+				lastLink.innerHTML += ' (' + lastPageNum + ')';
+			}
+
+			// So right click star/ignore works
+			thread.className += " salastread_thread_" + threadId;
+			// So ignore/star can get a title immediately
+			thread.__salastread_threadtitle = threadTitle;
+
+			// Is this icon ignored?
+			threadIconBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
+			if (flags && forumid && advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.src.search(/posticons\/(.*)/i) > -1)
+			{
+				var iconnum = threadIconBox.firstChild.src.match(/#(\d+)$/)[1];
+				if (ignoredPostIcons.search(iconnum) > -1 && thread.style.visibility != "hidden")
+				{
+					gSALR.service.toggleVisibility(thread,false);
+					gSALR.filteredThreadCount(doc,1);
+				}
+			}
+
+			var divLastSeen = gSALR.service.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
+			if (divLastSeen)
+			{
+				// Thread is read so let's work our magic
+				var iconMarkUnseen = gSALR.service.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
+				var iconJumpLastRead = gSALR.service.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
+
+				// For thread sorting later
+				if (iconJumpLastRead && ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP)))
+				{
+					thread.className += ' moveup';
+				}
+
+				if (gSALR.service.didIPostHere(threadId))
+				{
+					threadRepliesBox.className += ' salrPostedIn';
+				}
+
+				// Thread highlighting
+				if (!dontHighlightThreads)
+				{
+					if (iconJumpLastRead)
+					{
+						thread.className += ' newposts';
+					}
+					if (iconMarkUnseen)
+					{
+						// Ask/Tell and maybe other forums forget this at times
+						if (thread.className.match(/(^|\s)seen(\s|$)/i) == null)
+						{
+							thread.className += ' seen';
+						}
+						// And to make sure it removes the post count properly
+						if (!disableNewReCount)
+						{
+							iconMarkUnseen.addEventListener("click", gSALR.clickMarkUnseen, false);
+						}
+					}
+				}
+
+				//SALR replacing forums buttons
+				if (!disableNewReCount && iconJumpLastRead)
+				{
+					threadRe = gSALR.service.selectSingleNode(doc, iconJumpLastRead, "B");
+					threadRe = threadRe.cloneNode(true);
+					threadRe.style.fontWeight = "normal";
+					threadRe.style.fontSize = "75%";
+					if (newPostCountUseOneLine)
+					{
+						threadRepliesBox.innerHTML += "&nbsp;(";
+						threadRepliesBox.appendChild(threadRe);
+						threadRepliesBox.innerHTML += ")";
+					}
+					else
+					{
+						threadRepliesBox.innerHTML += "<br />(";
+						threadRepliesBox.appendChild(threadRe);
+						threadRepliesBox.innerHTML += ")";
+					}
+				}
+
+				// Remove the new replies count from the default box if we are showing the custom icon
+				if (showGoToLastIcon && iconJumpLastRead)
+				{
+					threadRe = gSALR.service.selectSingleNode(doc, iconJumpLastRead, "B");
+					iconJumpLastRead.removeChild(threadRe);
+				}
+
+
+				if (alwaysShowGoToLastIcon && !iconJumpLastRead)
+				{
+					iconJumpLastRead = doc.createElement("a");
+					iconJumpLastRead.title = "Jump to last read post";
+					iconJumpLastRead.href = "/showthread.php?threadid=" + threadId + "&goto=newpost";
+					iconJumpLastRead.className = "count";
+					if (disableNewReCount)
+					{
+						threadRe = doc.createElement("b");
+						threadRe.innerHTML = "0";
+						iconJumpLastRead.appendChild(threadRe);
+					}
+					divLastSeen.appendChild(iconJumpLastRead);
+				}
+
+				if (showUnvisitIcon && !showGoToLastIcon && iconJumpLastRead)
+				{
+					// Fix up the background gradient on the default Jump To Last link
+					divLastSeen.style.background = 'url(chrome://salastread/skin/lastseen-gradient.gif)';
+				}
+
+				// Switch the Mark as Unseen and Jump to Last Read icon order
+				if (swapIconOrder && iconMarkUnseen && iconJumpLastRead)
+				{
+					divLastSeen.insertBefore(iconJumpLastRead, iconMarkUnseen);
+				}
+			}
+
+			// Sort the threads, new stickies, then stickies, then new threads, then threads
+			if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+			{
+				var iAmASticky = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class, 'sticky')]");
+				var iHaveNewPosts = (thread.className.search(/moveup/i) > -1);
+
+				if (iAmASticky)
+				{
+					if (iHaveNewPosts)
+					{
+						if (flags.inUserCP && !showTWNPCPS)
+							anchorTop.insertBefore(thread,anchorThreads);
+						else
+							anchorTop.insertBefore(thread,anchorUnreadStickies);
+					}
+					else if (!flags.inUserCP)
+					{
+						anchorTop.insertBefore(thread,anchorReadStickies);
+					}
+				}
+				else if (iHaveNewPosts)
+				{
+					anchorTop.insertBefore(thread,anchorThreads);
+				}
+			}
+
+			if (gSALR.service.isThreadStarred(threadId))
+			{
+				threadTitleBox.className += ' starred';
+			}
+
+			if (highlightUsernames)
+			{
+				var userColoring, threadLastPostBox, lastPostId;
+				var posterColor, posterBG;
+
+				// First color the Author column
+				if (threadOPId)
+				{
+					posterColor = false;
+					posterBG = false;
+
+					if (gSALR.service.isMod(threadOPId))
+					{
+						posterColor = modColor;
+						posterBG =  modBackground;
+					}
+
+					if (gSALR.service.isAdmin(threadOPId))
+					{
+						posterColor = adminColor;
+						posterBG =  adminBackground;
+					}
+
+					userColoring = gSALR.service.isUserIdColored(threadOPId);
+					if (userColoring)
+					{
+						if (userColoring.color && userColoring.color != "0")
+						{
+							posterColor = userColoring.color;
+						}
+						if (userColoring.background && userColoring.background != "0")
+						{
+							posterBG = userColoring.background;
+						}
+					}
+
+					if (posterBG != false && posterBG != "0")
+					{
+						threadAuthorBox.style.backgroundColor = posterBG;
+					}
+					if (posterColor != false && posterColor != "0")
+					{
+						threadAuthorBox.getElementsByTagName("a")[0].style.color = posterColor;
+						if (!dontBoldNames)
+						{
+							threadAuthorBox.getElementsByTagName("a")[0].style.fontWeight = "bold";
+						}
+					}
+				}
+
+				// Then color the Killed By column
+				threadLastPostBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class, 'lastpost')]");
+				if (!threadLastPostBox)
+				{
+					// Either the page didn't finish loading or SA didn't send the full page.
+					return;
+				}
+				lastPostLink = threadLastPostBox.getElementsByTagName('a');
+				if (lastPostLink[0])
+				{
+					lastPostId = gSALR.service.getUserId(lastPostLink[0].innerHTML);
+				}
+
+				if (lastPostId)
+				{
+					posterColor = false;
+					posterBG = false;
+
+					if (gSALR.service.isMod(lastPostId))
+					{
+						posterColor = modColor;
+						posterBG =  modBackground;
+					}
+
+					if (gSALR.service.isAdmin(lastPostId))
+					{
+						posterColor = adminColor;
+						posterBG =  adminBackground;
+					}
+
+					userColoring = gSALR.service.isUserIdColored(lastPostId);
+					if (userColoring)
+					{
+						if (userColoring.color && userColoring.color != "0")
+						{
+							posterColor = userColoring.color;
+						}
+						if (userColoring.background && userColoring.background != "0")
+						{
+							posterBG = userColoring.background;
+						}
+					}
+
+					if (posterBG != false && posterBG != "0")
+					{
+						threadLastPostBox.style.backgroundColor = posterBG;
+					}
+					if (posterColor != false && posterColor != "0")
+					{
+						threadLastPostBox.getElementsByTagName("a")[0].style.color = posterColor;
+					}
+				}
+			}
+		}
+
+		// Clean up insertion points for thread sorting
+		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+		{
+			anchorTop.removeChild(anchorAnnouncement);
+			anchorTop.removeChild(anchorUnreadStickies);
+			anchorTop.removeChild(anchorReadStickies);
+			anchorTop.removeChild(anchorThreads);
+		}
+	},
+
+	handleShowThread: function(doc)
+	{
+		var failed, i, e; // Little variables that'll get reused
+		if (doc.getElementById('thread') == null)
+		{
+			// If there is no thread div then abort since something's not right
+			return;
+		}
+
+		try
+		{
+			var forumid = gSALR.service.getForumID(doc);
+			var threadid = gSALR.service.getThreadID(doc);
+
+			if (!forumid || !threadid)
+			{
+				// Feel free to elaborate on this later
+				throw false;
+			}
+		}
+		catch(e)
+		{
+			// Can't get the forum or thread id so abort for now
+			return;
+		}
+
+		doc.__SALR_forumid = forumid;
+		doc.__SALR_threadid = threadid;
+
+		// The following forums have special needs that must be dealt with
+		var inFYAD = gSALR.service.inFYAD(forumid);
+		var inBYOB = gSALR.service.inBYOB(forumid);
+		var inDump = gSALR.service.inDump(forumid);
+		var inAskTell = gSALR.service.inAskTell(forumid);
+		var inGasChamber = gSALR.service.inGasChamber(forumid);
+		// Obsolete:
+		var inArchives = (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1);
+		var singlePost = (doc.location.search.search(/action=showpost/i) > -1);
+		var username = unescape(gSALR.service.getPreference('username'));
+
+		if (inFYAD && !gSALR.service.getPreference("enableFYAD"))
+		{
+			// We're in FYAD and FYAD support has been turned off
+			return;
+		}
+
+		// Add our ShowThread CSS
+		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicShowThreadCSS(inFYAD, inBYOB));
+
+		doc.body.className += " salastread_forum" + forumid;
+		// used by the context menu to allow options for this thread
+		doc.body.className += " salastread_thread_" + threadid;
+
+		// Grab the thread title
+		/* Note: it will only actually happen if the thread's already in the cache.
+			Perhaps we can remove this call?
+		*/
+		gSALR.service.setThreadTitle(threadid, gSALR.getPageTitle(doc));
+
+		// Grab the go to dropdown
+		if (!gSALR.service.gotForumList && !singlePost)
+		{
+			grabForumList(doc);
+			gSALR.service.gotForumList = true;
+		}
+
+		var pageList = gSALR.service.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+		if (pageList[0])
+		{
+			if (pageList.length >  1)
+			{
+				pageList = pageList[pageList.length-1];
+			}
+			else
+			{
+				pageList = pageList[0];
+			}
+			var numPages = pageList.innerHTML.match(/\((\d+)\)/);
+			var curPage = gSALR.service.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
 			if (pageList.childNodes.length > 1) // Are there pages
 			{
 				numPages = parseInt(numPages[1], 10);
@@ -1940,201 +1076,1886 @@ function handleSearch(doc)
 		doc.__SALR_curPage = curPage;
 		doc.__SALR_maxPage = numPages;
 
-		doc.body.addEventListener('mousedown', SALR_PageMouseDown, false);
-		doc.body.addEventListener('mouseup', SALR_PageMouseUp, false);
-	}
-}
+		// Insert the thread paginator
+		if (gSALR.service.getPreference("enablePageNavigator") && !singlePost)
+		{
+			gSALR.service.addPagination(doc);
+		}
+		if (gSALR.service.getPreference("gestureEnable"))
+		{
+			doc.body.addEventListener('mousedown', gSALR.pageMouseDown, false);
+			doc.body.addEventListener('mouseup', gSALR.pageMouseUp, false);
+		}
+
+		// Grab threads/posts per page
+		// Should this be changed to only update it if it changes?  Is there a penalty for changing it everytime?
+		var perpage = gSALR.service.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
+		if (perpage)
+		{
+			perpage = perpage.href.match(/perpage=(\d+)/i)[1];
+			gSALR.service.setPreference("postsPerPage", perpage);
+		}
+		else
+		{
+			perpage = 0;
+		}
+
+		// Check if the thread is closed
+		if (gSALR.service.selectSingleNode(doc, doc, "//A[contains(@href,'action=newreply&threadid')]//IMG[contains(@src,'closed')]") == null)
+		{
+			var threadClosed = false;
+		}
+		else
+		{
+			var threadClosed = true;
+		}
+
+		// Replace post button
+		if (gSALR.service.getPreference("useQuickQuote") && !inGasChamber)
+		{
+			var postbuttons = gSALR.service.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newthread')]");
+			if (postbuttons.length > 0)
+			{
+				for (i in postbuttons)
+				{
+					attachQuickQuoteHandler(undefined,doc,gSALR.service.turnIntoQuickButton(doc, postbuttons[i], forumid),"",0);
+				}
+			}
+			if (!threadClosed)
+			{
+				var replybuttons = gSALR.service.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
+				if (replybuttons.length > 0)
+				{
+					for (i in replybuttons)
+					{
+						attachQuickQuoteHandler(threadid,doc,gSALR.service.turnIntoQuickButton(doc, replybuttons[i], forumid),"",0);
+					}
+				}
+			}
+		}
+
+		if (gSALR.service.getPreference('quickPostJump'))
+		{
+			doc.addEventListener('keypress', gSALR.quickPostJump, false);
+		}
+
+		var searchThis = gSALR.service.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
+		if (searchThis)
+		{
+			if (gSALR.service.getPreference("replyCountLinkinThreads"))
+			{
+				var replyCountLink = doc.createElement("A");
+				replyCountLink.href="javascript:void(window.open('misc.php?s=&action=whoposted&threadid=" + threadid + "#fromthread', 'whoposted', 'toolbar=no,scrollbars=yes,resizable=yes,width=230,height=200'))";
+				replyCountLink.innerHTML = "Who posted?";
+				replyCountLink.style.fontSize = "10px";
+				replyCountLink.style.cssFloat = "left";
+				replyCountLink.style.marginLeft = "8px";
+				replyCountLink.style.color = "#FFFFFF";
+				// Plug it in right after the "Search thread:" form
+				searchThis.parentNode.insertBefore(replyCountLink,searchThis.nextSibling);
+				searchThis.parentNode.insertBefore(doc.createTextNode(" "),searchThis.nextSibling);
+			}
+			// SA's "Search thread" box is disabled; add our own
+			if (!gSALR.service.getPreference("hideThreadSearchBox") && searchThis.firstChild.nodeName == '#text')
+			{
+				// Prevent weird zoom behavior
+				searchThis.parentNode.style.overflow = "hidden";
+				var newSearchBox = doc.createElement('form');
+				newSearchBox.action = 'http://forums.somethingawful.com/f/search/submit';
+				newSearchBox.method = 'post';
+				newSearchBox.className = 'threadsearch'; 
+				var newSearchDiv = doc.createElement('div');
+				newSearchBox.appendChild(newSearchDiv);
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'forumids',forumid);
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'groupmode','0');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'opt_search_posts','on');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'opt_search_titles','on');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'perpage','20');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'search_mode','ext');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'show_post_previews','1');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'sortmode','1');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'uf_posts','on');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'userid_filters','');
+				gSALR.addHiddenFormInput(doc,newSearchDiv,'username_filter','type a username');
+				var newSearchText = doc.createElement('input');
+				newSearchText.size = '25';
+				newSearchText.value = 'Added by SALR';
+				newSearchText.style.fontStyle = 'italic';
+				newSearchText.style.color = '#BBBBBB';
+				newSearchText.__unfocused = true;
+				newSearchText.addEventListener("focus", function()
+				{
+					if (newSearchText.__unfocused == true)
+					{
+						newSearchText.style.fontStyle = 'normal';
+						newSearchText.style.color = '';
+						newSearchText.value = '';
+						newSearchText.__unfocused = false;
+					}
+				}, true);
+
+				// Don't accidentally trigger keyboard navigation
+				newSearchText.addEventListener("keypress", function(evt)
+				{
+					// User hit enter
+					if (evt.keyCode == 13)
+					{
+						if (newSearchText.__unfocused)
+							return false;
+						gSALR.addHiddenFormInput(doc,newSearchBox,'keywords','threadid:'+threadid+' '+newSearchText.value);
+						newSearchBox.submit();
+						return false;
+					}
+					evt.stopPropagation();
+				}, true);
+				newSearchDiv.appendChild(newSearchText);
+				var newSearchButton = doc.createElement('input');
+				newSearchButton.type='button';
+				newSearchButton.value='Search thread';
+				newSearchButton.addEventListener("click", function()
+				{
+					if (newSearchText.__unfocused)
+						return false;
+					gSALR.addHiddenFormInput(doc,newSearchBox,'keywords','threadid:'+threadid+' '+newSearchText.value);
+					newSearchBox.submit();
+				}, true);
+				newSearchDiv.appendChild(newSearchButton);
+				searchThis.parentNode.insertBefore(newSearchBox,searchThis.nextSibling);
+			}
+		}
+
+		// get the posts to iterate through
+		var postlist = gSALR.service.selectNodes(doc, doc, "//table[contains(@id,'post')]");
+
+		var curPostId, colorDark = true, colorOfPost, postIdLink, resetLink, profileLink, posterId, postbody, postRow, f, linksUL, storeUserLink;
+		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton, reportbutton;
+		var userPosterColor, userPosterBG, userPosterNote, userQuote;
+
+		// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
+		var useQuickQuote = gSALR.service.getPreference('useQuickQuote');
+		var insertPostLastMarkLink = gSALR.service.getPreference("insertPostLastMarkLink");
+		var insertPostTargetLink = gSALR.service.getPreference("insertPostTargetLink");
+		var highlightUsernames = gSALR.service.getPreference("highlightUsernames");
+		var dontHighlightPosts = gSALR.service.getPreference("dontHighlightPosts");
+		//post colors
+		var seenPostDark = gSALR.service.getPreference("seenPostDark");
+		var seenPostLight = gSALR.service.getPreference("seenPostLight");
+		//standard user colors
+		var modColor = gSALR.service.getPreference("modColor");
+		var modBackground = gSALR.service.getPreference("modBackground");
+		var modSubText = gSALR.service.getPreference("modSubText");
+		var adminColor = gSALR.service.getPreference("adminColor");
+		var adminBackground = gSALR.service.getPreference("adminBackground");
+		var adminSubText = gSALR.service.getPreference("adminSubText");
+		var opColor = gSALR.service.getPreference("opColor");
+		var opBackground = gSALR.service.getPreference("opBackground");
+		var opSubText = gSALR.service.getPreference("opSubText");
+		var superIgnoreUsers = gSALR.service.getPreference("superIgnore");
+
+		var threadMarkedPostedIn = false;
+
+		doc.postlinks = new Array;
+
+		// Loop through each post
+		for (i in postlist)
+		{
+			var post = postlist[i];
+
+			if (post.className.indexOf("ignored") > -1)
+			{
+				// User is ignored by the system so skip doing anything else
+				continue;
+			}
+
+			curPostId = post.id.match(/post(\d+)/)[1];
+			profileLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
+			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+			if (superIgnoreUsers && gSALR.service.isUserIgnored(posterId))
+			{
+				// They're ignored but not by the system
+			}
+
+			if (inFYAD && !inArchives)
+			{
+				userNameBox = gSALR.service.selectSingleNode(doc, post, "TBODY//DIV[contains(@class,'title')]//following-sibling::B");
+			}
+			else
+			{
+				userNameBox = gSALR.service.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
+			}
+
+			//workaround for archives + fyad-type forum, since we can't detect we're in an archived thread at the moment
+			if (userNameBox == null)
+			{
+				userNameBox = gSALR.service.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
+			}
+
+			// Standard template
+			titleBox = gSALR.service.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+			// If that doesn't work, try FYAD template
+			if (titleBox == null)
+				titleBox = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
+
+			if (titleBox)
+			{
+				if (gSALR.service.isAvatarHidden(posterId))
+				{
+					// We hate this person's avatar and we want to banish it to the depths of Hell
+					titleBox.style.display = "none";
+				}
+			}
+
+			//Check to see if there's a mod or admin star
+			posterImg = false;
+			posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
+			if (userNameBox.title.length > 0 && !inArchives)
+			{
+				posterImg = userNameBox.title;
+				if (posterImg == 'Administrator')
+				{
+					gSALR.service.addAdmin(posterId, posterName);
+				}
+				else if (posterImg == 'Moderator')
+				{
+					gSALR.service.addMod(posterId, posterName);
+				}
+			}
+
+			posterColor = false;
+			posterBG = false;
+			posterNote = false;
+			userPosterNote = false;
+
+			//apply this to every post
+			post.className += " salrPostBy" + posterId + " salrPostBy" + escape(posterName);
+			if (posterName == username)
+			{
+				post.className += " salrPostOfSelf";
+				if (threadMarkedPostedIn == false)
+				{
+					gSALR.service.iPostedHere(threadid);
+					threadMarkedPostedIn = true;
+				}
+			}
+
+
+			//apply custom user coloring
+			if (userNameBox.className.search(/op/) > -1)
+			{
+				posterColor = opColor;
+				posterBG = opBackground;
+				posterNote = opSubText;
+				post.className += " salrPostByOP";
+			}
+			if (gSALR.service.isMod(posterId))
+			{
+				if (posterImg == "Moderator" || inArchives)
+				{
+					posterColor = modColor;
+					posterBG = modBackground;
+					posterNote = modSubText;
+					post.className += " salrPostByMod";
+				}
+				else if (!inArchives)
+				{
+					gSALR.service.removeMod(posterId);
+				}
+			}
+			if (gSALR.service.isAdmin(posterId))
+			{
+				if(posterImg == "Administrator" || inArchives)
+				{
+					posterColor = adminColor;
+					posterBG = adminBackground;
+					posterNote = adminSubText;
+					post.className += " salrPostByAdmin";
+				}
+				else if (!inArchives)
+				{
+					gSALR.service.removeAdmin(posterId);
+				}
+			}
+			var dbUser = gSALR.service.isUserIdColored(posterId);
+			if (dbUser)
+			{
+				if (!dbUser.username)
+				{
+					gSALR.service.setUserName(posterId, posterName);
+				}
+				if (dbUser.color && dbUser.color != "0")
+				{
+					posterColor = dbUser.color;
+				}
+				if (dbUser.background && dbUser.background != "0")
+				{
+					posterBG = dbUser.background;
+				}
+			}
+
+			if (posterBG != "0")
+			{
+				gSALR.service.colorPost(doc, posterBG, posterId);
+			}
+
+			// Check for quotes that need to be colored
+			if (gSALR.service.getPreference('highlightQuotes'))
+			{
+				var userQuoted;
+				var anyQuotes = gSALR.service.selectNodes(doc, post, "TBODY//TR/TD/DIV[contains(@class,'bbc-block')]");
+				for (quote in anyQuotes)
+				{
+					userQuoted = anyQuotes[quote].textContent.match(/(.*) posted:/);
+					if (userQuoted)
+					{
+						userQuoted = userQuoted[1];
+						if (userQuoted == username)
+						{
+							anyQuotes[quote].className += ' salrQuoteOfSelf';
+						}
+						else
+						{
+							userQuotedDetails = gSALR.service.isUsernameColored(userQuoted);
+							userQuotedId = gSALR.service.getUserId(userQuoted);
+							if (superIgnoreUsers && gSALR.service.isUserIgnored(userQuotedId))
+							{
+								// They're quoting someone ignored, lets remove the entire post
+								post.className += ' salrPostQuoteIgnored';
+							}
+							if (userQuotedDetails)
+							{
+								anyQuotes[quote].className += ' salrQuoteOf' + userQuotedDetails.userid;
+								gSALR.service.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
+							}
+						}
+					}
+				}
+			}
+
+			userPosterNote = gSALR.service.getPosterNotes(posterId);
+			if (highlightUsernames && posterColor != false && posterColor != "0")
+			{
+				userNameBox.style.color = posterColor;
+			}
+			if (posterNote || userPosterNote)
+			{
+				newNoteBox = doc.createElement("p");
+				newNoteBox.style.fontSize = "80%";
+				newNoteBox.style.margin = "0";
+				newNoteBox.style.padding = "0";
+				newNoteBox.innerHTML = posterNote ? posterNote : '';
+				newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
+				newNoteBox.style.color = userNameBox.style.color;
+				newNoteBox.style.fontWeight = "bold";
+				userNameBox.parentNode.insertBefore(newNoteBox, userNameBox.nextSibling);
+			}
+
+			postIdLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
+			if (!postIdLink)
+			{
+				postIdLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#post')]");
+			}
+			if (!postIdLink) continue;
+
+			postid = postIdLink.href.match(/#post(\d+)/i)[1];
+			if (insertPostTargetLink)
+			{
+				slink = doc.createElement("a");
+				if (singlePost)
+				{
+					slink.href = "/showthread.php?goto=post&postid="+postid;
+					slink.title = "Back to Thread";
+					slink.innerHTML = "1";
+				}
+				else
+				{
+					slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+forumid;
+					slink.title = "Show Single Post";
+					slink.innerHTML = "1";
+				}
+				postIdLink.parentNode.insertBefore(slink, postIdLink);
+				postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
+			}
+
+			//grab this once up here to avoid repetition
+			if (useQuickQuote)
+			{
+				editbutton = gSALR.service.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
+			}
+
+			if (useQuickQuote && !threadClosed)
+			{
+				quotebutton = gSALR.service.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
+				if (quotebutton)
+				{
+					attachQuickQuoteHandler(threadid, doc, gSALR.service.turnIntoQuickButton(doc, quotebutton, forumid), posterName, 1, postid);
+				}
+				if (editbutton)
+				{
+					attachQuickQuoteHandler(threadid, doc, gSALR.service.turnIntoQuickButton(doc, editbutton, forumid), posterName, 1, postid, true);
+				}
+			}
+
+			var userLinks = profileLink.parentNode.parentNode;
+
+			if (singlePost)
+			{
+				// Add a link to the user's ban history
+				var banHistLink = doc.createElement("li");
+				var banHistAnchor = doc.createElement("a");
+				banHistAnchor.href = "/banlist.php?userid=" + posterId;
+				banHistAnchor.title = "Show poster's ban/probation history.";
+				banHistAnchor.innerHTML = "Rap Sheet";
+				banHistLink.appendChild(banHistAnchor);
+				userLinks.appendChild(doc.createTextNode(" "));
+				userLinks.appendChild(banHistLink);
+			}
+
+			// Add user coloring/note links
+			if (highlightUsernames)
+			{
+				var li = doc.createElement("li");
+				var a = doc.createElement("a");
+				a.id = curPostId + "_" + posterId;
+				a.href ="#" + posterName;
+				a.innerHTML = "Add Coloring/Note";
+				a.addEventListener("click", gSALR.addHighlightedUser, true);
+				li.appendChild(a);
+				userLinks.appendChild(doc.createTextNode(" "));
+				userLinks.appendChild(li);
+			}
+
+			// Add a link to hide/unhide the user's avatar
+			var avLink = doc.createElement("li");
+			var avAnch = doc.createElement("a");
+			avAnch.href = "#ToggleAvatar#" + posterId + "#" + posterName;
+			avAnch.title = "Toggle displaying this poster's avatar.";
+			if (gSALR.service.isAvatarHidden(posterId))
+				avAnch.innerHTML = "Show Avatar";
+			else
+				avAnch.innerHTML = "Hide Avatar";
+
+			avAnch.addEventListener("click", gSALR.clickToggleAvatar, false);
+			avLink.appendChild(avAnch);
+			userLinks.appendChild(doc.createTextNode(" "));
+			userLinks.appendChild(avLink);
+
+			// Add a space for the Rap Sheet link added afterwards by forum JS:
+			userLinks.appendChild(doc.createTextNode(" "));
+
+			postbody = gSALR.service.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
+			gSALR.service.convertSpecialLinks(postbody, doc);
+			gSALR.service.processImages(postbody, doc);
+		}
+
+		doc.__salastread_loading = true;
+		window.addEventListener("load", gSALR.pageFinishedLoading, true);
+	},
+
+	handleEditPost: function(doc)
+	{
+		var submitbtn = gSALR.service.selectNodes(doc, doc.body, "//INPUT[@type='submit'][@value='Save Changes']")[0];
+		var tarea = gSALR.service.selectNodes(doc, doc.body, "//TEXTAREA[@name='message']")[0];
+		if (submitbtn && tarea) {
+			submitbtn.addEventListener("click", function() { parsePLTagsInEdit(tarea); }, true);
+			submitbtn.style.backgroundColor = gSALR.service.getPreference('postedInThreadRe');
+		}
+	},
+
+	handleNewReply: function(doc)
+	{
+		var threadlink = gSALR.service.selectSingleNode(doc, doc.body, "DIV[contains(@id, 'container')]//div[@class='breadcrumbs']//A[contains(@href,'showthread.php')][contains(@href,'threadid=')]");
+		if (threadlink)
+		{
+			var tlmatch = threadlink.href.match( /threadid=(\d+)/ );
+			if (tlmatch)
+			{
+				var threadid = tlmatch[1];
+				if (needRegReplyFill)
+				{
+					var msgEl = gSALR.service.selectSingleNode(doc, doc.body, "//TEXTAREA[@name='message']");
+					if (msgEl)
+					{
+						msgEl.value = salastread_savedQuickReply;
+					}
+					needRegReplyFill = false;
+				}
+				var postbtn = gSALR.service.selectSingleNode(doc, doc.body, "//FORM[@name='vbform']//INPUT[@name='submit']");
+				if (postbtn)
+				{
+					postbtn.addEventListener("click", function() { gSALR.service.iPostedHere(threadid); }, true);
+					postbtn.style.backgroundColor = gSALR.service.getPreference('postedInThreadRe');
+				}
+			}
+		}
+		else
+		{
+			if (salastread_savedQuickReply!="")
+			{
+				// TODO: Check if the stuff immediately below is broken.
+				var forgeCheck = gSALR.service.selectSingleNode(doc, doc.body, "TABLE/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[2]/TD[1]/FONT[contains(text(),'have been forged')]");
+				if (forgeCheck)
+				{
+					gSALR.service.__cachedFormKey = "";
+					var reqMsg = doc.createElement("P");
+					reqMsg.style.fontFamily = "Verdana, Arial, Helvetica";
+					reqMsg.style.fontSize = "80%";
+					reqMsg.style.backgroundColor = "#fcfd99";
+					reqMsg.style.border = "1px solid black";
+					reqMsg.style.padding = "2px 2px 2px 2px";
+					reqMsg.appendChild(
+						doc.createTextNode("Message from SA Last Read: Quick Reply appears to have worked incorrectly. To open your reply in a regular forum reply page, click ")
+					);
+					var regReplyLink = doc.createElement("A");
+					// TODO: This likely will need to be changed to an addeventlistener
+					regReplyLink.onclick = function() { needRegReplyFill = true; };
+					regReplyLink.href = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
+					salastread_savedQuickReplyThreadId;
+					regReplyLink.innerHTML = "here.";
+					reqMsg.appendChild(regReplyLink);
+					forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
+				}
+				else
+				{
+					salastread_savedQuickReply = "";
+					salastread_savedQuickReplyThreadId = "";
+				}
+			}
+		}
+	},
+
+	handleAccount: function(doc)
+	{
+		var action;
+		if ((action = doc.location.search.match(/action=(\w+)/i)) != null)
+		{
+			if (action[1] == "logout")
+			{
+				gSALR.service.setPreference("username", '');
+				gSALR.service.setPreference("userId", 0);
+			}
+		}
+		else
+		{
+			// There is no action specified, we may be logging in
+			var div = doc.getElementById("main_wide");
+			if (div)
+			{
+				var loginMsg = gSALR.service.selectSingleNode(doc, div, "DIV[contains(./text(),'GLUE')]");
+				if (loginMsg)
+				{
+					var name = loginMsg.firstChild.textContent.match(/GLUE GLUEEEEE GLUUUUUUEEE, (.*)!  GLUUUEEE/);
+					// Note that there are 2 spaces after the !, the extra space doesn't show up on the page but it's in the raw HTML
+					if (name)
+					{
+						name = name[1];
+						gSALR.service.setPreference("username", name);
+					}
+				}
+			}
+		}
+	},
+
+	handleMisc: function(doc)
+	{
+		var action;
+		if ((action = doc.location.search.match(/action=(\w+)/i)) != null)
+		{
+			// Handle the "Who posted?" list window
+			if (action[1] == "whoposted")
+			{
+				var posterTable = gSALR.service.selectSingleNode(doc,doc,"//DIV[@id='main_stretch']/DIV/TABLE/TBODY");
+				var threadId = parseInt(doc.location.search.match(/threadid=(\d+)/i)[1], 10);
+				if (posterTable && threadId)
+				{
+					var highlightUsernames = gSALR.service.getPreference("highlightUsernames");
+					var sortReplyList = gSALR.service.getPreference("sortReplyList");
+
+					// Make some headers for sorting users by importance
+					// Custom colored users, then admins, then mods
+					if (sortReplyList)
+					{
+						var headerUsers = posterTable.firstChild;
+						headerUsers.firstChild.textContent = "Normal Users";
+
+						var headerMods = posterTable.firstChild.cloneNode(true);
+						headerMods.firstChild.textContent = "Moderators";
+						posterTable.insertBefore(headerMods,posterTable.firstChild);
+
+						var headerAdmins = posterTable.firstChild.cloneNode(true);
+						headerAdmins.firstChild.textContent = "Administrators";
+						posterTable.insertBefore(headerAdmins,posterTable.firstChild);
+
+						var headerCustom = posterTable.firstChild.cloneNode(true);
+						headerCustom.firstChild.textContent = "Users of Interest";
+						posterTable.insertBefore(headerCustom,posterTable.firstChild);
+
+						var customPosted, adminPosted, modPosted;
+					}
+
+					// Cycle through all the users listed and do whatever
+					var rows = gSALR.service.selectNodes(doc, posterTable, "TR");
+					for (var i in rows)
+					{
+						var posterId;
+						var row = rows[i];
+
+						// Skip the labels
+						if (row.className == "smalltext" || row.childNodes[1].className == "smalltext")
+						{
+							continue;
+						}
+
+						// Linkify all the post counts to lead to the thread filtered for that poster
+						posterId = parseInt(row.childNodes[1].firstChild.href.match(/userid=(\d+)/i)[1], 10);
+					//	if (posterId)
+					//	{
+					//		row.childNodes[3].innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
+					//			+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].innerHTML + "</a>";
+					//	}
+
+						if ((highlightUsernames || sortReplyList) && posterId)
+						{
+							var userPriority = 0;
+
+							if (gSALR.service.isMod(posterId))
+							{
+								userPriority = 1;
+							}
+							if (gSALR.service.isAdmin(posterId))
+							{
+								userPriority = 2;
+							}
+
+							// Check for user-defined name coloring and/or mod/admin coloring
+							if (highlightUsernames)
+							{
+								var userColoring = gSALR.service.isUserIdColored(posterId);
+								if (userColoring)
+								{
+									if (userColoring.color && userColoring.color != "0")
+									{
+										row.childNodes[1].firstChild.style.color = userColoring.color;
+										if (!gSALR.service.getPreference("dontBoldNames"))
+										{
+											row.childNodes[1].firstChild.style.fontWeight = "bold";
+										}
+										userPriority = 3;
+									}
+									if ((userColoring.background && userColoring.background != "0") || gSALR.service.getPosterNotes(posterId))
+										userPriority = 3;
+								}
+								else if (userPriority == 1)
+								{
+									row.childNodes[1].firstChild.style.color = gSALR.service.getPreference("modColor");
+									if (!gSALR.service.getPreference("dontBoldNames"))
+									{
+										row.childNodes[1].firstChild.style.fontWeight = "bold";
+									}
+								}
+								else if (userPriority == 2)
+								{
+									row.childNodes[1].firstChild.style.color = gSALR.service.getPreference("adminColor");
+									if (!gSALR.service.getPreference("dontBoldNames"))
+									{
+										row.childNodes[1].firstChild.style.fontWeight = "bold";
+									}
+								}
+							}
+
+							// Sort them to the appropriate header
+							if (sortReplyList)
+							{
+								switch (userPriority)
+								{
+									// Note for clarity: we are inserting the user BEFORE the headers referenced below,
+									//   not after, thats why header and bool checks don't match up
+									case 1:
+										posterTable.insertBefore(row, headerUsers);
+										modPosted = true;
+										break;
+									case 2:
+										posterTable.insertBefore(row, headerMods);
+										adminPosted = true;
+										break;
+									case 3:
+										posterTable.insertBefore(row, headerAdmins);
+										customPosted = true;
+										break;
+								}
+							}
+						}
+					}
+
+					// If we didn't sort any users to a particular header, remove it
+					if (sortReplyList)
+					{
+						if (!customPosted)
+						{
+							posterTable.removeChild(headerCustom);
+						}
+						if (!adminPosted)
+						{
+							posterTable.removeChild(headerAdmins);
+						}
+						if (!modPosted)
+						{
+							posterTable.removeChild(headerMods);
+						}
+					}
+
+					// If we came here from a link inside the thread, we dont want the link at the bottom to take us back to page 1
+					if (doc.location.hash.search(/fromthread/i) > -1)
+					{
+						var closeLink = gSALR.service.selectSingleNode(doc, doc, "//A[contains(./text(),'show thread')]");
+						closeLink.parentNode.innerHTML = "<a style=\"color: rgb(255, 255, 255) ! important;\" onclick=\"self.close();\" href=\"#\">" + closeLink.innerHTML + "</a>";
+					}
+				}
+			}
+		}
+	},
+
+	handleSupport: function(doc)
+	{
+		if (doc.getElementById('content') == null)
+		{
+			// If there is no content div then abort since something's not right
+			return;
+		}
+		if (doc.getElementById('content').getElementsByTagName('iframe')[0].src.search(/supportfaq/) == -1)
+		{
+			// The iframe isn't there so something's changed
+			return;
+		}
+		var newImg = doc.createElement('img');
+		newImg.src = "chrome://salastread/skin/techsupport.jpg";
+		var newText = doc.createElement('p');
+		newText.innerHTML = "Please disable SA Last Read before reporting a problem with the forums";
+		newText.style.textAlign = "center";
+		var emptyP = doc.createElement('p');
+		var newLink = doc.createElement('a');
+		emptyP.appendChild(newLink);
+		emptyP.style.textAlign = "center";
+		newLink.href = "https://trac.assembla.com/SALR/newticket";
+		newLink.innerHTML = "Click here to report a problem with SA Last Read instead";
+		var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
+		supportTable.parentNode.replaceChild(newImg, supportTable);
+		newImg.parentNode.appendChild(newText);
+		newImg.parentNode.appendChild(emptyP);
+	},
+
+	handleStats: function(doc)
+	{
+		if (doc.getElementsByName('t_forumid'))
+		{
+			// The forum list is here so let's update it
+			//grabForumList(doc);
+		}
+	},
+
+	handleProfileView: function(doc)
+	{
+		var postSearchLink = gSALR.service.selectSingleNode(doc, doc, "//A[contains(./text(),'find posts by user')]");
+		if (!postSearchLink)
+			return;
+		var userid = postSearchLink.href.match(/userid=(\d+)/i)[1];
+		var newLink = doc.createElement('a');
+		newLink.href = "/banlist.php?userid=" + userid;
+		newLink.title = "Show poster's ban/probation history.";
+		newLink.innerHTML = "Rap Sheet";
+		newLink.style.color = "#FFFFFF";
+		postSearchLink.parentNode.appendChild(doc.createTextNode(" ("));
+		postSearchLink.parentNode.appendChild(newLink);
+		postSearchLink.parentNode.appendChild(doc.createTextNode(")"));
+	},
+
+	handleSearch: function(doc)
+	{
+		// Add support for mouse gestures / pagination
+		if (gSALR.service.getPreference("gestureEnable"))
+		{
+			var pageList = gSALR.service.selectNodes(doc, doc, "//DIV[contains(@class,'pager')]");
+			if (pageList)
+			{
+				if (pageList.length > 1)
+				{
+					pageList = pageList[pageList.length-1];
+				}
+				else
+				{
+					pageList = pageList[0];
+				}
+				var numPages = pageList.innerHTML.match(/\((\d+)\)/);
+				if (!numPages)
+					return;
+				var curPage = gSALR.service.selectSingleNode(doc, doc, "//a[contains(@class,'current')]");
+				if (pageList.childNodes.length > 1) // Are there pages
+				{
+					numPages = parseInt(numPages[1], 10);
+					curPage = parseInt(curPage.innerHTML, 10);
+				}
+				else
+				{
+					numPages = 1;
+					curPage = 1;
+				}
+			}
+
+			doc.__SALR_curPage = curPage;
+			doc.__SALR_maxPage = numPages;
+
+			doc.body.addEventListener('mousedown', gSALR.pageMouseDown, false);
+			doc.body.addEventListener('mouseup', gSALR.pageMouseUp, false);
+		}
+	},
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utility Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-function showChangelogWindow()
-{
-	openDialog("chrome://salastread/content/newfeatures/newfeatures.xul", "SALR_newfeatures", "chrome,centerscreen,dialog=no");
-}
-
-function markThreadReplied(threadid)
-{
-	persistObject.iPostedHere(threadid);
-}
-
-function SALR_insertConfigLink(doc)
-{
-	var usercpnode = persistObject.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'usercp.php')]");
-	if (usercpnode)
+	insertSALRConfigLink: function(doc)
 	{
-		var containerLi = doc.createElement("LI");
-		var sep = doc.createTextNode(" - ");
-		var newlink = doc.createElement("A");
-		containerLi.appendChild(sep);
-		containerLi.appendChild(newlink);
-		newlink.appendChild( doc.createTextNode("Configure SALR") );
-		usercpnode.parentNode.parentNode.insertBefore(containerLi, usercpnode.parentNode.nextSibling);
-		newlink.href = "#";
-		newlink.addEventListener("click", SALR_runConfig, true);
-	}
-}
+		var usercpnode = gSALR.service.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'usercp.php')]");
+		if (usercpnode)
+		{
+			var containerLi = doc.createElement("LI");
+			var sep = doc.createTextNode(" - ");
+			var newlink = doc.createElement("A");
+			containerLi.appendChild(sep);
+			containerLi.appendChild(newlink);
+			newlink.appendChild( doc.createTextNode("Configure SALR") );
+			usercpnode.parentNode.parentNode.insertBefore(containerLi, usercpnode.parentNode.nextSibling);
+			newlink.href = "#";
+			newlink.addEventListener("click", gSALR.runConfig, true);
+		}
+	},
 
-function SALR_getPageTitle(doc)
-{
-	if (doc.title == "The Something Awful Forums")
+	getPageTitle: function(doc)
 	{
-		return doc.title;
-	}
-	return doc.title.replace(/( \- )?The Something ?Awful Forums( \- )?/i, '');
-}
+		if (doc.title == "The Something Awful Forums")
+		{
+			return doc.title;
+		}
+		return doc.title.replace(/( \- )?The Something ?Awful Forums( \- )?/i, '');
+	},
 
-function setRegReplyFillOn()
-{
-	salastread_needRegReplyFill = true;
-}
-
-function SALR_runConfig(page, args)
-{
-	//check a pref so the dialog has the proper constructor arguments
-	var pref = Components.classes["@mozilla.org/preferences-service;1"]
-				.getService(Components.interfaces.nsIPrefBranch);
-
-    var instantApply = pref.getBoolPref("browser.preferences.instantApply");
-	var features = "chrome,titlebar,toolbar,centerscreen,resizable" + (instantApply ? ",dialog=no" : ",modal");
-
-	openDialog("chrome://salastread/content/pref.xul", "Preferences", features, page, { "args" : args });
-}
-
-function addInternalDebugLog(msg)
-{
-	SALR_debugLog.push( (new Date()).toString() +": "+msg );
-	if ( SALR_debugLog.length > 10 )
+	runConfig: function(page, args)
 	{
-		SALR_debugLog.shift();
-	}
-}
+		// check a browser pref so the dialog has the proper constructor arguments
+		var pref = Components.classes["@mozilla.org/preferences-service;1"]
+					.getService(Components.interfaces.nsIPrefBranch);
 
-//add a user to the highlighting/note section by clicking on a post link
-function addHighlightedUser(e)
-{
-	e.stopPropagation();
-	e.preventDefault();
+		var instantApply = pref.getBoolPref("browser.preferences.instantApply");
+		var features = "chrome,titlebar,toolbar,centerscreen,resizable" + (instantApply ? ",dialog=no" : ",modal");
 
-	var link = e.originalTarget;
-	var userid = link.id.split("_")[1];
-	var username = link.href.split("#")[1];
+		openDialog("chrome://salastread/content/pref.xul", "Preferences", features, page, { "args" : args });
+	},
 
-	SALR_runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
-}
+	// add a user to the highlighting/note section by clicking on a post link
+	addHighlightedUser: function(e)
+	{
+		e.stopPropagation();
+		e.preventDefault();
 
-function SALR_IncTimer()
-{
-   SALR_PageTimerCount++;
-}
+		var link = e.originalTarget;
+		var userid = link.id.split("_")[1];
+		var username = link.href.split("#")[1];
 
-function SALR_DecTimer()
-{
-   SALR_PageTimerCount--;
-}
+		gSALR.runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
+	},
 
-function SALR_TimerTick()
-{
-   if ( SALR_PageTimerCount > 0 && persistObject )
-   {
-      persistObject.PingTimer();
-   }
-}
+	timerTick: function()
+	{
+		if (gSALR.timerPageCount > 0 && gSALR.service)
+		{
+			gSALR.service.PingTimer();
+		}
+	},
+
+	addHiddenFormInput: function(doc,form,name,value)
+	{
+	   var newel = doc.createElement("INPUT");
+	   newel.type = "hidden";
+	   newel.name = name;
+	   newel.value = value;
+	   form.appendChild(newel);
+	},
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CSS & Formatting Functions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	// This function should be removed if SALR ever allows more detailed color settings (backgrounds, font colors, etc)
+	handleBodyClassing: function(doc)
+	{
+		var docbody = doc.body;
+		var addclass = " somethingawfulforum";
+		var phmatch = doc.location.href.match( /\/([^\/]*)\.php/ );
+		if (phmatch)
+		{
+			addclass += " somethingawfulforum_"+phmatch[1]+"_php";
+		}
+		if (docbody)
+			docbody.className += addclass;
+	},
+
+	insertCSS: function(doc, url)
+	{
+		var stylesheet = doc.createElement("link");
+		stylesheet.rel = "stylesheet";
+		stylesheet.type = "text/css";
+		stylesheet.href = url;
+		doc.getElementsByTagName('head')[0].appendChild(stylesheet);
+	},
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Navbar & Mouse Gesture Functions ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	quickPostJump: function(event)
+	{
+		try {
+			var ctrlKey = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
+			if (ctrlKey)
+			{
+				// If any special keys were pressed, don't bother processing
+				return;
+			}
+			var targ = event.target;
+			var doc = targ.ownerDocument;
+			var pressed = event.which;
+			var postId, post, classChange, rescroll = false;
+			var maxPosts = gSALR.service.getPreference('postsPerPage');
+			if (doc.__SALR_curFocus)
+			{
+				postId = doc.__SALR_curFocus;
+			}
+			else if (doc.location.href.match(/\#pti(\d+)$/))
+			{
+				postId = doc.location.href.match(/\#pti(\d+)$/)[1];
+			}
+			else if (doc.location.href.match(/\#(post\d+)$/))
+			{
+				postId = doc.location.href.match(/\#(post\d+)$/)[1];
+				postId = doc.getElementById(postId).getElementsByTagName('tr')[0].id;
+				postId = postId.match(/pti(\d+)$/)[1];
+			}
+			else
+			{
+				postId = '1';
+			}
+			switch (String.fromCharCode(pressed).toLowerCase())
+			{
+				case gSALR.service.getPreference('kb.reanchor'):
+				case gSALR.service.getPreference('kb.reanchorAlt'):
+					doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+					post = doc.getElementById('pti' + postId);
+					rescroll = true;
+					break;
+				case gSALR.service.getPreference('kb.nextPage'):
+				case gSALR.service.getPreference('kb.nextPageAlt'):
+					// Goto next page
+					if (doc.__SALR_curPage < doc.__SALR_maxPage)
+					{
+						doc.location = gSALR.service.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage + 1));
+					}
+					break;
+				case gSALR.service.getPreference('kb.nextPost'):
+				case gSALR.service.getPreference('kb.nextPostAlt'):
+					// Goto next post
+					postId++;
+					if (postId <= maxPosts)
+					{
+						if (doc.getElementById('pti' + (postId - 1)))
+						{
+							classChange = doc.getElementById('pti' + (postId - 1)).parentNode.parentNode;
+							classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
+							doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+						}
+						post = doc.getElementById('pti' + postId);
+						rescroll = true;
+					}
+					break;
+				case gSALR.service.getPreference('kb.prevPage'):
+				case gSALR.service.getPreference('kb.prevPageAlt'):
+					// Goto previous page
+					if (doc.__SALR_curPage > 1)
+					{
+						doc.location = gSALR.service.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage - 1));
+					}
+					break;
+				case gSALR.service.getPreference('kb.prevPost'):
+				case gSALR.service.getPreference('kb.prevPostAlt'):
+					// Goto previous post
+					postId--;
+					if (postId > 0)
+					{
+						if (doc.getElementById('pti' + (postId + 1)))
+						{
+							classChange = doc.getElementById('pti' + (postId + 1)).parentNode.parentNode;
+							classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
+							doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+						}
+						post = doc.getElementById('pti' + postId);
+						rescroll = true;
+					}
+					break;
+				case gSALR.service.getPreference('kb.quickEdit'):
+					// Activate Quick Edit Post
+					var fakeEvent = {};
+					fakeEvent.originalTarget = gSALR.service.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
+					quickQuoteButtonClick(fakeEvent);
+					break;
+				case gSALR.service.getPreference('kb.quickReply'):
+					// Activate Quick Reply to Thread
+					var fakeEvent = {};
+					fakeEvent.originalTarget = gSALR.service.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
+					quickQuoteButtonClick(fakeEvent);
+					break;
+				case gSALR.service.getPreference('kb.quickQuote'):
+					// Activate Quick Quote Post
+					var fakeEvent = {};
+					fakeEvent.originalTarget = gSALR.service.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
+					quickQuoteButtonClick(fakeEvent);
+					break;
+			}
+			if (rescroll)
+			{
+				post.scrollIntoView(true);
+				doc.__SALR_curFocus = postId;
+			}
+		} catch(e) {dump('error:'+e);}
+	},
+
+	directionalNavigate: function(doc, dir)
+	{
+		var urlbase = doc.location.href.match(/.*\.somethingawful\.com/);
+		var curPage = doc.__SALR_curPage;
+		var perpage = "&perpage=" + gSALR.service.getPreference("postsPerPage");
+		var forumid = doc.location.href.match(/forumid=[0-9]+/);
+		var posticon = doc.location.href.match(/posticon=[0-9]+/);
+		var inSearch = (doc.location.pathname == '/f/search/result');
+		var searchid = doc.location.href.match(/qid=[0-9]+/);
+
+		if (!posticon)
+			posticon = "&posticon=0";
+		var sortfield = doc.location.href.match(/&sortfield=[a-zA-Z0-9]+/);
+		if (!sortfield)
+			sortfield = "&sortfield=lastpost";
+		var sortorder = doc.location.href.match(/&sortorder=[a-z]+/);
+		if (!sortorder)
+			sortorder = "&sortorder=desc";
+		var daysprune = doc.location.href.match(/&daysprune=[0-9]+/);
+		if (!daysprune)
+			daysprune = "&daysprune=30";
+		var userfilter = doc.location.href.match(/&userid=[0-9]+/);
+		if (!userfilter)
+			userfilter = "";
+
+		if (dir == "top")
+		{
+			var threadForum = doc.__SALR_forumid;
+
+			if ((curPage == 1 && !threadForum) || inSearch)
+			{
+				doc.location = urlbase + "/index.php";
+			}
+			else
+			{
+				if (threadForum)
+					doc.location = urlbase + "/forumdisplay.php?s=&forumid=" + threadForum;
+				else
+					doc.location = urlbase + "/forumdisplay.php?s=&" + forumid + posticon;
+			}
+		}
+		else if (dir == "left")
+		{
+			if (curPage > 1)
+			{
+				var threadid = doc.__SALR_threadid;
+				if (threadid)
+					doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage - 1);
+				else if (inSearch)
+					doc.location = urlbase + "/f/search/result?" + searchid + "&p=" + (curPage - 1);
+				else
+					doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage - 1);
+			}
+		}
+		else if (dir == "right")
+		{
+			var maxPage = doc.__SALR_maxPage;
+			if (maxPage > curPage)
+			{
+				var threadid = doc.__SALR_threadid;
+				if (threadid)
+					doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage + 1);
+				else if (inSearch)
+					doc.location = urlbase + "/f/search/result?" + searchid + "&p=" + (curPage + 1);
+				else
+					doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage + 1);
+			}
+		}
+	},
+
+	pageMouseUp: function(event)
+	{
+		var targ = event.target;
+		var doc = targ.ownerDocument;
+		if (targ && targ.SALR_isGestureElement == true)
+		{
+			doc.body.addEventListener('contextmenu', gSALR.gestureContextMenu, false);
+			gSALR.directionalNavigate(doc, targ.SALR_dir);
+		}
+
+		var gn = doc.getElementById("salastread_gesturenavtop");
+		if (gn)
+		{
+			var rx = 	function(dir)
+						{
+							var el = doc.getElementById("salastread_gesturenav"+dir);
+							el.parentNode.removeChild(el);
+						}
+
+			rx("top");
+			rx("left");
+			rx("right");
+			rx("bottom");
+		}
+	},
+
+	gestureContextMenu: function(event)
+	{
+		var targ = event.target;
+		var doc = targ.ownerDocument;
+		doc.body.removeEventListener('contextmenu', gSALR.gestureContextMenu, false);
+		if (event.preventDefault)
+		{
+			event.preventDefault();
+		}
+		return false;
+	},
+
+	pageMouseDown: function(event)
+	{
+		var doc = event.target.ownerDocument;
+
+		// Suppress gesture nav on embeds
+		if (event.target.nodeName.toLowerCase() == 'embed')
+			return;
+
+		var gn = doc.getElementById("salastread_gesturenavtop");
+		if (gn)
+		{
+			return;
+		}
+		if (event.button == gSALR.service.getPreference('gestureButton') && gSALR.service.getPreference('gestureEnable'))
+		{
+			var cx =	function(dir, ofsy, ofsx)
+						{
+							var el = doc.createElement("IMG");
+								el.SALR_dir = ""+dir;
+								el.id = "salastread_gesturenav"+dir;
+								el.className = "salastread_gesturenav";
+								el.src = "chrome://salastread/skin/gesturenav-" + dir + ".png";
+								el.style.left = ((event.clientX - 36) + (77 * ofsx)) + "px";
+								el.style.top = ((event.clientY - 36) + (77 * ofsy)) + "px";
+							doc.body.appendChild(el);
+							el.SALR_isGestureElement = true;
+
+							if (dir=="left" && (doc.__SALR_curPage <= 1 || !doc.__SALR_curPage))
+							{
+								el.className += " disab";
+							}
+							else if (dir=="right" && (doc.__SALR_maxPage <= doc.__SALR_curPage || !doc.__SALR_maxPage))
+							{
+								el.className += " disab";
+							}
+						};
+			cx("top", -1, 0);
+			cx("left", 0, -1);
+			cx("right", 0, 1);
+			cx("bottom", 1, 0);
+		}
+	},
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Context Menu Functions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	showContextMenuItems: function(showunread)
+	{
+		var cacm = document.getElementById("contentAreaContextMenu");
+		var mopt = document.getElementById("salastread-context-menu");
+		var moptsep = document.getElementById("salastread-context-menuseparator");
+
+		if(gSALR.service.getPreference('contextMenuOnBottom') )
+		{
+			cacm.appendChild(moptsep);
+			cacm.appendChild(mopt);
+		}
+		else
+		{
+			cacm.insertBefore(moptsep, cacm.firstChild);
+			cacm.insertBefore(mopt, moptsep);
+		}
+
+		mopt.setAttribute('hidden', false);
+		moptsep.setAttribute('hidden', false);
+		document.getElementById("salastread-context-ignorethread").setAttribute('hidden', false);
+		document.getElementById("salastread-context-starthread").setAttribute('hidden', false);
+		if (showunread)
+			document.getElementById("salastread-context-unreadthread").setAttribute('hidden', false);
+	},
+
+	hideContextMenuItems: function()
+	{
+		document.getElementById("salastread-context-menu").setAttribute('hidden', true);
+		document.getElementById("salastread-context-menuseparator").setAttribute('hidden', true);
+		document.getElementById("salastread-context-ignorethread").setAttribute('hidden', true);
+		document.getElementById("salastread-context-starthread").setAttribute('hidden', true);
+		document.getElementById("salastread-context-unreadthread").setAttribute('hidden', true);
+	},
+
+	contextMenuShowing: function(e)
+	{
+		if (e.originalTarget == document.getElementById("contentAreaContextMenu"))
+		{
+			gSALR.hideContextMenuItems();
+			try
+			{
+				var doc = document.getElementById("content").mCurrentBrowser.contentDocument;
+				if (doc.__salastread_processed == true)
+				{
+					if (gSALR.service.getPreference("enableContextMenu"))
+						gSALR.contextVis();
+				}
+			}
+			catch (e) {}
+		}
+	},
+
+	contextVis: function()
+	{
+		var target = gContextMenu.target;
+		var threadid = null;
+
+		while (target)
+		{
+			if (target.className)
+			{
+				var tidmatch = target.className.match(/salastread_thread_(\d+)/);
+				if (tidmatch)
+				{
+					threadid = tidmatch[1];
+					document.getElementById("salastread-context-ignorethread").data = threadid;
+					document.getElementById("salastread-context-ignorethread").target = target;
+					document.getElementById("salastread-context-ignorethread").label = "Ignore This Thread (" + threadid + ")";
+					document.getElementById("salastread-context-starthread").data = threadid;
+					document.getElementById("salastread-context-starthread").target = target;
+					document.getElementById("salastread-context-starthread").label = (gSALR.service.isThreadStarred(threadid) ? 'Unstar' : 'Star') + " This Thread (" + threadid + ")";
+					document.getElementById("salastread-context-unreadthread").data = threadid;
+					document.getElementById("salastread-context-unreadthread").target = target;
+					document.getElementById("salastread-context-unreadthread").label = "Mark This Thread Unread (" + threadid + ")";
+					var pageName = target.ownerDocument.location.pathname.match(/^\/(\w+)\.php/i);
+					if (pageName)
+					{
+						switch(pageName[1])
+						{
+							case "showthread":
+								gSALR.showContextMenuItems(true);
+								break;
+							default:
+								gSALR.showContextMenuItems(false);
+						}
+					}
+				}
+			}
+			target = target.parentNode;
+		}
+	},
+
+	starThread: function()
+	{
+		var threadid = document.getElementById("salastread-context-starthread").data;
+		var target = document.getElementById("salastread-context-starthread").target;
+		if (threadid)
+		{
+			var threadTitle;
+			 // Snag the title we saved earlier
+			if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+			{
+				threadTitle = target.__salastread_threadtitle;
+			}
+			else
+				threadTitle = gSALR.getPageTitle(target.ownerDocument);
+
+			var starStatus = gSALR.service.isThreadStarred(threadid);
+			gSALR.service.toggleThreadStar(threadid);
+
+			if (starStatus == false) // we just starred it
+				gSALR.service.setThreadTitle(threadid, threadTitle);
+
+			if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+			{
+				// Don't refresh the page. Why would we refresh the page?
+				//target.ownerDocument.location = target.ownerDocument.location;
+			}
+			else
+			{
+				var startext = starStatus ? "unstarred" : "starred";
+				alert("This thread is now " + startext + ".");
+			}
+		}
+	},
+
+	ignoreThread: function()
+	{
+		var threadid = document.getElementById("salastread-context-ignorethread").data;
+		var target = document.getElementById("salastread-context-ignorethread").target;
+		if (threadid)
+		{
+			var threadTitle;
+			 // Snag the title we saved earlier
+			if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+			{
+				threadTitle = target.__salastread_threadtitle;
+			}
+			else
+				threadTitle = gSALR.getPageTitle(target.ownerDocument);
+			if (confirm("Are you sure you want to ignore thread #"+threadid+"?"))
+			{
+				// Actually use ignoreStatus
+				var ignoreStatus = gSALR.service.isThreadIgnored(threadid);
+				if (ignoreStatus == false)
+				{
+					gSALR.service.toggleThreadIgnore(threadid);
+					gSALR.service.setThreadTitle(threadid, threadTitle);
+					// todo: detect by if there is a "forum" node, to cover bookmark page and control panel
+					if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+					{
+						target.parentNode.removeChild(target);
+					}
+				}
+			}
+		}
+	},
+
+	unreadThread: function()
+	{
+		var threadid = document.getElementById("salastread-context-unreadthread").data;
+		var target = document.getElementById("salastread-context-unreadthread").target;
+		if (threadid)
+		{
+			var xhr = new XMLHttpRequest();
+			var xhrparams = "json=1&action=resetseen&threadid="+threadid;
+			xhr.open("POST", "http://forums.somethingawful.com/showthread.php", true);
+			// Ensure this load flag is set to prevent issues with third-party cookies being disabled
+			xhr.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
+			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhr.setRequestHeader("Content-length", xhrparams.length);
+			xhr.setRequestHeader("Connection", "close");
+			xhr.onreadystatechange = function()
+			{
+				if (xhr.readyState == 4 && xhr.status == 200)
+				{
+					if (xhr.responseText.match(/threadid/))
+						alert("Thread #" + threadid + " marked as unread.");
+					else
+						alert("Something went wrong! Please try again.");
+				}
+			}
+			xhr.send(xhrparams);
+		}
+	},
+
+	// Event catcher for clicking on the Mark Unseen box
+	clickMarkUnseen: function()
+	{
+		var doc = this.ownerDocument;
+		var thread = this.parentNode.parentNode.parentNode;
+		var threadRepliesBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
+
+		// Remove the new replies count
+		if (!gSALR.service.getPreference("disableNewReCount") && thread.className.search(/newposts/i) > -1)
+		{
+			while (threadRepliesBox.childNodes[1])
+			{
+				// Delete everything but the original link
+				threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
+			}
+		}
+	},
+
+	// Event catcher for clicking the "Hide Avatar" or "Unhide Avatar" links
+	clickToggleAvatar: function()
+	{
+		var doc = this.ownerDocument;
+		var idToToggle = this.href.match(/\#ToggleAvatar\#(\d+)\#(.*)$/)[1];
+		var nameToToggle = this.href.match(/\#ToggleAvatar\#(\d+)\#(.*)$/)[2];
+		var alreadyHidden = gSALR.service.isAvatarHidden(idToToggle);
+		var posts = gSALR.service.selectNodes(doc, doc, "//table[contains(@id,'post')]");
+		var post, profileLink, posterId, titleBox, toggleLink;
+
+		for (n in posts)
+		{
+			post = posts[n];
+			profileLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
+			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+			if (posterId == idToToggle)
+			{
+				// Standard template
+				titleBox = gSALR.service.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+				// If that doesn't work, try FYAD template
+				if (titleBox == null)
+					titleBox = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
+
+				toggleLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#ToggleAvatar#')]");
+				if (alreadyHidden)
+				{
+					titleBox.style.display = "block";
+					toggleLink.innerHTML = "Hide Avatar";
+				}
+				else
+				{
+					titleBox.style.display = "none";
+					toggleLink.innerHTML = "Show Avatar";
+				}
+			}
+		}
+		gSALR.service.toggleAvatarHidden(idToToggle, nameToToggle);
+	},
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Advanced Thread Filtering Functions /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	rebuildFilterBox: function(doc)
+	{
+		var afHidden = doc.getElementById("tags_hidden");
+		var afMain = doc.getElementById("tags_showing");
+		var afObject, afObject2; // Temp object storage for things that really only get handled once
+
+		if (afHidden)
+		{
+			afObject = gSALR.service.selectSingleNode(doc, afHidden, "B");
+			afObject.innerHTML = "Advanced thread filtering";
+			afObject2 = doc.createElement("div");
+			afObject2.id = "filteredthreadcount1";
+			afObject2.style.fontSize = "80%";
+			afObject2.style.fontWeight = "normal";
+			afObject2.style.marginLeft = "6px";
+			afObject2.appendChild(doc.createTextNode("(Currently ignoring "));
+			afObject2.appendChild(doc.createTextNode("0"));
+			afObject2.appendChild(doc.createTextNode(" threads.)"));
+			gSALR.service.toggleVisibility(afObject2,true);
+			afObject.appendChild(afObject2);
+		}
+		if (afMain) // Incoming wall of text
+		{
+			var afMainIcons, afIgnoredIcons, afIgnoredKeywords;
+			var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
+			var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
+
+			afObject = gSALR.service.selectSingleNode(doc, afMain, "B");
+			afObject.innerHTML = "Advanced thread filtering";
+			afObject2 = doc.createElement("div");
+			afObject2.id = "filteredthreadcount2";
+			afObject2.style.fontSize = "80%";
+			afObject2.style.fontWeight = "normal";
+			afObject2.style.marginLeft = "6px";
+			afObject2.appendChild(doc.createTextNode("(Currently ignoring "));
+			afObject2.appendChild(doc.createTextNode("0"));
+			afObject2.appendChild(doc.createTextNode(" threads.)"));
+			gSALR.service.toggleVisibility(afObject2,true);
+			afObject.appendChild(afObject2);
+			afObject.appendChild(doc.createElement("br"));
+
+			afMainIcons = doc.getElementById("filtericons");
+			// Plug a bunch of stuff in before the main icon list
+			afMain.insertBefore(doc.createTextNode("Show only this icon: ("), afMainIcons);
+			afObject = gSALR.service.selectSingleNode(doc, afMain, "A[contains(@href,'/forumdisplay.php?forumid=')]");
+			afObject.innerHTML = "Reset"
+			afObject.style.fontSize = "75%";
+			afObject.style.fontWeight = "bold";
+			afMain.insertBefore(afObject, afMainIcons);
+			afMain.insertBefore(doc.createTextNode(")"), afMainIcons);
+			afMain.insertBefore(doc.createElement("br"), afMainIcons);
+
+			// Add a message for when all the icons are ignored and hide it for now
+			afObject = doc.createElement("div");
+			afObject.id = "alliconsignored";
+			afObject.appendChild(doc.createTextNode("You've ignored everything but shit posts you cretin!"));
+			afObject.style.fontWeight = "bold";
+			gSALR.service.toggleVisibility(afObject,true);
+			afMainIcons.insertBefore(afObject,afMainIcons.firstChild);
+
+			// Plug a bunch of stuff in after the main icon list
+			afObject = doc.createElement("div");
+			afObject.appendChild(doc.createTextNode("Ctrl click an icon to add to ignored list."));
+			afObject.style.fontStyle = "italic";
+			afObject.style.fontSize = "85%";
+			afMain.appendChild(afObject);
+			afMain.appendChild(doc.createElement("br"));
+
+			// Now all the ignored icons
+			afMain.appendChild(doc.createTextNode("Ignored icons:"));
+			afMain.appendChild(doc.createElement("br"));
+			afIgnoredIcons = doc.createElement("div");
+			afIgnoredIcons.id = "ignoredicons";
+			afObject = doc.createElement("div");
+			afObject.id = "noiconsignored";
+			afObject.appendChild(doc.createTextNode("None."));
+			afObject.style.fontStyle = "italic";
+			afObject.style.visibility = "visible";
+			afObject.style.display = "inline";
+			afIgnoredIcons.appendChild(afObject);
+			afMain.appendChild(afIgnoredIcons);
+			afMain.appendChild(doc.createElement("br"));
+
+			// Now the ignored keywords
+			afMain.appendChild(doc.createTextNode("Ignored keywords:"));
+			afMain.appendChild(doc.createElement("br"));
+			afObject = doc.createElement("input");
+			afObject.id = "ignoredkeywords";
+			afObject.type = "text";
+			afObject.value = prefIgnoredKeywords;
+			afObject.size = 75;
+			afMain.appendChild(afObject);
+			afMain.appendChild(doc.createTextNode(" "));
+			afObject = doc.createElement("input");
+			afObject.type = "button";
+			afObject.value = "Save";
+			afObject.addEventListener("click", gSALR.clickIgnoreKeywordSave, false);
+			afMain.appendChild(afObject);
+			afMain.appendChild(doc.createElement("br"));
+			afObject = doc.createElement("div");
+			afObject.appendChild(doc.createTextNode("Separate strings with a pipe \"|\" symbol. Too many strings may affect performance."));
+			afObject.style.fontStyle = "italic";
+			afObject.style.fontSize = "85%";
+			afMain.appendChild(afObject);
+			afMain.appendChild(doc.createElement("br"));
+
+			// TODO: ability to ignore shitposts even though they dont have an icon id
+			// TODO: remove all the icon stuff for when viewing the dumps but keep the rest, maybe add star# filtering for those
+			// TODO: thread rating filtering
+		}
+	},
+
+	// Event catcher for ignoring post icons
+	clickToggleIgnoreIcon: function(event)
+	{
+		if (gSALR.service.getPreference("advancedThreadFiltering"))
+		{
+			var doc = this.ownerDocument;
+			var afMain = doc.getElementById("tags_showing");
+
+			if (afMain)
+			{
+				var afMainIcons, afIgnoredIcons, afShowMe, afHideMe, afIgnoring;
+				var iconToIgnore, iconToIgnoreId, iconIgnored;
+				var afObject; // Temp object storage for things that really only get handled once
+				var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
+				var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
+				var anyLeft, anyLeftIn, searchString, threadBeGone;
+				var threadList, thread, threadIcon;
+
+				afMainIcons = doc.getElementById("filtericons");
+				afIgnoredIcons = doc.getElementById("ignoredicons");
+
+				if (this.parentNode.id == "filtericons")
+				{
+					if (event.ctrlKey == false)
+					{
+						return; // Moving from the main icon list requires ctrl click
+					}
+					afIgnoring = true;
+					afShowMe = "alliconsignored";
+					afHideMe = "noiconsignored";
+					anyLeftIn = afMainIcons;
+					mirrorIcons = afIgnoredIcons;
+				}
+				else if (this.parentNode.id == "ignoredicons")
+				{
+					afIgnoring = false;
+					afShowMe = "noiconsignored";
+					afHideMe = "alliconsignored";
+					anyLeftIn = afIgnoredIcons;
+					mirrorIcons = afMainIcons;
+				}
+				else
+				{
+					return;
+				}
+
+				iconToIgnore = this.firstChild;
+				iconToIgnoreId = parseInt(iconToIgnore.href.match(/posticon=(\d+)/i)[1]);
+				iconIgnored = gSALR.service.selectSingleNode(doc, mirrorIcons, "DIV/A[contains(@href,'posticon=" + iconToIgnoreId + "')]");
+
+				searchString = "(^|\\s)" + iconToIgnoreId + ",";
+				searchString = new RegExp(searchString , "gi");
+
+				if (!afMainIcons || !afIgnoredIcons || !iconIgnored || (afIgnoring && prefIgnoredPostIcons.search(searchString) > -1))
+				{
+					// Something is amiss
+					return;
+				}
+
+				event.stopPropagation();
+				event.preventDefault();
+
+				if (afIgnoring)
+				{
+					prefIgnoredPostIcons += iconToIgnoreId + ", ";
+				}
+				else
+				{
+					prefIgnoredPostIcons = prefIgnoredPostIcons.replace(searchString,"");
+				}
+				gSALR.service.setPreference("ignoredPostIcons",prefIgnoredPostIcons);
+
+				gSALR.service.toggleVisibility(this,true);
+				afObject = doc.getElementById(afHideMe);
+				if (afObject && afObject.style.visibility != "hidden")
+				{
+					gSALR.service.toggleVisibility(afObject,true);
+				}
+
+				gSALR.service.toggleVisibility(iconIgnored.parentNode,true);
+				afObject = doc.getElementById(afShowMe);
+				anyLeft = gSALR.service.selectSingleNode(doc, anyLeftIn, "DIV[contains(@style,'visibility: visible; display: inline;')]");
+				if (!anyLeft && afObject && afObject.style.visibility == "hidden")
+				{
+					gSALR.service.toggleVisibility(afObject,true);
+				}
+
+				// Cycle through the threads and actively update their visibility
+				threadList = gSALR.service.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
+
+				for (var i in threadList)
+				{
+					thread = threadList[i];
+					threadIcon = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
+					threadBeGone = false;
+					iconMatch = false;
+					if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
+					{
+						var iconnum = threadIcon.src.match(/#(\d+)$/)[1];
+						if (iconnum == iconToIgnoreId)
+						{
+							if (afIgnoring)
+							{
+								threadBeGone = true;
+							}
+						}
+						else
+						{
+							continue;
+						}
+					}
+
+					// No icon match or matched icon is being unignored, I could reveal it, but is it keyword-ignored?
+					if (!threadBeGone && prefIgnoredKeywords && thread.style.visibility == "hidden")
+					{
+						var threadTitleLink = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/DIV/A[contains(@class, 'thread_title')]");
+						if(!threadTitleLink)
+						{
+							threadTitleLink = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
+						}
+						var threadTitle = threadTitleLink.innerHTML;
+						var keywordList = prefIgnoredKeywords.split("|");
+
+						for (var j in keywordList)
+						{
+							keywords = keywordList[j];
+							if (!keywords)
+							{
+								continue;
+							}
+							searchString = new RegExp(keywords, "gi");
+
+							if (threadTitle.search(searchString) > -1)
+							{
+								threadBeGone = true;
+								break;
+							}
+						}
+					}
+
+					if (threadBeGone && thread.style.visibility != "hidden")
+					{
+						gSALR.service.toggleVisibility(thread,false);
+						gSALR.filteredThreadCount(doc,1);
+					}
+					else if (!threadBeGone && thread.style.visibility == "hidden")
+					{
+						gSALR.service.toggleVisibility(thread,false);
+						gSALR.filteredThreadCount(doc,-1);
+					}
+				}
+			}
+		}
+	},
+
+	// Event catcher for keyword ignoring input box
+	clickIgnoreKeywordSave: function(event)
+	{
+		if (gSALR.service.getPreference("advancedThreadFiltering"))
+		{
+			var doc = this.ownerDocument;
+			var afMain = doc.getElementById("tags_showing");
+
+			if (afMain)
+			{
+				var afObject; // Temp object storage for things that really only get handled once
+				var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
+				var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
+				var threadList, thread, threadTitleLink, threadtitle, threadBeGone;
+				var newKeywords, keywordList, keywords, searchString;
+
+				afObject = doc.getElementById("ignoredkeywords");
+				newKeywords = afObject.value;
+
+				if (newKeywords == prefIgnoredKeywords)
+				{
+					return;
+				}
+
+				//	Todo: may need to strip certain chars like " or ' ?
+
+			//	event.stopPropagation();
+				event.preventDefault();
+
+				gSALR.service.setPreference("ignoredKeywords",newKeywords);
+
+				// Cycle through the threads and actively update their visibility
+				threadList = gSALR.service.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
+				keywordList = newKeywords.split("|");
+
+				for (var i in threadList)
+				{
+					thread = threadList[i];
+					threadTitleLink = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/DIV/A[contains(@class, 'thread_title')]");
+					if(!threadTitleLink)
+					{
+						threadTitleLink = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
+					}
+					threadTitle = threadTitleLink.innerHTML;
+					threadBeGone = false;
+
+					for (var j in keywordList)
+					{
+						keywords = keywordList[j];
+						if (!keywords)
+						{
+							continue;
+						}
+						searchString = new RegExp(keywords, "gi");
+
+						if (threadTitle.search(searchString) > -1)
+						{
+							threadBeGone = true;
+							break;
+						}
+					}
+
+					// No keyword match, I could reveal it, but is it icon-ignored?
+					if (!threadBeGone && prefIgnoredPostIcons && thread.style.visibility == "hidden")
+					{
+						var threadIcon = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
+
+						if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
+						{
+							var iconnum = threadIcon.src.match(/#(\d+)$/)[1];
+							if (prefIgnoredPostIcons.search(iconnum) > -1)
+							{
+								threadBeGone = true;
+							}
+						}
+					}
+
+					if (threadBeGone && thread.style.visibility != "hidden")
+					{
+						gSALR.service.toggleVisibility(thread,false);
+						gSALR.filteredThreadCount(doc,1);
+					}
+					else if (!threadBeGone && thread.style.visibility == "hidden")
+					{
+						gSALR.service.toggleVisibility(thread,false);
+						gSALR.filteredThreadCount(doc,-1);
+					}
+				}
+			}
+		}
+	},
+
+	// To cut down on code elsewhere (for keeping track of the number of threads being filtered)
+	filteredThreadCount: function(doc,amount)
+	{
+		var count = gSALR.service.getPreference("filteredThreadCount");
+		var afObject, afObject2; // Temp object storage for things that really only get handled once
+
+		afObject = doc.getElementById("filteredthreadcount1");
+		afObject2 = doc.getElementById("filteredthreadcount2");
+
+		if (!afObject || !afObject2)
+		{
+			return;
+		}
+
+		count += amount;
+		afObject.childNodes[1].textContent = count;
+		afObject2.childNodes[1].textContent = count;
+
+		if (count <= 0 && afObject.style.visibility != "hidden")
+		{
+			gSALR.service.toggleVisibility(afObject,true);
+		}
+		else if (afObject.style.visibility == "hidden")
+		{
+			gSALR.service.toggleVisibility(afObject,true);
+		}
+
+		if (count <= 0 && afObject2.style.visibility != "hidden")
+		{
+			gSALR.service.toggleVisibility(afObject2,true);
+		}
+		else if (afObject2.style.visibility == "hidden")
+		{
+			gSALR.service.toggleVisibility(afObject2,true);
+		}
+
+		gSALR.service.setPreference("filteredThreadCount",count);
+	},
+
+};
+
+gSALR.init();
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// (Old) Globals ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+var needRegReplyFill = false;
+var quickquotewin = null;
+var quickQuoteSubmitting = false;
+var salastread_savedQuickReply = "";
+var salastread_savedQuickReplyThreadId = "";
+
+
+// Quick quote / edit post util functions
 
 function convertPLTag(message)
 {
-   return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=http://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
+	return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=http://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
 }
 
 function parsePLTagsInEdit(tarea)
 {
    var xtxt = tarea.value;
    tarea.value = convertPLTag(xtxt);
-}
-
-// Event catcher for clicking on the Mark Unseen box
-function clickMarkUnseen()
-{
-	var doc = this.ownerDocument;
-	var thread = this.parentNode.parentNode.parentNode;
-	var threadRepliesBox = persistObject.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
-
-	// Remove the new replies count
-	if (!persistObject.getPreference("disableNewReCount") && thread.className.search(/newposts/i) > -1)
-	{
-		while (threadRepliesBox.childNodes[1])
-		{
-			// Delete everything but the original link
-			threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
-		}
-	}
-}
-
-// Event catcher for clicking the "Hide Avatar" or "Unhide Avatar" links
-function clickToggleAvatar()
-{
-	var doc = this.ownerDocument;
-	var idToToggle = this.href.match(/\#ToggleAvatar\#(\d+)\#(.*)$/)[1];
-	var nameToToggle = this.href.match(/\#ToggleAvatar\#(\d+)\#(.*)$/)[2];
-	var alreadyHidden = persistObject.isAvatarHidden(idToToggle);
-	var posts = persistObject.selectNodes(doc, doc, "//table[contains(@id,'post')]");
-	var post, profileLink, posterId, titleBox, toggleLink;
-
-	for (n in posts)
-	{
-		post = posts[n];
-		profileLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
-		posterId = profileLink.href.match(/userid=(\d+)/i)[1];
-		if (posterId == idToToggle)
-		{
-			// Standard template
-			titleBox = persistObject.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
-			// If that doesn't work, try FYAD template
-			if (titleBox == null)
-				titleBox = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
-
-			toggleLink = persistObject.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#ToggleAvatar#')]");
-			if (alreadyHidden)
-			{
-				titleBox.style.display = "block";
-				toggleLink.innerHTML = "Hide Avatar";
-			}
-			else
-			{
-				titleBox.style.display = "none";
-				toggleLink.innerHTML = "Show Avatar";
-			}
-		}
-	}
-	persistObject.toggleAvatarHidden(idToToggle, nameToToggle);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CSS & Formatting Functions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-function handleBodyClassing(doc)
-{
-	var docbody = doc.body;
-	var addclass = " somethingawfulforum";
-	var phmatch = doc.location.href.match( /\/([^\/]*)\.php/ );
-	if (phmatch)
-	{
-		addclass += " somethingawfulforum_"+phmatch[1]+"_php";
-	}
-	if (docbody)
-		docbody.className += addclass;
-}
-
-function SALR_insertCSS(doc, url)
-{
-	var stylesheet = doc.createElement("link");
-	stylesheet.rel = "stylesheet";
-	stylesheet.type = "text/css";
-	stylesheet.href = url;
-	doc.getElementsByTagName('head')[0].appendChild(stylesheet);
 }
 
 
@@ -2159,17 +2980,16 @@ function quickQuoteButtonClick(evt)
 {
 	var doc = evt.originalTarget.ownerDocument;
 	var quotebutton = evt.originalTarget;
-	if (quotebutton.wrappedJSObject) // FF 3.1 wraps this up! FF3.0.x didn't.
-		quotebutton = quotebutton.wrappedJSObject;
+
 	var threadid = quotebutton.__salastread_threadid;
 	var forumid = quotebutton.SALR_forumid;
 	var postername = quotebutton.__salastread_postername;
 	var hasQuote = quotebutton.__salastread_hasQuote;
 	var post_is_edit = quotebutton.is_edit;
 
-	if(persistObject.__QuickQuoteWindowObject && !persistObject.__QuickQuoteWindowObject.closed)
+	if (gSALR.service.__QuickQuoteWindowObject && !gSALR.service.__QuickQuoteWindowObject.closed)
 	{
-		quickquotewin = persistObject.__QuickQuoteWindowObject;
+		quickquotewin = gSALR.service.__QuickQuoteWindowObject;
 	}
 
 	window.__salastread_quotedoc = doc;
@@ -2186,11 +3006,11 @@ function quickQuoteButtonClick(evt)
 	}
 
 	//Has this person already posted in this thread?
-	window.__salastread_alreadypostedinthread = persistObject.didIPostHere(threadid);
+	window.__salastread_alreadypostedinthread = gSALR.service.didIPostHere(threadid);
 
 	//Has this person already bookmarked this thread?
 	//Check for the bookmark/unbookmark button
-	bookmarkbutton = persistObject.selectSingleNode(doc,doc,"//ul[contains(@class, 'postbuttons')]//img[@class='unbookmark']");
+	bookmarkbutton = gSALR.service.selectSingleNode(doc,doc,"//ul[contains(@class, 'postbuttons')]//img[@class='unbookmark']");
 	if (bookmarkbutton)
 	{
 	  window.__salastread_bookmarked = true;
@@ -2227,7 +3047,7 @@ function quickQuoteButtonClick(evt)
 
 	if (quickquotewin)
 	{
-		persistObject.__QuickQuoteWindowObject = quickquotewin;
+		gSALR.service.__QuickQuoteWindowObject = quickquotewin;
 		quickquotewin.__salastread_quickpost_forumid = forumid;
 		quickquotewin.__salastread_is_edit = post_is_edit;
 	}
@@ -2259,39 +3079,39 @@ function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signatur
 
 		newform.method = "post";
 		newform.enctype = "multipart/form-data";
-		quickQuoteAddHidden(doc,newform,"s","");
+		gSALR.addHiddenFormInput(doc,newform,"s","");
 		if(window.__salastread_quotethreadid)
 		{
 			if(quickquotewin.__salastread_is_edit)
 			{
-				quickQuoteAddHidden(doc, newform,"action", "updatepost");
-				quickQuoteAddHidden(doc, newform, "postid", window.__salastread_quotepostid);
+				gSALR.addHiddenFormInput(doc, newform,"action", "updatepost");
+				gSALR.addHiddenFormInput(doc, newform, "postid", window.__salastread_quotepostid);
 			}
 			else
 			{
-				quickQuoteAddHidden(doc, newform,"action", "postreply");
-				quickQuoteAddHidden(doc, newform,"threadid", window.__salastread_quotethreadid);
+				gSALR.addHiddenFormInput(doc, newform,"action", "postreply");
+				gSALR.addHiddenFormInput(doc, newform,"threadid", window.__salastread_quotethreadid);
 			}
 		}
 		else
 		{
-			quickQuoteAddHidden(doc, newform,"action", "postthread");
-			quickQuoteAddHidden(doc, newform, "forumid",  quickquotewin.__salastread_quickpost_forumid);
-			quickQuoteAddHidden(doc, newform, "iconid", quickquotewin.document.getElementById('posticonbutton').iconid);
-			quickQuoteAddHidden(doc, newform, "subject", quickquotewin.document.getElementById('subject').value);
+			gSALR.addHiddenFormInput(doc, newform,"action", "postthread");
+			gSALR.addHiddenFormInput(doc, newform, "forumid",  quickquotewin.__salastread_quickpost_forumid);
+			gSALR.addHiddenFormInput(doc, newform, "iconid", quickquotewin.document.getElementById('posticonbutton').iconid);
+			gSALR.addHiddenFormInput(doc, newform, "subject", quickquotewin.document.getElementById('subject').value);
 		}
 
-		quickQuoteAddHidden(doc, newform,"parseurl", parseurl ? "yes" : "");
-		quickQuoteAddHidden(doc, newform,"bookmark", subscribe ? "yes" : "");
-		quickQuoteAddHidden(doc, newform,"disablesmilies", disablesmilies ? "yes" : "");
-		quickQuoteAddHidden(doc, newform,"signature", signature ? "yes" : "");
-		quickQuoteAddHidden(doc, newform,"message", message);
-		quickQuoteAddHidden(doc, newform,"MAX_FILE_SIZE", "2097152");
-		quickQuoteAddHidden(doc, newform,"formkey", formkey);
+		gSALR.addHiddenFormInput(doc, newform,"parseurl", parseurl ? "yes" : "");
+		gSALR.addHiddenFormInput(doc, newform,"bookmark", subscribe ? "yes" : "");
+		gSALR.addHiddenFormInput(doc, newform,"disablesmilies", disablesmilies ? "yes" : "");
+		gSALR.addHiddenFormInput(doc, newform,"signature", signature ? "yes" : "");
+		gSALR.addHiddenFormInput(doc, newform,"message", message);
+		gSALR.addHiddenFormInput(doc, newform,"MAX_FILE_SIZE", "2097152");
+		gSALR.addHiddenFormInput(doc, newform,"formkey", formkey);
 
 		if (form_cookie != "")
 		{
-			quickQuoteAddHidden(doc, newform,"form_cookie", form_cookie);
+			gSALR.addHiddenFormInput(doc, newform,"form_cookie", form_cookie);
 		}
 		if (attachfile != "")
 		{
@@ -2303,17 +3123,17 @@ function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signatur
 		{
 			if (subtype=="submit")
 			{
-				quickQuoteAddHidden(doc,newform,"submit","Submit Reply");
-				markThreadReplied(window.__salastread_quotethreadid);
+				gSALR.addHiddenFormInput(doc,newform,"submit","Submit Reply");
+				gSALR.service.iPostedHere(window.__salastread_quotethreadid);
 			}
 			else
 			{
-				quickQuoteAddHidden(doc,newform,"preview","Preview Reply");
+				gSALR.addHiddenFormInput(doc,newform,"preview","Preview Reply");
 			}
 		}
 		else
 		{
-			quickQuoteAddHidden(doc,newform,"preview","Preview Post");
+			gSALR.addHiddenFormInput(doc,newform,"preview","Preview Post");
 		}
 		doc.body.appendChild(newform);
 		quickQuoteSubmitting = true;
@@ -2324,15 +3144,6 @@ function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signatur
 	{
 		alert("err: " + e);
 	}
-}
-
-function quickQuoteAddHidden(doc,form,name,value)
-{
-   var newel = doc.createElement("INPUT");
-   newel.type = "hidden";
-   newel.name = name;
-   newel.value = value;
-   form.appendChild(newel);
 }
 
 function quickQuoteAddFile(doc,form,name,value)
@@ -2362,496 +3173,6 @@ function releaseQuickQuoteVars()
    quickquotewin = null;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Navbar & Mouse Gesture Functions ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-function SALR_QuickPostJump(event)
-{
-	try {
-		var ctrlKey = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
-		if (ctrlKey)
-		{
-			// If any special keys were pressed, don't bother processing
-			return;
-		}
-		var targ = event.target;
-		var doc = targ.ownerDocument;
-		if (doc.wrappedJSObject) // Match things up for FF3.5
-			doc = doc.wrappedJSObject;
-		var pressed = event.which;
-		var postId, post, classChange, rescroll = false;
-		var maxPosts = persistObject.getPreference('postsPerPage');
-		if (doc.__SALR_curFocus)
-		{
-			postId = doc.__SALR_curFocus;
-		}
-		else if (doc.location.href.match(/\#pti(\d+)$/))
-		{
-			postId = doc.location.href.match(/\#pti(\d+)$/)[1];
-		}
-		else if (doc.location.href.match(/\#(post\d+)$/))
-		{
-			postId = doc.location.href.match(/\#(post\d+)$/)[1];
-			postId = doc.getElementById(postId).getElementsByTagName('tr')[0].id;
-			postId = postId.match(/pti(\d+)$/)[1];
-		}
-		else
-		{
-			postId = '1';
-		}
-		switch (String.fromCharCode(pressed).toLowerCase())
-		{
-			case persistObject.getPreference('kb.reanchor'):
-			case persistObject.getPreference('kb.reanchorAlt'):
-				doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
-				post = doc.getElementById('pti' + postId);
-				rescroll = true;
-				break;
-			case persistObject.getPreference('kb.nextPage'):
-			case persistObject.getPreference('kb.nextPageAlt'):
-				// Goto next page
-				if (doc.__SALR_curPage < doc.__SALR_maxPage)
-				{
-					doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage + 1));
-				}
-				break;
-			case persistObject.getPreference('kb.nextPost'):
-			case persistObject.getPreference('kb.nextPostAlt'):
-				// Goto next post
-				postId++;
-				if (postId <= maxPosts)
-				{
-					if (doc.getElementById('pti' + (postId - 1)))
-					{
-						classChange = doc.getElementById('pti' + (postId - 1)).parentNode.parentNode;
-						classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
-						doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
-					}
-					post = doc.getElementById('pti' + postId);
-					rescroll = true;
-				}
-				break;
-			case persistObject.getPreference('kb.prevPage'):
-			case persistObject.getPreference('kb.prevPageAlt'):
-				// Goto previous page
-				if (doc.__SALR_curPage > 1)
-				{
-					doc.location = persistObject.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage - 1));
-				}
-				break;
-			case persistObject.getPreference('kb.prevPost'):
-			case persistObject.getPreference('kb.prevPostAlt'):
-				// Goto previous post
-				postId--;
-				if (postId > 0)
-				{
-					if (doc.getElementById('pti' + (postId + 1)))
-					{
-						classChange = doc.getElementById('pti' + (postId + 1)).parentNode.parentNode;
-						classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
-						doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
-					}
-					post = doc.getElementById('pti' + postId);
-					rescroll = true;
-				}
-				break;
-			case persistObject.getPreference('kb.quickEdit'):
-				// Activate Quick Edit Post
-				var fakeEvent = {};
-				fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
-				quickQuoteButtonClick(fakeEvent);
-				break;
-			case persistObject.getPreference('kb.quickReply'):
-				// Activate Quick Reply to Thread
-				var fakeEvent = {};
-				fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
-				quickQuoteButtonClick(fakeEvent);
-				break;
-			case persistObject.getPreference('kb.quickQuote'):
-				// Activate Quick Quote Post
-				var fakeEvent = {};
-				fakeEvent.originalTarget = persistObject.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
-				quickQuoteButtonClick(fakeEvent);
-				break;
-		}
-		if (rescroll)
-		{
-			post.scrollIntoView(true);
-			doc.__SALR_curFocus = postId;
-		}
-	} catch(e) {dump('error:'+e);}
-}
-
-
-function SALR_DirectionalNavigate(doc, dir)
-{
-	var urlbase = doc.location.href.match(/.*\.somethingawful\.com/);
-	var curPage = doc.__SALR_curPage;
-	var perpage = "&perpage=" + persistObject.getPreference("postsPerPage");
-	var forumid = doc.location.href.match(/forumid=[0-9]+/);
-	var posticon = doc.location.href.match(/posticon=[0-9]+/);
-	var inSearch = (doc.location.pathname == '/f/search/result');
-	var searchid = doc.location.href.match(/qid=[0-9]+/);
-
-	if (!posticon)
-	{
-		posticon = "&posticon=0";
-	}
-	var sortfield = doc.location.href.match(/&sortfield=[a-zA-Z0-9]+/);
-	if (!sortfield)
-	{
-		sortfield = "&sortfield=lastpost";
-	}
-	var sortorder = doc.location.href.match(/&sortorder=[a-z]+/);
-	if (!sortorder)
-	{
-		sortorder = "&sortorder=desc";
-	}
-	var daysprune = doc.location.href.match(/&daysprune=[0-9]+/);
-	if (!daysprune)
-	{
-		daysprune = "&daysprune=30";
-	}
-	var userfilter = doc.location.href.match(/&userid=[0-9]+/);
-	if (!userfilter)
-	{
-		userfilter = "";
-	}
-
-	if (dir == "top")
-	{
-		var threadForum = doc.__SALR_forumid;
-
-		if ((curPage == 1 && !threadForum) || inSearch)
-		{
-			doc.location = urlbase + "/index.php";
-		}
-		else
-		{
-			if (threadForum)
-				doc.location = urlbase + "/forumdisplay.php?s=&forumid=" + threadForum;
-			else
-				doc.location = urlbase + "/forumdisplay.php?s=&" + forumid + posticon;
-		}
-	}
-	else if (dir == "left")
-	{
-		if (curPage > 1)
-		{
-			var threadid = doc.__SALR_threadid;
-			if (threadid)
-				doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage - 1);
-			else if (inSearch)
-				doc.location = urlbase + "/f/search/result?" + searchid + "&p=" + (curPage - 1);
-			else
-				doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage - 1);
-		}
-	}
-	else if (dir == "right")
-	{
-		var maxPage = doc.__SALR_maxPage;
-		if (maxPage > curPage)
-		{
-			var threadid = doc.__SALR_threadid;
-			if (threadid)
-				doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage + 1);
-			else if (inSearch)
-				doc.location = urlbase + "/f/search/result?" + searchid + "&p=" + (curPage + 1);
-			else
-				doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage + 1);
-		}
-	}
-}
-
-function SALR_PageMouseUp(event)
-{
-	var targ = event.target;
-	if (targ.wrappedJSObject)
-		targ=targ.wrappedJSObject;
-	var doc = targ.ownerDocument;
-	if (doc.wrappedJSObject)
-		doc=doc.wrappedJSObject;
-	if (targ && targ.SALR_isGestureElement == true)
-	{
-		doc.body.addEventListener('contextmenu', SALR_GestureContextMenu, false);
-		SALR_DirectionalNavigate(doc, targ.SALR_dir);
-	}
-
-	var gn = doc.getElementById("salastread_gesturenavtop");
-	if (gn)
-	{
-		var rx = 	function(dir)
-					{
-						var el = doc.getElementById("salastread_gesturenav"+dir);
-						el.parentNode.removeChild(el);
-					}
-
-		rx("top");
-		rx("left");
-		rx("right");
-		rx("bottom");
-	}
-}
-
-function SALR_GestureContextMenu(event)
-{
-	var targ = event.target;
-	var doc = targ.ownerDocument;
-	doc.body.removeEventListener('contextmenu', SALR_GestureContextMenu, false);
-	if (event.preventDefault)
-	{
-		event.preventDefault();
-	}
-	return false;
-}
-
-function SALR_PageMouseDown(event)
-{
-	var doc = event.target.ownerDocument;
-	if (doc.wrappedJSObject)
-		doc = doc.wrappedJSObject;
-
-	// Suppress gesture nav on embeds
-	if (event.target.nodeName.toLowerCase() == 'embed')
-		return;
-
-	var gn = doc.getElementById("salastread_gesturenavtop");
-	if (gn)
-	{
-		return;
-	}
-	if (event.button == persistObject.getPreference('gestureButton') && persistObject.getPreference('gestureEnable'))
-	{
-		var cx =	function(dir, ofsy, ofsx)
-					{
-						var el = doc.createElement("IMG");
-							el.SALR_dir = ""+dir;
-							el.id = "salastread_gesturenav"+dir;
-							el.className = "salastread_gesturenav";
-							el.src = "chrome://salastread/skin/gesturenav-" + dir + ".png";
-							el.style.left = ((event.clientX - 36) + (77 * ofsx)) + "px";
-							el.style.top = ((event.clientY - 36) + (77 * ofsy)) + "px";
-						doc.body.appendChild(el);
-						el.SALR_isGestureElement = true;
-
-						if (dir=="left" && (doc.__SALR_curPage <= 1 || !doc.__SALR_curPage))
-						{
-							el.className += " disab";
-						}
-						else if (dir=="right" && (doc.__SALR_maxPage <= doc.__SALR_curPage || !doc.__SALR_maxPage))
-						{
-							el.className += " disab";
-						}
-					};
-		cx("top", -1, 0);
-		cx("left", 0, -1);
-		cx("right", 0, 1);
-		cx("bottom", 1, 0);
-	}
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Context Menu Functions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-function SALR_ShowContextMenuItems(showunread)
-{
-	var cacm = document.getElementById("contentAreaContextMenu");
-	var mopt = document.getElementById("salastread-context-menu");
-	var moptsep = document.getElementById("salastread-context-menuseparator");
-
-	if(persistObject.getPreference('contextMenuOnBottom') )
-	{
-		cacm.appendChild(moptsep);
-		cacm.appendChild(mopt);
-	}
-	else
-	{
-		cacm.insertBefore(moptsep, cacm.firstChild);
-		cacm.insertBefore(mopt, moptsep);
-	}
-
-	mopt.setAttribute('hidden', false);
-	moptsep.setAttribute('hidden', false);
-	document.getElementById("salastread-context-ignorethread").setAttribute('hidden', false);
-	document.getElementById("salastread-context-starthread").setAttribute('hidden', false);
-	if (showunread)
-		document.getElementById("salastread-context-unreadthread").setAttribute('hidden', false);
-}
-
-function SALR_HideContextMenuItems()
-{
-	document.getElementById("salastread-context-menu").setAttribute('hidden', true);
-	document.getElementById("salastread-context-menuseparator").setAttribute('hidden', true);
-	document.getElementById("salastread-context-ignorethread").setAttribute('hidden', true);
-	document.getElementById("salastread-context-starthread").setAttribute('hidden', true);
-	document.getElementById("salastread-context-unreadthread").setAttribute('hidden', true);
-}
-
-function SALR_ContextMenuShowing(e)
-{
-	if(e.originalTarget == document.getElementById("contentAreaContextMenu"))
-	{
-		SALR_HideContextMenuItems();
-		try
-		{
-			var doc = document.getElementById("content").mCurrentBrowser.contentDocument;
-			if (doc.wrappedJSObject) //FF3 fix
-				doc = doc.wrappedJSObject;
-			if(doc.__salastread_processed == true)
-			{
-				if (persistObject.getPreference("enableContextMenu"))
-					SALR_ContextVis();
-			}
-		}
-		catch (e)
-		{
-
-		}
-	}
-}
-
-function SALR_ContextVis()
-{
-	var target = gContextMenu.target;
-	var threadid = null;
-
-	while (target) {
-		if (target.className)
-		{
-			var tidmatch = target.className.match(/salastread_thread_(\d+)/);
-			if (tidmatch)
-			{
-				threadid = tidmatch[1];
-				document.getElementById("salastread-context-ignorethread").data = threadid;
-				document.getElementById("salastread-context-ignorethread").target = target;
-				document.getElementById("salastread-context-ignorethread").label = "Ignore This Thread (" + threadid + ")";
-				document.getElementById("salastread-context-starthread").data = threadid;
-				document.getElementById("salastread-context-starthread").target = target;
-				document.getElementById("salastread-context-starthread").label = (persistObject.isThreadStarred(threadid) ? 'Unstar' : 'Star') + " This Thread (" + threadid + ")";
-				document.getElementById("salastread-context-unreadthread").data = threadid;
-				document.getElementById("salastread-context-unreadthread").target = target;
-				document.getElementById("salastread-context-unreadthread").label = "Mark This Thread Unread (" + threadid + ")";
-				var pageName = target.ownerDocument.location.pathname.match(/^\/(\w+)\.php/i);
-				if (pageName)
-				{
-					switch(pageName[1])
-					{
-						case "showthread":
-							SALR_ShowContextMenuItems(true);
-							break;
-						default:
-							SALR_ShowContextMenuItems(false);
-					}
-				}
-			}
-		}
-		target = target.parentNode;
-	}
-}
-
-function SALR_StarThread()
-{
-	var threadid = document.getElementById("salastread-context-starthread").data;
-	var target = document.getElementById("salastread-context-starthread").target;
-	if (threadid)
-	{
-		var threadTitle;
-		 // Snag the title we saved earlier
-		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-		{
-			if (target.wrappedJSObject) //FF2&3 compatibility
-				threadTitle = target.wrappedJSObject.__salastread_threadtitle;
-			else
-				threadTitle = target.__salastread_threadtitle;
-		}
-		else
-			threadTitle = SALR_getPageTitle(target.ownerDocument);
-
-		var starStatus = persistObject.isThreadStarred(threadid);
-		persistObject.toggleThreadStar(threadid);
-
-		if (starStatus == false) // we just starred it
-			persistObject.setThreadTitle(threadid, threadTitle);
-
-		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-		{
-			// Don't refresh the page. Why would we refresh the page?
-			//target.ownerDocument.location = target.ownerDocument.location;
-		}
-		else
-		{
-			var startext = starStatus ? "unstarred" : "starred";
-			alert("This thread is now " + startext + ".");
-		}
-	}
-}
-
-function SALR_IgnoreThread()
-{
-	var threadid = document.getElementById("salastread-context-ignorethread").data;
-	var target = document.getElementById("salastread-context-ignorethread").target;
-	if (threadid)
-	{
-		var threadTitle;
-		 // Snag the title we saved earlier
-		if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-		{
-			if (target.wrappedJSObject) //FF2&3 compatibility
-				threadTitle = target.wrappedJSObject.__salastread_threadtitle;
-			else
-				threadTitle = target.__salastread_threadtitle;
-		}
-		else
-			threadTitle = SALR_getPageTitle(target.ownerDocument);
-		if (confirm("Are you sure you want to ignore thread #"+threadid+"?"))
-		{
-			// Actually use ignoreStatus
-			var ignoreStatus = persistObject.isThreadIgnored(threadid);
-			if (ignoreStatus == false)
-			{
-				persistObject.toggleThreadIgnore(threadid);
-				persistObject.setThreadTitle(threadid, threadTitle);
-				// todo: detect by if there is a "forum" node, to cover bookmark page and control panel
-				if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-				{
-					target.parentNode.removeChild(target);
-				}
-			}
-		}
-	}
-}
-
-function SALR_UnreadThread()
-{
-	var threadid = document.getElementById("salastread-context-unreadthread").data;
-	var target = document.getElementById("salastread-context-unreadthread").target;
-	if (threadid)
-	{
-		var xhr = new XMLHttpRequest();
-		var xhrparams = "json=1&action=resetseen&threadid="+threadid;
-		xhr.open("POST", "http://forums.somethingawful.com/showthread.php", true);
-		// Ensure this load flag is set to prevent issues with third-party cookies being disabled
-		xhr.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
-		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xhr.setRequestHeader("Content-length", xhrparams.length);
-		xhr.setRequestHeader("Connection", "close");
-		xhr.onreadystatechange = function()
-		{
-			if (xhr.readyState == 4 && xhr.status == 200)
-			{
-				if (xhr.responseText.match(/threadid/))
-					alert("Thread #" + threadid + " marked as unread.");
-				else
-					alert("Something went wrong! Please try again.");
-			}
-		}
-		xhr.send(xhrparams);
-	}
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SA Drop Down Menu Functions /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2889,9 +3210,9 @@ function SALR_menuItemCommandGoToLastPost(event, el, etype, threadid)
 {
 	if (event.ctrlKey == true && event.shiftKey == true)
 	{
-		if (confirm("Do you want to unstar thread \"" + persistObject.getThreadTitle(threadid) + "\"?"))
+		if (confirm("Do you want to unstar thread \"" + gSALR.service.getThreadTitle(threadid) + "\"?"))
 		{
-			persistObject.toggleThreadStar(threadid);
+			gSALR.service.toggleThreadStar(threadid);
 		}
 		return;
 	}
@@ -2957,11 +3278,11 @@ function SALR_menuItemGoTo(event, url, target)
 function grabForumList(doc)
 {
 	var statsMenu = false;
-	var rowList = persistObject.selectNodes(doc, doc, "//select[@name='forumid']/option");
+	var rowList = gSALR.service.selectNodes(doc, doc, "//select[@name='forumid']/option");
 	if (!rowList || rowList.length == 0)
 	{
 		// Can't find the forum list so lets check the other location
-		rowList = persistObject.selectNodes(doc, doc, "//select[@name='t_forumid']/option");
+		rowList = gSALR.service.selectNodes(doc, doc, "//select[@name='t_forumid']/option");
 		if (!rowList)
 		{
 			// Still couldn't find the forum list so lets stop now
@@ -2988,8 +3309,8 @@ function grabForumList(doc)
 		i = addForums(forumsDoc, rowList, i, forumsEl, 0, statsMenu);
 	}
 
-	persistObject.forumListXml = forumsDoc;
-	if (persistObject.getPreference('showSAForumMenu'))
+	gSALR.service.forumListXml = forumsDoc;
+	if (gSALR.service.getPreference('showSAForumMenu'))
 	{
 		SALR_buildForumMenu();
 		SALR_buildToolbarButtonMenu();
@@ -3137,7 +3458,7 @@ function populateForumMenuForumsFrom(nested_menus, target, src, pinnedForumNumbe
 					submenu.setAttribute("label", thisforum.getAttribute("name"));
 
 				var submenupopup = document.createElement("menupopup");
-				if(persistObject.getPreference('useSAForumMenuBackground')) {
+				if(gSALR.service.getPreference('useSAForumMenuBackground')) {
 					submenupopup.setAttribute("class", "lastread_menu");
 				}
 
@@ -3210,7 +3531,7 @@ function SALR_buildToolbarButtonMenu()
 	if (menupopup)
 	{
 		menupopup.addEventListener("popupshowing", SALR_TBMenuShowing, false);
-		if (persistObject.getPreference('useSAForumMenuBackground'))
+		if (gSALR.service.getPreference('useSAForumMenuBackground'))
 		{
 			menupopup.className = "lastread_menu";
 		}
@@ -3222,13 +3543,13 @@ function SALR_buildToolbarButtonMenu()
 		while (menupopup.firstChild) {
 			menupopup.removeChild(menupopup.firstChild);
 		}
-		var forumsDoc = persistObject.forumListXml;
-		var nested_menus = persistObject.getPreference('nestSAForumMenu');
+		var forumsDoc = gSALR.service.forumListXml;
+		var nested_menus = gSALR.service.getPreference('nestSAForumMenu');
 		var salrMenu = document.createElement("menuitem");
 		var pinnedForumNumbers = new Array();
 		var pinnedForumElements = new Array();
-		if (nested_menus && persistObject.getPreference('menuPinnedForums')) {
-			pinnedForumNumbers = persistObject.getPreference('menuPinnedForums').split(",");
+		if (nested_menus && gSALR.service.getPreference('menuPinnedForums')) {
+			pinnedForumNumbers = gSALR.service.getPreference('menuPinnedForums').split(",");
 		}
 		salrMenu.setAttribute("label","Something Awful");
 		salrMenu.setAttribute("image", "chrome://salastread/skin/sa.png");
@@ -3240,7 +3561,7 @@ function SALR_buildToolbarButtonMenu()
 
 		var lsalrMenu = document.createElement("menuitem");
 		lsalrMenu.setAttribute("label","Configure SALastRead...");
-		lsalrMenu.setAttribute("oncommand", "SALR_runConfig('command');");
+		lsalrMenu.setAttribute("oncommand", "gSALR.runConfig('command');");
 
 		menupopup.appendChild(lsalrMenu);
 
@@ -3270,8 +3591,8 @@ function SALR_buildToolbarButtonMenu()
 					var umatch = pinnedForumNumbers[j].match(/^URL\[(.*?)\]\[(.*?)\]$/);
 					if(umatch) {
 						var salrMenu = document.createElement("menuitem");
-							salrMenu.setAttribute("label", persistObject.UnescapeMenuURL(umatch[1]));
-							salrMenu.setAttribute("targeturl", persistObject.UnescapeMenuURL(umatch[2]));
+							salrMenu.setAttribute("label", gSALR.service.UnescapeMenuURL(umatch[1]));
+							salrMenu.setAttribute("targeturl", gSALR.service.UnescapeMenuURL(umatch[2]));
 							salrMenu.setAttribute("onclick", "SALR_menuItemCommandURL(event,this,'click');");
 							salrMenu.setAttribute("oncommand", "SALR_menuItemCommandURL(event,this,'command');");
 							salrMenu.setAttribute("class", "lastread_menu_sub");
@@ -3295,7 +3616,7 @@ function SALR_buildToolbarButtonMenu()
 				}
 			}
 
-			if(persistObject.getPreference('showMenuPinHelper')) {
+			if(gSALR.service.getPreference('showMenuPinHelper')) {
 				var ms = document.createElement("menuseparator");
 				ms.id = "salr_tb_pinhelper_sep";
 
@@ -3318,7 +3639,7 @@ function SALR_buildForumMenu()
 {
 	// If there are any other SA menus, hide them.  Why? Who knows
 	// Since this now defaults to off, it might not work, keep an eye out if anyone cares
-	if (persistObject.getPreference('hideOtherSAMenus'))
+	if (gSALR.service.getPreference('hideOtherSAMenus'))
 	{
 		var mmb = document.getElementById("main-menubar");
 		for (var x=0; x<mmb.childNodes.length; x++)
@@ -3346,7 +3667,7 @@ function SALR_buildForumMenu()
 		var salrMenu = document.createElement("menu");
 		salrMenu.id = "salr-menu";
 		salrMenu.setAttribute("label", "SA");
-		salrMenu.setAttribute("accesskey", persistObject.getPreference('menuAccessKey'));
+		salrMenu.setAttribute("accesskey", gSALR.service.getPreference('menuAccessKey'));
 		salrMenu.style.display = "none";
 		menupopup = document.createElement("menupopup");
 		menupopup.id = "menupopup_SAforums";
@@ -3356,7 +3677,7 @@ function SALR_buildForumMenu()
 		menupopup.addEventListener("popupshowing", SALR_SAMenuShowing, false);
 	}
 
-	if (persistObject.getPreference('useSAForumMenuBackground'))
+	if (gSALR.service.getPreference('useSAForumMenuBackground'))
 	{
 		menupopup.className = "lastread_menu";
 	}
@@ -3368,13 +3689,13 @@ function SALR_buildForumMenu()
 	while (menupopup.firstChild) {
 		menupopup.removeChild(menupopup.firstChild);
 	}
-	var forumsDoc = persistObject.forumListXml;
-	var nested_menus = persistObject.getPreference('nestSAForumMenu');
+	var forumsDoc = gSALR.service.forumListXml;
+	var nested_menus = gSALR.service.getPreference('nestSAForumMenu');
 	var salrMenu = document.createElement("menuitem");
 	var pinnedForumNumbers = new Array();
 	var pinnedForumElements = new Array();
-	if (nested_menus && persistObject.getPreference('menuPinnedForums')) {
-		pinnedForumNumbers = persistObject.getPreference('menuPinnedForums').split(",");
+	if (nested_menus && gSALR.service.getPreference('menuPinnedForums')) {
+		pinnedForumNumbers = gSALR.service.getPreference('menuPinnedForums').split(",");
 	}
 	salrMenu.setAttribute("label","Something Awful");
 	salrMenu.setAttribute("image", "chrome://salastread/skin/sa.png");
@@ -3386,7 +3707,7 @@ function SALR_buildForumMenu()
 
 	var lsalrMenu = document.createElement("menuitem");
 	lsalrMenu.setAttribute("label","Configure SALastRead...");
-	lsalrMenu.setAttribute("oncommand", "SALR_runConfig('command');");
+	lsalrMenu.setAttribute("oncommand", "gSALR.runConfig('command');");
 
 	menupopup.appendChild(lsalrMenu);
 
@@ -3416,8 +3737,8 @@ function SALR_buildForumMenu()
 				var umatch = pinnedForumNumbers[j].match(/^URL\[(.*?)\]\[(.*?)\]$/);
 				if(umatch) {
 					var salrMenu = document.createElement("menuitem");
-						salrMenu.setAttribute("label", persistObject.UnescapeMenuURL(umatch[1]));
-						salrMenu.setAttribute("targeturl", persistObject.UnescapeMenuURL(umatch[2]));
+						salrMenu.setAttribute("label", gSALR.service.UnescapeMenuURL(umatch[1]));
+						salrMenu.setAttribute("targeturl", gSALR.service.UnescapeMenuURL(umatch[2]));
 						salrMenu.setAttribute("onclick", "SALR_menuItemCommandURL(event,this,'click');");
 						salrMenu.setAttribute("oncommand", "SALR_menuItemCommandURL(event,this,'command');");
 						salrMenu.setAttribute("class", "lastread_menu_sub");
@@ -3440,7 +3761,7 @@ function SALR_buildForumMenu()
 			}
 		}
 
-		if(persistObject.getPreference('showMenuPinHelper')) {
+		if(gSALR.service.getPreference('showMenuPinHelper')) {
 			var ms = document.createElement("menuseparator");
 			ms.id = "salr_pinhelper_sep";
 
@@ -3464,7 +3785,7 @@ function SALR_TBStarredThreadMenuShowing() {
 	while (menupopup.firstChild != null) {
 		menupopup.removeChild(menupopup.firstChild);
 	}
-	var starred = persistObject.starList;
+	var starred = gSALR.service.starList;
 
 	for(var id in starred)
 	{
@@ -3490,7 +3811,7 @@ function SALR_StarredThreadMenuShowing() {
 	while (menupopup.firstChild != null) {
 		menupopup.removeChild(menupopup.firstChild);
 	}
-	var starred = persistObject.starList;
+	var starred = gSALR.service.starList;
 
 	for(var id in starred)
 	{
@@ -3512,7 +3833,7 @@ function SALR_StarredThreadMenuShowing() {
 }
 
 function SALR_TBMenuShowing() {
-   if ( persistObject.getPreference('showMenuPinHelper') == false ) {
+   if ( gSALR.service.getPreference('showMenuPinHelper') == false ) {
       var ms = document.getElementById("salr_tb_pinhelper_sep");
       var mi = document.getElementById("salr_tb_pinhelper_item");
       if ( ms != null ) {
@@ -3525,7 +3846,7 @@ function SALR_TBMenuShowing() {
 }
 
 function SALR_SAMenuShowing() {
-   if ( persistObject.getPreference('showMenuPinHelper') == false ) {
+   if ( gSALR.service.getPreference('showMenuPinHelper') == false ) {
       var ms = document.getElementById("salr_pinhelper_sep");
       var mi = document.getElementById("salr_pinhelper_item");
       if ( ms != null ) {
@@ -3538,413 +3859,11 @@ function SALR_SAMenuShowing() {
 }
 
 function SALR_LaunchPinHelper() {
-   persistObject.setPreference('showMenuPinHelper', false);
+   gSALR.service.setPreference('showMenuPinHelper', false);
 
-   SALR_runConfig("menu");
+   gSALR.runConfig("menu");
    alert("You may return to the menu settings at any time by choosing \"Configure SALastRead...\" from the SA menu, or by "+
          "clicking the \"Configure SALR\" link in the header of any forum page.");
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Advanced Thread Filtering Functions /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-function rebuildFilterBox(doc)
-{
-	var afHidden = doc.getElementById("tags_hidden");
-	var afMain = doc.getElementById("tags_showing");
-	var afObject, afObject2; // Temp object storage for things that really only get handled once
-
-	if (afHidden)
-	{
-		afObject = persistObject.selectSingleNode(doc, afHidden, "B");
-		afObject.innerHTML = "Advanced thread filtering";
-		afObject2 = doc.createElement("div");
-		afObject2.id = "filteredthreadcount1";
-		afObject2.style.fontSize = "80%";
-		afObject2.style.fontWeight = "normal";
-		afObject2.style.marginLeft = "6px";
-		afObject2.appendChild(doc.createTextNode("(Currently ignoring "));
-		afObject2.appendChild(doc.createTextNode("0"));
-		afObject2.appendChild(doc.createTextNode(" threads.)"));
-		persistObject.toggleVisibility(afObject2,true);
-		afObject.appendChild(afObject2);
-	}
-	if (afMain) // Incoming wall of text
-	{
-		var afMainIcons, afIgnoredIcons, afIgnoredKeywords;
-		var prefIgnoredPostIcons = persistObject.getPreference("ignoredPostIcons");
-		var prefIgnoredKeywords = persistObject.getPreference("ignoredKeywords");
-
-		afObject = persistObject.selectSingleNode(doc, afMain, "B");
-		afObject.innerHTML = "Advanced thread filtering";
-		afObject2 = doc.createElement("div");
-		afObject2.id = "filteredthreadcount2";
-		afObject2.style.fontSize = "80%";
-		afObject2.style.fontWeight = "normal";
-		afObject2.style.marginLeft = "6px";
-		afObject2.appendChild(doc.createTextNode("(Currently ignoring "));
-		afObject2.appendChild(doc.createTextNode("0"));
-		afObject2.appendChild(doc.createTextNode(" threads.)"));
-		persistObject.toggleVisibility(afObject2,true);
-		afObject.appendChild(afObject2);
-		afObject.appendChild(doc.createElement("br"));
-
-		afMainIcons = doc.getElementById("filtericons");
-		// Plug a bunch of stuff in before the main icon list
-		afMain.insertBefore(doc.createTextNode("Show only this icon: ("), afMainIcons);
-		afObject = persistObject.selectSingleNode(doc, afMain, "A[contains(@href,'/forumdisplay.php?forumid=')]");
-		afObject.innerHTML = "Reset"
-		afObject.style.fontSize = "75%";
-		afObject.style.fontWeight = "bold";
-		afMain.insertBefore(afObject, afMainIcons);
-		afMain.insertBefore(doc.createTextNode(")"), afMainIcons);
-		afMain.insertBefore(doc.createElement("br"), afMainIcons);
-
-		// Add a message for when all the icons are ignored and hide it for now
-		afObject = doc.createElement("div");
-		afObject.id = "alliconsignored";
-		afObject.appendChild(doc.createTextNode("You've ignored everything but shit posts you cretin!"));
-		afObject.style.fontWeight = "bold";
-		persistObject.toggleVisibility(afObject,true);
-		afMainIcons.insertBefore(afObject,afMainIcons.firstChild);
-
-		// Plug a bunch of stuff in after the main icon list
-		afObject = doc.createElement("div");
-		afObject.appendChild(doc.createTextNode("Ctrl click an icon to add to ignored list."));
-		afObject.style.fontStyle = "italic";
-		afObject.style.fontSize = "85%";
-		afMain.appendChild(afObject);
-		afMain.appendChild(doc.createElement("br"));
-
-		// Now all the ignored icons
-		afMain.appendChild(doc.createTextNode("Ignored icons:"));
-		afMain.appendChild(doc.createElement("br"));
-		afIgnoredIcons = doc.createElement("div");
-		afIgnoredIcons.id = "ignoredicons";
-		afObject = doc.createElement("div");
-		afObject.id = "noiconsignored";
-		afObject.appendChild(doc.createTextNode("None."));
-		afObject.style.fontStyle = "italic";
-		afObject.style.visibility = "visible";
-		afObject.style.display = "inline";
-		afIgnoredIcons.appendChild(afObject);
-		afMain.appendChild(afIgnoredIcons);
-		afMain.appendChild(doc.createElement("br"));
-
-		// Now the ignored keywords
-		afMain.appendChild(doc.createTextNode("Ignored keywords:"));
-		afMain.appendChild(doc.createElement("br"));
-		afObject = doc.createElement("input");
-		afObject.id = "ignoredkeywords";
-		afObject.type = "text";
-		afObject.value = prefIgnoredKeywords;
-		afObject.size = 75;
-		afMain.appendChild(afObject);
-		afMain.appendChild(doc.createTextNode(" "));
-		afObject = doc.createElement("input");
-		afObject.type = "button";
-		afObject.value = "Save";
-		afObject.addEventListener("click", clickIgnoreKeywordSave, false);
-		afMain.appendChild(afObject);
-		afMain.appendChild(doc.createElement("br"));
-		afObject = doc.createElement("div");
-		afObject.appendChild(doc.createTextNode("Separate strings with a pipe \"|\" symbol. Too many strings may affect performance."));
-		afObject.style.fontStyle = "italic";
-		afObject.style.fontSize = "85%";
-		afMain.appendChild(afObject);
-		afMain.appendChild(doc.createElement("br"));
-
-		// TODO: ability to ignore shitposts even though they dont have an icon id
-		// TODO: remove all the icon stuff for when viewing the dumps but keep the rest, maybe add star# filtering for those
-		// TODO: thread rating filtering
-	}
-}
-
-// Event catcher for ignoring post icons
-function clickToggleIgnoreIcon(event)
-{
-	if (persistObject.getPreference("advancedThreadFiltering"))
-	{
-		var doc = this.ownerDocument;
-		var afMain = doc.getElementById("tags_showing");
-
-		if (afMain)
-		{
-			var afMainIcons, afIgnoredIcons, afShowMe, afHideMe, afIgnoring;
-			var iconToIgnore, iconToIgnoreId, iconIgnored;
-			var afObject; // Temp object storage for things that really only get handled once
-			var prefIgnoredPostIcons = persistObject.getPreference("ignoredPostIcons");
-			var prefIgnoredKeywords = persistObject.getPreference("ignoredKeywords");
-			var anyLeft, anyLeftIn, searchString, threadBeGone;
-			var threadList, thread, threadIcon;
-
-			afMainIcons = doc.getElementById("filtericons");
-			afIgnoredIcons = doc.getElementById("ignoredicons");
-
-			if (this.parentNode.id == "filtericons")
-			{
-				if (event.ctrlKey == false)
-				{
-					return; // Moving from the main icon list requires ctrl click
-				}
-				afIgnoring = true;
-				afShowMe = "alliconsignored";
-				afHideMe = "noiconsignored";
-				anyLeftIn = afMainIcons;
-				mirrorIcons = afIgnoredIcons;
-			}
-			else if (this.parentNode.id == "ignoredicons")
-			{
-				afIgnoring = false;
-				afShowMe = "noiconsignored";
-				afHideMe = "alliconsignored";
-				anyLeftIn = afIgnoredIcons;
-				mirrorIcons = afMainIcons;
-			}
-			else
-			{
-				return;
-			}
-
-			iconToIgnore = this.firstChild;
-			iconToIgnoreId = parseInt(iconToIgnore.href.match(/posticon=(\d+)/i)[1]);
-			iconIgnored = persistObject.selectSingleNode(doc, mirrorIcons, "DIV/A[contains(@href,'posticon=" + iconToIgnoreId + "')]");
-
-			searchString = "(^|\\s)" + iconToIgnoreId + ",";
-			searchString = new RegExp(searchString , "gi");
-
-			if (!afMainIcons || !afIgnoredIcons || !iconIgnored || (afIgnoring && prefIgnoredPostIcons.search(searchString) > -1))
-			{
-				// Something is amiss
-				return;
-			}
-
-			event.stopPropagation();
-			event.preventDefault();
-
-			if (afIgnoring)
-			{
-				prefIgnoredPostIcons += iconToIgnoreId + ", ";
-			}
-			else
-			{
-				prefIgnoredPostIcons = prefIgnoredPostIcons.replace(searchString,"");
-			}
-			persistObject.setPreference("ignoredPostIcons",prefIgnoredPostIcons);
-
-			persistObject.toggleVisibility(this,true);
-			afObject = doc.getElementById(afHideMe);
-			if (afObject && afObject.style.visibility != "hidden")
-			{
-				persistObject.toggleVisibility(afObject,true);
-			}
-
-			persistObject.toggleVisibility(iconIgnored.parentNode,true);
-			afObject = doc.getElementById(afShowMe);
-			anyLeft = persistObject.selectSingleNode(doc, anyLeftIn, "DIV[contains(@style,'visibility: visible; display: inline;')]");
-			if (!anyLeft && afObject && afObject.style.visibility == "hidden")
-			{
-				persistObject.toggleVisibility(afObject,true);
-			}
-
-			// Cycle through the threads and actively update their visibility
-			threadList = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
-
-			for (var i in threadList)
-			{
-				thread = threadList[i];
-				threadIcon = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
-				threadBeGone = false;
-				iconMatch = false;
-				if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
-				{
-					var iconnum = threadIcon.src.match(/#(\d+)$/)[1];
-					if (iconnum == iconToIgnoreId)
-					{
-						if (afIgnoring)
-						{
-							threadBeGone = true;
-						}
-					}
-					else
-					{
-						continue;
-					}
-				}
-
-				// No icon match or matched icon is being unignored, I could reveal it, but is it keyword-ignored?
-				if (!threadBeGone && prefIgnoredKeywords && thread.style.visibility == "hidden")
-				{
-					var threadTitleLink = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/DIV/A[contains(@class, 'thread_title')]");
-					if(!threadTitleLink)
-					{
-						threadTitleLink = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
-					}
-					var threadTitle = threadTitleLink.innerHTML;
-					var keywordList = prefIgnoredKeywords.split("|");
-
-					for (var j in keywordList)
-					{
-						keywords = keywordList[j];
-						if (!keywords)
-						{
-							continue;
-						}
-						searchString = new RegExp(keywords, "gi");
-
-						if (threadTitle.search(searchString) > -1)
-						{
-							threadBeGone = true;
-							break;
-						}
-					}
-				}
-
-				if (threadBeGone && thread.style.visibility != "hidden")
-				{
-					persistObject.toggleVisibility(thread,false);
-					filteredThreadCount(doc,1);
-				}
-				else if (!threadBeGone && thread.style.visibility == "hidden")
-				{
-					persistObject.toggleVisibility(thread,false);
-					filteredThreadCount(doc,-1);
-				}
-			}
-		}
-	}
-}
-
-// Event catcher for keyword ignoring input box
-function clickIgnoreKeywordSave(event)
-{
-	if (persistObject.getPreference("advancedThreadFiltering"))
-	{
-		var doc = this.ownerDocument;
-		var afMain = doc.getElementById("tags_showing");
-
-		if (afMain)
-		{
-			var afObject; // Temp object storage for things that really only get handled once
-			var prefIgnoredKeywords = persistObject.getPreference("ignoredKeywords");
-			var prefIgnoredPostIcons = persistObject.getPreference("ignoredPostIcons");
-			var threadList, thread, threadTitleLink, threadtitle, threadBeGone;
-			var newKeywords, keywordList, keywords, searchString;
-
-			afObject = doc.getElementById("ignoredkeywords");
-			newKeywords = afObject.value;
-
-			if (newKeywords == prefIgnoredKeywords)
-			{
-				return;
-			}
-
-			//	Todo: may need to strip certain chars like " or ' ?
-
-		//	event.stopPropagation();
-			event.preventDefault();
-
-			persistObject.setPreference("ignoredKeywords",newKeywords);
-
-			// Cycle through the threads and actively update their visibility
-			threadList = persistObject.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
-			keywordList = newKeywords.split("|");
-
-			for (var i in threadList)
-			{
-				thread = threadList[i];
-				threadTitleLink = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/DIV/A[contains(@class, 'thread_title')]");
-				if(!threadTitleLink)
-				{
-					threadTitleLink = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
-				}
-				threadTitle = threadTitleLink.innerHTML;
-				threadBeGone = false;
-
-				for (var j in keywordList)
-				{
-					keywords = keywordList[j];
-					if (!keywords)
-					{
-						continue;
-					}
-					searchString = new RegExp(keywords, "gi");
-
-					if (threadTitle.search(searchString) > -1)
-					{
-						threadBeGone = true;
-						break;
-					}
-				}
-
-				// No keyword match, I could reveal it, but is it icon-ignored?
-				if (!threadBeGone && prefIgnoredPostIcons && thread.style.visibility == "hidden")
-				{
-					var threadIcon = persistObject.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
-
-					if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
-					{
-						var iconnum = threadIcon.src.match(/#(\d+)$/)[1];
-						if (prefIgnoredPostIcons.search(iconnum) > -1)
-						{
-							threadBeGone = true;
-						}
-					}
-				}
-
-				if (threadBeGone && thread.style.visibility != "hidden")
-				{
-					persistObject.toggleVisibility(thread,false);
-					filteredThreadCount(doc,1);
-				}
-				else if (!threadBeGone && thread.style.visibility == "hidden")
-				{
-					persistObject.toggleVisibility(thread,false);
-					filteredThreadCount(doc,-1);
-				}
-			}
-		}
-	}
-}
-
-// To cut down on code elsewhere (for keeping track of the number of threads being filtered)
-function filteredThreadCount(doc,amount)
-{
-	var count = persistObject.getPreference("filteredThreadCount");
-	var afObject, afObject2; // Temp object storage for things that really only get handled once
-
-	afObject = doc.getElementById("filteredthreadcount1");
-	afObject2 = doc.getElementById("filteredthreadcount2");
-
-	if (!afObject || !afObject2)
-	{
-		return;
-	}
-
-	count += amount;
-	afObject.childNodes[1].textContent = count;
-	afObject2.childNodes[1].textContent = count;
-
-	if (count <= 0 && afObject.style.visibility != "hidden")
-	{
-		persistObject.toggleVisibility(afObject,true);
-	}
-	else if (afObject.style.visibility == "hidden")
-	{
-		persistObject.toggleVisibility(afObject,true);
-	}
-
-	if (count <= 0 && afObject2.style.visibility != "hidden")
-	{
-		persistObject.toggleVisibility(afObject2,true);
-	}
-	else if (afObject2.style.visibility == "hidden")
-	{
-		persistObject.toggleVisibility(afObject2,true);
-	}
-
-	persistObject.setPreference("filteredThreadCount",count);
-}
 
