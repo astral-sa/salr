@@ -41,8 +41,8 @@ var gSALR = {
 				var needToShowChangeLog = false;
 				if (gSALR.service.LastRunVersion != gSALR.service.SALRversion)
 				{
-					//needToShowChangeLog = !gSALR.service.IsDevelopmentRelease;
-					needToShowChangeLog = true;
+					needToShowChangeLog = !gSALR.service.IsDevelopmentRelease;
+					//needToShowChangeLog = true;
 					// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 					var buildNum = parseInt(gSALR.service.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
 					gSALR.service.checkForSQLPatches(buildNum);
@@ -1237,9 +1237,7 @@ var gSALR = {
 		var insertPostTargetLink = gSALR.service.getPreference("insertPostTargetLink");
 		var highlightUsernames = gSALR.service.getPreference("highlightUsernames");
 		var dontHighlightPosts = gSALR.service.getPreference("dontHighlightPosts");
-		//post colors
-		var seenPostDark = gSALR.service.getPreference("seenPostDark");
-		var seenPostLight = gSALR.service.getPreference("seenPostLight");
+
 		//standard user colors
 		var modColor = gSALR.service.getPreference("modColor");
 		var modBackground = gSALR.service.getPreference("modBackground");
@@ -1251,6 +1249,7 @@ var gSALR = {
 		var opBackground = gSALR.service.getPreference("opBackground");
 		var opSubText = gSALR.service.getPreference("opSubText");
 		var superIgnoreUsers = gSALR.service.getPreference("superIgnore");
+		var cancerTreatment = gSALR.service.getPreference("cancerTreatment");
 
 		var threadMarkedPostedIn = false;
 
@@ -1543,6 +1542,24 @@ var gSALR = {
 			userLinks.appendChild(doc.createTextNode(" "));
 
 			postbody = gSALR.service.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
+
+			if (cancerTreatment)
+			{
+				var cancerDiv = gSALR.service.selectSingleNode(doc, postbody, "DIV[contains(@class,'cancerous')]");
+				if (cancerDiv)
+				{
+					//Apply our alternate style:
+					if (cancerTreatment == 1)
+					{
+						cancerDiv.style.opacity = "1";
+						postbody.style.backgroundImage = 'url("chrome://salastread/skin/biohazard.png")';
+						postbody.style.backgroundRepeat = "repeat";
+					}
+					//Hide entirely:
+					else if (cancerTreatment == 2)
+						post.style.display = "none";
+				}
+			}
 			gSALR.service.convertSpecialLinks(postbody, doc);
 			gSALR.service.processImages(postbody, doc);
 		}
