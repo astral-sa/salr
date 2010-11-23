@@ -1151,6 +1151,11 @@ salrPersistObject.prototype = {
 		if (this.isMod(userid))
 		{
 			// We already know it's a mod
+			// ...but we might have to update the username to reflect a name change.
+			if (this.userDataCache[userid].username != username)
+			{
+				this.setUserName(userid, username);
+			}
 			return;
 		}
 		if (this.userExists(userid))
@@ -1191,6 +1196,11 @@ salrPersistObject.prototype = {
 		if (this.isAdmin(userid))
 		{
 			// We already know it's an admin
+			// ...but we might have to update the username to reflect a name change.
+			if (this.userDataCache[userid].username != username)
+			{
+				this.setUserName(userid, username);
+			}
 			return;
 		}
 		if (this.userExists(userid))
@@ -2064,7 +2074,7 @@ salrPersistObject.prototype = {
 					link.parentNode.insertBefore(timgbr, link.nextSibling);
 					link.parentNode.insertBefore(timglink, timgbr.nextSibling);
 					// Add a newline between timgs to make it pretty
-					if (timglink.nextSibling.firstChild && (timglink.nextSibling.firstChild.className == "timg" || timglink.nextSibling.firstChild.className == "timg_container" || timglink.nextSibling.firstChild.className == "timg loading"))
+					if (timglink.nextSibling && timglink.nextSibling.firstChild && (timglink.nextSibling.firstChild.className == "timg" || timglink.nextSibling.firstChild.className == "timg_container" || timglink.nextSibling.firstChild.className == "timg loading"))
 						link.parentNode.insertBefore(timgbr.cloneNode(false), timglink.nextSibling);
 				}
 			}
@@ -2159,40 +2169,17 @@ salrPersistObject.prototype = {
 	// @return: (html element) quick button
 	turnIntoQuickButton: function(doc, button, forumid)
 	{
-		var threadid = undefined, postid = undefined, hasQuote = 0;
-		var action = button.href.match(/action=(\w+)/i)[1];
-		switch (action)
-		{
-			case 'newreply':
-				if (button.href.match(/threadid=(\d+)/i) != null)
-				{
-					action = 'reply';
-					threadid = button.href.match(/threadid=(\d+)/i)[1];
-					break;
-				}
-				else
-				{
-					action = 'quote';
-				}
-			case 'editpost':
-				var postid = button.href.match(/postid=(\d+)/i)[1];
-				hasQuote = 1;
-				break;
-			case 'newthread':
-				break;
-		}
 		var oldsrc = button.firstChild.src;
 		var oldalt = button.firstChild.alt;
-		button.firstChild.style.width = "12px !important";
-		button.firstChild.style.height = "20px !important";
+		//button.firstChild.style.width = "12px !important";
+		button.firstChild.style.width = "12px";
+		//button.firstChild.style.height = "20px !important";
+		button.firstChild.style.height = "20px";
+
 		if (this.inBYOB(forumid))
-		{
 			button.firstChild.src = "chrome://salastread/skin/quickbutton-byob.gif";
-		}
 		else
-		{
 			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif";
-		}
 		button.firstChild.alt = "Normal " + oldalt;
 		button.firstChild.title = "Normal " + oldalt;
 		var quickbutton = doc.createElement("img");
@@ -2201,20 +2188,7 @@ salrPersistObject.prototype = {
 		quickbutton.title = "Quick " + oldalt;
 		quickbutton.border = "0"
 		quickbutton.style.cursor = "pointer";
-		quickbutton.SALR_threadid = threadid;
-		quickbutton.__salastread_threadid = threadid;
-		if (action == 'newthread')
-		{
-			quickbutton.SALR_forumid = forumid;
-		}
-		else
-		{
-			quickbutton.SALR_forumid = undefined;
-		}
-/*		quickbutton.__salastread_postid = postid; // set if quote or edit
-		//quickbutton.__salastread_postername = postername; // set if quote or edit?
-		quickbutton.__salastread_hasQuote = hasQuote; // 1 if quote or edit
-*/
+
 		button.parentNode.insertBefore(quickbutton, button);
 		return quickbutton;
 	},

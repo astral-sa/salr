@@ -3,6 +3,8 @@
 var persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
 					.getService().wrappedJSObject;
 
+var quickParams = null;
+
 var hasSpellCheck = false;
 
 var attachedFileName = "";
@@ -19,6 +21,36 @@ function detachFromDocument() {
 	document.getElementById("previewbtn").disabled = true;
 	document.getElementById("submit-swap").setAttribute("label","Detached");
 	document.getElementById("submit-normal").setAttribute("label","Detached");
+}
+
+function reattach()
+{
+	// TODO: Make sure we have everything we need first.
+	// need to make sure we still have thread info
+	isDetached = false;
+	document.getElementById("submit-swap").removeAttribute('disabled');
+	document.getElementById("submit-normal").removeAttribute('disabled');
+	document.getElementById("previewbtn").disabled = false;
+	document.getElementById("submit-swap").setAttribute("label","Submit");
+	document.getElementById("submit-normal").setAttribute("label","Submit");
+	switch(window.opener.gSALR.quickWindowParams.quicktype)
+	{
+		case "quote":
+		case "reply":
+			document.title = 'Quick Reply';
+			document.getElementById('qrtitle').setAttribute('value', 'Quick Reply');
+			break;
+		case "editpost":
+			document.title = 'Quick Edit';
+			document.getElementById('qrtitle').setAttribute('value', 'Quick Edit');
+			break;
+		case "newthread":
+			document.title = 'Quick Post';
+			document.getElementById('qrtitle').setAttribute('value', 'Quick Post');
+			break;
+		default:
+			throw "ERROR! The quick window has no idea what you're trying to do.";
+	}
 }
 
 function doWaffleImages() {
@@ -90,12 +122,6 @@ function checkKeys(e) {
 function addQuoteText(txt) {
 	document.getElementById("messagearea").value += "\n" + txt;
 }
-
-/*
-function grabComplete() {
-	alert("got it");
-}
-*/
 
 function emotRegex(s) {
 	emotRe = /<div class="text">(.*?)<\/div>[\s\S]*?src="(.*?)"/i;
@@ -191,14 +217,12 @@ function updateEmoticonList()
 }
 
 var pageGetter = null;
-var getter_isquote = 0;
-var getter_getFormKeyOnly = true;
 
 var sa_formkey =(persistObject.__cachedFormKey && persistObject.__cachedFormKey!="") ? persistObject.__cachedFormKey : "";
 
 function showDebugData(event) {
 	if(event.button == 2) {
-		alert("threadid = "+window.opener.__salastread_quotethreadid+"\nformkey = "+ sa_formkey);
+		alert("threadid = "+quickParams.threadid+"\nformkey = "+ sa_formkey);
 	}
 }
 
@@ -206,38 +230,41 @@ function showDebugData(event) {
 function startPostTextGrab(getFormKeyOnly, postid)
 {
 	pageGetter = new XMLHttpRequest();
-	getter_isquote = 1;
-	getter_getFormKeyOnly = getFormKeyOnly;
 
-	if(!postid) {
-		postid = window.opener.__salastread_quotepostid;
-	}
-
-	var targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&postid=" + postid;
-
-	if (postid == null) {
-		getter_isquote = 0;
-		targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" + window.opener.__salastread_quotethreadid;
-	}
-
-	if (window.__salastread_quickpost_forumid)
+	// If a postid is specified, fetch it as a quote.
+	// Otherwise, check the params.
+	var getType = "quote";
+	if (!postid)
 	{
-		getter_isquote = 0;
-		targeturl = "http://forums.somethingawful.com/newthread.php?forumid=" + window.__salastread_quickpost_forumid;
-		getter_getFormKeyOnly = 1;
+		postid = quickParams.postid;
+		getType = quickParams.quicktype;
+	}
 
-		//This is a Quick Post window - look the part!
-		document.title = 'Quick Post';
-		document.getElementById('qrtitle').setAttribute('value', 'Quick Post');
-	}
-	else if (window.__salastread_is_edit)
+	var targeturl;
+	switch(getType)
 	{
-		getter_isquote = 1;
-		targeturl = "http://forums.somethingawful.com/editpost.php?s=&action=editpost&postid=" + postid;
-		document.title = 'Quick Edit';
-		document.getElementById('qrtitle').setAttribute('value', 'Quick Edit');
+		case "quote":
+			targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&postid=" + postid;
+			break;
+		case "reply":
+			targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" + quickParams.threadid;
+			break;
+		case "editpost":
+			targeturl = "http://forums.somethingawful.com/editpost.php?s=&action=editpost&postid=" + postid;
+			document.title = 'Quick Edit';
+			document.getElementById('qrtitle').setAttribute('value', 'Quick Edit');
+			break;
+		case "newthread":
+			targeturl = "http://forums.somethingawful.com/newthread.php?forumid=" + quickParams.forumid;
+			document.title = 'Quick Post';
+			document.getElementById('qrtitle').setAttribute('value', 'Quick Post');
+			break;
+		default:
+			throw "ERROR! The quick window has no idea what you're trying to do.";
 	}
+
 	//alert("targeturl = "+targeturl);
+
 	pageGetter.open("GET", targeturl, true);
 	pageGetter.onreadystatechange = postTextGrabCallback;
 	// Ensure this load flag is set to prevent issues with third-party cookies being disabled
@@ -306,7 +333,7 @@ function finalizeTextGrab(restext)
 		doPreview();
 
 	// Post Thread stuff
-	if (window.__salastread_quickpost_forumid)
+	if (quickParams.quicktype == 'newthread')
 	{
 		document.getElementById('quickpostoptions').setAttribute('collapsed', 'false');
 		//Uh, also load the post icons
@@ -337,53 +364,7 @@ function finalizeTextGrab(restext)
 			}
 		}
 	}
-
 	return;
-	/* Possibly remove this stuff soon
-	//what is this and why is it being bypassed?
-	var fkeygettext = restext;
-	if(getter_isquote == 1 && getter_getFormKeyOnly == false) {
-		// Why doesn't this work? :(
-		//var tamatch = restext.match(/<textarea.*?>(.*?)<\/textarea>/mi)[1];
-		restext = restext.substring(restext.indexOf("<textarea")+1);
-		restext = restext.substring(restext.indexOf(">")+1);
-		restext = restext.substring(0, restext.indexOf("</textarea"));
-		restext = restext.replace(/&lt;/ig,	"<");
-		restext = restext.replace(/&gt;/ig,	">");
-		restext = restext.replace(/&quot;/ig, "\"");
-		restext = restext.replace(/&amp;/ig, "&");
-		restext = replaceQuoteIntroText(restext, window.opener.__salastread_quotepostid);
-
-		if(persistObject.getPreference('quickQuoteImagesAsLinks')) {
-			restext = restext.replace(/\[IMG\](.*?)\[\/IMG\]/ig,"[URL=$1][image][/URL]");
-		}
-		
-		var tstr = document.getElementById("messagearea").value;
-		tstr = tstr.replace(quoteWaitString, restext + "\n\n");
-		document.getElementById("messagearea").value = tstr;
-	} else {
-		if(getter_getFormKeyOnly==false) {
-		document.getElementById("messagearea").value = "";
-		}
-	}
-	
-	if(fkeygettext.indexOf("name=\"formkey\">")!=-1) {
-		// FYAD's tag looks different *grumble grumble*
-		fkeygettext = fkeygettext.substring(fkeygettext.indexOf("name=\"formkey\">")-50);
-	} else {
-		fkeygettext = fkeygettext.substring(fkeygettext.indexOf("<input type=\"hidden\" name=\"formkey\" value=\"")+1);
-	}
-	fkeygettext = fkeygettext.substring(fkeygettext.indexOf("value=\"")+7);
-	fkeygettext = fkeygettext.substring(0, fkeygettext.indexOf("\""));
-	//alert(fkeygettext);
-	
-	sa_formkey = fkeygettext;
-	persistObject.__cachedFormKey = sa_formkey;
-	if(!isDetached) {
-		document.getElementById("submit-swap").disabled = false;
-		document.getElementById("submit-normal").disabled = false;
-	}
-	return; */
 }
 
 function getQuoteIntroText() {
@@ -421,7 +402,8 @@ function qpSetPostIcon(e) {
 		pib.iconid = el.iconid;
 }
 
-function addQuoteFromPost(postid) {
+function addQuoteFromPost(postid)
+{
 	var textarea = document.getElementById("messagearea");
 		textarea.value = textarea.value.replace(/[\r\n]*$/, "") + "\n\n" + quoteWaitString;
 
@@ -429,58 +411,75 @@ function addQuoteFromPost(postid) {
 }
 
 //grab necessary info
-function importData() {
-	try {
+function importData()
+{
+	try
+	{
 		var messagearea = document.getElementById("messagearea");
 	
-		if(persistObject.getPreference('quickQuoteSwapPostPreview')) {
+		if (persistObject.getPreference('quickQuoteSwapPostPreview'))
+		{
 			document.getElementById("submit-swap").style.display = "-moz-box";
 			document.getElementById("submit-normal").style.display = "none";
-		} else {
+		}
+		else
+		{
 			document.getElementById("submit-normal").style.display = "-moz-box";
 			document.getElementById("submit-swap").style.display = "none";
 		}
-		
+
 		//put in the please wait message every time, there's always something to wait on (:rolleyes:)
 		messagearea.value = quoteWaitString;
 
+		// Get initial quick window parameters (reference)
+		quickParams = window.opener.gSALR.quickWindowParams;
+
 		//if we don't have a cached form key go get it
-		if(persistObject.__cachedFormKey) {
+		if (persistObject.__cachedFormKey)
+		{
 			startPostTextGrab(false);
 			
 			//enable the buttons so long as we have an attached window
-			if(!isDetached) {
+			if (!isDetached)
+			{
 				document.getElementById("submit-swap").removeAttribute('disabled');
 				document.getElementById("submit-normal").removeAttribute('disabled');
 			}
-		} else {
+		}
+		else
+		{
 			startPostTextGrab(true);
 		}
-
 		messagearea.focus();
 
-		if(typeof(opener.sbOverlay) != "undefined" || typeof(Components.classes["@mozilla.org/spellbound;1"]) != "undefined") {
+		if (typeof(opener.sbOverlay) != "undefined" || typeof(Components.classes["@mozilla.org/spellbound;1"]) != "undefined")
+		{
 			hasSpellCheck = true;
 			document.getElementById("spellcheckbutton").style.display = "-moz-box";
 		}
 
-		if(persistObject.getPreference('quickQuoteSubscribeDefault') || window.opener.__salastread_bookmarked) {
+		if (persistObject.getPreference('quickQuoteSubscribeDefault') || (quickParams.quicktype != "newthread" && persistObject.selectSingleNode(quickParams.doc,quickParams.doc,"//ul[contains(@class, 'postbuttons')]//img[@class='unbookmark']")))
+		{
 			document.getElementById("subscribe").setAttribute("checked",true);
 		}
-		
-		if(persistObject.getPreference('quickQuoteDisableSmiliesDefault')) {
+
+		if (persistObject.getPreference('quickQuoteDisableSmiliesDefault'))
+		{
 			document.getElementById("disablesmilies").setAttribute("checked",true);
 		}
-		
-		if(persistObject.getPreference('quickQuoteSignatureDefault') && !window.opener.__salastread_alreadypostedinthread) {
+
+		if (persistObject.getPreference('quickQuoteSignatureDefault') && (quickParams.quicktype == "newthread" || !persistObject.didIPostHere(quickParams.threadid)))
+		{
 			document.getElementById("signature").setAttribute("checked",true);
 		}
 
-		if(persistObject.getPreference('quickQuoteLivePreview')) {
+		if (persistObject.getPreference('quickQuoteLivePreview'))
+		{
 			document.getElementById("preview").setAttribute("checked",true);
 			togglePreview(false);
 		}
-	} catch(e) { 
+	}
+	catch(e) { 
 		alert(e); 
 	}
 }
@@ -491,7 +490,6 @@ function releaseVars() {
 
 function doSubmit(subtype) {
 	persistObject.__quickreply__lastpost = document.getElementById("messagearea").value;
-	persistObject.iPostedHere(window.opener.__salastread_quotethreadid);
 	window.opener.quickQuoteSubmit(
 		document.getElementById("messagearea").value,
 		document.getElementById("parseurl").checked,
@@ -779,7 +777,8 @@ function getvBcode(event, command) {
 	}
 }
 
-function doPreview() {
+function doPreview()
+{
 	// Get out of here if we don't have a preview window open.
 	if (document.getElementById("preview").checked == false)
 		return;

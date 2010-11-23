@@ -276,16 +276,16 @@ var gSALR = {
 
 	windowOnBeforeUnload: function(e)
 	{
-		if (window.__salastread_quotedoc && e.originalTarget == window.__salastread_quotedoc)
+		if (gSALR.quickWindowParams.doc && e.originalTarget == gSALR.quickWindowParams.doc)
 		{
-			if(quickQuoteSubmitting)
+			if (quickQuoteSubmitting)
 			{
 				return true;
 			}
 
-			if (quickquotewin && !quickquotewin.closed)
+			if (gSALR.quickquotewin && !gSALR.quickquotewin.closed)
 			{
-				quickquotewin.detachFromDocument();
+				gSALR.quickquotewin.detachFromDocument();
 			}
 			return true;
 		}
@@ -293,10 +293,6 @@ var gSALR = {
 
 	windowOnUnload: function(e)
 	{
-		if (window.__salastread_quotedoc && e.originalTarget == window.__salastread_quotedoc)
-		{
-			releaseQuickQuoteVars();
-		}
 		if (e.originalTarget.__salastread_processed)
 		{
 			gSALR.timerPageCount--;
@@ -410,7 +406,7 @@ var gSALR = {
 			var postbutton = gSALR.service.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
 			if (postbutton)
 			{
-				attachQuickQuoteHandler(undefined,doc,gSALR.service.turnIntoQuickButton(doc, postbutton, forumid),"",0);
+				gSALR.service.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, null)}, true);
 			}
 		}
 
@@ -1118,7 +1114,7 @@ var gSALR = {
 			{
 				for (i in postbuttons)
 				{
-					attachQuickQuoteHandler(undefined,doc,gSALR.service.turnIntoQuickButton(doc, postbuttons[i], forumid),"",0);
+					gSALR.service.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid)}, true);
 				}
 			}
 			if (!threadClosed)
@@ -1128,7 +1124,7 @@ var gSALR = {
 				{
 					for (i in replybuttons)
 					{
-						attachQuickQuoteHandler(threadid,doc,gSALR.service.turnIntoQuickButton(doc, replybuttons[i], forumid),"",0);
+						gSALR.service.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid)}, true);
 					}
 				}
 			}
@@ -1304,7 +1300,7 @@ var gSALR = {
 				}
 			}
 
-			//Check to see if there's a mod or admin star
+			// Check to see if there's a mod or admin star
 			posterImg = false;
 			posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
 			if (userNameBox.title.length > 0 && !inArchives)
@@ -1486,28 +1482,15 @@ var gSALR = {
 				quotebutton = gSALR.service.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
 				if (quotebutton)
 				{
-					attachQuickQuoteHandler(threadid, doc, gSALR.service.turnIntoQuickButton(doc, quotebutton, forumid), posterName, 1, postid);
+					gSALR.service.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid)}, true);
 				}
 				if (editbutton)
 				{
-					attachQuickQuoteHandler(threadid, doc, gSALR.service.turnIntoQuickButton(doc, editbutton, forumid), posterName, 1, postid, true);
+					gSALR.service.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid)}, true);
 				}
 			}
 
 			var userLinks = profileLink.parentNode.parentNode;
-
-			if (singlePost)
-			{
-				// Add a link to the user's ban history
-				var banHistLink = doc.createElement("li");
-				var banHistAnchor = doc.createElement("a");
-				banHistAnchor.href = "/banlist.php?userid=" + posterId;
-				banHistAnchor.title = "Show poster's ban/probation history.";
-				banHistAnchor.innerHTML = "Rap Sheet";
-				banHistLink.appendChild(banHistAnchor);
-				userLinks.appendChild(doc.createTextNode(" "));
-				userLinks.appendChild(banHistLink);
-			}
 
 			// Add user coloring/note links
 			if (highlightUsernames)
@@ -2120,20 +2103,26 @@ var gSALR = {
 				case gSALR.service.getPreference('kb.quickEdit'):
 					// Activate Quick Edit Post
 					var fakeEvent = {};
+					var forumid = gSALR.service.getForumID(doc);
+					var threadid = gSALR.service.getThreadID(doc);
 					fakeEvent.originalTarget = gSALR.service.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
-					quickQuoteButtonClick(fakeEvent);
+					gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
 					break;
 				case gSALR.service.getPreference('kb.quickReply'):
 					// Activate Quick Reply to Thread
 					var fakeEvent = {};
+					var forumid = gSALR.service.getForumID(doc);
+					var threadid = gSALR.service.getThreadID(doc);
 					fakeEvent.originalTarget = gSALR.service.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
-					quickQuoteButtonClick(fakeEvent);
+					gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
 					break;
 				case gSALR.service.getPreference('kb.quickQuote'):
 					// Activate Quick Quote Post
 					var fakeEvent = {};
+					var forumid = gSALR.service.getForumID(doc);
+					var threadid = gSALR.service.getThreadID(doc);
 					fakeEvent.originalTarget = gSALR.service.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
-					quickQuoteButtonClick(fakeEvent);
+					gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
 					break;
 			}
 			if (rescroll)
@@ -2946,6 +2935,186 @@ var gSALR = {
 		gSALR.service.setPreference("filteredThreadCount",count);
 	},
 
+	quickquotewin: null,
+
+	quickWindowParams: {
+		quicktype: null,
+		threadid: null,
+		forumid: null,
+		postid: null,
+		doc: null,
+	},
+
+	quickButtonClicked: function(evt, forumid, threadid)
+	{
+		var quickbutton = evt.originalTarget;
+		var doc = evt.originalTarget.ownerDocument;
+
+		//var forumid = gSALR.service.getForumID(doc); // Make into event param
+		//var threadid = gSALR.service.getThreadID(doc); // Ditto
+		var postid = undefined;
+		var quicktype = quickbutton.nextSibling.href.match(/action=(\w+)/i)[1];
+		switch (quicktype)
+		{
+			case 'newreply':
+				if (quickbutton.nextSibling.href.match(/threadid=(\d+)/i) != null)
+				{
+					quicktype = 'reply';
+					break;
+				}
+				else
+				{
+					quicktype = 'quote';
+				}
+			case 'editpost':
+				postid = quickbutton.nextSibling.href.match(/postid=(\d+)/i)[1];
+				break;
+			case 'newthread':
+				break;
+		}
+
+//alert("Clicked: quicktype: " + quicktype + " threadid " + threadid + " forumid " + forumid + " postid " + postid);
+
+		// Do we already have a window?
+		if (gSALR.service.__quickquotewindowObject && !gSALR.service.__quickquotewindowObject.closed)
+		{
+			gSALR.quickquotewin = gSALR.service.__quickquotewindowObject;
+		}
+
+		if (gSALR.quickquotewin && !gSALR.quickquotewin.closed)
+		{
+			try
+			{
+				// Clicked an edit button
+				if (quicktype == 'editpost')
+				{
+					// There is already a quick window open. Is it an edit window?
+					if (gSALR.quickWindowParams.quicktype == 'editpost')
+					{
+						// Is it the same post?
+						if (gSALR.quickWindowParams.postid && gSALR.quickWindowParams.postid == postid)
+						{
+							// Attempt to reattach
+							if (gSALR.quickquotewin.isDetached)
+							{
+								gSALR.quickWindowParams.doc = doc;
+								gSALR.quickquotewin.reattach();
+							}
+						}
+						else
+						{
+							if (confirm("You already have a quick edit window open, but it was attached to a different post.\nDo you want to change which post you're editing?"))
+							{
+								gSALR.quickWindowParams.quicktype = quicktype;
+								gSALR.quickWindowParams.threadid = threadid;
+								gSALR.quickWindowParams.forumid = forumid;
+								gSALR.quickWindowParams.postid = postid;
+								gSALR.quickWindowParams.doc = doc;
+								gSALR.quickquotewin.reattach();
+								gSALR.quickquotewin.importData();
+							}
+						}
+					}
+					else
+					{
+						if (confirm("You already have a quick window open. Press 'OK' to convert it to a quick edit window for this post, \nor press 'Cancel' to append this post to your quick window."))
+						{
+							gSALR.quickWindowParams.quicktype = quicktype;
+							gSALR.quickWindowParams.threadid = threadid;
+							gSALR.quickWindowParams.forumid = forumid;
+							gSALR.quickWindowParams.postid = postid;
+							gSALR.quickWindowParams.doc = doc;
+							gSALR.quickquotewin.reattach();
+							gSALR.quickquotewin.importData();
+						}
+						else
+						{
+							if (gSALR.quickquotewin.isDetached)
+							{
+								gSALR.quickWindowParams.doc = doc;
+								gSALR.quickquotewin.reattach();
+							}
+							gSALR.quickquotewin.addQuoteFromPost(postid);
+						}
+					}
+				}
+				// Clicked a 'quote' button
+				else if (quicktype == 'quote')
+				{
+					// Always add quotes when quote is clicked
+					if (gSALR.quickquotewin.isDetached)
+					{
+						gSALR.quickWindowParams.doc = doc;
+						gSALR.quickquotewin.reattach();
+					}
+					gSALR.quickquotewin.addQuoteFromPost(postid);
+				}
+				// Clicked a 'reply' button
+				else if (quicktype == 'reply')
+				{
+					// Check if we need to reattach, otherwise offer to convert
+					if (gSALR.quickWindowParams.quicktype && gSALR.quickWindowParams.quicktype == 'reply' && gSALR.quickWindowParams.threadid && gSALR.quickWindowParams.threadid == threadid)
+					{
+						if (gSALR.quickquotewin.isDetached)
+						{
+							gSALR.quickWindowParams.doc = doc;
+							gSALR.quickquotewin.reattach();
+						}
+					}
+					else
+					{
+						if (confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick reply window for this thread, or press 'Cancel' to leave it alone."))
+						{
+							gSALR.quickWindowParams.quicktype = quicktype;
+							gSALR.quickWindowParams.threadid = threadid;
+							gSALR.quickWindowParams.forumid = forumid;
+							gSALR.quickWindowParams.postid = postid;
+							gSALR.quickWindowParams.doc = doc;
+							gSALR.quickquotewin.reattach();
+							gSALR.quickquotewin.importData();
+						}				
+					}
+				}
+				// Clicked anything else
+				else
+				{
+					if (confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick " + quicktype + " window, or press 'Cancel' to leave it alone."))
+					{
+						gSALR.quickWindowParams.quicktype = quicktype;
+						gSALR.quickWindowParams.threadid = threadid;
+						gSALR.quickWindowParams.forumid = forumid;
+						gSALR.quickWindowParams.postid = postid;
+						gSALR.quickWindowParams.doc = doc;
+						gSALR.quickquotewin.reattach();
+						gSALR.quickquotewin.importData();
+					}
+				}
+				gSALR.quickquotewin.focus();
+			}
+			catch(ex)
+			{
+				//alert("Error communicating with the quick window: " + ex);
+				gSALR.quickquotewin = window.open("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, width=800, height=400");
+			}
+		}
+		else
+		{
+			// Set parameters
+			gSALR.quickWindowParams.quicktype = quicktype;
+			gSALR.quickWindowParams.threadid = threadid;
+			gSALR.quickWindowParams.forumid = forumid;
+			gSALR.quickWindowParams.postid = postid;
+			gSALR.quickWindowParams.doc = doc;
+			gSALR.quickquotewin = window.open("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, width=800, height=400");
+		}
+
+		if (gSALR.quickquotewin)
+		{
+			gSALR.service.__quickquotewindowObject = gSALR.quickquotewin;
+		}
+		return false;
+	},
+
 };
 
 gSALR.init();
@@ -2956,7 +3125,6 @@ gSALR.init();
 
 
 var needRegReplyFill = false;
-var quickquotewin = null;
 var quickQuoteSubmitting = false;
 var salastread_savedQuickReply = "";
 var salastread_savedQuickReplyThreadId = "";
@@ -2980,142 +3148,41 @@ function parsePLTagsInEdit(tarea)
 // Quick Quote/Post/Edit/Whatever Functions ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-function attachQuickQuoteHandler(threadid,doc,quotebutton,postername,hasQuote,postid,isedit)
-{
-	quotebutton.__salastread_threadid = threadid;
-	quotebutton.__salastread_postid = postid;
-	quotebutton.__salastread_postername = postername;
-	quotebutton.__salastread_hasQuote = hasQuote;
-	if (isedit != undefined)
-		quotebutton.is_edit = true;
-	else
-		quotebutton.is_edit = false;
-	quotebutton.addEventListener("click", quickQuoteButtonClick, true);
-}
-
-function quickQuoteButtonClick(evt)
-{
-	var doc = evt.originalTarget.ownerDocument;
-	var quotebutton = evt.originalTarget;
-
-	var threadid = quotebutton.__salastread_threadid;
-	var forumid = quotebutton.SALR_forumid;
-	var postername = quotebutton.__salastread_postername;
-	var hasQuote = quotebutton.__salastread_hasQuote;
-	var post_is_edit = quotebutton.is_edit;
-
-	if (gSALR.service.__QuickQuoteWindowObject && !gSALR.service.__QuickQuoteWindowObject.closed)
-	{
-		quickquotewin = gSALR.service.__QuickQuoteWindowObject;
-	}
-
-	window.__salastread_quotedoc = doc;
-
-	//button pressed on a post (quote/edit)
-	if(hasQuote)
-	{
-		window.__salastread_quotepostid = quotebutton.__salastread_postid;
-	}
-	else
-	{
-		window.__salastread_quotetext = "";
-		window.__salastread_quotepostid = null;
-	}
-
-	//Has this person already posted in this thread?
-	window.__salastread_alreadypostedinthread = gSALR.service.didIPostHere(threadid);
-
-	//Has this person already bookmarked this thread?
-	//Check for the bookmark/unbookmark button
-	bookmarkbutton = gSALR.service.selectSingleNode(doc,doc,"//ul[contains(@class, 'postbuttons')]//img[@class='unbookmark']");
-	if (bookmarkbutton)
-	{
-	  window.__salastread_bookmarked = true;
-	}
-	else
-	{
-	  window.__salastread_bookmarked = false;
-	}
-
-	window.__salastread_quotethreadid = threadid;
-
-	if(quickquotewin && !quickquotewin.closed)
-	{
-		try
-		{
-			//try to re-add the quote in case the quickquote window's attachment was lost
-			if(hasQuote)
-			{
-				// update the edit status (situation: edit window open -> clicked something else)
-				quickquotewin.__salastread_is_edit = post_is_edit;
-				quickquotewin.addQuoteFromPost(window.__salastread_quotepostid);
-			}
-			quickquotewin.focus();
-		}
-		catch(ex)
-		{
-			quickquotewin = window.open("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, width=800, height=400");
-		}
-	}
-	else
-	{
-		quickquotewin = window.open("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, width=800, height=400");
-	}
-
-	if (quickquotewin)
-	{
-		gSALR.service.__QuickQuoteWindowObject = quickquotewin;
-		quickquotewin.__salastread_quickpost_forumid = forumid;
-		quickquotewin.__salastread_is_edit = post_is_edit;
-	}
-	return false;
-}
-
 function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signature, subtype, formkey, attachfile, form_cookie)
 {
 	try
 	{
 		message = convertPLTag(message);
 		salastread_savedQuickReply = message;
-		salastread_savedQuickReplyThreadId = window.__salastread_quotethreadid;
+		salastread_savedQuickReplyThreadId = gSALR.quickWindowParams.threadid;
 
-		var doc = window.__salastread_quotedoc;
+		var doc = gSALR.quickWindowParams.doc;
 		var newform = doc.createElement("FORM");
 			newform.style.display = "none";
 			newform.action = "http://forums.somethingawful.com/newreply.php";
 
-		if(!window.__salastread_quotethreadid)
-		{
-			newform.action = "http://forums.somethingawful.com/newthread.php";
-		}
-
-		if (quickquotewin.__salastread_is_edit)
-		{
-			newform.action = "http://forums.somethingawful.com/editpost.php";
-		}
-
 		newform.method = "post";
 		newform.enctype = "multipart/form-data";
 		gSALR.addHiddenFormInput(doc,newform,"s","");
-		if(window.__salastread_quotethreadid)
+
+		if (gSALR.quickWindowParams.quicktype == "newthread")
 		{
-			if(quickquotewin.__salastread_is_edit)
-			{
-				gSALR.addHiddenFormInput(doc, newform,"action", "updatepost");
-				gSALR.addHiddenFormInput(doc, newform, "postid", window.__salastread_quotepostid);
-			}
-			else
-			{
-				gSALR.addHiddenFormInput(doc, newform,"action", "postreply");
-				gSALR.addHiddenFormInput(doc, newform,"threadid", window.__salastread_quotethreadid);
-			}
-		}
-		else
-		{
+			newform.action = "http://forums.somethingawful.com/newthread.php";
 			gSALR.addHiddenFormInput(doc, newform,"action", "postthread");
-			gSALR.addHiddenFormInput(doc, newform, "forumid",  quickquotewin.__salastread_quickpost_forumid);
-			gSALR.addHiddenFormInput(doc, newform, "iconid", quickquotewin.document.getElementById('posticonbutton').iconid);
-			gSALR.addHiddenFormInput(doc, newform, "subject", quickquotewin.document.getElementById('subject').value);
+			gSALR.addHiddenFormInput(doc, newform, "forumid",  gSALR.quickWindowParams.forumid);
+			gSALR.addHiddenFormInput(doc, newform, "iconid", gSALR.quickquotewin.document.getElementById('posticonbutton').iconid);
+			gSALR.addHiddenFormInput(doc, newform, "subject", gSALR.quickquotewin.document.getElementById('subject').value);
+		}
+		else if (gSALR.quickWindowParams.quicktype == "editpost")
+		{
+			newform.action = "http://forums.somethingawful.com/editpost.php";
+			gSALR.addHiddenFormInput(doc, newform,"action", "updatepost");
+			gSALR.addHiddenFormInput(doc, newform, "postid", gSALR.quickWindowParams.postid);
+		}
+		else if (gSALR.quickWindowParams.quicktype == "quote" || gSALR.quickWindowParams.quicktype == "reply")
+		{
+			gSALR.addHiddenFormInput(doc, newform,"action", "postreply");
+			gSALR.addHiddenFormInput(doc, newform,"threadid", gSALR.quickWindowParams.threadid);
 		}
 
 		gSALR.addHiddenFormInput(doc, newform,"parseurl", parseurl ? "yes" : "");
@@ -3136,12 +3203,12 @@ function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signatur
 		}
 		newform.__submit = newform.submit;
 
-		if (window.__salastread_quotethreadid)
+		if (gSALR.quickWindowParams.quicktype != "newthread")
 		{
 			if (subtype=="submit")
 			{
 				gSALR.addHiddenFormInput(doc,newform,"submit","Submit Reply");
-				gSALR.service.iPostedHere(window.__salastread_quotethreadid);
+				gSALR.service.iPostedHere(gSALR.quickWindowParams.threadid);
 			}
 			else
 			{
@@ -3155,7 +3222,7 @@ function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signatur
 		doc.body.appendChild(newform);
 		quickQuoteSubmitting = true;
 		newform.__submit();
-		quickquotewin.close();
+		gSALR.quickquotewin.close();
 	}
 	catch(e)
 	{
@@ -3174,20 +3241,19 @@ function quickQuoteAddFile(doc,form,name,value)
 
 function releaseQuickQuoteVarsWithClose()
 {
-   quickquotewin.close();
+	// Never called?
+   gSALR.quickquotewin.close();
 }
 
 function releaseQuickQuoteVars()
 {
-   window.__salastread_quotedoc = null;
-   window.__salastread_quotetext = null;
-   window.__salastread_quotethreadid = null;
-   window.__salastread_quotepostid = null;
-   window.__salastread_bookmarked = null;
-   window.__salastread_alreadypostedinthread = null;
-   window.__salastread_needretrieval = null;
-   quickQuoteSubmitting = false;
-   quickquotewin = null;
+	gSALR.quickWindowParams.quicktype = null;
+	gSALR.quickWindowParams.threadid = null;
+	gSALR.quickWindowParams.forumid = null;
+	gSALR.quickWindowParams.postid = null;
+	gSALR.quickWindowParams.doc = null;
+	quickQuoteSubmitting = false;
+	gSALR.quickquotewin = null;
 }
 
 
