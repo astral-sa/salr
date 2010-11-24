@@ -795,26 +795,12 @@ function doPreview()
 	vbcode['<u>$1</u>'] = /\[u\](.*?)\[\/u\]/gi;
 	vbcode['<s>$1</s>'] = /\[s\](.*?)\[\/s\]/gi;
 	vbcode['<tt class="bbc">$1</tt>'] = /\[fixed\](.*?)\[\/fixed\]/gi;
-	
+
 	vbcode['<ul>$1</ul>'] = /\[list\](.*?)\[\/list\]/gi;
 	vbcode['<li />'] = /\[\*\]/gi;
-	
-	markup = markup.replace(/\[sub\]|\[\/sub\]|\[super\]|\[\/super\]/gi, 
-		function(strMatch) {
-			var strReturn = null;
-			if(strMatch == "[sub]") {
-				strReturn = "<span style=\"vertical-align: sub;\">";
-			} else if(strMatch == "[super]") {
-				strReturn = "<span style=\"vertical-align: super;\">";
-			}
-	
-			if(strMatch.match(/\[\/.*?\]/gi)) {
-				strReturn = "</span>";
-			}
 
-			return strReturn;
-		}
-	);
+	vbcode['<sup>$1</sup>'] = /\[super\](.*?)\[\/super\]/gi;
+	vbcode['<sub>$1</sub>'] = /\[sub\](.*?)\[\/sub\]/gi;
 
 	// Spoiler
 	vbcode['<span style="background: #000000;" onmouseover="this.style.color=\'#FFFFFF\';" onmouseout="this.style.color=this.style.backgroundColor=\'#000000\'">$1</span>'] = /\[spoiler\](.*?)\[\/spoiler\]/gi;
@@ -824,9 +810,8 @@ function doPreview()
 	vbcode['<blockquote><pre style="color:#0000bb"><span style="font-family: verdana,arial,helvetica; color:#555555">php:</span><hr />&lt;?<br />$1<br />?&gt;<hr /></pre></blockquote>'] = /\[php\](.*?)\[\/php\]/gi;
 
 	// Links and images
-	if(document.getElementById("parseurl").checked) {
+	if (document.getElementById("parseurl").checked)
 		markup = markup.replace(/(^|\s)((((ht|f)tps?:\/\/)|(www|ftp)\.)[a-zA-Z0-9\.\#\@\:%&_/\?\=\~\-]+)/gim, "$1<a href=\"$2\" target=\"_blank\">$2</a>");
-	}
 
 	vbcode['<a href="$1" target=\"_blank\">$2</a>'] = /\[url=([^\]]+)\](.*?)\[\/url\]/gi;
 	vbcode['<a href="$1" target=\"_blank\">$1</a>'] = /\[url\](.*?)\[\/url\]/gi;
