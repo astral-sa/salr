@@ -812,7 +812,7 @@ function doPreview()
 	}
 	markup = subSegment.join('</sub>');
 
-	// (Temporary) sub handling
+	// (Temporary) sup handling
 	subSegment = markup.split('[/super]');
 	for (var key = 0; key < subSegment.length; key++)
 	{
