@@ -788,7 +788,7 @@ function doPreview()
 	
 	markup = markup.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 	var vbcode = [];
-	
+
 	// Text style
 	vbcode['<b>$1</b>'] = /\[b\](.*?)\[\/b\]/gi;
 	vbcode['<i>$1</i>'] = /\[i\](.*?)\[\/i\]/gi;
@@ -801,6 +801,26 @@ function doPreview()
 
 	vbcode['<sup>$1</sup>'] = /\[super\](.*?)\[\/super\]/gi;
 	vbcode['<sub>$1</sub>'] = /\[sub\](.*?)\[\/sub\]/gi;
+
+	// (Temporary) sub handling
+	subSegment = markup.split('[/sub]');
+	for (var key = 0; key < subSegment.length; key++)
+	{
+		subSegment[key] = subSegment[key].replace(
+			/\[sub\](.*?)/gi,
+			'<sub>$1');
+	}
+	markup = subSegment.join('</sub>');
+
+	// (Temporary) sub handling
+	subSegment = markup.split('[/super]');
+	for (var key = 0; key < subSegment.length; key++)
+	{
+		subSegment[key] = subSegment[key].replace(
+			/\[super\](.*?)/gi,
+			'<sup>$1');
+	}
+	markup = subSegment.join('</sup>');
 
 	// Spoiler
 	vbcode['<span style="background: #000000;" onmouseover="this.style.color=\'#FFFFFF\';" onmouseout="this.style.color=this.style.backgroundColor=\'#000000\'">$1</span>'] = /\[spoiler\](.*?)\[\/spoiler\]/gi;
