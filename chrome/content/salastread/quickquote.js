@@ -799,28 +799,11 @@ function doPreview()
 	vbcode['<ul>$1</ul>'] = /\[list\](.*?)\[\/list\]/gi;
 	vbcode['<li />'] = /\[\*\]/gi;
 
-	vbcode['<sup>$1</sup>'] = /\[super\](.*?)\[\/super\]/gi;
-	vbcode['<sub>$1</sub>'] = /\[sub\](.*?)\[\/sub\]/gi;
-
-	// (Temporary) sub handling
-	subSegment = markup.split('[/sub]');
-	for (var key = 0; key < subSegment.length; key++)
-	{
-		subSegment[key] = subSegment[key].replace(
-			/\[sub\](.*?)/gi,
-			'<sub>$1');
-	}
-	markup = subSegment.join('</sub>');
-
-	// (Temporary) sup handling
-	subSegment = markup.split('[/super]');
-	for (var key = 0; key < subSegment.length; key++)
-	{
-		subSegment[key] = subSegment[key].replace(
-			/\[super\](.*?)/gi,
-			'<sup>$1');
-	}
-	markup = subSegment.join('</sup>');
+	// (Temporary) sub/sup handling
+	vbcode['<sub>'] = /\[sub\]/gi;
+	vbcode['<sup>'] = /\[super\]/gi;
+	vbcode['</sub>'] = /\[\/sub\]/gi;
+	vbcode['</sup>'] = /\[\/super\]/gi;
 
 	// Spoiler
 	vbcode['<span style="background: #000000;" onmouseover="this.style.color=\'#FFFFFF\';" onmouseout="this.style.color=this.style.backgroundColor=\'#000000\'">$1</span>'] = /\[spoiler\](.*?)\[\/spoiler\]/gi;
