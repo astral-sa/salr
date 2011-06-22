@@ -728,7 +728,9 @@ var gSALR = {
 			if (flags && forumid && advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.src.search(/posticons\/(.*)/i) > -1)
 			{
 				var iconnum = threadIconBox.firstChild.src.match(/#(\d+)$/)[1];
-				if (ignoredPostIcons.search(iconnum) > -1 && thread.style.visibility != "hidden")
+				var iconSearchString = "(^|\\s)" + iconnum + ",";
+				iconSearchString = new RegExp(iconSearchString , "gi");
+				if (ignoredPostIcons.search(iconSearchString) > -1 && thread.style.visibility != "hidden")
 				{
 					gSALR.service.toggleVisibility(thread,false);
 					gSALR.filteredThreadCount(doc,1);
