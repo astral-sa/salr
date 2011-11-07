@@ -3316,24 +3316,24 @@ function SALR_menuItemCommandURL(event, el, etype)
 {
 	var target = "none";
 
-	if(etype=="command")
+	if (etype=="command")
 	{
 		target = "current";
 	}
-	if(etype=="click")
+	if (etype=="click")
 	{
-		if(event.button == 0)
+		if (event.button == 0)
 		{
 			target = "current";
 		}
-		else if(event.button == 2 || event.button == 1)
+		else if (event.button == 2 || event.button == 1)
 		{
 			target = "newtab";
 		}
 	}
 
 	var targeturl = "";
-	if(typeof(el) == "string")
+	if (typeof(el) == "string")
 	{
 		targeturl = el;
 	}
@@ -3342,7 +3342,7 @@ function SALR_menuItemCommandURL(event, el, etype)
 		targeturl = el.getAttribute("targeturl");
 	}
 
-	if(target != "none")
+	if (target != "none")
 	{
 		SALR_menuItemGoTo(event,targeturl,target);
 	}
@@ -3356,7 +3356,10 @@ function SALR_menuItemGoTo(event, url, target)
 	}
 	else if (target=="current")
 	{
-		loadURI(url);
+		if (getBrowser().selectedTab.pinned)
+			getBrowser().selectedTab = getBrowser().addTab(url);
+		else
+			loadURI(url);
 	}
 }
 
