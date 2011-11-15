@@ -3356,7 +3356,7 @@ function SALR_menuItemGoTo(event, url, target)
 	}
 	else if (target=="current")
 	{
-		if (getBrowser().selectedTab.pinned)
+		if (getBrowser().selectedTab.pinned && !gSALR.service.getPreference('ignoreAppTabs'))
 			getBrowser().selectedTab = getBrowser().addTab(url);
 		else
 			loadURI(url);
