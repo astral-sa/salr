@@ -2113,20 +2113,20 @@ salrPersistObject.prototype = {
 		}
 
 		var images = this.selectNodes(doc, postbody, "//img");
-		for(var i in images)
+		for (var i in images)
 		{
 			var image = images[i];
 
 			// Scale all images in the post body to the user-specified size
-			if(thumbnailAllImages && image.parentNode.isSameNode(postbody))
+			if (thumbnailAllImages && image.parentNode === postbody)
 			{
-				if(!image.src.match(/forumimages\.somethingawful\.com/i))
+				if (!image.src.match(/forumimages\.somethingawful\.com/i))
 				{
-					if(maxWidth)
+					if (maxWidth)
 					{
 						image.style.maxWidth = maxWidth;
 					}
-					if(maxHeight)
+					if (maxHeight)
 					{
 						image.style.maxHeight = maxHeight;
 					}
@@ -2134,11 +2134,11 @@ salrPersistObject.prototype = {
 					image.addEventListener("click",
 						function()
 						{
-							if(maxWidth)
+							if (maxWidth)
 							{
 								this.style.maxWidth = (this.style.maxWidth == maxWidth) ? "" : maxWidth;
 							}
-							if(maxHeight)
+							if (maxHeight)
 							{
 								this.style.maxHeight = (this.style.maxHeight == maxHeight) ? "" : maxHeight;
 							}
