@@ -118,7 +118,7 @@
 
          <xul:button class="qqbutton" accesskey="c" id="spellcheckbutton" label="Spellcheck" tabindex="10" oncommand="performSpellCheck();" style="display: none" />
          <xul:button class="qqbutton" accesskey="a" id="attachbtn" label="Attach..." tabindex="11" oncommand="doAttach();" />
-         <xul:button class="qqbutton" accesskey="a" id="waffleimagesbtn" xxlabel="IMG" image="chrome://salastread/skin/waffle.gif" tabindex="12" oncommand="doWaffleImages();" />
+         <xul:button class="qqbutton" accesskey="a" id="waffleimagesbtn" xxlabel="IMG" image="chrome://salastread/skin/imageuploadicon.png" tabindex="12" oncommand="doWaffleImages();" />
          <xul:button class="qqbutton" accesskey="s" disabled="true" id="submit-swap" label="Submit" style="display: none" tabindex="13" oncommand="doSubmit('submit');" />
          <xul:button class="qqbutton" accesskey="p" id="previewbtn" label="Preview" tabindex="14" oncommand="doSubmit('preview');" />
          <xul:button class="qqbutton" accesskey="s" disabled="true" id="submit-normal" label="Submit" tabindex="15" oncommand="doSubmit('submit');" />

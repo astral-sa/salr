@@ -6,7 +6,10 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:html="http://www.w3.org/1999/xhtml"
         style="width: 350px; height: 200px; padding: 7px; margin: 7px;"
-        title="WaffleImages Image Upload">
+        title="Imgur Image Upload"
+        ondragenter="return checkDrag(event)"
+        ondragover="return checkDrag(event)"
+        ondrop="doDrop(event)">
 
  <script language="JavaScript" src="chrome://salastread/content/utilfunctions.js" />
  <script language="JavaScript" src="chrome://salastread/content/waffleimages/waffleimages.js" />
@@ -14,13 +17,13 @@
  <vbox flex="1">
   <hbox align="center" class="headerrow">
    <!-- <image src="chrome://salastread/content/waffleimages/waffleimages.jpg"/> -->
-   <label class="titlelabel" value="WaffleImages Image Upload"/>
+   <label class="titlelabel" value="Imgur Image Upload"/>
   </hbox>
   <description>
-   You can select an image from either your hard drive or from a URL to upload / transload and host through the WaffleImages.com image hosting service. An [IMG] tag will automatically be added to your post.
+   To upload an image to the imgur.com image hosting service, either select an image from your hard drive (or drag and drop it onto this window), or enter an image URL. An [IMG] tag will automatically be added to your post.
   </description>
   <description>
-   See www.waffleimages.com for more information.
+   Uploads are limited to 50 per hour per IP. See imgur.com for more information.
   </description>
   <spacer flex="1"/>
   <hbox>
@@ -36,13 +39,12 @@
  </vbox>
 
  <html:form class="uploaderform" id="uploaderform" method="post"
-            action="http://waffleimages.com/upload"
+            action="http://api.imgur.com/2/upload "
             enctype="multipart/form-data" target="submitframe"> 
-  <html:input type="hidden" name="mode" id="urlopt"/>
-  <html:input type="file" name="file" id="file" />
-  <html:input type="hidden" name="url" id="url" />
+  <html:input type="hidden" name="key" value="6f2b34324045e696c14fc78913544b6a" />
+  <html:input type="hidden" name="type" id="urlopt"/>
+  <html:input type="hidden" name="image" id="img" />
   <html:input type="hidden" name="tg_format" value="xml" />
-  <html:input type="hidden" name="client" value="Firefox SALR 1.15.1912" />
   <html:submit value="Host"/>
  </html:form>
 <!--
