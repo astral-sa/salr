@@ -1360,7 +1360,7 @@ var gSALR = {
 			}
 			if (gSALR.service.isAdmin(posterId))
 			{
-				if(posterImg == "Administrator" || inArchives)
+				if (posterImg == "Administrator" || inArchives)
 				{
 					posterColor = adminColor;
 					posterBG = adminBackground;
