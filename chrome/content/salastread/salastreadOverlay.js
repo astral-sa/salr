@@ -166,6 +166,14 @@ var gSALR = {
 					case "member":
 						pageHandler = gSALR.handleProfileView;
 						break;
+
+					case "search":
+						pageHandler = gSALR.handleOldSearch;
+						break;
+
+					case "modqueue":
+						pageHandler = gSALR.handleModQueue;
+						break;
 				}
 			}
 			else
@@ -1868,6 +1876,14 @@ var gSALR = {
 		postSearchLink.parentNode.appendChild(doc.createTextNode(" ("));
 		postSearchLink.parentNode.appendChild(newLink);
 		postSearchLink.parentNode.appendChild(doc.createTextNode(")"));
+	},
+
+	handleModQueue: function(doc)
+	{
+	},
+
+	handleOldSearch: function(doc)
+	{
 	},
 
 	handleSearch: function(doc)
