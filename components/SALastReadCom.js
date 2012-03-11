@@ -5,7 +5,7 @@ function SALR_vidClick(e)
 	e.preventDefault();
 	e.stopPropagation();
 
-	var link = e.target;
+	var link = e.currentTarget;
 
 	//if they click again hide the video
 	if (link.nextSibling)
