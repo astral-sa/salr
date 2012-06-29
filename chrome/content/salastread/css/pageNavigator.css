@@ -15,3 +15,5 @@
  opacity: 0.5;
  cursor: default !important;
 }
+
+div[class="jump_top right"] { display : none !important }
