@@ -41,27 +41,32 @@ function SALR_vidClick(e)
 	//create the embedded elements (p containing video for linebreaky goodness)
 	var doc = e.originalTarget.ownerDocument;
 	var p = doc.createElement("p");
-	var embed = doc.createElement("EMBED");
-		embed.setAttribute('width', 450);
-		embed.setAttribute('height', 370);
-		embed.setAttribute('type', "application/x-shockwave-flash");
-		embed.setAttribute('class', 'salr_video');
-		embed.setAttribute('id', videoId);
 	switch (videoSrc)
 	{
 		case "google":
+			var embed = doc.createElement("EMBED");
+			embed.setAttribute('width', 450);
+			embed.setAttribute('height', 370);
+			embed.setAttribute('type', "application/x-shockwave-flash");
+			embed.setAttribute('class', 'salr_video');
+			embed.setAttribute('id', videoId);
 			embed.setAttribute('flashvars', '');
 			embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en&fs=true');
 			embed.setAttribute('allowfullscreen', "true");
+			p.appendChild(embed);
 			break;
 		case "youtube":
 			// Figure out quality and size to use
 			var vidqual = PersistObject.getPreference("videoEmbedQuality");
 			var qualstring = '';
-			if (vidqual == "hd")
-				qualstring = '&hd=1';
-			/*else if (vidqual == "hq") // If youtube actually let you embed 480p specifically, something that actually worked would go here.
-				qualstring = '&ap=%2526fmt%3D35';*/
+			if (vidqual == "hd1080")
+				qualstring = '?vq=hd1080';
+			else if (vidqual == "hd")
+				qualstring = '?vq=hd720';
+			else if (vidqual == "hq")
+				qualstring = '?vq=large';
+			else if (vidqual == "low")
+				qualstring = '?vq=small';
 			var vidsize = PersistObject.getPreference("videoEmbedSize");
 			var vidwidth, vidheight;
 
@@ -96,16 +101,16 @@ function SALR_vidClick(e)
 				vidheight = PersistObject.getPreference("videoEmbedCustomHeight");
 			}
 
-			embed.setAttribute('width', vidwidth);
-			embed.setAttribute('height', vidheight);
-			embed.setAttribute('quality',"high");
-			embed.setAttribute('allowfullscreen', "true");
-			embed.setAttribute('bgcolor',"#FFFFFF");
-			embed.setAttribute('wmode', "transparent");
-			embed.setAttribute('src', "http://" + yt_subd + "youtube.com/v/" + videoId + '&fs=1' + qualstring + yt_start);
+			var embedFrame = doc.createElement("iframe");
+			embedFrame.setAttribute('width', vidwidth);
+			embedFrame.setAttribute('height', vidheight);
+			embedFrame.setAttribute('class', 'salr_video');
+			embedFrame.setAttribute('src', "http://" + yt_subd + "youtube.com/embed/" + videoId + qualstring + yt_start);
+			embedFrame.setAttribute('frameborder', '0');
+			embedFrame.setAttribute('mozallowfullscreen', true);
+			p.appendChild(embedFrame);
 			break;
 	}
-	p.appendChild(embed);
 
 	//inserts video after the link
 	link.parentNode.insertBefore(p, link.nextSibling);
@@ -2057,25 +2062,6 @@ salrPersistObject.prototype = {
 					link.previousSibling.textContent += link.textContent;
 					link.textContent = '';
 					link.parentNode.replaceChild(newImg, link);
-				}
-			}
-
-			// Special handling for links with timgs inside
-			if (this.getPreference("fixTimgLinks"))
-			{
-				if (link.firstChild && (link.firstChild.className == "timg" || link.firstChild.className == "timg_container" || link.firstChild.className == "timg loading"))
-				{
-					var timgbr = doc.createElement("br");
-					var timglink = doc.createElement("a");
-					timglink.setAttribute('href',link.href);
-					timglink.setAttribute('target','_blank');
-					timglink.innerHTML = link.href;
-					timglink.style.fontSize = "10px";
-					link.parentNode.insertBefore(timgbr, link.nextSibling);
-					link.parentNode.insertBefore(timglink, timgbr.nextSibling);
-					// Add a newline between timgs to make it pretty
-					if (timglink.nextSibling && timglink.nextSibling.firstChild && (timglink.nextSibling.firstChild.className == "timg" || timglink.nextSibling.firstChild.className == "timg_container" || timglink.nextSibling.firstChild.className == "timg loading"))
-						link.parentNode.insertBefore(timgbr.cloneNode(false), timglink.nextSibling);
 				}
 			}
 

@@ -72,9 +72,11 @@
 						<groupbox>
 							<caption label="YouTube Player Default Quality" />
 							<radiogroup id="radio_videoEmbedQuality" preference="videoEmbedQuality">
-								<radio id="normal" value="normal" label="SD (choose if you have a slower connection)" />
-								<!--<radio id="hq" value="hq" label="480p" />Someday the API might support this. !-->
-								<radio id="hd" value="hd" label="HD (choose if you have a faster connection)" />
+								<radio id="normal" value="normal" label="Automatic (quality is based on player size)" />
+								<radio id="low" value="low" label="Lowest quality available" />
+								<radio id="hq" value="hq" label="480p SD (if available)" />
+								<radio id="hd" value="hd" label="720p HD (if available)" />
+								<radio id="hd1080" value="hd1080" label="1080p HD (if available)" />
 							</radiogroup>
 						</groupbox>
 					</vbox>
