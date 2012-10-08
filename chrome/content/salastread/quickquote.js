@@ -72,34 +72,33 @@ function recoverLastPost() {
 }
 
 function checkKeys(e) {
-	// changes on 16-June-08 by grrowl for awesoem quickformat
 	if(e.ctrlKey) {
 		switch(e.charCode) {
 			case 119: case 87: // "w"
 				releaseVars();
 				window.close();
 				break;
-			
+
 			case 98: case 66: // "b"
 				getvBcode(e, 'bold');
 				break;
-				
+
 			case 105: case 73: // "i"
 				getvBcode(e, 'italic');
 				break;
-			
+
 			case 115: case 83: // "s"
 				getvBcode(e, 'strike');
 				break;
-			
+
 			case 45: case 109: // numpad -, normal -/_
 				getvBcode(e, 'sub');
 				break;
-			
+
 			case 43: case 107: // numpad +, =/+
 				getvBcode(e, 'super');
 				break;
-				
+
 			case 117: case 85: // "u"
 				getvBcode(e, 'underline');
 				break;
@@ -114,6 +113,10 @@ function checkKeys(e) {
 
 			case 56: case 42: // "*" or shift+8
 				getvBcode(e, 'listitem');
+				break;
+
+			case 113: case 81: // q
+				getvBcode(e, 'quote');
 				break;
 		}
 	}
@@ -814,10 +817,11 @@ function doPreview()
 
 	// Links and images
 	if (document.getElementById("parseurl").checked)
-		markup = markup.replace(/(^|\s)((((ht|f)tps?:\/\/)|(www|ftp)\.)[a-zA-Z0-9\.\#\@\:%&_/\?\=\~\-]+)/gim, "$1<a href=\"$2\" target=\"_blank\">$2</a>");
+		markup = markup.replace(/(^|\s)((((ht|f)tps?:\/\/)|(www|ftp)\.)[a-zA-Z0-9\.\#\@\:%&_/\?\=\~\-]+)/gim,
+			"$1<a href=\"#\" onclick=\"parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab('$2')\">$2</a>");
 
-	vbcode['<a href="$1" target=\"_blank\">$2</a>'] = /\[url=([^\]]+)\](.*?)\[\/url\]/gi;
-	vbcode['<a href="$1" target=\"_blank\">$1</a>'] = /\[url\](.*?)\[\/url\]/gi;
+	vbcode['<a href="#" onclick="parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab(\'$1\')">$2</a>'] = /\[url=([^\]]+)\](.*?)\[\/url\]/gi;
+	vbcode['<a href="#" onclick="parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab(\'$1\')">$1</a>'] = /\[url\](.*?)\[\/url\]/gi;
 	vbcode['<a href="mailto:$1">$1</a>'] = /\[email\](.*?)\[\/email\]/gi;
 	vbcode['<img src="$1" alt="$1" />'] = /\[img\](.*?)\[\/img\]/gi;
 	vbcode['<a title="$1" target=\"_blank\"><img width="100" border="0" src="$1" alt="$1"/></a>'] = /\[timg\](.*?)\[\/timg\]/gi;
@@ -868,7 +872,7 @@ function doPreview()
 					viderr = 'Unsupported domain for video tag.';
 			}
 			if (vidurl)
-				vidreturn = '<img src="http://i.somethingawful.com/core/icon/fsilk/film_link.png" /><a href="' + vidurl + '" target=\"_blank\">' + vidurl + '</a>';
+				vidreturn = '<img src="http://i.somethingawful.com/core/icon/fsilk/film_link.png" /><a href="#" onclick="parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab(\'' + vidurl + '\')">' + vidurl + '</a>';
 			else
 				vidreturn = '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />' + viderr + '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />';
 			return vidreturn;
@@ -916,14 +920,20 @@ function doPreview()
 	// Quote handling
 	quoteSegment = markup.split('[/quote]');
 	for (var key = 0; key < quoteSegment.length; key++) {
+		// New style post quotes with username and postid
+		quoteSegment[key] = quoteSegment[key].replace(
+			 /\[quote="([^\]]+?)" post="(\d+?)"\](.*?)/gi,
+			'<blockquote class="qb2"><h4><a href="#" onclick="parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab(\'http://forums.somethingawful.com/showthread.php?goto=post&postid=$2#post$2\')">$1 posted:</a></h4><p>$3');
+
+		// Older style post quotes with only username
 		quoteSegment[key] = quoteSegment[key].replace(
 			 /\[quote="?([^\]]+?)"?\](.*?)/gi,
 			'<blockquote class="qb2"><h4>$1 posted:</h4><p>$2');
 
+		// Plain quote tags
 		quoteSegment[key] = quoteSegment[key].replace(
 			/\[quote\](.*?)/gi,
 			'<blockquote class="qb2"><h4>quote:</h4><p>$1');
-		
 	}
 	markup = quoteSegment.join('</p></blockquote>');
 
