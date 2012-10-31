@@ -1345,7 +1345,7 @@ var gSALR = {
 
 
 			//apply custom user coloring
-			if (userNameBox.className.search(/op/) > -1)
+			if (userNameBox.className.search(/\bop/) > -1)
 			{
 				posterColor = opColor;
 				posterBG = opBackground;
