@@ -728,17 +728,17 @@ salrPersistObject.prototype = {
 			else
 			{
 				// These are for in thread coloring
-				CSSFile += 'table.post tr.seen1 td { background-color:';
+				CSSFile += 'table.post tr.seen1 td, table.post tr.seen1 td.userinfo, table.post tr.seen1 td.postdate { background-color:';
 				CSSFile += this.getPreference('seenPostDark');
 				CSSFile += '; }\n';
-				CSSFile += 'table.post tr.seen2 td { background-color:';
+				CSSFile += 'table.post tr.seen2 td, table.post tr.seen2 td.userinfo, table.post tr.seen2 td.postdate { background-color:';
 				CSSFile += this.getPreference('seenPostLight');
 				CSSFile += '; }\n';
 				// These are for unseen posts
-				CSSFile += 'table.post tr.altcolor2 td { background-color:';
+				CSSFile += 'table.post tr.altcolor2 td, table.post tr.altcolor2 td.userinfo, table.post tr.altcolor2 td.postdate { background-color:';
 				CSSFile += this.getPreference('unseenPostDark');
 				CSSFile += '; }\n';
-				CSSFile += 'table.post tr.altcolor1 td { background-color:';
+				CSSFile += 'table.post tr.altcolor1 td, table.post tr.altcolor1 td.userinfo, table.post tr.altcolor1 td.postdate { background-color:';
 				CSSFile += this.getPreference('unseenPostLight');
 				CSSFile += '; }\n';
 			}
@@ -1774,13 +1774,13 @@ salrPersistObject.prototype = {
 	{
 		var pageList = this.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
 		pageList = pageList[pageList.length-1];
-		var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
-		var curPage = this.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 		if (pageList.childNodes.length <= 1)
 		{
 			// There's only one page
 			return;
 		}
+		var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+		var curPage = this.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 		numPages = parseInt(numPages[1], 10);
 		curPage = parseInt(curPage.innerHTML, 10);
 		var navDiv = doc.createElement("div");

@@ -371,11 +371,11 @@ var gSALR = {
 			{
 				pageList = pageList[0];
 			}
-			var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
-			var curPage = gSALR.service.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 			if (pageList.childNodes.length > 1) // Are there pages
 			{
-				// Suppress a page-load error
+				var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+				var curPage = gSALR.service.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
+				// Suppress a page-load error - possibly unnecessary with revised logic
 				if (!numPages)
 					return;
 				numPages = parseInt(numPages[1], 10);
@@ -1065,10 +1065,10 @@ var gSALR = {
 			{
 				pageList = pageList[0];
 			}
-			var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
-			var curPage = gSALR.service.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 			if (pageList.childNodes.length > 1) // Are there pages
 			{
+				var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+				var curPage = gSALR.service.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 				numPages = parseInt(numPages[1], 10);
 				curPage = parseInt(curPage.innerHTML, 10);
 			}
