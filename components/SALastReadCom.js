@@ -1774,8 +1774,8 @@ salrPersistObject.prototype = {
 	{
 		var pageList = this.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
 		pageList = pageList[pageList.length-1];
-		var numPages = pageList.innerHTML.match(/\((\d+)\)/);
-		var curPage = this.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
+		var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+		var curPage = this.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 		if (pageList.childNodes.length <= 1)
 		{
 			// There's only one page

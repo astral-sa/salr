@@ -371,8 +371,8 @@ var gSALR = {
 			{
 				pageList = pageList[0];
 			}
-			var numPages = pageList.innerHTML.match(/\((\d+)\)/);
-			var curPage = gSALR.service.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
+			var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+			var curPage = gSALR.service.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 			if (pageList.childNodes.length > 1) // Are there pages
 			{
 				// Suppress a page-load error
@@ -444,7 +444,7 @@ var gSALR = {
 		if (!flags.inDump)
 		{
 			// Capture and store the post icon # -> post icon filename relationship
-			var filterIcons = doc.getElementById("filtericons");
+			var filterIcons = doc.getElementById("filter");
 			var iconNumber, iconFilename;
 			var postIcons = gSALR.service.selectNodes(doc, filterIcons, "A[contains(@href,'posticon=')]");
 			var divIcon, seperator, divClone, afIgnoredIcons, anyLeft, allIgnored, noneIgnored, searchString;
@@ -654,7 +654,7 @@ var gSALR = {
 				continue;
 			}
 
-			threadTitleLink = gSALR.service.selectSingleNode(doc, threadTitleBox, "DIV/A[contains(@class, 'thread_title')]");
+			threadTitleLink = gSALR.service.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[contains(@class, 'thread_title')]");
 			if (!threadTitleLink)
 			{
 				threadTitleLink = gSALR.service.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
@@ -745,7 +745,7 @@ var gSALR = {
 				}
 			}
 
-			var divLastSeen = gSALR.service.selectSingleNode(doc, threadTitleBox, "div[contains(@class, 'lastseen')]");
+			var divLastSeen = gSALR.service.selectSingleNode(doc, threadTitleBox, "DIV/DIV[contains(@class, 'lastseen')]");
 			if (divLastSeen)
 			{
 				// Thread is read so let's work our magic
@@ -1065,8 +1065,8 @@ var gSALR = {
 			{
 				pageList = pageList[0];
 			}
-			var numPages = pageList.innerHTML.match(/\((\d+)\)/);
-			var curPage = gSALR.service.selectSingleNode(doc, doc, "//SPAN[contains(@class,'curpage')]");
+			var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+			var curPage = gSALR.service.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 			if (pageList.childNodes.length > 1) // Are there pages
 			{
 				numPages = parseInt(numPages[1], 10);
