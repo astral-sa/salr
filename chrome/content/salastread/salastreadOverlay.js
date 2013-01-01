@@ -349,7 +349,7 @@ var gSALR = {
 			// We're in FYAD and FYAD support has been turned off
 			return;
 		}
-		
+
 		// Add our thread list CSS
 		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicThreadListCSS(flags.inFYAD,flags.inBYOB));
 
