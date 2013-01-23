@@ -672,6 +672,8 @@ salrPersistObject.prototype = {
 			CSSFile += 'border:none !important;';
 			CSSFile += 'padding:0 !important;';
 			CSSFile += '}\n';
+			CSSFile += '#forum td.title div.lastseen a:after { content: "" !important;}';
+			CSSFile += '#forum td.title div.lastseen a.count { min-width: 0px !important; }';
 		}
 		else if (!this.getPreference("disableNewReCount"))
 		{
