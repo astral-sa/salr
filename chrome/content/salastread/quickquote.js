@@ -461,7 +461,7 @@ function importData()
 			document.getElementById("spellcheckbutton").style.display = "-moz-box";
 		}
 
-		if (persistObject.getPreference('quickQuoteSubscribeDefault') || (quickParams.quicktype != "newthread" && persistObject.selectSingleNode(quickParams.doc,quickParams.doc,"//ul[contains(@class, 'postbuttons')]//img[@class='unbookmark']")))
+		if (persistObject.getPreference('quickQuoteSubscribeDefault') || (quickParams.quicktype != "newthread" && persistObject.selectSingleNode(quickParams.doc,quickParams.doc,"//ul[contains(@class, 'postbuttons')]//img[contains(@class, 'unbookmark')]")))
 		{
 			document.getElementById("subscribe").setAttribute("checked",true);
 		}
