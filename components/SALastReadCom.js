@@ -28,7 +28,7 @@ function SALR_vidClick(e)
 		videoId = videoIdSearch[2];
 		videoSrc = "youtube";
 		yt_starttime = (videoIdSearch[3] == null ? 0 : parseInt(videoIdSearch[3])) * 60 + (videoIdSearch[4] == null ? 0 : parseInt(videoIdSearch[4]));
-		yt_start = yt_starttime == 0 ? '' : '&start=' + yt_starttime;
+		yt_start = yt_starttime == 0 ? '' : 'start=' + yt_starttime;
 	}
 	else
 	{
@@ -60,13 +60,20 @@ function SALR_vidClick(e)
 			var vidqual = PersistObject.getPreference("videoEmbedQuality");
 			var qualstring = '';
 			if (vidqual == "hd1080")
-				qualstring = '?vq=hd1080';
+				qualstring = 'vq=hd1080';
 			else if (vidqual == "hd")
-				qualstring = '?vq=hd720';
+				qualstring = 'vq=hd720';
 			else if (vidqual == "hq")
-				qualstring = '?vq=large';
+				qualstring = 'vq=large';
 			else if (vidqual == "low")
-				qualstring = '?vq=small';
+				qualstring = 'vq=small';
+
+			// Format for URL:
+			if (qualstring != '' && yt_start != '')
+				yt_start = '&' + yt_start;
+			if (qualstring != '' || yt_start != '')
+				qualstring = '?' + qualstring;
+				
 			var vidsize = PersistObject.getPreference("videoEmbedSize");
 			var vidwidth, vidheight;
 
