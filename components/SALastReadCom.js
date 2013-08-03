@@ -585,7 +585,7 @@ salrPersistObject.prototype = {
 				CSSFile += '#forum tr.thread td.title, #forum tr.thread td.star, #forum tr.thread td.replies, #forum tr.thread td.rating, #forum tr.thread td.button_remove { background-color:';
 				CSSFile += this.getPreference('unreadLight');
 				CSSFile += '; }\n';
-				CSSFile += '#forum tr.thread td.icon, #forum tr.thread td.author,';
+				CSSFile += '#forum tr.thread td.icon, #forum tr.thread td.icon2, #forum tr.thread td.author,';
 				CSSFile += '#forum tr.thread td.views, #forum tr.thread td.lastpost { background-color:';
 				CSSFile += this.getPreference('unreadDark');
 				CSSFile += '; }\n';
@@ -595,24 +595,24 @@ salrPersistObject.prototype = {
 				CSSFile += '#forum tr.thread.category0 td.title, #forum tr.thread.category0 td.star, #forum tr.thread.category0 td.replies, #forum tr.thread.category0 td.rating, #forum tr.thread.category0 td.button_remove { background-color:';
 				CSSFile += this.getPreference('readWithNewLight');
 				CSSFile += '; }\n'; //marking this and the below as important will cause blue-star threads with new posts to show up as blue instead of green
-				CSSFile += '#forum tr.thread.category0 td.icon, #forum tr.thread.category0 td.author,';
+				CSSFile += '#forum tr.thread.category0 td.icon, #forum tr.thread.category0 td.icon2, #forum tr.thread.category0 td.author,';
 				CSSFile += '#forum tr.thread.category0 td.views, #forum tr.thread.category0 td.lastpost { background-color:';
 				CSSFile += this.getPreference('readWithNewDark');
 				CSSFile += '; }\n';
 //red for unread
 				CSSFile += '#forum tr.thread.category1 td.title, #forum tr.thread.category1 td.star, #forum tr.thread.category1 td.replies, #forum tr.thread.category1 td.rating, #forum tr.thread.category1 td.button_remove { background-color:#f2dcdc; }\n';
-				CSSFile += '#forum tr.thread.category1 td.icon, #forum tr.thread.category1 td.author,';
+				CSSFile += '#forum tr.thread.category1 td.icon, #forum tr.thread.category1 td.icon2, #forum tr.thread.category1 td.author,';
 				CSSFile += '#forum tr.thread.category1 td.views, #forum tr.thread.category1 td.lastpost { background-color:#e3cfcf; }\n';
 //yellow for unread
 				CSSFile += '#forum tr.thread.category2 td.title, #forum tr.thread.category2 td.star, #forum tr.thread.category2 td.replies, #forum tr.thread.category2 td.rating, #forum tr.thread.category2 td.button_remove { background-color:#f2f2dc; }\n';
-				CSSFile += '#forum tr.thread.category2 td.icon, #forum tr.thread.category2 td.author,';
+				CSSFile += '#forum tr.thread.category2 td.icon, #forum tr.thread.category2 td.icon2, #forum tr.thread.category2 td.author,';
 				CSSFile += '#forum tr.thread.category2 td.views, #forum tr.thread.category2 td.lastpost { background-color:#e2e2cd; }\n';
 
 
 				CSSFile += '#forum tr.thread.seen td.title, #forum tr.thread.seen td.star, #forum tr.thread.seen td.replies, #forum tr.thread.seen td.rating, #forum tr.thread.seen td.button_remove { background-color:';
 				CSSFile += this.getPreference('readLight');
 				CSSFile += '; }\n';
-				CSSFile += '#forum tr.thread.seen td.icon, #forum tr.thread.seen td.author,';
+				CSSFile += '#forum tr.thread.seen td.icon, #forum tr.thread.seen td.icon2, #forum tr.thread.seen td.author,';
 				CSSFile += '#forum tr.thread.seen td.views, #forum tr.thread.seen td.lastpost { background-color:';
 				CSSFile += this.getPreference('readDark');
 				CSSFile += '; }\n';
@@ -620,18 +620,18 @@ salrPersistObject.prototype = {
 				CSSFile += '#forum tr.thread.seen.newposts td.title, #forum tr.thread.seen.newposts td.star, #forum tr.thread.seen.newposts td.replies, #forum tr.thread.seen.newposts td.rating, #forum tr.thread.seen.newposts td.button_remove { background-color:';
 				CSSFile += this.getPreference('readWithNewLight');
 				CSSFile += '; }\n';
-				CSSFile += '#forum tr.thread.seen.newposts td.icon, #forum tr.thread.seen.newposts td.author,';
+				CSSFile += '#forum tr.thread.seen.newposts td.icon, #forum tr.thread.seen.newposts td.icon2, #forum tr.thread.seen.newposts td.author,';
 				CSSFile += '#forum tr.thread.seen.newposts td.views, #forum tr.thread.seen.newposts td.lastpost { background-color:';
 				CSSFile += this.getPreference('readWithNewDark');
 				CSSFile += '; }\n';
 
 //red with new
 				CSSFile += '#forum tr.thread.category1.newposts td.title, #forum tr.thread.category1.newposts td.star, #forum tr.thread.category1.newposts td.replies, #forum tr.thread.category1.newposts td.rating, #forum tr.thread.category1.newposts td.button_remove { background-color:#f2dcdc; }\n';
-				CSSFile += '#forum tr.thread.category1.newposts td.icon, #forum tr.thread.category1.newposts td.author,';
+				CSSFile += '#forum tr.thread.category1.newposts td.icon, #forum tr.thread.category1.newposts td.icon2, #forum tr.thread.category1.newposts td.author,';
 				CSSFile += '#forum tr.thread.category1.newposts td.views, #forum tr.thread.category1.newposts td.lastpost { background-color:#e3cfcf; }\n';
 //yellow with new
 				CSSFile += '#forum tr.thread.category2.newposts td.title, #forum tr.thread.category2.newposts td.star, #forum tr.thread.category2.newposts td.replies, #forum tr.thread.category2.newposts td.rating, #forum tr.thread.category2.newposts td.button_remove { background-color:#f2f2dc; }\n';
-				CSSFile += '#forum tr.thread.category2.newposts td.icon, #forum tr.thread.category2.newposts td.author,';
+				CSSFile += '#forum tr.thread.category2.newposts td.icon, #forum tr.thread.category2.newposts td.icon2, #forum tr.thread.category2.newposts td.author,';
 				CSSFile += '#forum tr.thread.category2.newposts td.views, #forum tr.thread.category2.newposts td.lastpost { background-color:#e2e2cd; }\n';
 
 
