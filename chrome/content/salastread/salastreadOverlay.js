@@ -1175,14 +1175,10 @@ var gSALR = {
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'forumids',forumid);
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'groupmode','0');
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'opt_search_posts','on');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'opt_search_titles','on');
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'perpage','20');
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'search_mode','ext');
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'show_post_previews','1');
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'sortmode','1');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'uf_posts','on');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'userid_filters','');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'username_filter','type a username');
 				var newSearchText = doc.createElement('input');
 				newSearchText.size = '25';
 				newSearchText.value = 'Added by SALR';
