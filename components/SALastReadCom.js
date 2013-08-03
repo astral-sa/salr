@@ -781,7 +781,7 @@ salrPersistObject.prototype = {
 				CSSFile += 'div.bbc-block.salrQuoteOfSelf {';
 				CSSFile += 'background:';
 				CSSFile += selfColor;
-				CSSFile += '; }\n';
+				CSSFile += ' !important; }\n';
 			}
 		}
 		if (this.getPreference('resizeCustomTitleText'))
