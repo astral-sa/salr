@@ -1,4 +1,4 @@
-// gSALR will (hopefully) be our only global object
+// gSALR will (hopefully) be our only global object per window
 var gSALR = {
 	// the service formerly known as persistObject
 	service: null,
@@ -2374,13 +2374,13 @@ var gSALR = {
 					threadid = tidmatch[1];
 					document.getElementById("salastread-context-ignorethread").data = threadid;
 					document.getElementById("salastread-context-ignorethread").target = target;
-					document.getElementById("salastread-context-ignorethread").label = "Ignore This Thread (" + threadid + ")";
+					document.getElementById("salastread-context-ignorethread").setAttribute('label','Ignore This Thread (' + threadid + ')');
 					document.getElementById("salastread-context-starthread").data = threadid;
 					document.getElementById("salastread-context-starthread").target = target;
-					document.getElementById("salastread-context-starthread").label = (gSALR.service.isThreadStarred(threadid) ? 'Unstar' : 'Star') + " This Thread (" + threadid + ")";
+					document.getElementById("salastread-context-starthread").setAttribute('label',(gSALR.service.isThreadStarred(threadid) ? 'Unstar' : 'Star') + ' This Thread (' + threadid + ')');
 					document.getElementById("salastread-context-unreadthread").data = threadid;
 					document.getElementById("salastread-context-unreadthread").target = target;
-					document.getElementById("salastread-context-unreadthread").label = "Mark This Thread Unread (" + threadid + ")";
+					document.getElementById("salastread-context-unreadthread").setAttribute('label','Mark This Thread Unread (' + threadid + ')');
 					var pageName = target.ownerDocument.location.pathname.match(/^\/(\w+)\.php/i);
 					if (pageName)
 					{
