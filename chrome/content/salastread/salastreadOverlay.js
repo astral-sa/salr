@@ -1146,11 +1146,14 @@ var gSALR = {
 		}
 
 		var searchThis = gSALR.service.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
+		var placeHere = gSALR.service.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]").parentNode;
 		if (searchThis)
 		{
 			if (gSALR.service.getPreference("replyCountLinkinThreads"))
 			{
+				var replyCountLi = doc.createElement('li');
 				var replyCountLink = doc.createElement("A");
+				replyCountLi.appendChild(replyCountLink);
 				replyCountLink.href="javascript:void(window.open('misc.php?s=&action=whoposted&threadid=" + threadid + "#fromthread', 'whoposted', 'toolbar=no,scrollbars=yes,resizable=yes,width=230,height=200'))";
 				replyCountLink.innerHTML = "Who posted?";
 				replyCountLink.style.fontSize = "10px";
@@ -1158,20 +1161,24 @@ var gSALR = {
 				replyCountLink.style.marginLeft = "8px";
 				replyCountLink.style.color = "#FFFFFF";
 				// Plug it in right after the "Search thread:" form
-				searchThis.parentNode.insertBefore(replyCountLink,searchThis.nextSibling);
-				searchThis.parentNode.insertBefore(doc.createTextNode(" "),searchThis.nextSibling);
+				placeHere.parentNode.insertBefore(replyCountLi,placeHere.nextSibling);
+				placeHere.parentNode.insertBefore(doc.createTextNode(" "),placeHere.nextSibling);
 			}
 			// SA's "Search thread" box is disabled; add our own
 			if (!gSALR.service.getPreference("hideThreadSearchBox") && searchThis.firstChild.nodeName == '#text')
 			{
 				// Prevent weird zoom behavior
 				searchThis.parentNode.style.overflow = "hidden";
-				var newSearchBox = doc.createElement('form');
-				newSearchBox.action = 'http://forums.somethingawful.com/f/search/submit';
-				newSearchBox.method = 'post';
-				newSearchBox.className = 'threadsearch'; 
+				var newSearchBox = doc.createElement('li');
+				var newSearchForm = doc.createElement('form');
+				newSearchBox.appendChild(newSearchForm);
+				newSearchForm.action = 'http://forums.somethingawful.com/f/search/submit';
+				newSearchForm.method = 'post';
+				newSearchForm.className = 'threadsearch'; 
 				var newSearchDiv = doc.createElement('div');
-				newSearchBox.appendChild(newSearchDiv);
+				newSearchForm.appendChild(newSearchDiv);
+				newSearchDiv.style.marginLeft = '6px';
+				newSearchDiv.style.lineHeight = '22px';
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'forumids',forumid);
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'groupmode','0');
 				gSALR.addHiddenFormInput(doc,newSearchDiv,'opt_search_posts','on');
@@ -1204,8 +1211,8 @@ var gSALR = {
 					{
 						if (newSearchText.__unfocused)
 							return false;
-						gSALR.addHiddenFormInput(doc,newSearchBox,'keywords','threadid:'+threadid+' '+newSearchText.value);
-						newSearchBox.submit();
+						gSALR.addHiddenFormInput(doc,newSearchForm,'keywords','threadid:'+threadid+' '+newSearchText.value);
+						newSearchForm.submit();
 						return false;
 					}
 					evt.stopPropagation();
@@ -1218,11 +1225,11 @@ var gSALR = {
 				{
 					if (newSearchText.__unfocused)
 						return false;
-					gSALR.addHiddenFormInput(doc,newSearchBox,'keywords','threadid:'+threadid+' '+newSearchText.value);
-					newSearchBox.submit();
+					gSALR.addHiddenFormInput(doc,newSearchForm,'keywords','threadid:'+threadid+' '+newSearchText.value);
+					newSearchForm.submit();
 				}, true);
 				newSearchDiv.appendChild(newSearchButton);
-				searchThis.parentNode.insertBefore(newSearchBox,searchThis.nextSibling);
+				placeHere.parentNode.insertBefore(newSearchBox,placeHere.nextSibling);
 			}
 		}
 
