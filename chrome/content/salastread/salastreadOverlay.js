@@ -444,10 +444,11 @@ var gSALR = {
 		if (!flags.inDump)
 		{
 			// Capture and store the post icon # -> post icon filename relationship
-			var filterIcons = doc.getElementById("filter");
+			var filterDiv = doc.getElementById("filter");
+			var tagsDiv = gSALR.service.selectSingleNode(doc, filterDiv, "div[contains(@class, 'thread_tags')]");
 			var iconNumber, iconFilename;
-			var postIcons = gSALR.service.selectNodes(doc, filterIcons, "A[contains(@href,'posticon=')]");
-			var divIcon, seperator, divClone, afIgnoredIcons, anyLeft, allIgnored, noneIgnored, searchString;
+			var postIcons = gSALR.service.selectNodes(doc, tagsDiv, "A[contains(@href,'posticon=')]");
+			var divIcon, separator, divClone, afIgnoredIcons, anyLeft, allIgnored, noneIgnored, searchString;
 			var atLeastOneIgnored = false;
 			var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
 			var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
@@ -463,9 +464,9 @@ var gSALR = {
 						// First move all the existing icons and their spacers into a div for easy handling
 						divIcon = doc.createElement("div");
 						postIcons[i].parentNode.insertBefore(divIcon,postIcons[i]);
-						seperator = postIcons[i].nextSibling;
+						separator = postIcons[i].nextSibling;
 						divIcon.appendChild(postIcons[i]);
-						divIcon.appendChild(seperator);
+						divIcon.appendChild(separator);
 						divIcon.style.visibility = "visible";
 						divIcon.style.display = "inline";
 
@@ -502,7 +503,7 @@ var gSALR = {
 				noneIgnored = doc.getElementById("noiconsignored");
 
 				// Hide or show the placeholder labels
-				anyLeft = gSALR.service.selectSingleNode(doc, filterIcons, "DIV[contains(@style,'visibility: visible; display: inline;')]");
+				var anyLeft = gSALR.service.selectSingleNode(doc, tagsDiv, "DIV[contains(@style,'visibility: visible; display: inline;')]");
 				if (!anyLeft && allIgnored.style.visibility == "hidden")
 				{
 					gSALR.service.toggleVisibility(allIgnored,true);
@@ -733,9 +734,9 @@ var gSALR = {
 
 			// Is this icon ignored?
 			threadIconBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
-			if (flags && forumid && advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.src.search(/posticons\/(.*)/i) > -1)
+			if (flags && forumid && advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.firstChild.src.search(/posticons\/(.*)/i) > -1)
 			{
-				var iconnum = threadIconBox.firstChild.src.match(/#(\d+)$/)[1];
+				var iconnum = threadIconBox.firstChild.firstChild.src.match(/#(\d+)$/)[1];
 				var iconSearchString = "(^|\\s)" + iconnum + ",";
 				iconSearchString = new RegExp(iconSearchString , "gi");
 				if (ignoredPostIcons.search(iconSearchString) > -1 && thread.style.visibility != "hidden")
@@ -2560,75 +2561,77 @@ var gSALR = {
 
 	rebuildFilterBox: function(doc)
 	{
-		var afHidden = doc.getElementById("tags_hidden");
-		var afMain = doc.getElementById("tags_showing");
+		var filterDiv = doc.getElementById("filter");
+		var toggleDiv = gSALR.service.selectSingleNode(doc, filterDiv, "div[contains(@class, 'toggle_tags')]");
+		var tagsDiv = gSALR.service.selectSingleNode(doc, filterDiv, "div[contains(@class, 'thread_tags')]");
 		var afObject, afObject2; // Temp object storage for things that really only get handled once
 
-		if (afHidden)
+		if (toggleDiv && tagsDiv)
 		{
-			afObject = gSALR.service.selectSingleNode(doc, afHidden, "B");
-			afObject.innerHTML = "Advanced thread filtering";
-			afObject2 = doc.createElement("div");
-			afObject2.id = "filteredthreadcount1";
-			afObject2.style.fontSize = "80%";
-			afObject2.style.fontWeight = "normal";
-			afObject2.style.marginLeft = "6px";
-			afObject2.appendChild(doc.createTextNode("(Currently ignoring "));
-			afObject2.appendChild(doc.createTextNode("0"));
-			afObject2.appendChild(doc.createTextNode(" threads.)"));
-			gSALR.service.toggleVisibility(afObject2,true);
-			afObject.appendChild(afObject2);
-		}
-		if (afMain) // Incoming wall of text
-		{
-			var afMainIcons, afIgnoredIcons, afIgnoredKeywords;
+			var afIgnoredIcons, afIgnoredKeywords;
 			var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
 			var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
 
-			afObject = gSALR.service.selectSingleNode(doc, afMain, "B");
+			toggleDiv.innerHTML = '';
+			var afObject = doc.createElement("b");
 			afObject.innerHTML = "Advanced thread filtering";
-			afObject2 = doc.createElement("div");
-			afObject2.id = "filteredthreadcount2";
-			afObject2.style.fontSize = "80%";
-			afObject2.style.fontWeight = "normal";
-			afObject2.style.marginLeft = "6px";
-			afObject2.appendChild(doc.createTextNode("(Currently ignoring "));
-			afObject2.appendChild(doc.createTextNode("0"));
-			afObject2.appendChild(doc.createTextNode(" threads.)"));
-			gSALR.service.toggleVisibility(afObject2,true);
-			afObject.appendChild(afObject2);
-			afObject.appendChild(doc.createElement("br"));
+			toggleDiv.appendChild(afObject);
+			afObject = doc.createElement("div");
+			afObject.id = "salr_filteredthreadcount";
+			afObject.style.fontSize = "80%";
+			afObject.style.fontWeight = "normal";
+			afObject.style.marginLeft = "6px";
+			afObject.appendChild(doc.createTextNode("(Currently ignoring "));
+			afObject.appendChild(doc.createTextNode("0"));
+			afObject.appendChild(doc.createTextNode(" threads.)"));
+			toggleDiv.appendChild(afObject);
 
-			afMainIcons = doc.getElementById("filtericons");
-			// Plug a bunch of stuff in before the main icon list
-			afMain.insertBefore(doc.createTextNode("Show only this icon: ("), afMainIcons);
-			afObject = gSALR.service.selectSingleNode(doc, afMain, "A[contains(@href,'/forumdisplay.php?forumid=')]");
-			afObject.innerHTML = "Reset"
-			afObject.style.fontSize = "75%";
-			afObject.style.fontWeight = "bold";
-			afMain.insertBefore(afObject, afMainIcons);
-			afMain.insertBefore(doc.createTextNode(")"), afMainIcons);
-			afMain.insertBefore(doc.createElement("br"), afMainIcons);
+			tagsHead = doc.createElement("div");
+			tagsDiv.insertBefore(tagsHead,tagsDiv.firstChild);
+
+			// Move the current non-advanced filtered icon to the top, if applicable
+			var alreadyFiltering = doc.location.href.match(/posticon=(\d+)/i);
+			if (alreadyFiltering && alreadyFiltering[1])
+			{
+				var filteredIcon = gSALR.service.selectSingleNode(doc, tagsDiv, "A[contains(@href,'posticon=" + parseInt(alreadyFiltering[1]) + "')]");
+				afObject2 = gSALR.service.selectSingleNode(doc, tagsDiv, "DIV[contains(@class,'remove_tag')]/A");
+				if (filteredIcon && afObject2)
+				{
+					tagsHead.appendChild(doc.createTextNode("Showing only this icon: ("));
+					afObject = filteredIcon.cloneNode(true);
+					afObject.firstChild.style.marginRight = '0px';
+					afObject.firstChild.style.marginBottom = '-2px';
+					afObject.href = afObject2.href;
+					afObject.innerHTML += "&nbsp;Reset"
+					afObject.style.fontSize = "75%";
+					afObject.style.fontWeight = "bold";
+					afObject2.parentNode.removeChild(afObject2);
+					tagsHead.appendChild(afObject);
+					tagsHead.appendChild(doc.createTextNode(")"));
+					tagsHead.appendChild(doc.createElement("br"));
+					tagsHead.appendChild(doc.createElement("br"));
+				}
+			}
 
 			// Add a message for when all the icons are ignored and hide it for now
 			afObject = doc.createElement("div");
 			afObject.id = "alliconsignored";
-			afObject.appendChild(doc.createTextNode("You've ignored everything but shit posts you cretin!"));
+			afObject.appendChild(doc.createTextNode("You've ignored everything but shit posts, you cretin!"));
 			afObject.style.fontWeight = "bold";
 			gSALR.service.toggleVisibility(afObject,true);
-			afMainIcons.insertBefore(afObject,afMainIcons.firstChild);
+			tagsDiv.insertBefore(afObject,tagsHead.nextSibling);
 
 			// Plug a bunch of stuff in after the main icon list
 			afObject = doc.createElement("div");
 			afObject.appendChild(doc.createTextNode("Ctrl click an icon to add to ignored list."));
 			afObject.style.fontStyle = "italic";
 			afObject.style.fontSize = "85%";
-			afMain.appendChild(afObject);
-			afMain.appendChild(doc.createElement("br"));
+			tagsDiv.appendChild(afObject);
+			tagsDiv.appendChild(doc.createElement("br"));
 
 			// Now all the ignored icons
-			afMain.appendChild(doc.createTextNode("Ignored icons:"));
-			afMain.appendChild(doc.createElement("br"));
+			tagsDiv.appendChild(doc.createTextNode("Ignored icons:"));
+			tagsDiv.appendChild(doc.createElement("br"));
 			afIgnoredIcons = doc.createElement("div");
 			afIgnoredIcons.id = "ignoredicons";
 			afObject = doc.createElement("div");
@@ -2638,32 +2641,31 @@ var gSALR = {
 			afObject.style.visibility = "visible";
 			afObject.style.display = "inline";
 			afIgnoredIcons.appendChild(afObject);
-			afMain.appendChild(afIgnoredIcons);
-			afMain.appendChild(doc.createElement("br"));
+			tagsDiv.appendChild(afIgnoredIcons);
+			tagsDiv.appendChild(doc.createElement("br"));
 
 			// Now the ignored keywords
-			afMain.appendChild(doc.createTextNode("Ignored keywords:"));
-			afMain.appendChild(doc.createElement("br"));
+			tagsDiv.appendChild(doc.createTextNode("Ignored keywords:"));
+			tagsDiv.appendChild(doc.createElement("br"));
 			afObject = doc.createElement("input");
 			afObject.id = "ignoredkeywords";
 			afObject.type = "text";
 			afObject.value = prefIgnoredKeywords;
 			afObject.size = 75;
-			afMain.appendChild(afObject);
-			afMain.appendChild(doc.createTextNode(" "));
+			tagsDiv.appendChild(afObject);
+			tagsDiv.appendChild(doc.createTextNode(" "));
 			afObject = doc.createElement("input");
 			afObject.type = "button";
 			afObject.value = "Save";
 			afObject.addEventListener("click", gSALR.clickIgnoreKeywordSave, false);
-			afMain.appendChild(afObject);
-			afMain.appendChild(doc.createElement("br"));
+			tagsDiv.appendChild(afObject);
+			tagsDiv.appendChild(doc.createElement("br"));
 			afObject = doc.createElement("div");
 			afObject.appendChild(doc.createTextNode("Separate strings with a pipe \"|\" symbol. Too many strings may affect performance."));
 			afObject.style.fontStyle = "italic";
 			afObject.style.fontSize = "85%";
-			afMain.appendChild(afObject);
-			afMain.appendChild(doc.createElement("br"));
-
+			tagsDiv.appendChild(afObject);
+			tagsDiv.appendChild(doc.createElement("br"));
 			// TODO: ability to ignore shitposts even though they dont have an icon id
 			// TODO: remove all the icon stuff for when viewing the dumps but keep the rest, maybe add star# filtering for those
 			// TODO: thread rating filtering
@@ -2676,11 +2678,12 @@ var gSALR = {
 		if (gSALR.service.getPreference("advancedThreadFiltering"))
 		{
 			var doc = this.ownerDocument;
-			var afMain = doc.getElementById("tags_showing");
+			var filterDiv = doc.getElementById("filter");
+			var tagsDiv = gSALR.service.selectSingleNode(doc, filterDiv, "div[contains(@class, 'thread_tags')]");
 
-			if (afMain)
+			if (tagsDiv)
 			{
-				var afMainIcons, afIgnoredIcons, afShowMe, afHideMe, afIgnoring;
+				var afIgnoredIcons, afShowMe, afHideMe, afIgnoring;
 				var iconToIgnore, iconToIgnoreId, iconIgnored;
 				var afObject; // Temp object storage for things that really only get handled once
 				var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
@@ -2688,10 +2691,9 @@ var gSALR = {
 				var anyLeft, anyLeftIn, searchString, threadBeGone;
 				var threadList, thread, threadIcon;
 
-				afMainIcons = doc.getElementById("filtericons");
 				afIgnoredIcons = doc.getElementById("ignoredicons");
 
-				if (this.parentNode.id == "filtericons")
+				if (this.parentNode == tagsDiv)
 				{
 					if (event.ctrlKey == false)
 					{
@@ -2700,7 +2702,7 @@ var gSALR = {
 					afIgnoring = true;
 					afShowMe = "alliconsignored";
 					afHideMe = "noiconsignored";
-					anyLeftIn = afMainIcons;
+					anyLeftIn = tagsDiv;
 					mirrorIcons = afIgnoredIcons;
 				}
 				else if (this.parentNode.id == "ignoredicons")
@@ -2709,7 +2711,7 @@ var gSALR = {
 					afShowMe = "noiconsignored";
 					afHideMe = "alliconsignored";
 					anyLeftIn = afIgnoredIcons;
-					mirrorIcons = afMainIcons;
+					mirrorIcons = tagsDiv;
 				}
 				else
 				{
@@ -2723,7 +2725,7 @@ var gSALR = {
 				searchString = "(^|\\s)" + iconToIgnoreId + ",";
 				searchString = new RegExp(searchString , "gi");
 
-				if (!afMainIcons || !afIgnoredIcons || !iconIgnored || (afIgnoring && prefIgnoredPostIcons.search(searchString) > -1))
+				if (!afIgnoredIcons || !iconIgnored || (afIgnoring && prefIgnoredPostIcons.search(searchString) > -1))
 				{
 					// Something is amiss
 					return;
@@ -2831,7 +2833,7 @@ var gSALR = {
 		if (gSALR.service.getPreference("advancedThreadFiltering"))
 		{
 			var doc = this.ownerDocument;
-			var afMain = doc.getElementById("tags_showing");
+			var afMain = doc.getElementById("filter");
 
 			if (afMain)
 			{
@@ -2863,7 +2865,7 @@ var gSALR = {
 				for (var i in threadList)
 				{
 					thread = threadList[i];
-					threadTitleLink = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/DIV/A[contains(@class, 'thread_title')]");
+					threadTitleLink = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/DIV/DIV/A[contains(@class, 'thread_title')]");
 					if(!threadTitleLink)
 					{
 						threadTitleLink = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
@@ -2921,19 +2923,15 @@ var gSALR = {
 	filteredThreadCount: function(doc,amount)
 	{
 		var count = gSALR.service.getPreference("filteredThreadCount");
-		var afObject, afObject2; // Temp object storage for things that really only get handled once
+		var afObject; // Temp object storage for things that really only get handled once
 
-		afObject = doc.getElementById("filteredthreadcount1");
-		afObject2 = doc.getElementById("filteredthreadcount2");
+		afObject = doc.getElementById("salr_filteredthreadcount");
 
-		if (!afObject || !afObject2)
-		{
+		if (!afObject)
 			return;
-		}
 
 		count += amount;
 		afObject.childNodes[1].textContent = count;
-		afObject2.childNodes[1].textContent = count;
 
 		if (count <= 0 && afObject.style.visibility != "hidden")
 		{
@@ -2942,15 +2940,6 @@ var gSALR = {
 		else if (afObject.style.visibility == "hidden")
 		{
 			gSALR.service.toggleVisibility(afObject,true);
-		}
-
-		if (count <= 0 && afObject2.style.visibility != "hidden")
-		{
-			gSALR.service.toggleVisibility(afObject2,true);
-		}
-		else if (afObject2.style.visibility == "hidden")
-		{
-			gSALR.service.toggleVisibility(afObject2,true);
 		}
 
 		gSALR.service.setPreference("filteredThreadCount",count);
