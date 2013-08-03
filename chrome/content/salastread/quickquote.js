@@ -789,7 +789,7 @@ function doPreview()
 	var preview = document.getElementById("previewiframe").contentDocument.getElementById("messagepreview");
 	var markup = document.getElementById("messagearea").value;
 	
-	markup = markup.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	markup = markup.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 	var vbcode = [];
 
 	// Text style
@@ -940,7 +940,13 @@ function doPreview()
 	var iframe = document.getElementById("previewiframe").contentWindow;
 		iframe.scrollBy(0, iframe.document.body.scrollHeight);
 
-	preview.innerHTML = "<p>"+ markup +"</p>";
+    while (preview.firstChild)
+        preview.removeChild(preview.firstChild);
+
+    var fragment = Components.classes["@mozilla.org/feed-unescapehtml;1"]
+                         .getService(Components.interfaces.nsIScriptableUnescapeHTML)
+                         .parseFragment(markup, false, null, preview);
+    preview.appendChild(fragment);
 }
 
 function togglePreview(doupdatepreview)

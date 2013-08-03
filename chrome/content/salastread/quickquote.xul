@@ -23,7 +23,7 @@
        <xul:spacer flex="10"/>
        <xul:label class="recover" value="Recover Last Post" onclick="recoverLastPost();"/>
       </xul:hbox>
-      <xul:box id="previewbox" collapsed="true" flex="1"><xul:iframe name="previewiframe" id="previewiframe" src="quickpreview.html" flex="1"/></xul:box>
+      <xul:box id="previewbox" collapsed="true" flex="1"><xul:iframe name="previewiframe" id="previewiframe" type="content" src="quickpreview.html" flex="1"/></xul:box>
       <xul:hbox class='hoptions' id="quickpostoptions" collapsed="true" align="center">
        <xul:label value="Subject:" />
        <xul:textbox id="subject" flex="10" />
