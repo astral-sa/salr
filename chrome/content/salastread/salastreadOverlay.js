@@ -1147,9 +1147,10 @@ var gSALR = {
 		}
 
 		var searchThis = gSALR.service.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
-		var placeHere = gSALR.service.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]").parentNode;
-		if (searchThis)
+		var placeHere = gSALR.service.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
+		if (searchThis && placeHere && placeHere.parentNode)
 		{
+			placeHere = placeHere.parentNode;
 			if (gSALR.service.getPreference("replyCountLinkinThreads"))
 			{
 				var replyCountLi = doc.createElement('li');
