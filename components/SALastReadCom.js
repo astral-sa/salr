@@ -1733,7 +1733,7 @@ salrPersistObject.prototype = {
 		CSSFile = 'div.bbc-block.salrQuoteOf'+userid+' {';
 		CSSFile += 'background:';
 		CSSFile += colorToUse;
-		CSSFile += '};\n';
+		CSSFile += ' !important; };\n';
 		this.insertDynamicCSS(doc, CSSFile);
 	},
 
