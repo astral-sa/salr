@@ -1875,16 +1875,28 @@ salrPersistObject.prototype = {
 			lastButton.appendChild(lastButtonImg);
 			navDiv.appendChild(lastButton);
 		}
-		if (doc.location.pathname == "/showthread.php" && this.getPreference("lastPostOnNavigator"))
+		if (doc.location.pathname == "/showthread.php" )
 		{
-			var lastButtonImg = doc.createElement("img");
-			lastButtonImg.title = "Go to First Unread Post";
-			lastButtonImg.src = "chrome://salastread/skin/lastpost.png";
-			var lastButton = doc.createElement("a");
-			lastButton.href = this.editPageNumIntoURI(doc, "goto=newpost");
-			lastButton.appendChild(lastButtonImg);
-			navDiv.appendChild(lastButton);
+			if (this.getPreference("lastPostOnNavigator"))
+			{
+				var lastButtonImg = doc.createElement("img");
+				lastButtonImg.title = "Go to First Unread Post";
+				lastButtonImg.src = "chrome://salastread/skin/lastpost.png";
+				var lastButton = doc.createElement("a");
+				lastButton.href = this.editPageNumIntoURI(doc, "goto=newpost");
+				lastButton.appendChild(lastButtonImg);
+				navDiv.appendChild(lastButton);
+			}
+
+			var starButton = doc.createElement("img");
+			starButton.src = "http://fi.somethingawful.com/images/buttons/button-bookmark.png";
+			starButton.setAttribute('class', 'thread_bookmark'); 
+			starButton.style.marginLeft = '0';
+			starButton.style.marginRight = '2px';
+			starButton.style.marginTop = '1px';
+			navDiv.appendChild(starButton);
 		}
+
 		doc.body.appendChild(navDiv);
 	},
 
