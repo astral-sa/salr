@@ -21,7 +21,7 @@ function SALR_vidClick(e)
 	//figure out the video type
 	var videoId, videoSrc, videoTLD, yt_subd, yt_starttime, yt_start;
 	//var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
-	var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:(?:.*)?t=(?:(\d*)m)?(?:(\d*)s)?)?/);
+	var videoIdSearch = link.href.match(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:(?:.*)?t=(?:(\d*)m)?(?:(\d*)s)?)?/);
 	if (videoIdSearch)
 	{
 		yt_subd = (videoIdSearch[1] == null ? "www." : videoIdSearch[1]);
@@ -2087,7 +2087,7 @@ salrPersistObject.prototype = {
 			}
 
 			if (this.getPreference("enableVideoEmbedder") &&
-				(link.href.search(/^http\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i) > -1 ||
+				(link.href.search(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i) > -1 ||
 				 link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1))
 			{
 				link.style.backgroundColor = this.getPreference("videoEmbedderBG");

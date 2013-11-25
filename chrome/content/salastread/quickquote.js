@@ -866,7 +866,7 @@ function doPreview()
 			else
 			{
 				// quick and extremely dirty check for approved domain words
-				if (vidinfo.match(/http\:\/\/(?:[^\/]*?youtube\.com\/|video\.yahoo\.com\/|[^\/]*?foxnews\.com\/video\/|[^\/]*?cnn\.com\/video\/)/))
+				if (vidinfo.match(/https?\:\/\/(?:[^\/]*?youtube\.com\/|video\.yahoo\.com\/|[^\/]*?foxnews\.com\/video\/|[^\/]*?cnn\.com\/video\/)/))
 					vidurl = vidinfo;
 				else
 					viderr = 'Unsupported domain for video tag.';
