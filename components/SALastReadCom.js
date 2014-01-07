@@ -1688,6 +1688,10 @@ salrPersistObject.prototype = {
 	{
 		return (forumid == 174 || forumid == 176 || forumid == 194 || forumid == 208);
 	},
+	inYOSPOS: function(forumid)
+	{
+		return (forumid == 219);
+	},
 	inDump: function(forumid)
 	{
 		return (forumid == 133 || forumid == 163);
@@ -2182,14 +2186,24 @@ salrPersistObject.prototype = {
 		button.firstChild.style.width = "12px";
 		//button.firstChild.style.height = "20px !important";
 		button.firstChild.style.height = "20px";
-
-		if (this.inBYOB(forumid))
-			button.firstChild.src = "chrome://salastread/skin/quickbutton-byob.gif";
-		else
-			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif";
 		button.firstChild.alt = "Normal " + oldalt;
 		button.firstChild.title = "Normal " + oldalt;
 		var quickbutton = doc.createElement("img");
+
+		if (this.inBYOB(forumid))
+		{
+			button.firstChild.src = "chrome://salastread/skin/quickbutton-byob.gif";
+		}
+		else if (this.inYOSPOS(forumid))
+		{
+			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif"
+			button.firstChild.style.paddingBottom = "0px";
+			quickbutton.style.backgroundImage = "none !important";
+		}
+		else
+		{
+			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif";
+		}
 		quickbutton.src = oldsrc;
 		quickbutton.alt = "Quick " + oldalt;
 		quickbutton.title = "Quick " + oldalt;
