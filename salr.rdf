@@ -5,7 +5,7 @@
 			<r:Seq>
 				<r:li>
 					<r:Description>
-						<version>1.99.140101</version>
+						<version>1.99.140105</version>
 
 						<!-- Firefox -->
 						<targetApplication>
@@ -30,7 +30,7 @@
 				</r:li>
 			</r:Seq>
 		</updates>
-		<version>1.99.140101</version>
+		<version>1.99.140105</version>
 		<updateLink>https://subversion.assembla.com/svn/SALR/trunk/salastread.xpi</updateLink>
 	</r:Description>
 </r:RDF>
