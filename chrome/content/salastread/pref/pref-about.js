@@ -66,11 +66,11 @@ function aboutInit()
 
 function openSALRThread()
 {
-	var tab = window.opener.gBrowser.addTab("http://forums.somethingawful.com/showthread.php?goto=post&postid=380530062");
+	var tab = window.opener.gBrowser.addTab("http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost");
 	window.opener.gBrowser.selectedTab = tab; 
 }
 function openSALRProjectPage()
 {
-	var tab = window.opener.gBrowser.addTab("http://trac.assembla.com/SALR/wiki");
+	var tab = window.opener.gBrowser.addTab("https://www.assembla.com/spaces/SALR");
 	window.opener.gBrowser.selectedTab = tab; 
 }

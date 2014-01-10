@@ -24,6 +24,7 @@
 			<!-- Various and Sundry Options -->
 			<preference id="dontBoldNames" 			name="extensions.salastread.dontBoldNames" 			type="bool"/>
 			<preference id="resizeCustomTitleText" 	name="extensions.salastread.resizeCustomTitleText" 	type="bool"/>
+			<preference id="hideCustomTitles" 		name="extensions.salastread.hideCustomTitles" 		type="bool"/>
 		</preferences>
 		
 		<groupbox>
@@ -39,6 +40,7 @@
 						<checkbox preference="highlightUsernames" 		label="Highlight interesting and important usernames"/>
 					</row>
 					<row>
+						<checkbox preference="hideCustomTitles"			label="Hide all custom titles" />
 						<checkbox preference="dontBoldNames" 			label="Don't make highlighted usernames bold"/>
 					</row>
 				</rows>

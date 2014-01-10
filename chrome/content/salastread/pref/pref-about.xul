@@ -13,7 +13,7 @@
 		<vbox id="mainabout" flex="1">
 			<hbox>
 				<spacer flex="1"/>
-				<image src="chrome://salastread/skin/salastread-large.png"/>
+				<image src="chrome://salastread/skin/salastread-large.png" maxwidth='96' maxheight='95'/>
 				<spacer style="width: 15px;"/>
 				<vbox>
 					<spacer flex="1"/>

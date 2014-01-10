@@ -41,8 +41,8 @@ var gSALR = {
 				var needToShowChangeLog = false;
 				if (gSALR.service.LastRunVersion != gSALR.service.SALRversion)
 				{
-					needToShowChangeLog = !gSALR.service.IsDevelopmentRelease;
-					//needToShowChangeLog = true;
+					//needToShowChangeLog = !gSALR.service.IsDevelopmentRelease;
+					needToShowChangeLog = true;
 					// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 					var buildNum = parseInt(gSALR.service.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
 					gSALR.service.checkForSQLPatches(buildNum);
@@ -52,11 +52,15 @@ var gSALR = {
 					needToShowChangeLog = false;
 					//openDialog("chrome://salastread/content/newfeatures/newfeatures.xul", "SALR_newfeatures", "chrome,centerscreen,dialog=no");
 					// This requires a timeout to function correctly.
-					setTimeout(gSALR.openChangelogTab, 10);
+					setTimeout(gSALR.showChangelogAlert, 10);
 				}
 
 				// Fill up the cache
 				gSALR.service.populateDataCaches();
+
+				// Load Styles
+				gSALR.service.updateStyles();
+
 				gSALR.service.LastRunVersion = gSALR.service.SALRversion;
 
 				gSALR.service._needToRunOnce = false;
@@ -76,9 +80,35 @@ var gSALR = {
 			SALR_buildForumMenu();
 	},
 
+	showChangelogAlert: function()
+	{
+		var alertsService = Components.classes["@mozilla.org/alerts-service;1"].
+                      getService(Components.interfaces.nsIAlertsService);
+		try {
+		  alertsService.showAlertNotification("chrome://salastread/skin/sa-24.png", 
+									  "SALR extension updated!", "Click here for the changelog.", 
+									  true, "", gSALR.changelogListener, "");
+		} catch (e) {
+			// This can fail on Mac OS X
+		}
+	},
+
+	changelogListener:
+	{
+		observe: function(subject, topic, data)
+		{
+			// User has requested changelog
+			if (topic == "alertclickcallback")
+			{
+				gSALR.runConfig("about");
+				//gSALR.openChangelogTab();
+			}
+		},
+	},
+
 	openChangelogTab: function()
 	{
-		gBrowser.selectedTab = gBrowser.addTab("chrome://salastread/content/changelog.xul");
+		gBrowser.selectedTab = gBrowser.addTab("chrome://salastread/content/changelog.html");
 	},
 
 	onDOMLoad: function(e)
@@ -324,7 +354,6 @@ var gSALR = {
 		// The following forums have special needs that must be dealt with
 		var flags = {
 			"inFYAD" : gSALR.service.inFYAD(forumid),
-			"inBYOB" : gSALR.service.inBYOB(forumid),
 			"inDump" : gSALR.service.inDump(forumid),
 			"inAskTell" : gSALR.service.inAskTell(forumid),
 			"inGasChamber" : gSALR.service.inGasChamber(forumid),
@@ -349,9 +378,6 @@ var gSALR = {
 			// We're in FYAD and FYAD support has been turned off
 			return;
 		}
-
-		// Add our thread list CSS
-		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicThreadListCSS(flags.inFYAD,flags.inBYOB));
 
 		// Start a transaction to try and reduce the likelihood of database corruption
 		var ourTransaction = false;
@@ -528,7 +554,7 @@ var gSALR = {
 	handleSubscriptions: function(doc)
 	{
 		// Add our thread list CSS
-		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicThreadListCSS(false,false));
+		//gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicThreadListCSS(forumid));
 
 		var cpusernav = gSALR.service.selectSingleNode(doc, doc, "//ul[contains(@id,'usercpnav')]");
 		if (!cpusernav) {
@@ -1020,7 +1046,6 @@ var gSALR = {
 
 		// The following forums have special needs that must be dealt with
 		var inFYAD = gSALR.service.inFYAD(forumid);
-		var inBYOB = gSALR.service.inBYOB(forumid);
 		var inDump = gSALR.service.inDump(forumid);
 		var inAskTell = gSALR.service.inAskTell(forumid);
 		var inGasChamber = gSALR.service.inGasChamber(forumid);
@@ -1036,7 +1061,7 @@ var gSALR = {
 		}
 
 		// Add our ShowThread CSS
-		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicShowThreadCSS(inFYAD, inBYOB));
+		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicShowThreadCSS(forumid));
 
 		doc.body.className += " salastread_forum" + forumid;
 		// used by the context menu to allow options for this thread

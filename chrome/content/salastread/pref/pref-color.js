@@ -1,4 +1,4 @@
-var backgrounds = { '' : '#FFFFFF', 'FYAD' : '#FF9999', 'BYOB' : '#9999FF' };
+var backgrounds = { '' : '#FFFFFF', 'FYAD' : '#FF9999' };
 var myprefs = Components.classes["@mozilla.org/preferences;1"].
 		getService(Components.interfaces.nsIPrefService).
 		getBranch("extensions.salastread.");
@@ -53,6 +53,7 @@ function loadDefaultColors() {
 	}
 	
 	loadColors();
+	gSALRservice.updateStyles();
 }
 
 function editColor(event, targetEl) {

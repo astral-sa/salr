@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.140105');
+pref('extensions.salastread.currentVersion', '1.99.140109');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -107,20 +107,6 @@ pref('extensions.salastread.unseenPostLightFYAD', '#ffccff');
 pref('extensions.salastread.highlightQuotePost', '#c691d9');
 pref('extensions.salastread.highlightQuotePostFYAD', '#af7fc0');
 
-//BYOB colors
-pref('extensions.salastread.seenPostDarkBYOB', '#bbccdd');
-pref('extensions.salastread.seenPostLightBYOB', '#ddeeff');
-pref('extensions.salastread.unseenPostLightBYOB', '#ccffff');
-pref('extensions.salastread.unseenPostDarkBYOB', '#ccccff');
-//BYOB forumdisplay colors
-pref('extensions.salastread.readWithNewDarkBYOB', '#cfdfcf');
-pref('extensions.salastread.readWithNewLightBYOB', '#e1f1e1');
-pref('extensions.salastread.readLightBYOB', '#d2e2f2');
-pref('extensions.salastread.readDarkBYOB', '#bbccdd');
-pref('extensions.salastread.unreadLightBYOB', '#ccffff');
-pref('extensions.salastread.unreadDarkBYOB', '#ccccff');
-pref('extensions.salastread.postedInThreadReBYOB', '#fcfd99');
-pref('extensions.salastread.highlightQuotePostBYOB', '#c691d9');
 
 //USER SUBTEXT
 pref('extensions.salastread.modSubText', 'Forum Moderator');
@@ -136,6 +122,7 @@ pref('extensions.salastread.highlightQuotes', true);
 
 //USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
+pref('extensions.salastread.hideCustomTitles', false);
 
 
 //SA MENUS

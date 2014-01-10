@@ -7,6 +7,7 @@
 			title="SALR Preferences" 
 			type="prefwindow"
 			xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+			onload="SALR_Prefs_OnLoad(event.target);"
 			ondialogaccept="SALR_Prefs_Accept();"
 			ondialogcancel="SALR_Prefs_Close();"
 			onclose="SALR_Prefs_Close();">
