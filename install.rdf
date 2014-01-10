@@ -3,9 +3,9 @@
 	<Description about="urn:mozilla:install-manifest">
 		<!-- Extension Settings -->
 		<em:id>{fc6339b8-9581-4fc7-b824-dffcb091fcb7}</em:id>
-		<em:version>1.99.140105</em:version>
+		<em:version>1.99.140109</em:version>
 		<em:type>2</em:type>
-		<em:homepageURL>http://trac.assembla.com/SALR/wiki</em:homepageURL>
+		<em:homepageURL>http://forums.somethingawful.com/showthread.php?threadid=2571027&amp;goto=lastpost</em:homepageURL>
 		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
 		<em:aboutURL>chrome://salastread/content/about.xul</em:aboutURL>
 		<em:optionsURL>chrome://salastread/content/pref.xul</em:optionsURL>
