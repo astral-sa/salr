@@ -1474,7 +1474,7 @@ var gSALR = {
 			}
 			if (posterNote || userPosterNote)
 			{
-				newNoteBox = doc.createElement("p");
+				let newNoteBox = doc.createElement("p");
 				newNoteBox.style.fontSize = "80%";
 				newNoteBox.style.margin = "0";
 				newNoteBox.style.padding = "0";

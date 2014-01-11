@@ -137,7 +137,8 @@ function ReadFile(fn)
 	}
 	var is = Components.classes["@mozilla.org/network/file-input-stream;1"]
 				.createInstance(Components.interfaces.nsIFileInputStream);
-	is.init(file, 0x01, 00004, null);
+	// TODO: Do we really need read and write flags for ReadFile?
+	is.init(file, 0x01, 0x04, null);
 	var sis = Components.classes["@mozilla.org/scriptableinputstream;1"]
 				.createInstance(Components.interfaces.nsIScriptableInputStream);
 	sis.init(is);
@@ -485,7 +486,7 @@ salrPersistObject.prototype = {
 			this.populateThreadDataCache();
 		}
 		var threads = [];
-		for each (threadData in this.threadDataCache)
+		for each (let threadData in this.threadDataCache)
 		{
 			if (threadData.ignore == 1)
 			{
@@ -504,7 +505,7 @@ salrPersistObject.prototype = {
 			this.populateThreadDataCache();
 		}
 		var threads = [];
-		for each (threadData in this.threadDataCache)
+		for each (let threadData in this.threadDataCache)
 		{
 			if (threadData.star == 1)
 			{
@@ -1551,7 +1552,7 @@ salrPersistObject.prototype = {
 	getCustomizedPosters : function()
 	{
 		var users = [];
-		for each (userData in this.userDataCache)
+		for each (let userData in this.userDataCache)
 		{
 			if (userData.color != '0' || userData.background != '0' || (userData.notes != '' && userData.notes != null))
 			{

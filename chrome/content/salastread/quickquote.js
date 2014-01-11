@@ -918,7 +918,7 @@ function doPreview()
 	}
 
 	// Quote handling
-	quoteSegment = markup.split('[/quote]');
+	let quoteSegment = markup.split('[/quote]');
 	for (var key = 0; key < quoteSegment.length; key++) {
 		// New style post quotes with username and postid
 		quoteSegment[key] = quoteSegment[key].replace(
