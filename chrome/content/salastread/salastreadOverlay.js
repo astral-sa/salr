@@ -276,6 +276,7 @@ var gSALR = {
 					if (!gSALR.service || !gSALR.service.getPreference('suppressErrors'))
 					{
 						alert("SALastRead application err: "+errstr);
+						//alert("SALastRead application err: "+ex);
 					}
 					else
 					{
@@ -451,8 +452,8 @@ var gSALR = {
 			var modcount = modarray.length;
 			for (i = 0; i < modcount; i++)
 			{
-				userid = modarray[i].href.match(/userid=(\d+)/i)[1];
-				username = modarray[i].innerHTML;
+				let userid = modarray[i].href.match(/userid=(\d+)/i)[1];
+				let username = modarray[i].innerHTML;
 				if (!gSALR.service.isMod(userid) && !gSALR.service.isAdmin(userid))
 				{
 					gSALR.service.addMod(userid, username);
@@ -705,7 +706,7 @@ var gSALR = {
 				// Either the page didn't finish loading or SA didn't send the full page.
 				return;
 			}
-			threadOPLink = threadAuthorBox.getElementsByTagName('a');
+			let threadOPLink = threadAuthorBox.getElementsByTagName('a');
 			if (threadOPLink[0])
 			{
 				threadOPId = parseInt(threadOPLink[0].href.match(/userid=(\d+)/i)[1]);
@@ -957,7 +958,7 @@ var gSALR = {
 					// Either the page didn't finish loading or SA didn't send the full page.
 					return;
 				}
-				lastPostLink = threadLastPostBox.getElementsByTagName('a');
+				let lastPostLink = threadLastPostBox.getElementsByTagName('a');
 				if (lastPostLink[0])
 				{
 					lastPostId = gSALR.service.getUserId(lastPostLink[0].innerHTML);
@@ -1326,7 +1327,7 @@ var gSALR = {
 			}
 
 			// Standard template
-			titleBox = gSALR.service.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+			let titleBox = gSALR.service.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
 			// If that doesn't work, try FYAD template
 			if (titleBox == null)
 				titleBox = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
@@ -1437,7 +1438,7 @@ var gSALR = {
 			{
 				var userQuoted;
 				var anyQuotes = gSALR.service.selectNodes(doc, post, "TBODY//TR/TD/DIV[contains(@class,'bbc-block')]");
-				for (quote in anyQuotes)
+				for (let quote in anyQuotes)
 				{
 					userQuoted = anyQuotes[quote].textContent.match(/(.*) posted:/);
 					if (userQuoted)
@@ -1449,8 +1450,8 @@ var gSALR = {
 						}
 						else
 						{
-							userQuotedDetails = gSALR.service.isUsernameColored(userQuoted);
-							userQuotedId = gSALR.service.getUserId(userQuoted);
+							let userQuotedDetails = gSALR.service.isUsernameColored(userQuoted);
+							let userQuotedId = gSALR.service.getUserId(userQuoted);
 							if (superIgnoreUsers && gSALR.service.isUserIgnored(userQuotedId))
 							{
 								// They're quoting someone ignored, lets remove the entire post
@@ -1491,7 +1492,7 @@ var gSALR = {
 			}
 			if (!postIdLink) continue;
 
-			postid = postIdLink.href.match(/#post(\d+)/i)[1];
+			let postid = postIdLink.href.match(/#post(\d+)/i)[1];
 			if (insertPostTargetLink)
 			{
 				slink = doc.createElement("a");
