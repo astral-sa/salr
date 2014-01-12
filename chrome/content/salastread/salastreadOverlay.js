@@ -1182,7 +1182,8 @@ var gSALR = {
 				var replyCountLi = doc.createElement('li');
 				var replyCountLink = doc.createElement("A");
 				replyCountLi.appendChild(replyCountLink);
-				replyCountLink.href="javascript:void(window.open('misc.php?s=&action=whoposted&threadid=" + threadid + "#fromthread', 'whoposted', 'toolbar=no,scrollbars=yes,resizable=yes,width=230,height=200'))";
+				replyCountLink.href = "/misc.php?action=whoposted&threadid=" + threadid + "#fromthread";
+				replyCountLink.target = "_blank";
 				replyCountLink.innerHTML = "Who posted?";
 				replyCountLink.style.fontSize = "10px";
 				replyCountLink.style.cssFloat = "left";
