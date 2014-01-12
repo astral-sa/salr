@@ -166,8 +166,8 @@ function SaveFile(fn, fdata)
 
 // We use XPCOMUtils to register ourselves
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");  
-// Lazy reference getters
-Components.utils.import("resource://gre/modules/Services.jsm");
+// Lazy reference getters - breaks FF 3.6, so not used for now
+//Components.utils.import("resource://gre/modules/Services.jsm");
 
 // The PersistObject defintion itself
 function salrPersistObject() {}
@@ -711,13 +711,19 @@ salrPersistObject.prototype = {
 		try
 		{
 			this.unloadStyles();
-			this._salrStyleURI = Services.io.newURI("data:text/css," + encodeURIComponent(this.generateSSSCSS()), null, null);
+			let ioService = Components.classes["@mozilla.org/network/io-service;1"]
+                .getService(Components.interfaces.nsIIOService);
+			this._salrStyleURI = ioService.newURI("data:text/css," + encodeURIComponent(this.generateSSSCSS()), null, null);
 			this.loadStyles();
 		}
 		catch(e)
 		{
 			if (!this.getPreference('suppressErrors'))
-				Services.prompt.alert(null, "SALR", "Stylesheet update error: " + e);
+			{
+				let promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                              .getService(Components.interfaces.nsIPromptService);
+				promptService.alert(null, "SALR", "Stylesheet update error: " + e);
+			}
 		}
 	},
 
