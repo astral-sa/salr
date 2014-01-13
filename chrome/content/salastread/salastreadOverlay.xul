@@ -21,7 +21,7 @@
 	<!-- Add our toolbar to the toolbar palette -->
 	<toolbarpalette id="BrowserToolbarPalette">
 		<toolbarbutton id="salr-toolbarbutton"
-			type="menu-button" label="SALR"
+			type="menu" label="SALR"
 			tooltiptext="Something Awful Last Read"
 			class="toolbarbutton-1 chromeclass-toolbar-additional"
 			oncommand="if (event.target == this) SALR_onTBClick(event);"
