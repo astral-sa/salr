@@ -563,13 +563,15 @@ var gSALR = {
 			return;
 		}
 
-		if (gSALR.service.getPreference("username") == '')
+		let oldUsername = gSALR.service.getPreference("username");
+		if (oldUsername == '' || oldUsername == 'Not%20cookied%3F')
 		{
 			var username = gSALR.service.selectSingleNode(doc,doc,"//div[contains(@class, 'breadcrumbs')]/b");
 			if (username)
 			{
 				username = escape(username.textContent.substr(52));
-				gSALR.service.setPreference("username", username);
+				if (username != 'Not%20cookied%3F')
+					gSALR.service.setPreference("username", username);
 			}
 		}
 
@@ -578,11 +580,13 @@ var gSALR = {
 
 	handleIndex: function(doc)
 	{
-		if (gSALR.service.getPreference("username") == '')
+		let oldUsername = gSALR.service.getPreference("username");
+		if (oldUsername == '' || oldUsername == 'Not%20cookied%3F')
 		{
 			var username = gSALR.service.selectSingleNode(doc,doc,"//div[contains(@class, 'mainbodytextsmall')]//b");
 			username = escape(username.textContent);
-			gSALR.service.setPreference("username", username);
+			if (username != 'Not%20cookied%3F')
+				gSALR.service.setPreference("username", username);
 		}
 	},
 
@@ -632,7 +636,8 @@ var gSALR = {
 		var table = document.getElementById('forum');
 
 		// We need to reset this every time the page is fully loaded
-		gSALR.service.setPreference("filteredThreadCount",0);
+		if (advancedThreadFiltering)
+			gSALR.service.setPreference("filteredThreadCount",0);
 
 		// Here be where we work on the thread rows
 		var threadlist = gSALR.service.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
