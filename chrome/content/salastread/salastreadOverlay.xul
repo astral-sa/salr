@@ -3,12 +3,12 @@
 
 <overlay id="salastreadOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script type="application/x-javascript" src="chrome://salastread/content/utilfunctions.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/utilfunctions.js"/>
 <!--
   <script type="application/x-javascript"
     src="chrome://salastread/content/FTPSendReceive.js"/>
 -->
-	<script type="application/x-javascript" src="chrome://salastread/content/salastreadOverlay.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/salastreadOverlay.js"/>
 
 <!--
 	<statusbar id="status-bar">
