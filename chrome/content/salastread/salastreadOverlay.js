@@ -2638,13 +2638,16 @@ var gSALR = {
 					afObject.innerHTML += "&nbsp;Reset"
 					afObject.style.fontSize = "75%";
 					afObject.style.fontWeight = "bold";
-					afObject2.parentNode.removeChild(afObject2);
 					tagsHead.appendChild(afObject);
 					tagsHead.appendChild(doc.createTextNode(")"));
 					tagsHead.appendChild(doc.createElement("br"));
 					tagsHead.appendChild(doc.createElement("br"));
 				}
 			}
+			// Remove the "Remove filter" link since it's showing up all the time
+			let removeTagsDiv = gSALR.service.selectSingleNode(doc, tagsDiv, "DIV[contains(@class,'remove_tag')]");
+			if (removeTagsDiv)
+				removeTagsDiv.parentNode.removeChild(removeTagsDiv);
 
 			// Add a message for when all the icons are ignored and hide it for now
 			afObject = doc.createElement("div");
@@ -2699,6 +2702,7 @@ var gSALR = {
 			afObject.style.fontSize = "85%";
 			tagsDiv.appendChild(afObject);
 			tagsDiv.appendChild(doc.createElement("br"));
+
 			// TODO: ability to ignore shitposts even though they dont have an icon id
 			// TODO: remove all the icon stuff for when viewing the dumps but keep the rest, maybe add star# filtering for those
 			// TODO: thread rating filtering
