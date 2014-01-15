@@ -448,8 +448,15 @@ var gSALR = {
 		// Snag Forum Moderators
 		if (!flags.inGasChamber && !flags.inArchives)
 		{
-			var modarray = doc.getElementById('mods').getElementsByTagName('a');
-			var modcount = modarray.length;
+			// Show mod list if necessary
+			let mp_barDiv = doc.getElementById('mp_bar');
+			if (gSALR.service.getPreference('showForumModsList') == true)
+			{
+				mp_barDiv.style.visibility = 'visible';
+				mp_barDiv.style.paddingTop = '0.5em';
+			}
+			let modarray = doc.getElementById('mods').getElementsByTagName('a');
+			let modcount = modarray.length;
 			for (i = 0; i < modcount; i++)
 			{
 				let userid = modarray[i].href.match(/userid=(\d+)/i)[1];

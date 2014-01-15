@@ -44,6 +44,7 @@ pref('extensions.salastread.gestureEnable', false);
 pref('extensions.salastread.suppressErrors', true);
 pref('extensions.salastread.gestureButton', 2);
 pref('extensions.salastread.cancerTreatment', 0);
+pref('extensions.salastread.showForumModsList', false);
 
 //IMAGE HANDLING
 
