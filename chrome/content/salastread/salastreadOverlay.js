@@ -1391,7 +1391,7 @@ var gSALR = {
 			}
 			if (gSALR.service.isMod(posterId))
 			{
-				if (posterImg == "Moderator" || inArchives)
+				if (posterImg == "Moderator" || posterImg == "Internet Knight" || inArchives)
 				{
 					posterColor = modColor;
 					posterBG = modBackground;
