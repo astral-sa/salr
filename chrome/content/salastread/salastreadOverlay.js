@@ -1882,7 +1882,7 @@ var gSALR = {
 		var newLink = doc.createElement('a');
 		emptyP.appendChild(newLink);
 		emptyP.style.textAlign = "center";
-		newLink.href = "https://trac.assembla.com/SALR/newticket";
+		newLink.href = "http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost";
 		newLink.innerHTML = "Click here to report a problem with SA Last Read instead";
 		var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
 		supportTable.parentNode.replaceChild(newImg, supportTable);
