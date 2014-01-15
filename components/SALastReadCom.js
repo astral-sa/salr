@@ -757,6 +757,11 @@ salrPersistObject.prototype = {
 		CSSFile += 'url-prefix("http://forums.somethingawful.com/usercp.php"),\n';
 		CSSFile += 'url-prefix("http://forums.somethingawful.com/bookmarkthreads.php") {\n';
 
+		// Show mod list if necessary
+		if (this.getPreference('showForumModsList') == true)
+		{
+			CSSFile += '#mp_bar { visibility: visible; padding-top: 0.5em; }\n';
+		}
 		if (!this.getPreference('disableGradients'))
 		{
 			CSSFile += '#forum tr.thread.seen td, #forum tr.thread.category0 td, ';
