@@ -2248,48 +2248,35 @@ salrPersistObject.prototype = {
 			var maxWidth = this.getPreference("maxWidthOfConvertedImages");
 			var maxHeight = this.getPreference("maxHeightOfConvertedImages");
 
-			if(maxHeight)
-			{
+			if (maxHeight)
 				maxHeight += "px";
-			}
-
-			if(maxWidth)
-			{
+			if (maxWidth)
 				maxWidth += "px";
-			}
 		}
 
-		var images = this.selectNodes(doc, postbody, "//img");
+		var images = this.selectNodes(doc, postbody, ".//img");
 		for (var i in images)
 		{
 			var image = images[i];
 
 			// Scale all images in the post body to the user-specified size
-			if (thumbnailAllImages && image.parentNode === postbody)
+			if (thumbnailAllImages && image.className.search(/timg/i) == -1 && (image.parentNode === postbody || image.parentNode.nodeName.toLowerCase() == 'blockquote'))
 			{
 				if (!image.src.match(/forumimages\.somethingawful\.com/i))
 				{
 					if (maxWidth)
-					{
 						image.style.maxWidth = maxWidth;
-					}
 					if (maxHeight)
-					{
 						image.style.maxHeight = maxHeight;
-					}
-
-					image.addEventListener("click",
-						function()
-						{
-							if (maxWidth)
+					if (maxWidth || maxHeight)
+						image.addEventListener("click",
+							function()
 							{
-								this.style.maxWidth = (this.style.maxWidth == maxWidth) ? "" : maxWidth;
-							}
-							if (maxHeight)
-							{
-								this.style.maxHeight = (this.style.maxHeight == maxHeight) ? "" : maxHeight;
-							}
-						}, false);
+								if (maxWidth)
+									this.style.maxWidth = (this.style.maxWidth == maxWidth) ? "" : maxWidth;
+								if (maxHeight)
+									this.style.maxHeight = (this.style.maxHeight == maxHeight) ? "" : maxHeight;
+							}, false);
 				}
 			}
 
