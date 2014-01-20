@@ -804,13 +804,16 @@ salrPersistObject.prototype = {
 			CSSFile += '#forum td.title div.lastseen a.count { min-width: 0px !important; }';
 			CSSFile += '#forum td.title div.lastseen a.count b { display: none !important; }';
 		}
-		else if (!this.getPreference("disableNewReCount"))
+		else
 		{
-			CSSFile += '#forum td.title div.lastseen a.count {';
-			CSSFile += 'height:12px !important;';
-			CSSFile += '}\n';
+			CSSFile += '#forum td.title div.lastseen a.count b { display: !important; }';
+			if (!this.getPreference("disableNewReCount"))
+			{
+				CSSFile += '#forum td.title div.lastseen a.count {';
+				CSSFile += 'height:12px !important;';
+				CSSFile += '}\n';
+			}
 		}
-
 		if (!this.getPreference('dontHighlightThreads'))
 		{
 			CSSFile += '#forum tr.thread td.title, #forum tr.thread td.star, #forum tr.thread td.replies, #forum tr.thread td.rating, #forum tr.thread td.button_remove { background-color:';
