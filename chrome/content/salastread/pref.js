@@ -11,9 +11,7 @@ function SALR_Prefs_OnLoad(prefwindow)
 function SALR_Prefs_Accept()
 {
 	if (rebuildCSS == true)
-	{
 		gSALRservice.updateStyles();
-	}
 	RebuildSAMenus();
 	return true;
 }
@@ -23,6 +21,8 @@ function SALR_Prefs_Close()
 	// The prefwindow was closed or canceled, but instantApply was true
 	if (document.getElementById('salastreadpref').instantApply)
 	{
+		if (rebuildCSS == true)
+			gSALRservice.updateStyles();
 		RebuildSAMenus();
 	}
 }
