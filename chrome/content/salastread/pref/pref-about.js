@@ -71,6 +71,6 @@ function openSALRThread()
 }
 function openSALRProjectPage()
 {
-	var tab = window.opener.gBrowser.addTab("https://www.assembla.com/spaces/SALR");
+	var tab = window.opener.gBrowser.addTab("https://github.com/astral-sa/salr");
 	window.opener.gBrowser.selectedTab = tab; 
 }
