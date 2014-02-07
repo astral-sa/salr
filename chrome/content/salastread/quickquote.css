@@ -50,6 +50,7 @@ window {
 .salr_posticon_popup .menu-iconic-icon {
   width: 60px;
   height: 15px;
+  visibility: visible !important;
 }
 
 .salr_posticon_popup .menu-iconic-accel {
@@ -59,6 +60,7 @@ window {
 #emoticonmenu .menu-iconic-icon {
   width: auto;
   height: auto;
+  visibility: visible !important;
 }
 
 #emoticonbutton,
