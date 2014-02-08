@@ -1931,14 +1931,10 @@ var gSALR = {
 			var pageList = gSALR.service.selectNodes(doc, doc, "//DIV[contains(@class,'pager')]");
 			if (pageList)
 			{
-				if (pageList.length > 1)
-				{
+				if (pageList.length >= 1)
 					pageList = pageList[pageList.length-1];
-				}
 				else
-				{
-					pageList = pageList[0];
-				}
+					return;
 				var numPages = pageList.innerHTML.match(/\((\d+)\)/);
 				if (!numPages)
 					return;
