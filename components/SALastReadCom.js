@@ -1923,7 +1923,7 @@ salrPersistObject.prototype = {
 			return;
 		}
 		var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
-		var curPage = this.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
+		var curPage = this.selectSingleNode(doc, pageList, ".//OPTION[@selected='selected']");
 		numPages = parseInt(numPages[1], 10);
 		curPage = parseInt(curPage.innerHTML, 10);
 		var navDiv = doc.createElement("div");
