@@ -297,7 +297,7 @@ var gSALR = {
 	pageFinishedLoading: function(e)
 	{
 		// Only called for showthread pages
-		window.removeEventListener("load", gSALR.pageFinishedLoading, true);
+		window.gBrowser.removeEventListener("load", gSALR.pageFinishedLoading, true);
 		var doc = e.originalTarget;
 		if (gSALR.service.getPreference('reanchorThreadOnLoad'))
 		{
@@ -1587,7 +1587,7 @@ var gSALR = {
 		}
 
 		doc.__salastread_loading = true;
-		window.addEventListener("load", gSALR.pageFinishedLoading, true);
+		window.gBrowser.addEventListener("load", gSALR.pageFinishedLoading, true);
 	},
 
 	handleEditPost: function(doc)
