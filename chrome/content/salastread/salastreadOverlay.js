@@ -839,14 +839,6 @@ var gSALR = {
 					}
 				}
 
-				// Remove the new replies count from the default box if we are showing the custom icon
-				if (showGoToLastIcon && iconJumpLastRead)
-				{
-					threadRe = gSALR.service.selectSingleNode(doc, iconJumpLastRead, "B");
-					iconJumpLastRead.removeChild(threadRe);
-				}
-
-
 				if (alwaysShowGoToLastIcon && !iconJumpLastRead)
 				{
 					iconJumpLastRead = doc.createElement("a");
