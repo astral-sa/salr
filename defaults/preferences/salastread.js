@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.140206');
+pref('extensions.salastread.currentVersion', '1.99.140209');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -10,7 +10,6 @@ pref('extensions.salastread.disableNewReCount', false);
 pref('extensions.salastread.newPostCountUseOneLine', false);
 pref('extensions.salastread.replyCountLinkinThreads', true);
 pref('extensions.salastread.sortReplyList', true);
-pref('extensions.salastread.hideThreadSearchBox', false);
 pref('extensions.salastread.ignoreAppTabs', false);
 
 //VIDEO EMBEDDER
@@ -120,6 +119,7 @@ pref('extensions.salastread.insertPostLastMarkLink', true);
 pref('extensions.salastread.insertPostTargetLink', true);
 pref('extensions.salastread.hideReportButtons', false);
 pref('extensions.salastread.highlightQuotes', true);
+pref('extensions.salastread.hideThreadSearchBox', false);
 
 //USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
