@@ -6,7 +6,7 @@
 	<prefpane id="menu" onpaneload="menuInit()">
 		
 		<preferences>
-			<preference id="showSAForumMenu" 			name="extensions.salastread.showSAForumMenu" 			type="bool"/>
+			<preference id="showSAForumMenu" 			name="extensions.salastread.showSAForumMenu" 			type="bool" onchange="changedPrefshowSAForumMenu()"/>
 			<preference id="nestSAForumMenu" 			name="extensions.salastread.nestSAForumMenu" 			type="bool"/>
 			<preference id="useSAForumMenuBackground" 	name="extensions.salastread.useSAForumMenuBackground" 	type="bool"/>
 			<preference id="hideOtherSAMenus" 			name="extensions.salastread.hideOtherSAMenus" 			type="bool"/>
@@ -19,7 +19,7 @@
 		
 		<groupbox id="toolbarGroup">
 			<caption label="Toolbar Menu Settings"/>
-			<checkbox id="showSaMenu"	preference="showSAForumMenu" 			label="Show SA Forum Quick Jump menu"/>
+			<checkbox id="showSaMenu"	preference="showSAForumMenu" 			label="Show SA Forum Quick Jump menu in the menu bar"/>
 			
 			<vbox style="margin-left: 10px">
 				<checkbox id="nestSaMenu"	preference="nestSAForumMenu" 			label="Use submenus for forum categories"/>

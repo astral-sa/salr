@@ -273,3 +273,42 @@ function RebuildSAMenus()
 		document.getElementById('salastreadpref').__SAMenuChanged = false;
 	}
 }
+
+// Called when the preference has been changed.
+function changedPrefshowSAForumMenu()
+{
+	// Defer visibility change if need be
+	if (document.getElementById('salastreadpref').instantApply)
+		doChangeSAMenuVis();
+	else
+		needSAMenuToggle = true;
+}
+
+function doChangeSAMenuVis()
+{
+	var showSAForumMenu = document.getElementById('showSAForumMenu');
+	// Default value is true, so we don't have to handle that special case
+	// (it would show up as undefined)
+
+	// Temporary hack until menu code is cleaned up:
+
+	// Get all browser windows
+	var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]  
+				   .getService(Components.interfaces.nsIWindowMediator);  
+	var enumerator = wm.getEnumerator("navigator:browser");  
+	while(enumerator.hasMoreElements()) {  
+		var win = enumerator.getNext();
+
+		// Toggle SA menus in all browser windows
+		if (showSAForumMenu.value == true)
+		{
+			win.SALR_buildForumMenu();
+		}
+		else
+		{
+			let salrMenu = win.document.getElementById("salr-menu");
+			if (salrMenu)
+				salrMenu.style.display = "none";
+		}
+	}	
+}
