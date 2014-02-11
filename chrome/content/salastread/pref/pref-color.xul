@@ -80,7 +80,7 @@
 
 			<hbox id="sampletableholder" class="sampletableholder">
 				<vbox>
-					&#160;<html:br />
+					<html:span>&#160;</html:span><html:br />
 					<html:span>
 						&#160;Forum view:
 					</html:span>
@@ -109,7 +109,7 @@
 						</html:tr>
 					</html:tbody>
 					</html:table>
-					&#160;<html:br />
+					<html:span>&#160;</html:span><html:br />
 					<html:span>
 						&#160;Thread view:
 					</html:span>

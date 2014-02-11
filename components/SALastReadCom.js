@@ -354,6 +354,8 @@ salrPersistObject.prototype = {
 	// @return:
 	selectSingleNode: function(doc, context, xpath)
 	{
+		if (doc === null || context === null || xpath === null)
+			throw "SALR Xpath Error";
 		var nodeList = doc.evaluate(xpath, context, null, 9 /* XPathResult.FIRST_ORDERED_NODE_TYPE */, null);
 		return nodeList.singleNodeValue;
 	},
