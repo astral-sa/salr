@@ -932,6 +932,25 @@ salrPersistObject.prototype = {
 			CSSFile += '#thread table.post.focused { outline: 2px dashed #c1c1c1 !important; }\n';
 		}
 
+		if (!this.getPreference('dontHighlightPosts'))
+		{
+			// These are for in thread coloring
+			CSSFile += 'table.post tr.seen1 td, table.post tr.seen1 td.userinfo, table.post tr.seen1 td.postdate { background-color:';
+			CSSFile += this.getPreference('seenPostLight');
+			CSSFile += '; }\n';
+			CSSFile += 'table.post tr.seen2 td, table.post tr.seen2 td.userinfo, table.post tr.seen2 td.postdate { background-color:';
+			CSSFile += this.getPreference('seenPostDark');
+			CSSFile += '; }\n';
+
+			// These are for unseen posts
+			CSSFile += 'table.post tr.altcolor2 td, table.post tr.altcolor2 td.userinfo, table.post tr.altcolor2 td.postdate { background-color:';
+			CSSFile += this.getPreference('unseenPostDark');
+			CSSFile += '; }\n';
+			CSSFile += 'table.post tr.altcolor1 td, table.post tr.altcolor1 td.userinfo, table.post tr.altcolor1 td.postdate { background-color:';
+			CSSFile += this.getPreference('unseenPostLight');
+			CSSFile += '; }\n';
+		}
+
 		// end showthread CSS
 		CSSFile += '}\n';
 		return CSSFile;
