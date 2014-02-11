@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.140209');
+pref('extensions.salastread.currentVersion', '1.99.140210');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 40);
 pref('extensions.salastread.enableFYAD', true);
@@ -159,7 +159,7 @@ pref('extensions.salastread.filteredThreadCount', 0);
 //OTHER RANDOM OPTIONS
 pref('extensions.salastread.timeSpentOnForums', 0);
 pref('extensions.salastread.dontHighlightThreads', false);
-pref('extensions.salastread.dontHighlightPosts', false);
+pref('extensions.salastread.dontHighlightPosts', true);
 pref('extensions.salastread.highlightUsernames', true);
 pref('extensions.salastread.disableGradients', false);
 pref('extensions.salastread.thumbnailAllImages', true);
