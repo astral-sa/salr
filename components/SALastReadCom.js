@@ -935,19 +935,33 @@ salrPersistObject.prototype = {
 		if (!this.getPreference('dontHighlightPosts'))
 		{
 			// These are for in thread coloring
-			CSSFile += 'table.post tr.seen1 td, table.post tr.seen1 td.userinfo, table.post tr.seen1 td.postdate { background-color:';
+			CSSFile += 'table.post tr.seen1 td { background-color:';
 			CSSFile += this.getPreference('seenPostLight');
 			CSSFile += '; }\n';
-			CSSFile += 'table.post tr.seen2 td, table.post tr.seen2 td.userinfo, table.post tr.seen2 td.postdate { background-color:';
+			CSSFile += 'table.post tr.seen1 td.userinfo, table.post tr.seen1 td.postdate { background-color:';
+			CSSFile += this.getPreference('seenPostLight2');
+			CSSFile += '; }\n';
+
+			CSSFile += 'table.post tr.seen2 td { background-color:';
 			CSSFile += this.getPreference('seenPostDark');
+			CSSFile += '; }\n';
+			CSSFile += 'table.post tr.seen2 td.userinfo, table.post tr.seen2 td.postdate { background-color:';
+			CSSFile += this.getPreference('seenPostDark2');
 			CSSFile += '; }\n';
 
 			// These are for unseen posts
-			CSSFile += 'table.post tr.altcolor2 td, table.post tr.altcolor2 td.userinfo, table.post tr.altcolor2 td.postdate { background-color:';
+			CSSFile += 'table.post tr.altcolor1 td { background-color:';
+			CSSFile += this.getPreference('unseenPostLight');
+			CSSFile += '; }\n';
+			CSSFile += 'table.post tr.altcolor1 td.userinfo, table.post tr.altcolor1 td.postdate { background-color:';
+			CSSFile += this.getPreference('unseenPostLight2');
+			CSSFile += '; }\n';
+
+			CSSFile += 'table.post tr.altcolor2 td { background-color:';
 			CSSFile += this.getPreference('unseenPostDark');
 			CSSFile += '; }\n';
-			CSSFile += 'table.post tr.altcolor1 td, table.post tr.altcolor1 td.userinfo, table.post tr.altcolor1 td.postdate { background-color:';
-			CSSFile += this.getPreference('unseenPostLight');
+			CSSFile += 'table.post tr.altcolor2 td.userinfo, table.post tr.altcolor2 td.postdate { background-color:';
+			CSSFile += this.getPreference('unseenPostDark2');
 			CSSFile += '; }\n';
 		}
 

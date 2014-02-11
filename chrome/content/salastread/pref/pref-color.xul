@@ -17,11 +17,15 @@
 			<preference id="readWithNewDark" 		name="extensions.salastread.readWithNewDark" 	type="string"/>
 			<preference id="readWithNewLight" 		name="extensions.salastread.readWithNewLight" 	type="string"/>
 			<preference id="seenPostDark" 			name="extensions.salastread.seenPostDark" 		type="string"/>
+			<preference id="seenPostDark2" 			name="extensions.salastread.seenPostDark2" 		type="string"/>
 			<preference id="seenPostLight" 			name="extensions.salastread.seenPostLight" 		type="string"/>
+			<preference id="seenPostLight2" 		name="extensions.salastread.seenPostLight2" 		type="string"/>
 			<preference id="unreadDark" 			name="extensions.salastread.unreadDark" 		type="string"/>
 			<preference id="unreadLight" 			name="extensions.salastread.unreadLight" 		type="string"/>
 			<preference id="unseenPostDark" 		name="extensions.salastread.unseenPostDark" 	type="string"/>
+			<preference id="unseenPostDark2" 		name="extensions.salastread.unseenPostDark2" 	type="string"/>
 			<preference id="unseenPostLight" 		name="extensions.salastread.unseenPostLight" 	type="string"/>
+			<preference id="unseenPostLight2" 		name="extensions.salastread.unseenPostLight2" 	type="string"/>
 			<preference id="highlightQuotePost"		name="extensions.salastread.highlightQuotePost" type="string"/>
 
 			<!-- FYAD Thread Colors -->
@@ -31,11 +35,15 @@
 			<preference id="readWithNewDarkFYAD" 	name="extensions.salastread.readWithNewDarkFYAD" 	type="string"/>
 			<preference id="readWithNewLightFYAD" 	name="extensions.salastread.readWithNewLightFYAD" 	type="string"/>
 			<preference id="seenPostDarkFYAD" 		name="extensions.salastread.seenPostDarkFYAD" 		type="string"/>
+			<preference id="seenPostDark2FYAD" 		name="extensions.salastread.seenPostDark2FYAD" 		type="string"/>
 			<preference id="seenPostLightFYAD" 		name="extensions.salastread.seenPostLightFYAD" 		type="string"/>
+			<preference id="seenPostLight2FYAD" 	name="extensions.salastread.seenPostLight2FYAD" 	type="string"/>
 			<preference id="unreadDarkFYAD" 		name="extensions.salastread.unreadDarkFYAD" 		type="string"/>
 			<preference id="unreadLightFYAD" 		name="extensions.salastread.unreadLightFYAD" 		type="string"/>
 			<preference id="unseenPostDarkFYAD" 	name="extensions.salastread.unseenPostDarkFYAD" 	type="string"/>
+			<preference id="unseenPostDark2FYAD" 	name="extensions.salastread.unseenPostDark2FYAD" 	type="string"/>
 			<preference id="unseenPostLightFYAD" 	name="extensions.salastread.unseenPostLightFYAD" 	type="string"/>
+			<preference id="unseenPostLight2FYAD" 	name="extensions.salastread.unseenPostLight2FYAD" 	type="string"/>
 			<preference id="highlightQuotePostFYAD" name="extensions.salastread.highlightQuotePostFYAD" type="string"/>
 
 			<!-- Coloring Toggles -->
@@ -72,6 +80,10 @@
 
 			<hbox id="sampletableholder" class="sampletableholder">
 				<vbox>
+					&#160;<html:br />
+					<html:span>
+						&#160;Forum view:
+					</html:span>
 					<html:table id="sampletable" class="sampletable">
 					<html:tbody>
 						<html:tr>
@@ -97,16 +109,27 @@
 						</html:tr>
 					</html:tbody>
 					</html:table>
-
+					&#160;<html:br />
+					<html:span>
+						&#160;Thread view:
+					</html:span>
 					<html:table id="postsampletable" class="postsampletable">
 					<html:tbody>
 						<html:tr>
-							<html:td class="seenPostLight" 		onclick="editColor(event, this);">Seen Post (light)</html:td>
-							<html:td class="unseenPostLight" 	onclick="editColor(event, this);">Unseen Post (light)</html:td>
+							<html:td class="seenPostLight2" 	onclick="editColor(event, this);">Seen Postinfo (light)</html:td>
+							<html:td class="seenPostLight" 		onclick="editColor(event, this);">Seen Postbody (light)</html:td>
 						</html:tr>
 						<html:tr>
-							<html:td class="seenPostDark" 		onclick="editColor(event, this);">Seen Post (dark)</html:td>
-							<html:td class="unseenPostDark" 	onclick="editColor(event, this);">Unseen Post (dark)</html:td>
+							<html:td class="seenPostDark2" 		onclick="editColor(event, this);">Seen Postinfo (dark)</html:td>
+							<html:td class="seenPostDark" 		onclick="editColor(event, this);">Seen Postbody (dark)</html:td>
+						</html:tr>
+						<html:tr>
+							<html:td class="unseenPostLight2" 	onclick="editColor(event, this);">Unseen Postinfo (light)</html:td>
+							<html:td class="unseenPostLight" 	onclick="editColor(event, this);">Unseen Postbody (light)</html:td>
+						</html:tr>
+						<html:tr>
+							<html:td class="unseenPostDark2" 	onclick="editColor(event, this);">Unseen Postinfo (dark)</html:td>
+							<html:td class="unseenPostDark" 	onclick="editColor(event, this);">Unseen Postbody (dark)</html:td>
 						</html:tr>
 						<html:tr>
 							<html:td colspan="2" class="highlightQuotePost" onclick="editColor(event, this);">My Post Is Quoted</html:td>
