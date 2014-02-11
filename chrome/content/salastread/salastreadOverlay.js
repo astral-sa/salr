@@ -1271,7 +1271,6 @@ var gSALR = {
 		var insertPostLastMarkLink = gSALR.service.getPreference("insertPostLastMarkLink");
 		var insertPostTargetLink = gSALR.service.getPreference("insertPostTargetLink");
 		var highlightUsernames = gSALR.service.getPreference("highlightUsernames");
-		var dontHighlightPosts = gSALR.service.getPreference("dontHighlightPosts");
 
 		//standard user colors
 		var modColor = gSALR.service.getPreference("modColor");
