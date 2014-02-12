@@ -41,8 +41,8 @@ var gSALR = {
 				var needToShowChangeLog = false;
 				if (gSALR.service.LastRunVersion != gSALR.service.SALRversion)
 				{
-					//needToShowChangeLog = !gSALR.service.IsDevelopmentRelease;
-					needToShowChangeLog = true;
+					needToShowChangeLog = !gSALR.service.IsDevelopmentRelease;
+					//needToShowChangeLog = true;
 					// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
 					var buildNum = parseInt(gSALR.service.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
 					gSALR.service.checkForSQLPatches(buildNum);
