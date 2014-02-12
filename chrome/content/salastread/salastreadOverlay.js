@@ -1171,7 +1171,7 @@ var gSALR = {
 
 		var searchThis = gSALR.service.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
 		var placeHere = gSALR.service.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
-		if (searchThis && placeHere && placeHere.parentNode)
+		if (searchThis && placeHere && placeHere.parentNode && placeHere.parentNode.nodeName.toLowerCase() === 'li')
 		{
 			placeHere = placeHere.parentNode;
 			if (gSALR.service.getPreference("replyCountLinkinThreads"))

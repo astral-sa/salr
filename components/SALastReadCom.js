@@ -2056,14 +2056,17 @@ salrPersistObject.prototype = {
 				lastButton.appendChild(lastButtonImg);
 				navDiv.appendChild(lastButton);
 			}
-
-			var starButton = doc.createElement("img");
-			starButton.src = "http://fi.somethingawful.com/images/buttons/button-bookmark.png";
-			starButton.setAttribute('class', 'thread_bookmark'); 
-			starButton.style.marginLeft = '0';
-			starButton.style.marginRight = '2px';
-			starButton.style.marginTop = '1px';
-			navDiv.appendChild(starButton);
+			var hasAStar = this.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
+			if (hasAStar)
+			{
+				var starButton = doc.createElement("img");
+				starButton.src = "http://fi.somethingawful.com/images/buttons/button-bookmark.png";
+				starButton.setAttribute('class', 'thread_bookmark'); 
+				starButton.style.marginLeft = '0';
+				starButton.style.marginRight = '2px';
+				starButton.style.marginTop = '1px';
+				navDiv.appendChild(starButton);
+			}
 		}
 
 		doc.body.appendChild(navDiv);
