@@ -80,10 +80,7 @@
 
 			<hbox id="sampletableholder" class="sampletableholder">
 				<vbox>
-					<html:span>&#160;</html:span><html:br />
-					<html:span>
-						&#160;Forum view:
-					</html:span>
+					<html:span>&#160;Forum view:</html:span>
 					<html:table id="sampletable" class="sampletable">
 					<html:tbody>
 						<html:tr>
@@ -109,10 +106,7 @@
 						</html:tr>
 					</html:tbody>
 					</html:table>
-					<html:span>&#160;</html:span><html:br />
-					<html:span>
-						&#160;Thread view:
-					</html:span>
+					<html:span>&#160;Thread view:</html:span>
 					<html:table id="postsampletable" class="postsampletable">
 					<html:tbody>
 						<html:tr>
