@@ -1411,7 +1411,7 @@ var gSALR = {
 			var dbUser = gSALR.service.isUserIdColored(posterId);
 			if (dbUser)
 			{
-				if (!dbUser.username)
+				if (!dbUser.username || dbUser.username != posterName)
 				{
 					gSALR.service.setUserName(posterId, posterName);
 				}
