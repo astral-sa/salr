@@ -631,7 +631,7 @@ var gSALR = {
 		var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox, threadLastPostBox;
 		var threadTitle, threadId, threadOPId, threadRe;
 		var threadLRCount, unvistIcon, lpIcon, lastPostName;
-		var userPosterNote, lastLink, threadReCount, searchString;
+		var userPosterNote, lastLink, searchString;
 		var starredthreads = gSALR.service.starList, ignoredthreads = gSALR.service.ignoreList;
 		var table = document.getElementById('forum');
 
@@ -751,11 +751,11 @@ var gSALR = {
 				}
 			}
 
-			lastLink = gSALR.service.selectSingleNode(doc, threadTitleBox, "DIV/DIV/A[./text() = 'Last']");
-			if (lastLink)
+			lastLink = gSALR.service.selectSingleNode(doc, threadTitleBox, "DIV/DIV/DIV/A[./text() = 'Last']");
+			if (lastLink && postsPerPage > 0)
 			{
-				threadReCount = parseInt(threadRepliesBox.textContent, 10) + 1;
-				lastPageNum = Math.ceil(threadReCount / postsPerPage);
+				let threadReCount = parseInt(threadRepliesBox.textContent, 10) + 1;
+				let lastPageNum = Math.ceil(threadReCount / postsPerPage);
 				lastLink.innerHTML += ' (' + lastPageNum + ')';
 			}
 
@@ -1118,12 +1118,15 @@ var gSALR = {
 		}
 
 		// Grab threads/posts per page
-		// Should this be changed to only update it if it changes?  Is there a penalty for changing it everytime?
+		var postsPerPageOld = gSALR.service.getPreference("postsPerPage");
 		var perpage = gSALR.service.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
 		if (perpage)
 		{
 			perpage = perpage.href.match(/perpage=(\d+)/i)[1];
-			gSALR.service.setPreference("postsPerPage", perpage);
+			if (postsPerPageOld != perpage)
+			{
+				gSALR.service.setPreference("postsPerPage", perpage);
+			}
 		}
 		else
 		{
@@ -2067,7 +2070,12 @@ var gSALR = {
 			var doc = targ.ownerDocument;
 			var pressed = event.which;
 			var postId, post, classChange, rescroll = false;
+
+			// This should probably be edited to get the # of posts on the current page
 			var maxPosts = gSALR.service.getPreference('postsPerPage');
+			if (maxPosts == 0)
+				maxPosts = 40;
+
 			if (doc.__SALR_curFocus)
 			{
 				postId = doc.__SALR_curFocus;
