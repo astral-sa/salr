@@ -370,34 +370,6 @@ function finalizeTextGrab(restext)
 	return;
 }
 
-function getQuoteIntroText() {
-	var astr = persistObject.getPreference('quoteIntroText');
-	if(astr.indexOf("|")!=-1) {
-		var qits = astr.split("|");
-		var qnum = Math.floor(Math.random() * qits.length);
-		return qits[qnum];
-	} else {
-		return astr;
-	}
-}
-
-function replaceQuoteIntroText(restext, postid) {
-	var re = new RegExp("^\\[quote=(.+)\\]$", "m");
-	var qm = restext.match(re);
-	if(qm) {
-		var qwho = qm[1];
-			qwho = qwho.replace("&", "&amp;");
-			qwho = qwho.replace("[", "&#91;");
-			qwho = qwho.replace("]", "&#93;");
-			qwho = qwho.replace("\"", "&quot;");
-			qwho = qwho.replace("'", "&#39;");
-			qwho = qwho.replace("<", "&lt;");
-			qwho = qwho.replace(">", "&gt;");
-		restext = restext.replace(re, "[quote="+qwho+"]");
-	}
-	return restext;
-}
-
 function qpSetPostIcon(e) {
 	var el = e.originalTarget;
 	var pib = document.getElementById('posticonbutton');
