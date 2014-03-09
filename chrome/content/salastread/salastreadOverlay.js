@@ -1089,7 +1089,7 @@ var gSALR = {
 			{
 				pageList = pageList[0];
 			}
-			if (pageList.childNodes.length > 1) // Are there pages
+			if (pageList.childNodes.length > 1 && pageList.lastChild && pageList.lastChild.innerHTML) // Are there pages
 			{
 				var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
 				var curPage = gSALR.service.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
@@ -1305,6 +1305,8 @@ var gSALR = {
 
 			curPostId = post.id.match(/post(\d+)/)[1];
 			profileLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
+			if (!profileLink)
+				continue;
 			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
 			if (superIgnoreUsers && gSALR.service.isUserIgnored(posterId))
 			{
