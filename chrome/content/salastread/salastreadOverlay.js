@@ -380,6 +380,9 @@ var gSALR = {
 			return;
 		}
 
+		// Add our thread list CSS for FYAD/BYOB
+		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicThreadListCSS(forumid));
+
 		// Start a transaction to try and reduce the likelihood of database corruption
 		var ourTransaction = false;
 		if (gSALR.service.database.transactionInProgress) {
@@ -554,9 +557,6 @@ var gSALR = {
 	// Do anything needed to the subscribed threads list
 	handleSubscriptions: function(doc)
 	{
-		// Add our thread list CSS
-		//gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicThreadListCSS(forumid));
-
 		var cpusernav = gSALR.service.selectSingleNode(doc, doc, "//ul[contains(@id,'usercpnav')]");
 		if (!cpusernav) {
 			// Don't see the control panel menu so stop

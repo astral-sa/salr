@@ -558,113 +558,34 @@ salrPersistObject.prototype = {
 				CSSFile += this.getPreference('postedInThreadReFYAD');
 				CSSFile += ' !important; }\n';
 			}
-			else
+			else if (this.inBYOB(forumid))
 			{
-				CSSFile += '#forum tr.thread td.title, #forum tr.thread td.star, #forum tr.thread td.replies, #forum tr.thread td.rating, #forum tr.thread td.button_remove { background-color:';
-				CSSFile += this.getPreference('unreadLight');
-				CSSFile += '; }\n';
-				CSSFile += '#forum tr.thread td.icon, #forum tr.thread td.icon2, #forum tr.thread td.author,';
-				CSSFile += '#forum tr.thread td.views, #forum tr.thread td.lastpost { background-color:';
-				CSSFile += this.getPreference('unreadDark');
-				CSSFile += '; }\n';
-
-//bookmarks need a special color if they're unread
-//blue aka "tan"
-				CSSFile += '#forum tr.thread.category0 td.title, #forum tr.thread.category0 td.star, #forum tr.thread.category0 td.replies, #forum tr.thread.category0 td.rating, #forum tr.thread.category0 td.button_remove { background-color:';
-				CSSFile += this.getPreference('readWithNewLight');
-				CSSFile += '; }\n'; //marking this and the below as important will cause blue-star threads with new posts to show up as blue instead of green
-				CSSFile += '#forum tr.thread.category0 td.icon, #forum tr.thread.category0 td.icon2, #forum tr.thread.category0 td.author,';
-				CSSFile += '#forum tr.thread.category0 td.views, #forum tr.thread.category0 td.lastpost { background-color:';
-				CSSFile += this.getPreference('readWithNewDark');
-				CSSFile += '; }\n';
-//red for unread
-				CSSFile += '#forum tr.thread.category1 td.title, #forum tr.thread.category1 td.star, #forum tr.thread.category1 td.replies, #forum tr.thread.category1 td.rating, #forum tr.thread.category1 td.button_remove { background-color:#f2dcdc; }\n';
-				CSSFile += '#forum tr.thread.category1 td.icon, #forum tr.thread.category1 td.icon2, #forum tr.thread.category1 td.author,';
-				CSSFile += '#forum tr.thread.category1 td.views, #forum tr.thread.category1 td.lastpost { background-color:#e3cfcf; }\n';
-//yellow for unread
-				CSSFile += '#forum tr.thread.category2 td.title, #forum tr.thread.category2 td.star, #forum tr.thread.category2 td.replies, #forum tr.thread.category2 td.rating, #forum tr.thread.category2 td.button_remove { background-color:#f2f2dc; }\n';
-				CSSFile += '#forum tr.thread.category2 td.icon, #forum tr.thread.category2 td.icon2, #forum tr.thread.category2 td.author,';
-				CSSFile += '#forum tr.thread.category2 td.views, #forum tr.thread.category2 td.lastpost { background-color:#e2e2cd; }\n';
-
-
-				CSSFile += '#forum tr.thread.seen td.title, #forum tr.thread.seen td.star, #forum tr.thread.seen td.replies, #forum tr.thread.seen td.rating, #forum tr.thread.seen td.button_remove { background-color:';
-				CSSFile += this.getPreference('readLight');
-				CSSFile += '; }\n';
-				CSSFile += '#forum tr.thread.seen td.icon, #forum tr.thread.seen td.icon2, #forum tr.thread.seen td.author,';
-				CSSFile += '#forum tr.thread.seen td.views, #forum tr.thread.seen td.lastpost { background-color:';
-				CSSFile += this.getPreference('readDark');
-				CSSFile += '; }\n';
-		
-				CSSFile += '#forum tr.thread.seen.newposts td.title, #forum tr.thread.seen.newposts td.star, #forum tr.thread.seen.newposts td.replies, #forum tr.thread.seen.newposts td.rating, #forum tr.thread.seen.newposts td.button_remove { background-color:';
-				CSSFile += this.getPreference('readWithNewLight');
-				CSSFile += '; }\n';
-				CSSFile += '#forum tr.thread.seen.newposts td.icon, #forum tr.thread.seen.newposts td.icon2, #forum tr.thread.seen.newposts td.author,';
-				CSSFile += '#forum tr.thread.seen.newposts td.views, #forum tr.thread.seen.newposts td.lastpost { background-color:';
-				CSSFile += this.getPreference('readWithNewDark');
-				CSSFile += '; }\n';
-
-//red with new
-				CSSFile += '#forum tr.thread.category1.newposts td.title, #forum tr.thread.category1.newposts td.star, #forum tr.thread.category1.newposts td.replies, #forum tr.thread.category1.newposts td.rating, #forum tr.thread.category1.newposts td.button_remove { background-color:#f2dcdc; }\n';
-				CSSFile += '#forum tr.thread.category1.newposts td.icon, #forum tr.thread.category1.newposts td.icon2, #forum tr.thread.category1.newposts td.author,';
-				CSSFile += '#forum tr.thread.category1.newposts td.views, #forum tr.thread.category1.newposts td.lastpost { background-color:#e3cfcf; }\n';
-//yellow with new
-				CSSFile += '#forum tr.thread.category2.newposts td.title, #forum tr.thread.category2.newposts td.star, #forum tr.thread.category2.newposts td.replies, #forum tr.thread.category2.newposts td.rating, #forum tr.thread.category2.newposts td.button_remove { background-color:#f2f2dc; }\n';
-				CSSFile += '#forum tr.thread.category2.newposts td.icon, #forum tr.thread.category2.newposts td.icon2, #forum tr.thread.category2.newposts td.author,';
-				CSSFile += '#forum tr.thread.category2.newposts td.views, #forum tr.thread.category2.newposts td.lastpost { background-color:#e2e2cd; }\n';
-
-
-				CSSFile += '#forum tr.thread.seen.newposts td.replies.salrPostedIn, #forum tr.thread.category0 td.replies.salrPostedIn,';
-				CSSFile += '#forum tr.thread.seen td.replies.salrPostedIn { background-color:';
-				CSSFile += this.getPreference('postedInThreadRe');
+				CSSFile += 'tr.thread td { background-color:';
+				CSSFile += this.getPreference('unreadLightBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread td.icon, tr.thread td.author,';
+				CSSFile += 'tr.thread td.views, tr.thread td.lastpost { background-color:';
+				CSSFile += this.getPreference('unreadDarkBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen td { background-color:';
+				CSSFile += this.getPreference('readLightBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
+				CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
+				CSSFile += this.getPreference('readDarkBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td { background-color:';
+				CSSFile += this.getPreference('readWithNewLightBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
+				CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
+				CSSFile += this.getPreference('readWithNewDarkBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
+				CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
+				CSSFile += this.getPreference('postedInThreadReBYOB');
 				CSSFile += ' !important; }\n';
 			}
-		}
-		if (!this.getPreference('disableGradients'))
-		{
-			CSSFile += '#forum tr.thread.seen td, #forum tr.thread.category0 td, ';
-			CSSFile += '#forum tr.thread.category1 td, #forum tr.thread.category2 td {';
-			CSSFile += 'background-image:url("chrome://salastread/skin/gradient.png") !important;';
-			CSSFile += 'background-repeat:repeat-x !important;';
-			CSSFile += 'background-position:center left !important;}\n';
-		}
-		if (this.getPreference('showUnvisitIcon') && this.getPreference('showGoToLastIcon'))
-		{
-			CSSFile += 'td.title div.lastseen {';
-			CSSFile += 'border:0 !important;';
-			CSSFile += 'background:none !important;';
-			CSSFile += '}\n';
-		}
-		if (this.getPreference('showUnvisitIcon'))
-		{
-			CSSFile += '#forum td.title div.lastseen a.x {';
-			CSSFile += 'background:url(';
-			CSSFile += this.getPreference("markThreadUnvisited");
-			CSSFile += ') no-repeat center center !important;';
-			CSSFile += 'text-indent:-9000px !important;';
-			CSSFile += 'width:22px !important;';
-			CSSFile += 'height:22px !important;';
-			CSSFile += 'padding:0 !important;';
-			CSSFile += '}\n';
-		}
-		if (this.getPreference('showGoToLastIcon'))
-		{
-			CSSFile += '#forum td.title div.lastseen a.count {';
-			CSSFile += 'background:url(';
-			CSSFile += this.getPreference("goToLastReadPost");
-			CSSFile += ') no-repeat center center !important;';
-			CSSFile += 'width:22px !important;';
-			CSSFile += 'height:22px !important;';
-			CSSFile += 'border:none !important;';
-			CSSFile += 'padding:0 !important;';
-			CSSFile += '}\n';
-			CSSFile += '#forum td.title div.lastseen a:after { content: "" !important;}';
-			CSSFile += '#forum td.title div.lastseen a.count { min-width: 0px !important; }';
-		}
-		else if (!this.getPreference("disableNewReCount"))
-		{
-			CSSFile += '#forum td.title div.lastseen a.count {';
-			CSSFile += 'height:12px !important;';
-			CSSFile += '}\n';
 		}
 		return CSSFile;
 	},
@@ -692,6 +613,24 @@ salrPersistObject.prototype = {
 				CSSFile += 'table.post tr.altcolor1 td { background-color:';
 				CSSFile += this.getPreference('unseenPostLightFYAD');
 				CSSFile += '; }\n';
+			}
+			// BYOB colors
+			else if (this.inBYOB(forumid))
+			{
+				// These are for in thread coloring
+				CSSFile += 'table.post tr.seen1 td { background-color:';
+				CSSFile += this.getPreference('seenPostLightBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'table.post tr.seen2 td { background-color:';
+				CSSFile += this.getPreference('seenPostDarkBYOB');
+				CSSFile += ' !important; }\n';
+				// These are for unseen posts
+				CSSFile += 'table.post tr.altcolor2 td { background-color:';
+				CSSFile += this.getPreference('unseenPostLightBYOB');
+				CSSFile += ' !important; }\n';
+				CSSFile += 'table.post tr.altcolor1 td { background-color:';
+				CSSFile += this.getPreference('unseenPostDarkBYOB');
+				CSSFile += ' !important; }\n';
 			}
 		}
 
@@ -1847,7 +1786,7 @@ salrPersistObject.prototype = {
 	// Legacy
 	inBYOB: function(forumid)
 	{
-		return (forumid == 174 || forumid == 176 || forumid == 194 || forumid == 208);
+		return (forumid == 174 || forumid == 176 || forumid == 194 || forumid == 208|| forumid == 268);
 	},
 	inYOSPOS: function(forumid)
 	{
@@ -1957,6 +1896,8 @@ salrPersistObject.prototype = {
 			// There's only one page
 			return;
 		}
+		if (!pageList.lastChild || !pageList.lastChild.innerHTML)
+			return;
 		var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
 		var curPage = this.selectSingleNode(doc, pageList, ".//OPTION[@selected='selected']");
 		numPages = parseInt(numPages[1], 10);

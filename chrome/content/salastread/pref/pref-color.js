@@ -14,12 +14,15 @@ function loadColors() {
 	var tds = document.getElementById('sampletableholder').getElementsByTagNameNS("http://www.w3.org/1999/xhtml","td");
 	for(var i in tds) {
 		var td = tds[i];
-		var pref = document.getElementById(td.className + forum);
-		if(pref) {
-			if(pref.value == 0) {
-				td.style.backgroundColor = "transparent";
-			} else {
-				td.style.backgroundColor = pref.value;
+		if (td.className)
+		{
+			var pref = document.getElementById(td.className + forum);
+			if(pref) {
+				if(pref.value == 0) {
+					td.style.backgroundColor = "transparent";
+				} else {
+					td.style.backgroundColor = pref.value;
+				}
 			}
 		}
 	}
