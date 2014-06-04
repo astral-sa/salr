@@ -2559,6 +2559,8 @@ var gSALR = {
 		{
 			post = posts[n];
 			profileLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
+			if (!profileLink)
+				continue;
 			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
 			if (posterId == idToToggle)
 			{
