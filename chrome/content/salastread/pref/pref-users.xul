@@ -82,20 +82,20 @@
 
 			<hbox>
 				<vbox flex="1">
-					<listbox id="userColoring" context="colorPopup" seltype="multiple" flex="1" onselect="updateCustomizePane()">
+					<listbox id="userColoring" context="colorPopup" seltype="single" flex="1" onselect="updateCustomizePane()">
 						<listcols>
 							<listcol/>
 							<listcol/>
 							<listcol flex="1"/>
 						</listcols>
-						
+
 						<listhead>
 							<listheader label="User ID"/>
 							<listheader label="User Name" />
 							<listheader label="Note" />
 						</listhead>
 					</listbox>
-					
+
 					<hbox>
 						<button label="Add User" oncommand="addUser();"/>
 						<button label="Delete User" id="deleteuserbutton" oncommand="deleteUser();"/>
