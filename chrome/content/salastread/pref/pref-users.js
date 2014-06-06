@@ -38,6 +38,11 @@ function initUsers()
 					persistObject.setPosterNotes(userid, "New User");
 					addListUser(listBox, userid, username);
 				}
+				else
+				{
+					// User already exists with some color info, so highlight them
+					selectUserById(listBox, userid);
+				}
 			}
 		}
 	}
@@ -76,6 +81,21 @@ function addListUser(listBox, id, name)
 	li.appendChild(noteCell);
 
 	listBox.appendChild(li);
+	// Highlight newly added user
+	listBox.selectItem(li);
+}
+
+// Finds and highlights a user in the list box
+function selectUserById(listBox, userid)
+{
+	for (var i = 0; i < listBox.childNodes.length; ++i)
+	{
+		if (listBox.childNodes[i].value == userid)
+		{
+			listBox.selectItem(listBox.childNodes[i]);
+			break;
+		}
+	}
 }
 
 //bring up the color picker and save/apply the new color
