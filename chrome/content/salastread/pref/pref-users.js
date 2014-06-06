@@ -15,7 +15,7 @@ function initUsers()
 	//add users and their custom colors to the listbox
 	for (var i = 0; i < users.length; i++)
 	{
-		addListUser(listBox, users[i].userid, users[i].username);
+		addListUser(listBox, users[i].userid, users[i].username, false);
 	}
 
 	if ("arguments" in window && window.arguments.length > 0 && window.arguments[1].args)
@@ -28,7 +28,7 @@ function initUsers()
 			{
 				persistObject.addUser(userid, username);
 				persistObject.setPosterNotes(userid, "New User");
-				addListUser(listBox, userid, username);
+				addListUser(listBox, userid, username, true);
 			}
 			else
 			{
@@ -36,7 +36,7 @@ function initUsers()
 				if (udata.color == 0 && udata.background == 0 && !persistObject.getPosterNotes(userid))
 				{
 					persistObject.setPosterNotes(userid, "New User");
-					addListUser(listBox, userid, username);
+					addListUser(listBox, userid, username, true);
 				}
 				else
 				{
@@ -50,7 +50,7 @@ function initUsers()
 }
 
 //add a user to the list box with proper coloring
-function addListUser(listBox, id, name)
+function addListUser(listBox, id, name, sel)
 {
 	var color = persistObject.getPosterColor(id);
 	var bgColor = persistObject.getPosterBackground(id);
@@ -82,7 +82,8 @@ function addListUser(listBox, id, name)
 
 	listBox.appendChild(li);
 	// Highlight newly added user
-	listBox.selectItem(li);
+	if (sel === true)
+		listBox.selectItem(li);
 }
 
 // Finds and highlights a user in the list box
@@ -166,7 +167,7 @@ function addUser()
 			persistObject.addUser(text.value);
 			persistObject.setPosterNotes(text.value, "New User");
 
-			addListUser(listBox, text.value, null);
+			addListUser(listBox, text.value, null, true);
 		}
 		else
 		{
@@ -187,7 +188,7 @@ function addUser()
 				if (foundit == false)
 				{
 					persistObject.setPosterNotes(text.value, "New User");
-					addListUser(listBox, text.value, udata.username);
+					addListUser(listBox, text.value, udata.username, true);
 				}
 				else
 					alert("Error: User already has custom highlighting.");
