@@ -89,9 +89,9 @@ function addListUser(listBox, id, name, sel)
 // Finds and highlights a user in the list box
 function selectUserById(listBox, userid)
 {
-	for (var i = 0; i < listBox.childNodes.length; ++i)
+	for (var i = 0; i < listBox.childNodes.length; i++)
 	{
-		if (listBox.childNodes[i].value == userid)
+		if (listBox.childNodes[i].getAttribute("value") == userid)
 		{
 			listBox.selectItem(listBox.childNodes[i]);
 			break;
@@ -101,7 +101,7 @@ function selectUserById(listBox, userid)
 
 //bring up the color picker and save/apply the new color
 function changeColor(type)
- {
+{
 	var li = document.getElementById("userColoring").selectedItem;
 	if (!li) return;
 	var userid = li.value;
