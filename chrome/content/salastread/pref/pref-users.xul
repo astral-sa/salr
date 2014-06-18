@@ -105,7 +105,7 @@
 				<vbox id="customizevbox" align="center">
 
 					<hbox flex="1">
-						<text value="Hello" id="customizelabel" style="font-weight: bold"/>
+						<text value="ERROR" id="customizelabel" style="font-weight: bold"/>
 					</hbox>
 					<separator/>
 					<vbox align="end" >

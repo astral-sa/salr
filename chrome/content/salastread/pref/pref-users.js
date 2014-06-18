@@ -104,7 +104,7 @@ function changeColor(type)
 {
 	var li = document.getElementById("userColoring").selectedItem;
 	if (!li) return;
-	var userid = li.value;
+	var userid = li.getAttribute("value");
 
 	var obj = {};
 
@@ -131,7 +131,7 @@ function changeColor(type)
 			}
 
 			li.childNodes[1].style.color = value;
-			persistObject.setPosterColor(li.value, obj.value);
+			persistObject.setPosterColor(li.getAttribute("value"), obj.value);
 		}
 		else
 		{
@@ -141,7 +141,7 @@ function changeColor(type)
 			}
 
 			li.childNodes[1].style.backgroundColor = value;
-			persistObject.setPosterBackground(li.value, obj.value);
+			persistObject.setPosterBackground(li.getAttribute("value"), obj.value);
 		}
 		updateCustomizePane();
 	}
@@ -207,7 +207,7 @@ function deleteUser()
 
 	for (var i in items)
 	{
-		var userid = items[i].value;
+		var userid = items[i].getAttribute("value");
 		persistObject.setPosterColor(userid, "0");
 		persistObject.setPosterBackground(userid, "0");
 		persistObject.setPosterNotes(userid, "");
@@ -226,13 +226,13 @@ function editNote()
 	var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
 					.getService(Components.interfaces.nsIPromptService);
 
-	var text = {value : persistObject.getPosterNotes(li.value)};
+	var text = {value : persistObject.getPosterNotes(li.getAttribute("value"))};
 	var check = {value : false};
 	var result = prompts.prompt(null, "User Note", "Edit the note to appear for this user", text, null, check);
 
 	if (result)
 	{
-		persistObject.setPosterNotes(li.value, text.value);
+		persistObject.setPosterNotes(li.getAttribute("value"), text.value);
 		li.childNodes[2].setAttribute("label", text.value);
 		updateCustomizePane();
 	}
@@ -297,11 +297,12 @@ function colorClicked(el, ctype)
 	var li = document.getElementById("userColoring").selectedItem;
 	if (!li)
 		return;
+	var userid = li.getAttribute("value");
 	var pobj = new Object();
 	if (ctype === 'fgcolor')
-		pobj.value = persistObject.getPosterColor(li.value);
+		pobj.value = persistObject.getPosterColor(userid);
 	else
-		pobj.value = persistObject.getPosterBackground(li.value);
+		pobj.value = persistObject.getPosterBackground(userid);
 	pobj.accepted = false;
 	window.openDialog('chrome://salastread/content/colorpicker/colorpickerdialog.xul', 'colorpickerdialog', 'modal,chrome',pobj);
 	if (pobj.accepted)
@@ -315,12 +316,12 @@ function colorClicked(el, ctype)
 		if (ctype == 'fgcolor')
 		{
 			li.childNodes[1].style.color = friendlyvalue;
-			persistObject.setPosterColor(li.value, pobj.value);
+			persistObject.setPosterColor(userid, pobj.value);
 		}
 		else
 		{
 			li.childNodes[1].style.backgroundColor = friendlyvalue;
-			persistObject.setPosterBackground(li.value, pobj.value);
+			persistObject.setPosterBackground(userid, pobj.value);
 		}
 	}
 }
@@ -332,6 +333,6 @@ function updateNote()
 		return;
 	var newnotetext = document.getElementById("usernotebox").value;
 	newnotetext = newnotetext.replace(/(?:\n)/g, "<br />");
-	persistObject.setPosterNotes(li.value, newnotetext);
+	persistObject.setPosterNotes(li.getAttribute("value"), newnotetext);
 	li.childNodes[2].setAttribute("label", newnotetext);
 }
