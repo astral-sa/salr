@@ -701,7 +701,7 @@ salrPersistObject.prototype = {
 		// Show mod list if necessary
 		if (this.getPreference('showForumModsList') == true)
 		{
-			CSSFile += '#mp_bar { visibility: visible; margin: 6px 0; }\n';
+			CSSFile += '#mp_bar { visibility: visible; margin: 6px 0 6px 50px; }\n';
 		}
 		if (!this.getPreference('disableGradients'))
 		{
