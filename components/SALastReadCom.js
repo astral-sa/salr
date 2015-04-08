@@ -698,6 +698,13 @@ salrPersistObject.prototype = {
 		CSSFile += 'url-prefix("http://forums.somethingawful.com/usercp.php"),\n';
 		CSSFile += 'url-prefix("http://forums.somethingawful.com/bookmarkthreads.php") {\n';
 
+		// Shrink 'Pages:' list in thread list
+		if (this.getPreference('shrinkThreadListTitlePages') == true)
+		{
+			CSSFile += '.thread { height: 44px; min-height: 44px; }\n'; // Reduce the padding too
+			CSSFile += '#forum td.title, #forum td.title .title_pages a { font-size: 10px !important; }\n';
+		}
+
 		// Allow usernames with multiple words to wrap in thread list
 		if (this.getPreference('allowThreadListLastPostNameWrapping') == true)
 			CSSFile += '#forum td.lastpost { white-space: inherit; }\n';

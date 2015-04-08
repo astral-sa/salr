@@ -146,6 +146,7 @@ pref('extensions.salastread.insertPostTargetLink', true);
 pref('extensions.salastread.hideReportButtons', false);
 pref('extensions.salastread.highlightQuotes', true);
 pref('extensions.salastread.hideThreadSearchBox', false);
+pref('extensions.salastread.shrinkThreadListTitlePages', false);
 
 //USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
