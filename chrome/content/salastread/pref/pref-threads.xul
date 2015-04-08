@@ -50,8 +50,10 @@
 								<radio id="medium" value="medium" label="Medium (640x385)" />
 								<radio id="large" value="large" label="Large (853x505)" />
 								<radio id="gigantic" value="gigantic" label="Gigantic (1280x745)" />
-								<radio id="customsize" value="custom" label="Custom:" />
 								<hbox align="center">
+								<vbox>
+									<radio id="customsize" value="custom" label="Custom:" />
+								</vbox>
 								<vbox>
 									<label value="Width:" control="videoEmbedCustomWidthbox" />
 									<textbox id="videoEmbedCustomWidthbox" preference="videoEmbedCustomWidth" size="4" maxlength="5" />
