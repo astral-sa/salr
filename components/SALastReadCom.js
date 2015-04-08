@@ -698,6 +698,10 @@ salrPersistObject.prototype = {
 		CSSFile += 'url-prefix("http://forums.somethingawful.com/usercp.php"),\n';
 		CSSFile += 'url-prefix("http://forums.somethingawful.com/bookmarkthreads.php") {\n';
 
+		// Allow usernames with multiple words to wrap in thread list
+		if (this.getPreference('allowThreadListLastPostNameWrapping') == true)
+			CSSFile += '#forum td.lastpost { white-space: inherit; }\n';
+
 		// Show mod list if necessary
 		if (this.getPreference('showForumModsList') == true)
 		{
