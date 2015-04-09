@@ -1446,11 +1446,7 @@ var gSALR = {
 					if (userQuoted)
 					{
 						userQuoted = userQuoted[1];
-						if (userQuoted == username)
-						{
-							anyQuotes[quote].className += ' salrQuoteOfSelf';
-						}
-						else
+						if (userQuoted != username) // self-quotes handled by forum JS now
 						{
 							let userQuotedDetails = gSALR.service.isUsernameColored(userQuoted);
 							let userQuotedId = gSALR.service.getUserId(userQuoted);

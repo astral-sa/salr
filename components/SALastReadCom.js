@@ -855,7 +855,7 @@ salrPersistObject.prototype = {
 			// Only apply this class if something is actually going to be colored
 			if (selfColor != 0)
 			{
-				CSSFile += 'div.bbc-block.salrQuoteOfSelf {';
+				CSSFile += 'div.bbc-block.userquoted {';
 				CSSFile += 'background:';
 				CSSFile += selfColor;
 				CSSFile += ' !important; }\n';
