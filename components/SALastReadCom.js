@@ -2293,6 +2293,20 @@ salrPersistObject.prototype = {
 				}
 				image.title = ":" + newTitle + ":";
 			}
+			// Attempt to rewrite waffleimages src as randomwaffle
+			else if (image.src.match(/waffleimages\.com/i))
+			{
+				var match = image.src.match(/waffleimages\.com\/([0-9a-f]{40})\/.*(jpe?g|png|gif)(?:#via=salr)?$/i);
+				if (match)
+				{
+					var hash = match[1];
+					var ext = match[2];
+					if (ext == 'jpeg')
+						ext = 'jpg';
+					var newSrc = 'http://randomwaffle.gbs.fm/images/' + hash.substr(0,2) + '/' + hash + '.' + ext;
+					image.setAttribute('src', newSrc);
+				}
+			}
 		}
 	},
 
