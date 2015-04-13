@@ -44,14 +44,14 @@
 				<hbox>
 					<vbox>
 						<groupbox style="margin-left: 5px;">
-							<caption label="YouTube Player Size" />
+							<caption label="Embedded Player Size" />
 							<radiogroup id="radio_videoEmbedSize" preference="videoEmbedSize"
 									onclick="var cs=!document.getElementById('customsize').selected; document.getElementById('videoEmbedCustomWidthbox').disabled=cs; document.getElementById('videoEmbedCustomHeightbox').disabled=cs">
-								<radio id="tiny" value="tiny" label="Tiny (480x295)" />
-								<radio id="small" value="small" label="Small (560x340)" />
-								<radio id="medium" value="medium" label="Medium (640x385)" />
-								<radio id="large" value="large" label="Large (853x505)" />
-								<radio id="gigantic" value="gigantic" label="Gigantic (1280x745)" />
+								<radio id="tiny" value="tiny" label="Tiny (480x300)" />
+								<radio id="small" value="small" label="Small (560x345)" />
+								<radio id="medium" value="medium" label="Medium (640x390)" />
+								<radio id="large" value="large" label="Large (854x510)" />
+								<radio id="gigantic" value="gigantic" label="Gigantic (1280x750)" />
 								<hbox align="center">
 								<vbox>
 									<radio id="customsize" value="custom" label="Custom:" />
