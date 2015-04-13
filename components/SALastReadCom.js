@@ -2088,7 +2088,16 @@ salrPersistObject.prototype = {
 		var unconvertImages = this.getPreference("unconvertReadImages");
 		var readPost = (postbody.parentNode.className.search(/seen/) > -1);
 		convertImages = (convertImages && !(dontConvertReadImages && readPost));
+		if (convertImages)
+		{
+			var dontTtiNWS = this.getPreference("dontTextToImageIfMayBeNws");
+			var dontTtiSpoilers = this.getPreference("dontTextToImageInSpoilers");
+			var dontTtiQuotedImages = this.getPreference("dontConvertQuotedImages");
+		}
 		unconvertImages = (unconvertImages && readPost);
+		var enableVideoEmbeds = this.getPreference("enableVideoEmbedder");
+		if (enableVideoEmbeds)
+			var videoEmbedderBG = this.getPreference("videoEmbedderBG");
 
 		if (unconvertImages)
 		{
@@ -2148,12 +2157,12 @@ salrPersistObject.prototype = {
 				{
 					continue;
 				}
-				if (this.getPreference("dontTextToImageIfMayBeNws") &&
+				if (dontTtiNWS &&
 					link.parentNode.innerHTML.search(/(nsfw|nws|nms|t work safe|t safe for work)/i) > -1)
 				{
 					continue;
 				}
-				if (this.getPreference("dontTextToImageInSpoilers") &&
+				if (dontTtiSpoilers &&
 					(link.parentNode.className.search(/spoiler/i) > -1 ||
 					link.textContent.search(/spoiler/i) > -1))
 				{
@@ -2193,7 +2202,7 @@ salrPersistObject.prototype = {
 				{
 					link.href = link.href.replace('%3C/a%3E', '');
 				}
-				if (this.getPreference("dontConvertQuotedImages"))
+				if (dontTtiQuotedImages)
 				{
 					// Check if it's in a blockquote
 					if (link.parentNode.parentNode.className.search(/bbc-block/i) > -1 ||
@@ -2232,11 +2241,11 @@ salrPersistObject.prototype = {
 				}
 			}
 
-			if (this.getPreference("enableVideoEmbedder") &&
+			if (enableVideoEmbeds &&
 				(link.href.search(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i) > -1 ||
 				 link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1))
 			{
-				link.style.backgroundColor = this.getPreference("videoEmbedderBG");
+				link.style.backgroundColor = videoEmbedderBG;
 				link.addEventListener('click', SALR_vidClick, false);
 			}
 		}
@@ -2248,8 +2257,7 @@ salrPersistObject.prototype = {
 	processImages: function(postbody, doc)
 	{
 		var thumbnailAllImages = this.getPreference("thumbnailAllImages");
-
-		if(thumbnailAllImages)
+		if (thumbnailAllImages)
 		{
 			var maxWidth = this.getPreference("maxWidthOfConvertedImages");
 			var maxHeight = this.getPreference("maxHeightOfConvertedImages");
