@@ -879,6 +879,12 @@ salrPersistObject.prototype = {
 		{
 			CSSFile += 'table.salrPostQuoteIgnored { display:none !important; }\n';
 		}
+
+		// Shrink posts by ignored users (and restore gradients)
+		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n';
+		CSSFile += '#thread table.ignored tr.seen1 td.userinfo, #thread table.ignored tr.seen1 td.postbody { background-image: url("http://fi.somethingawful.com/images/forum-bg-alt-seen1.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
+		CSSFile += '#thread table.ignored tr.seen2 td.userinfo, #thread table.ignored tr.seen2 td.postbody { background-image: url("http://fi.somethingawful.com/images/forum-bg-alt-seen2.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
+
 		if (this.getPreference('quickPostJump'))
 		{
 			CSSFile += '#thread table.post.focused { outline: 2px dashed #c1c1c1 !important; }\n';
