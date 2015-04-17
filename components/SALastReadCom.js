@@ -20,14 +20,14 @@ function SALR_vidClick(e)
 
 	//figure out the video type
 	var videoId, videoType, videoTLD, yt_subd, yt_starttime, yt_start;
-	//var videoIdSearch = link.href.match(/^http\:\/\/((?:www|[a-z]{2})\.)?youtube\.com\/watch\?v=([-_0-9a-zA-Z]+)/);
-	var videoIdSearch = link.href.match(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:(?:.*)?t=(?:(\d*)m)?(?:(\d*)s)?)?/);
+
+	var videoIdSearch = link.href.match(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:.*?t=(?:(\d*)h)?(?:(\d*)m)?(?:(\d*)s?)?)?/);
 	if (videoIdSearch)
 	{
 		yt_subd = (videoIdSearch[1] == null ? "www." : videoIdSearch[1]);
 		videoId = videoIdSearch[2];
 		videoType = "youtube";
-		yt_starttime = (videoIdSearch[3] == null ? 0 : parseInt(videoIdSearch[3])) * 60 + (videoIdSearch[4] == null ? 0 : parseInt(videoIdSearch[4]));
+		yt_starttime = (videoIdSearch[3] == null ? 0 : parseInt(videoIdSearch[3])) * 3600 + (videoIdSearch[4] == null ? 0 : parseInt(videoIdSearch[4])) * 60 + (videoIdSearch[5] == null ? 0 : parseInt(videoIdSearch[5]));
 		yt_start = yt_starttime == 0 ? '' : 'start=' + yt_starttime;
 	}
 	else
@@ -2294,7 +2294,7 @@ salrPersistObject.prototype = {
 			}
 
 			if (enableVideoEmbeds &&
-				((link.href.search(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i) > -1) ||
+				((link.href.search(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i) > -1) ||
 				 (link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1) ||
 				 link.href.match(/^https?\:\/\/(?:.)+\.(webm|gifv)$/i) ||
 				 link.href.match(/^https?\:\/\/i\.imgur\.com\/(?:.)+\.gifv$/i)))
