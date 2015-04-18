@@ -929,7 +929,7 @@ salrPersistObject.prototype = {
 		}
 		if (this.getPreference('superIgnore'))
 		{
-			CSSFile += 'table.salrPostQuoteIgnored { display:none !important; }\n';
+			CSSFile += 'table.salrPostIgnored { display:none !important; }\n';
 		}
 
 		// Shrink posts by ignored users (and restore gradients)
@@ -1407,7 +1407,7 @@ salrPersistObject.prototype = {
 		}
 	},
 
-	// Removed a user as a admin
+	// Remove a user's admin flag
 	// @param: (int) User ID
 	// @return: nothing
 	removeAdmin: function(userid)
@@ -1416,6 +1416,37 @@ salrPersistObject.prototype = {
 		{
 			this.userDataCache[userid].admin = false;
 			var statement = this.database.createStatement("UPDATE `userdata` SET `admin` = 0 WHERE `userid` = ?1");
+			statement.bindInt32Parameter(0, userid);
+			statement.executeStep();
+			statement.reset();
+		}
+	},
+
+	// Super ignore a user
+	addSuperIgnored: function (userid, username)
+	{
+		if (this.userExists(userid))
+		{
+			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1, `ignored` = 1 WHERE `userid` = ?2");
+			statement.bindStringParameter(0,username);
+			statement.bindInt32Parameter(1,userid);
+			statement.execute();
+			this.userDataCache[userid].ignored = true;
+		}
+		else
+		{
+			this.addUser(userid, username);
+			this.addSuperIgnored(userid, username);
+		}
+	},
+
+	// Un-super ignore a user
+	removeSuperIgnored: function(userid)
+	{
+		if (this.isUserIgnored(userid))
+		{
+			this.userDataCache[userid].ignored = false;
+			var statement = this.database.createStatement("UPDATE `userdata` SET `ignored` = 0 WHERE `userid` = ?1");
 			statement.bindInt32Parameter(0, userid);
 			statement.executeStep();
 			statement.reset();

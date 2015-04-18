@@ -1299,6 +1299,18 @@ var gSALR = {
 
 			if (post.className.indexOf("ignored") > -1)
 			{
+				// Check if we need to super ignore
+				if (superIgnoreUsers)
+				{
+					// Temporarily reuse these variables since we'll be moving on shortly
+					profileLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'userid=')]");
+					if (profileLink)
+					{
+						posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+						if (posterId && gSALR.service.isUserIgnored(posterId))
+							post.className += ' salrPostIgnored';
+					}
+				}
 				// User is ignored by the system so skip doing anything else
 				continue;
 			}
@@ -1311,6 +1323,7 @@ var gSALR = {
 			if (superIgnoreUsers && gSALR.service.isUserIgnored(posterId))
 			{
 				// They're ignored but not by the system
+				post.className += ' salrPostIgnored';
 			}
 
 			if (inFYAD && !inArchives)
@@ -1453,7 +1466,7 @@ var gSALR = {
 							if (superIgnoreUsers && gSALR.service.isUserIgnored(userQuotedId))
 							{
 								// They're quoting someone ignored, lets remove the entire post
-								post.className += ' salrPostQuoteIgnored';
+								post.className += ' salrPostIgnored';
 							}
 							if (userQuotedDetails)
 							{
