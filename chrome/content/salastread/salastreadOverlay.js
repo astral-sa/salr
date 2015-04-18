@@ -2542,16 +2542,21 @@ var gSALR = {
 	clickMarkUnseen: function()
 	{
 		var doc = this.ownerDocument;
-		var thread = this.parentNode.parentNode.parentNode;
-		var threadRepliesBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
-
-		// Remove the new replies count
-		if (!gSALR.service.getPreference("disableNewReCount") && thread.className.search(/newposts/i) > -1)
+		var thread = this.parentNode.parentNode.parentNode.parentNode;
+		if (thread)
 		{
-			while (threadRepliesBox.childNodes[1])
+			var threadRepliesBox = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
+			if (threadRepliesBox)
 			{
-				// Delete everything but the original link
-				threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
+				// Remove the new replies count
+				if (!gSALR.service.getPreference("disableNewReCount") && thread.className.search(/newposts/i) > -1)
+				{
+					while (threadRepliesBox.childNodes[1])
+					{
+						// Delete everything but the original link
+						threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
+					}
+				}
 			}
 		}
 	},
