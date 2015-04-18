@@ -1315,6 +1315,8 @@ var gSALR = {
 				continue;
 			}
 
+			if (post.id == "post") // handle adbot
+				continue;
 			curPostId = post.id.match(/post(\d+)/)[1];
 			profileLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
 			if (!profileLink)
