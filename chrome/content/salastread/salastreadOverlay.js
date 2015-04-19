@@ -371,7 +371,7 @@ var gSALR = {
 			// Replace this function once the AJAXified JSON is added to the forums
 			// function will check timestamp which is stored in preferences
 
-			grabForumList(doc);
+			gSALR.grabForumList(doc);
 			gSALR.service.gotForumList = true;
 		}
 
@@ -1074,7 +1074,7 @@ var gSALR = {
 		// Grab the go to dropdown
 		if (!gSALR.service.gotForumList && !singlePost)
 		{
-			grabForumList(doc);
+			gSALR.grabForumList(doc);
 			gSALR.service.gotForumList = true;
 		}
 
@@ -1902,7 +1902,7 @@ var gSALR = {
 		if (doc.getElementsByName('t_forumid'))
 		{
 			// The forum list is here so let's update it
-			//grabForumList(doc);
+			//gSALR.grabForumList(doc);
 		}
 	},
 
@@ -3177,6 +3177,117 @@ var gSALR = {
 		return false;
 	},
 
+	// Menu support functions
+	grabForumList: function(doc)
+	{
+		var statsMenu = false;
+		var rowList = gSALR.service.selectNodes(doc, doc, "//select[@name='forumid']/option");
+		if (!rowList || rowList.length == 0)
+		{
+			// Can't find the forum list so lets check the other location
+			rowList = gSALR.service.selectNodes(doc, doc, "//select[@name='t_forumid']/option");
+			if (!rowList)
+			{
+				// Still couldn't find the forum list so let's stop now
+				return
+			}
+			statsMenu = true;
+		}
+		if (rowList.length < 15)
+		{
+			// There are way more then 15 forums so this menu is missing some
+			return;
+		}
+
+		var oDomParser = new DOMParser();
+		var forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
+		var targetEl = forumsDoc.documentElement;
+
+		var forumsEl = forumsDoc.createElement("forums");
+		forumsDoc.documentElement.appendChild(forumsEl);
+		forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), forumsEl);
+
+		for (var i=0; i < rowList.length; )
+		{
+			i = gSALR.addForums(forumsDoc, rowList, i, forumsEl, 0, statsMenu);
+		}
+
+		gSALR.service.forumListXml = forumsDoc;
+		if (gSALR.service.getPreference('showSAForumMenu'))
+		{
+			SALR_buildForumMenu();
+			SALR_buildToolbarButtonMenu();
+		}
+	},
+
+	addForums: function(forumsDoc, rowList, index, parentEl, depth, statsMenu)
+	{
+		var thisEl = rowList[index];
+		var forumTitle = thisEl.firstChild.nodeValue;
+		var forumId = thisEl.getAttribute("value");
+
+		forumId = parseInt(forumId);
+		if (isNaN(forumId) || forumId < 0)
+		{
+			return index+1;
+		}
+
+		var dashes = '--', elDepth = 0;
+		if (statsMenu)
+		{
+			dashes = '---';
+		}
+		while (true)
+		{
+			if(forumTitle.indexOf(dashes) != 0)
+			{
+				break;
+			}
+
+			forumTitle = forumTitle.substring(dashes.length);
+			elDepth++;
+		}
+		forumTitle = forumTitle.replace(/^\s+|\s+$/g, '');
+		forumTitle = forumTitle.replace('(no posting)', '');
+		if (elDepth < depth)
+		{
+			return index;
+		}
+		if (elDepth > depth)
+		{
+			// This can't fit in the tree
+			return index+1;
+		}
+
+		var fel;
+		if (depth == 0)
+		{
+			fel = forumsDoc.createElement("cat");
+		}
+		else
+		{
+			fel = forumsDoc.createElement("forum");
+		}
+
+		fel.setAttribute("id", forumId);
+		fel.setAttribute("name", forumTitle);
+		parentEl.appendChild(forumsDoc.createTextNode("\n"));
+		parentEl.appendChild(fel);
+
+		for (index++; index < rowList.length; )
+		{
+			var i = gSALR.addForums(forumsDoc, rowList, index, fel, depth+1, statsMenu);
+
+			if (i == index)
+			{
+				return i;
+			}
+
+			index = i;
+		}
+		return index;
+	}
+
 };
 
 gSALR.init();
@@ -3421,118 +3532,6 @@ function SALR_menuItemGoTo(event, url, target)
 		else
 			loadURI(url);
 	}
-}
-
-function grabForumList(doc)
-{
-	var statsMenu = false;
-	var rowList = gSALR.service.selectNodes(doc, doc, "//select[@name='forumid']/option");
-	if (!rowList || rowList.length == 0)
-	{
-		// Can't find the forum list so lets check the other location
-		rowList = gSALR.service.selectNodes(doc, doc, "//select[@name='t_forumid']/option");
-		if (!rowList)
-		{
-			// Still couldn't find the forum list so lets stop now
-			return
-		}
-		statsMenu = true;
-	}
-	if (rowList.length < 15)
-	{
-		// There's way more then 15 forums so this menu is missing some
-		return;
-	}
-
-	var oDomParser = new DOMParser();
-	var forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
-	var targetEl = forumsDoc.documentElement;
-
-	var forumsEl = forumsDoc.createElement("forums");
-	forumsDoc.documentElement.appendChild(forumsEl);
-	forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), forumsEl);
-
-	for (var i=0; i < rowList.length; )
-	{
-		i = addForums(forumsDoc, rowList, i, forumsEl, 0, statsMenu);
-	}
-
-	gSALR.service.forumListXml = forumsDoc;
-	if (gSALR.service.getPreference('showSAForumMenu'))
-	{
-		SALR_buildForumMenu();
-		SALR_buildToolbarButtonMenu();
-	}
-}
-
-function addForums(forumsDoc, rowList, index, parentEl, depth, statsMenu)
-{
-	var thisEl = rowList[index];
-	var forumTitle = thisEl.firstChild.nodeValue;
-	var forumId = thisEl.getAttribute("value");
-
-	forumId = parseInt(forumId);
-	if (isNaN(forumId) || forumId < 0)
-	{
-		return index+1;
-	}
-
-	var dashes = '--', elDepth = 0;
-	if (statsMenu)
-	{
-		dashes = '---';
-	}
-	while (true)
-	{
-		if(forumTitle.indexOf(dashes) != 0)
-		{
-			break;
-		}
-
-		forumTitle = forumTitle.substring(dashes.length);
-		elDepth++;
-	}
-	forumTitle = forumTitle.replace(/^\s+|\s+$/g, '');
-	forumTitle = forumTitle.replace('(no posting)', '');
-	if (elDepth < depth)
-	{
-		return index;
-	}
-	if (elDepth > depth)
-	{
-		// This can't fit in the tree
-		return index+1;
-	}
-
-	var fel;
-	if (depth == 0)
-	{
-		fel = forumsDoc.createElement("cat");
-	}
-	else
-	{
-		fel = forumsDoc.createElement("forum");
-	}
-
-	fel.setAttribute("id", forumId);
-	fel.setAttribute("name", forumTitle);
-	parentEl.appendChild(forumsDoc.createTextNode("\n"));
-	parentEl.appendChild(fel);
-
-	for (index++; index < rowList.length; )
-	{
-		var i = addForums(forumsDoc, rowList, index, fel, depth+1, statsMenu);
-
-		if (i == index)
-		{
-			return i;
-		}
-
-		index = i;
-	}
-
-	return index;
-
 }
 
 function populateForumMenuFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements) {
