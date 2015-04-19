@@ -1588,7 +1588,6 @@ var gSALR = {
 					//Apply our alternate style:
 					if (cancerTreatment == 1)
 					{
-						cancerDiv.style.opacity = "1";
 						postbody.style.backgroundImage = 'url("chrome://salastread/skin/biohazard.png")';
 						postbody.style.backgroundRepeat = "repeat";
 					}

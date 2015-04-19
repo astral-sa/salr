@@ -931,6 +931,11 @@ salrPersistObject.prototype = {
 		{
 			CSSFile += 'table.salrPostIgnored { display:none !important; }\n';
 		}
+		if (this.getPreference('cancerTreatment') == 1)
+		{
+			// 0 - do nothing; 1 - restore opacity and add biohazard BG; 2 - hide post entirely
+			CSSFile += 'td.postbody .cancerous { opacity: 1; }\n';
+		}
 
 		// Shrink posts by ignored users (and restore gradients)
 		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n';
