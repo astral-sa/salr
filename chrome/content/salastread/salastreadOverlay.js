@@ -1450,11 +1450,11 @@ var gSALR = {
 				gSALR.service.colorPost(doc, posterBG, posterId);
 			}
 
-			// Check for quotes that need to be colored
-			if (gSALR.service.getPreference('highlightQuotes'))
+			// Check for quotes that need to be colored or superIgnored
+			if (gSALR.service.getPreference('highlightQuotes') || superIgnoreUsers)
 			{
 				var userQuoted;
-				var anyQuotes = gSALR.service.selectNodes(doc, post, "TBODY//TR/TD/DIV[contains(@class,'bbc-block')]");
+				var anyQuotes = gSALR.service.selectNodes(doc, post, "TBODY//TR/TD//DIV[contains(@class,'bbc-block')]");
 				for (let quote in anyQuotes)
 				{
 					userQuoted = anyQuotes[quote].textContent.match(/(.*) posted:/);
