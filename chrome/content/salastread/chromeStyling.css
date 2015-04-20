@@ -23,6 +23,11 @@ toolbarpaletteitem[place="palette"] > #salr-toolbarbutton {
     }
 }
 
+/* Fix for Australis customize menu arrow weirdness */
+#salr-toolbarbutton[type="menu"]:not([cui-areatype="menu-panel"]) {
+	-moz-box-orient: horizontal !important;
+}
+
 menupopup.lastread_menu
 {
 	-moz-appearance: none;
