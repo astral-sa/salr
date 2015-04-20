@@ -7,6 +7,11 @@ toolbar[iconsize="small"] #salr-toolbarbutton {
 	list-style-image: url("chrome://salastread/skin/sa.png");
 }
 
+#salr-toolbarbutton[cui-areatype="menu-panel"],
+toolbarpaletteitem[place="palette"] > #salr-toolbarbutton {
+	list-style-image: url("chrome://salastread/skin/sa-32.png");
+}
+
 menupopup.lastread_menu
 {
 	-moz-appearance: none;
@@ -17,7 +22,7 @@ menupopup.lastread_menu
 }
 
 menuitem.lastread_menu_frontpage {
- font-weight: bold;
+	font-weight: bold;
 }
 
 menu.salastread_context_menu
@@ -31,15 +36,15 @@ menu.salastread_context_menu
 
 menuitem.lastread_menu_sub
 {
-   font-weight: bold;
+	font-weight: bold;
 }
 
 menuitem.lastread_menu_sub\-sub
 {
-   padding-left: 15px;
+	padding-left: 15px;
 }
 
 menuitem.lastread_menu_sub\-sub\-sub
 {
-   padding-left: 30px;
+	padding-left: 30px;
 }
