@@ -12,6 +12,17 @@ toolbarpaletteitem[place="palette"] > #salr-toolbarbutton {
 	list-style-image: url("chrome://salastread/skin/sa-32.png");
 }
 
+/* High-resolution displays */
+@media (min-resolution: 2dppx) {
+    #salr-toolbarbutton {
+        list-style-image: url("chrome://salastread/skin/sa-32.png");
+    }
+    #salr-toolbarbutton[cui-areatype="menu-panel"],
+    toolbarpaletteitem[place="palette"] > #salr-toolbarbutton {
+        list-style-image: url("chrome://salastread/skin/sa-64.png");
+    }
+}
+
 menupopup.lastread_menu
 {
 	-moz-appearance: none;
