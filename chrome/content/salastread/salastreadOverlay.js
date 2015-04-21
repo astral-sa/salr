@@ -77,7 +77,7 @@ var gSALR = {
 		if (document.getElementById('appcontent'))
 			window.addEventListener('DOMContentLoaded', gSALR.onDOMLoad, true);
 		if (gSALR.service.getPreference("showSAForumMenu") && (document.getElementById("salr-menu") == null))
-			SALR_buildForumMenu();
+			gSALR.buildForumMenu('menubar');
 	},
 
 	showChangelogAlert: function()
@@ -632,7 +632,8 @@ var gSALR = {
 		var threadTitle, threadId, threadOPId, threadRe;
 		var threadLRCount, unvistIcon, lpIcon, lastPostName;
 		var userPosterNote, lastLink, searchString;
-		var starredthreads = gSALR.service.starList, ignoredthreads = gSALR.service.ignoreList;
+		var starredthreads = gSALR.service.starList;
+		var ignoredthreads = gSALR.service.ignoreList;
 		var table = document.getElementById('forum');
 
 		// We need to reset this every time the page is fully loaded
@@ -3176,7 +3177,11 @@ var gSALR = {
 		return false;
 	},
 
-	// Menu support functions
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SA Drop Down Menu Functions /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 	grabForumList: function(doc)
 	{
 		var statsMenu = false;
@@ -3208,18 +3213,18 @@ var gSALR = {
 
 		for (var i=0; i < rowList.length; )
 		{
-			i = gSALR.addForums(forumsDoc, rowList, i, forumsEl, 0, statsMenu);
+			i = gSALR._addForums(forumsDoc, rowList, i, forumsEl, 0, statsMenu);
 		}
 
 		gSALR.service.forumListXml = forumsDoc;
 		if (gSALR.service.getPreference('showSAForumMenu'))
 		{
-			SALR_buildForumMenu();
-			SALR_buildToolbarButtonMenu();
+			gSALR.buildForumMenu('menubar');
+			gSALR.buildForumMenu('toolbar');
 		}
 	},
 
-	addForums: function(forumsDoc, rowList, index, parentEl, depth, statsMenu)
+	_addForums: function(forumsDoc, rowList, index, parentEl, depth, statsMenu)
 	{
 		var thisEl = rowList[index];
 		var forumTitle = thisEl.firstChild.nodeValue;
@@ -3275,7 +3280,7 @@ var gSALR = {
 
 		for (index++; index < rowList.length; )
 		{
-			var i = gSALR.addForums(forumsDoc, rowList, index, fel, depth+1, statsMenu);
+			var i = gSALR._addForums(forumsDoc, rowList, index, fel, depth+1, statsMenu);
 
 			if (i == index)
 			{
@@ -3285,7 +3290,453 @@ var gSALR = {
 			index = i;
 		}
 		return index;
-	}
+	},
+
+	menuItemCommand: function(event, el, etype)
+	{
+		var target = "none";
+		if (etype=="command")
+			target = "current";
+		if (etype=="click")
+			if (event.button == 2 || event.button == 1)
+				target = "newtab";
+
+		if (target != "none")
+		{
+			// forum=search shortcut seems to be working again; comment to use new search instead:
+			if (el.getAttribute("forumnum") == "search")
+				gSALR.menuItemGoTo(event,"http://forums.somethingawful.com/f/search",target);
+			else
+				gSALR.menuItemGoTo(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"),target);
+			// Try to block Firefox's default right-click menu for this element, if applicable.
+			if (event.cancelable)
+				event.preventDefault();
+		}
+	},
+
+	menuItemCommandGoToStarredThread: function(event, el, etype, threadid)
+	{
+		// Band-aid: Don't execute this function twice on a left click.
+		if (etype == "click" && event.button == 0)
+			return;
+
+		if (event.ctrlKey == true && event.shiftKey == true)
+		{
+			if (confirm("Do you want to unstar thread \"" + gSALR.service.getThreadTitle(threadid) + "\"?"))
+			{
+				gSALR.service.toggleThreadStar(threadid);
+			}
+			return;
+		}
+
+		try
+		{
+			gSALR.menuItemCommandURL(event, "http://forums.somethingawful.com/showthread.php?threadid=" + threadid + "&goto=newpost", etype);
+		}
+		catch(e)
+		{
+			alert("Couldn't find thread id: " + threadid);
+		}
+	},
+
+	menuItemCommandURL: function(event, el, etype)
+	{
+		var target = "none";
+		if (etype=="command")
+		{
+			target = "current";
+		}
+		else if (etype=="click")
+		{
+			if (event.button == 0)
+				target = "current";
+			else if (event.button == 2 || event.button == 1)
+				target = "newtab";
+		}
+
+		var targeturl = "";
+		if (typeof(el) == "string")
+			targeturl = el;
+		else
+			targeturl = el.getAttribute("targeturl");
+
+		if (target != "none")
+			gSALR.menuItemGoTo(event,targeturl,target);
+	},
+
+	menuItemGoTo: function(event, url, target)
+	{
+		if (target == "newtab")
+		{
+			getBrowser().addTab(url);
+		}
+		else if (target == "current")
+		{
+			if (getBrowser().selectedTab.pinned && !gSALR.service.getPreference('ignoreAppTabs'))
+				getBrowser().selectedTab = getBrowser().addTab(url);
+			else
+				loadURI(url);
+		}
+	},
+
+	_populateForumMenuFrom: function(nested_menus, target, forumListXmlSrc, pinnedForumNumbers, pinnedForumElements)
+	{
+		// First, add Utils menu items
+		let menuUtils = [
+			{name:"Private Messages",id:"pm"},
+			{name:"User Control Panel",id:"cp"},
+			{name:"Search Forums",id:"search"},
+			{name:"Forums Home",id:"home"},
+			{name:"Leper's Colony",id:"lc"}];
+
+		for (let i = 0; i < menuUtils.length; i++)
+		{
+			let thisUtil = menuUtils[i];
+			let menuel = document.createElement("menuitem");
+			menuel.setAttribute("label", thisUtil.name);
+			menuel.setAttribute("forumnum", thisUtil.id);
+			menuel.setAttribute("onclick", "gSALR.menuItemCommand(event,this,'click');");
+			menuel.setAttribute("oncommand", "gSALR.menuItemCommand(event,this,'command');");
+
+			//TODO: access keys
+			target.appendChild(menuel);
+		}
+		target.appendChild(document.createElement("menuseparator"));
+
+		// Next, see if we can add any forums - look for <forums> element in our XML
+		// If we find it, pass that element to "populateForumMenuForumsFrom"
+		var forums, foundforums = false;
+		if (forumListXmlSrc) {
+			for (var i = 0; i < forumListXmlSrc.childNodes.length; i++) {
+				if (forumListXmlSrc.childNodes[i].nodeName == "forums")
+					forums = forumListXmlSrc.childNodes[i];
+			}
+			if (forums)
+				foundforums = gSALR._populateForumMenuForumsFrom(nested_menus, target, forums, pinnedForumNumbers, pinnedForumElements,0);
+		}
+		// If we don't find it, create an instructional placeholder menu item
+		if (!foundforums)
+		{
+			let menuel = document.createElement("menuitem");
+			menuel.setAttribute("label", "Visit a forum to reload list");
+			menuel.setAttribute("forumnum", "home");
+
+			target.appendChild(menuel);
+		}
+	},
+
+	_populateForumMenuForumsFrom: function(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements, depth)
+	{
+		var first = true;
+		var foundAnything = false;
+		for (var i = 0; i < src.childNodes.length; i++)
+		{
+			var thisforum = src.childNodes[i];
+
+			if (thisforum.nodeName == "cat")
+			{
+				foundAnything = true;
+				if (!nested_menus)
+				{
+					if (!first)
+						target.appendChild(document.createElement("menuseparator"));
+					else
+						first = false;
+					gSALR._populateForumMenuForumsFrom(nested_menus,target,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
+				}
+				else
+				{
+					var submenu = document.createElement("menu");
+					submenu.setAttribute("label", thisforum.getAttribute("name"));
+					var submenupopup = document.createElement("menupopup");
+					if (gSALR.service.getPreference('useSAForumMenuBackground'))
+						submenupopup.setAttribute("class", "lastread_menu");
+
+					submenu.appendChild(submenupopup);
+					gSALR._populateForumMenuForumsFrom(nested_menus,submenupopup,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
+					target.appendChild(submenu);
+				}
+			}
+			else if (thisforum.nodeName == "forum")
+			{
+				foundAnything = true;
+				var menuel = document.createElement("menuitem");
+				menuel.setAttribute("label", thisforum.getAttribute("name"));
+				menuel.setAttribute("forumnum", thisforum.getAttribute("id"));
+				menuel.setAttribute("onclick", "gSALR.menuItemCommand(event,this,'click');");
+				menuel.setAttribute("oncommand", "gSALR.menuItemCommand(event,this,'command');");
+
+				var cssClass = "";
+				for (var j = 1; j <= depth; j++)
+				{
+					cssClass += "sub";
+					if (j != depth)
+						cssClass += "-";
+				}
+
+				if (cssClass != "")
+					menuel.setAttribute("class", "lastread_menu_" + cssClass);
+
+				//TODO: access keys
+				target.appendChild(menuel);
+				if (nested_menus)
+				{
+					var thisforumnum = thisforum.getAttribute("id");
+					for (var j = 0; j < pinnedForumNumbers.length; j++)
+					{
+						if (pinnedForumNumbers[j] == thisforumnum)
+							pinnedForumElements[j] = thisforum;
+					}
+				}
+				gSALR._populateForumMenuForumsFrom(nested_menus,target,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
+			}
+		}
+		return foundAnything;
+	},
+
+	buildForumMenu: function(menuLoc)
+	{
+		if (menuLoc == "menubar")
+		{
+			// If there are any other SA menus, hide them.  Why? Who knows
+			// Since this now defaults to off, it might not work, keep an eye out if anyone cares
+			if (gSALR.service.getPreference('hideOtherSAMenus'))
+			{
+				var mmb = document.getElementById("main-menubar");
+				for (var x=0; x<mmb.childNodes.length; x++)
+				{
+					var thischild = mmb.childNodes[x];
+					if (thischild.nodeName=="menu")
+					{
+						if ((thischild.getAttribute("label")=="SA" || thischild.id=="menu-sa") && thischild.id!="salr-menu")
+						{
+							mmb.removeChild(thischild);
+							x--;
+						}
+					}
+				}
+			}
+
+			var menupopup = document.getElementById("menupopup_SAforums");
+			if (menupopup == null)
+			{
+				var iBefore = document.getElementById("tools-menu");
+				if (!iBefore)
+					iBefore = document.getElementById("main-menubar").lastChild;
+				var salrMenu = document.createElement("menu");
+				salrMenu.id = "salr-menu";
+				salrMenu.setAttribute("label", "SA");
+				salrMenu.setAttribute("accesskey", gSALR.service.getPreference('menuAccessKey'));
+				salrMenu.style.display = "none";
+				menupopup = document.createElement("menupopup");
+				menupopup.id = "menupopup_SAforums";
+				menupopup.className = "lastread_menu";
+				salrMenu.appendChild(menupopup);
+				iBefore.parentNode.insertBefore(salrMenu, iBefore);
+			}
+		}
+		else if (menuLoc == "toolbar")
+		{
+			var menupopup = document.getElementById("salr-toolbar-popup");
+		}
+
+
+		if (menupopup)
+		{
+			if (gSALR.service.getPreference('useSAForumMenuBackground'))
+				menupopup.className = "lastread_menu";
+			else
+				menupopup.className = "";
+
+			while (menupopup.firstChild)
+			{
+				menupopup.removeChild(menupopup.firstChild);
+			}
+			var forumsDoc = gSALR.service.forumListXml;
+			var nested_menus = gSALR.service.getPreference('nestSAForumMenu');
+			var salrMenu = document.createElement("menuitem");
+			var pinnedForumNumbers = new Array();
+			var pinnedForumElements = new Array();
+			if (nested_menus && gSALR.service.getPreference('menuPinnedForums'))
+				pinnedForumNumbers = gSALR.service.getPreference('menuPinnedForums').split(",");
+			salrMenu.setAttribute("label","Something Awful");
+			salrMenu.setAttribute("image", "chrome://salastread/skin/sa.png");
+			salrMenu.setAttribute("onclick", "gSALR.menuItemCommandURL(event,'http://www.somethingawful.com','click');");
+			salrMenu.setAttribute("oncommand", "gSALR.menuItemCommandURL(event,'http://www.somethingawful.com','command');");
+			salrMenu.setAttribute("class","menuitem-iconic lastread_menu_frontpage");
+			menupopup.appendChild(salrMenu);
+			menupopup.appendChild(document.createElement("menuseparator"));
+
+			var lsalrMenu = document.createElement("menuitem");
+			lsalrMenu.setAttribute("label","Configure SALastRead...");
+			lsalrMenu.setAttribute("oncommand", "gSALR.runConfig('command');");
+			menupopup.appendChild(lsalrMenu);
+			menupopup.appendChild(document.createElement("menuseparator"));
+
+			gSALR._populateForumMenuFrom(nested_menus,menupopup,forumsDoc ? forumsDoc.documentElement : null,pinnedForumNumbers,pinnedForumElements);
+
+			// We only add pinned forums + any starred threads if nestSAForumMenu is true
+			if (nested_menus && (pinnedForumElements.length > 0 || pinnedForumNumbers.length > 0))
+			{
+				menupopup.appendChild(document.createElement("menuseparator"));
+				for (var j = 0; j < pinnedForumElements.length || j < pinnedForumNumbers.length; j++)
+				{
+					if (pinnedForumElements[j])
+					{
+						var thisforum = pinnedForumElements[j];
+						var salrMenu = document.createElement("menuitem");
+						var forumname = thisforum.getAttribute("name");
+						while (forumname.substring(0,1)==" ")
+						{
+							forumname = forumname.substring(1);
+						}
+						salrMenu.setAttribute("label", forumname);
+						salrMenu.setAttribute("forumnum", thisforum.getAttribute("id"));
+						salrMenu.setAttribute("onclick", "gSALR.menuItemCommand(event,this,'click');");
+						salrMenu.setAttribute("oncommand", "gSALR.menuItemCommand(event,this,'command');");
+						salrMenu.setAttribute("class", "lastread_menu_sub");
+						menupopup.appendChild(salrMenu);
+					}
+					else if (pinnedForumNumbers[j] == "sep")
+					{
+						menupopup.appendChild(document.createElement("menuseparator"));
+					}
+					else if (typeof(pinnedForumNumbers[j]) == "string" && pinnedForumNumbers[j].substring(0, 3) == "URL")
+					{
+						var umatch = pinnedForumNumbers[j].match(/^URL\[(.*?)\]\[(.*?)\]$/);
+						if (umatch)
+						{
+							var salrMenu = document.createElement("menuitem");
+							salrMenu.setAttribute("label", gSALR.service.UnescapeMenuURL(umatch[1]));
+							salrMenu.setAttribute("targeturl", gSALR.service.UnescapeMenuURL(umatch[2]));
+							salrMenu.setAttribute("onclick", "gSALR.menuItemCommandURL(event,this,'click');");
+							salrMenu.setAttribute("oncommand", "gSALR.menuItemCommandURL(event,this,'command');");
+							salrMenu.setAttribute("class", "lastread_menu_sub");
+
+							menupopup.appendChild(salrMenu);
+						}
+					}
+					else if (pinnedForumNumbers[j]=="starred")
+					{
+						var salrMenu = document.createElement("menu");
+						salrMenu.setAttribute("label", "Starred Threads");
+						salrMenu.setAttribute("image", "chrome://salastread/skin/star.png");
+						salrMenu.setAttribute("class", "menu-iconic lastread_menu_starred");
+
+						var subpopup = document.createElement("menupopup");
+						if (menuLoc == "menubar")
+							subpopup.id = "salr_starredthreadmenupopup";
+						else if (menuLoc == "toolbar")
+							subpopup.id = "salr_tb_starredthreadmenupopup";
+
+						salrMenu.appendChild(subpopup);
+						menupopup.appendChild(salrMenu);
+						subpopup.setAttribute("onpopupshowing", "gSALR.starredThreadMenuShowing('"+menuLoc+"');");
+					}
+				}
+
+				if (gSALR.service.getPreference('showMenuPinHelper'))
+				{
+					var ms = document.createElement("menuseparator");
+					ms.setAttribute("class", "salr_pinhelper_item");
+					menupopup.appendChild(ms);
+
+					var salrMenu = document.createElement("menuitem");
+					salrMenu.setAttribute("label", "Learn how to pin forums to this menu...");
+					salrMenu.setAttribute("image", "chrome://salastread/skin/eng101-16x16.png");
+					salrMenu.setAttribute("oncommand", "gSALR.launchPinHelper();");
+					salrMenu.setAttribute("class", "salr_pinhelper_item menuitem-iconic lastread_menu_sub");
+
+					menupopup.addEventListener("popupshowing", function(){gSALR.removeMenuPinHelper(menuLoc)}, false);
+					menupopup.appendChild(salrMenu);
+				}
+			}
+		}
+		if (menuLoc == "menubar")
+			document.getElementById("salr-menu").style.display = "-moz-box";
+	},
+
+	starredThreadMenuShowing: function(menuLoc)
+	{
+		if (menuLoc == "menubar")
+			var menupopup = document.getElementById("salr_starredthreadmenupopup");
+		else if (menuLoc == "toolbar")
+			var menupopup = document.getElementById("salr_tb_starredthreadmenupopup");
+
+		while (menupopup.firstChild != null) {
+			menupopup.removeChild(menupopup.firstChild);
+		}
+		var starred = gSALR.service.starList;
+
+		for(var id in starred)
+		{
+			var title = starred[id];
+			var menuel = document.createElement("menuitem");
+				menuel.setAttribute("label", title);
+				menuel.setAttribute("onclick", "gSALR.menuItemCommandGoToStarredThread(event, this, 'click'," + id + ");");
+				menuel.setAttribute("oncommand", "gSALR.menuItemCommandGoToStarredThread(event, this, 'command'," + id + ");");
+			menupopup.appendChild(menuel);
+		}
+
+		if (!menupopup.firstChild)
+		{
+			var menuel = document.createElement("menuitem");
+				menuel.setAttribute("label", "You have no threads starred.");
+				menuel.setAttribute("disabled", "true");
+			menupopup.appendChild(menuel);
+		}
+	},
+
+	removeMenuPinHelper: function(menuLoc)
+	{
+		if (gSALR.service.getPreference('showMenuPinHelper') == false)
+		{
+			if (menuLoc == "menubar")
+				var menupopup = document.getElementById("menupopup_SAforums");
+			else if (menuLoc == "toolbar")
+				var menupopup = document.getElementById("salr-toolbar-popup");
+			if (menupopup)
+			{
+				var pinhelperItems = menupopup.getElementsByClassName('salr_pinhelper_item');
+				while(pinhelperItems.length > 0)
+					menupopup.removeChild(pinhelperItems[0]);
+			}
+		}
+	},
+
+	launchPinHelper: function()
+	{
+	   gSALR.service.setPreference('showMenuPinHelper', false);
+
+	   gSALR.runConfig("menu");
+	   alert("You may return to the menu settings at any time by choosing \"Configure SALastRead...\" from the SA menu, or by "+
+	         "clicking the \"Configure SALR\" link in the header of any forum page.");
+	},
+
+	onTBMenuShowing: function(e)
+	{
+		// Build the menu if we need to.
+		var menupopup = document.getElementById("salr-toolbar-popup");
+		if (menupopup && !menupopup.firstChild)
+			gSALR.buildForumMenu('toolbar');
+	},
+
+	onTBClick: function(e)
+	{
+		// The main portion of the SALR button has been clicked.
+		// Just open the context menu, for now.
+		gSALR.onTBContextMenu(e)
+	},
+
+	onTBContextMenu: function(e)
+	{
+		var tb = e.currentTarget;
+		var popup = tb.firstChild;
+		if (!popup || !popup.showPopup)
+			return;
+		e.preventDefault();
+		popup.showPopup();
+	},
 
 };
 
@@ -3427,589 +3878,3 @@ function releaseQuickQuoteVars()
 	quickQuoteSubmitting = false;
 	gSALR.quickquotewin = null;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SA Drop Down Menu Functions /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-function SALR_menuItemCommand(event, el, etype)
-{
-	var target = "none";
-	if(etype=="command")
-	{
-		target = "current";
-	}
-	if(etype=="click")
-	{
-		if(event.button == 2 || event.button == 1)
-		{
-			target = "newtab";
-		}
-	}
-
-	if(target != "none")
-	{
-		// Temporary (?) workaround until the forumid=search shortcut works again
-		if (el.getAttribute("forumnum") == "search")
-			SALR_menuItemGoTo(event,"http://forums.somethingawful.com/f/search",target);
-		else
-			SALR_menuItemGoTo(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"),target);
-		// Try to block Firefox's default right-click menu for this element, if applicable.
-		if (event.cancelable)
-			event.preventDefault();
-	}
-}
-
-function SALR_menuItemCommandGoToLastPost(event, el, etype, threadid)
-{
-	if (event.ctrlKey == true && event.shiftKey == true)
-	{
-		if (confirm("Do you want to unstar thread \"" + gSALR.service.getThreadTitle(threadid) + "\"?"))
-		{
-			gSALR.service.toggleThreadStar(threadid);
-		}
-		return;
-	}
-
-	try
-	{
-		SALR_menuItemCommandURL(event, "http://forums.somethingawful.com/showthread.php?threadid=" + threadid + "&goto=newpost", etype);
-	}
-	catch(e)
-	{
-		alert("Couldn't find thread id: " + threadid);
-	}
-}
-
-function SALR_menuItemCommandURL(event, el, etype)
-{
-	var target = "none";
-
-	if (etype=="command")
-	{
-		target = "current";
-	}
-	if (etype=="click")
-	{
-		if (event.button == 0)
-		{
-			target = "current";
-		}
-		else if (event.button == 2 || event.button == 1)
-		{
-			target = "newtab";
-		}
-	}
-
-	var targeturl = "";
-	if (typeof(el) == "string")
-	{
-		targeturl = el;
-	}
-	else
-	{
-		targeturl = el.getAttribute("targeturl");
-	}
-
-	if (target != "none")
-	{
-		SALR_menuItemGoTo(event,targeturl,target);
-	}
-}
-
-function SALR_menuItemGoTo(event, url, target)
-{
-	if (target=="newtab")
-	{
-		getBrowser().addTab(url);
-	}
-	else if (target=="current")
-	{
-		if (getBrowser().selectedTab.pinned && !gSALR.service.getPreference('ignoreAppTabs'))
-			getBrowser().selectedTab = getBrowser().addTab(url);
-		else
-			loadURI(url);
-	}
-}
-
-function populateForumMenuFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements) {
-
-   populateForumMenuUtilsFrom(target)
-
-   var forums, foundforums = false;
-   if(src) {
-      for(var i = 0; i < src.childNodes.length; i++) {
-         if(src.childNodes[i].nodeName == "forums")forums = src.childNodes[i]
-      }
-
-      if(forums) {
-
-         foundforums = populateForumMenuForumsFrom(nested_menus, target, forums, pinnedForumNumbers, pinnedForumElements,0)
-      }
-   }
-
-   if(!foundforums) {
-      var menuel = document.createElement("menuitem");
-         menuel.setAttribute("label", "Visit a forum to reload list");
-         menuel.setAttribute("forumnum", "home");
-
-         target.appendChild(menuel);
-   }
-}
-
-function populateForumMenuUtilsFrom(target) {
-   var utils = [
-      {name:"Private Messages",id:"pm"},
-      {name:"User Control Panel",id:"cp"},
-      {name:"Search Forums",id:"search"},
-      {name:"Forums Home",id:"home"},
-      {name:"Leper's Colony",id:"lc"}]
-
-   var utils
-   for(var i = 0; i < utils.length; i++) {
-		var thisutil = utils[i]
-
-      var menuel = document.createElement("menuitem");
-         menuel.setAttribute("label", thisutil.name);
-         menuel.setAttribute("forumnum", thisutil.id);
-         menuel.setAttribute("onclick", "SALR_menuItemCommand(event,this,'click');");
-         menuel.setAttribute("oncommand", "SALR_menuItemCommand(event,this,'command');");
-
-
-         //TODO: access keys
-         target.appendChild(menuel);
-
-	}
-   target.appendChild(document.createElement("menuseparator"));
-}
-
-function populateForumMenuForumsFrom(nested_menus, target, src, pinnedForumNumbers, pinnedForumElements,depth) {
-   var first = true
-   var foundAnything = false
-   for(var i = 0; i < src.childNodes.length; i++) {
-		var thisforum = src.childNodes[i];
-
-		if(thisforum.nodeName == "cat") {
-         foundAnything = true
-			if(!nested_menus) {
-            if(!first) {
-   				target.appendChild(document.createElement("menuseparator"));
-            } else  {
-               first = false
-            }
-				populateForumMenuForumsFrom(nested_menus,target,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
-			} else {
-				var submenu = document.createElement("menu");
-					submenu.setAttribute("label", thisforum.getAttribute("name"));
-
-				var submenupopup = document.createElement("menupopup");
-				if(gSALR.service.getPreference('useSAForumMenuBackground')) {
-					submenupopup.setAttribute("class", "lastread_menu");
-				}
-
-				submenu.appendChild(submenupopup);
-				populateForumMenuForumsFrom(nested_menus,submenupopup,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
-				target.appendChild(submenu);
-			}
-		} else if(thisforum.nodeName == "forum" ) {
-         foundAnything = true
-			var menuel = document.createElement("menuitem");
-         menuel.setAttribute("label", thisforum.getAttribute("name"));
-         menuel.setAttribute("forumnum", thisforum.getAttribute("id"));
-         menuel.setAttribute("onclick", "SALR_menuItemCommand(event,this,'click');");
-         menuel.setAttribute("oncommand", "SALR_menuItemCommand(event,this,'command');");
-
-         var cssClass = ""
-         for(var j=1;j<=depth;j++) {
-            cssClass += "sub"
-            if(j!=depth)cssClass += "-"
-         }
-
-         if(cssClass != "") {
-            menuel.setAttribute("class", "lastread_menu_" + cssClass);
-         }
-			//TODO: access keys
-			target.appendChild(menuel);
-			if(nested_menus) {
-				var thisforumnum = thisforum.getAttribute("id");
-				for (var j = 0; j < pinnedForumNumbers.length; j++) {
-					if (pinnedForumNumbers[j] == thisforumnum) {
-						pinnedForumElements[j] = thisforum;
-					}
-				}
-			}
-
-   		populateForumMenuForumsFrom(nested_menus,target,thisforum,pinnedForumNumbers,pinnedForumElements,depth+1);
-		}
-	}
-   return foundAnything
-}
-
-function SALR_onMenuShowing(e)
-{
-	// Build the menu if we need to.
-	var menupopup = document.getElementById("salr-toolbar-popup");
-	if (menupopup && !menupopup.firstChild)
-		SALR_buildToolbarButtonMenu();
-}
-
-function SALR_onTBClick(e)
-{
-	// The main portion of the SALR button has been clicked.
-	// Just open the context menu, for now.
-	SALR_onTBContextMenu(e)
-}
-
-function SALR_onTBContextMenu(e)
-{
-	var tb = e.currentTarget;
-	var popup = tb.firstChild;
-	if (!popup || !popup.showPopup)
-		return;
-	e.preventDefault();
-	popup.showPopup();
-}
-
-function SALR_buildToolbarButtonMenu()
-{
-	var menupopup = document.getElementById("salr-toolbar-popup");
-	if (menupopup)
-	{
-		menupopup.addEventListener("popupshowing", SALR_TBMenuShowing, false);
-		if (gSALR.service.getPreference('useSAForumMenuBackground'))
-		{
-			menupopup.className = "lastread_menu";
-		}
-		else
-		{
-			menupopup.className = "";
-		}
-
-		while (menupopup.firstChild) {
-			menupopup.removeChild(menupopup.firstChild);
-		}
-		var forumsDoc = gSALR.service.forumListXml;
-		var nested_menus = gSALR.service.getPreference('nestSAForumMenu');
-		var salrMenu = document.createElement("menuitem");
-		var pinnedForumNumbers = new Array();
-		var pinnedForumElements = new Array();
-		if (nested_menus && gSALR.service.getPreference('menuPinnedForums')) {
-			pinnedForumNumbers = gSALR.service.getPreference('menuPinnedForums').split(",");
-		}
-		salrMenu.setAttribute("label","Something Awful");
-		salrMenu.setAttribute("image", "chrome://salastread/skin/sa.png");
-		salrMenu.setAttribute("onclick", "SALR_menuItemCommandURL(event,'http://www.somethingawful.com','click');");
-		salrMenu.setAttribute("oncommand", "SALR_menuItemCommandURL(event,'http://www.somethingawful.com','command');");
-		salrMenu.setAttribute("class","menuitem-iconic lastread_menu_frontpage");
-		menupopup.appendChild(salrMenu);
-		menupopup.appendChild(document.createElement("menuseparator"));
-
-		var lsalrMenu = document.createElement("menuitem");
-		lsalrMenu.setAttribute("label","Configure SALastRead...");
-		lsalrMenu.setAttribute("oncommand", "gSALR.runConfig('command');");
-
-		menupopup.appendChild(lsalrMenu);
-
-		menupopup.appendChild(document.createElement("menuseparator"));
-
-		populateForumMenuFrom(nested_menus,menupopup,forumsDoc ? forumsDoc.documentElement : null,pinnedForumNumbers,pinnedForumElements);
-
-		if(nested_menus && (pinnedForumElements.length > 0 || pinnedForumNumbers.length > 0)) {
-			menupopup.appendChild(document.createElement("menuseparator"));
-			for(var j = 0; j < pinnedForumElements.length || j < pinnedForumNumbers.length; j++) {
-				if(pinnedForumElements[j]) {
-					var thisforum = pinnedForumElements[j];
-					var salrMenu = document.createElement("menuitem");
-					var forumname = thisforum.getAttribute("name");
-					while (forumname.substring(0,1)==" ") {
-						forumname = forumname.substring(1);
-					}
-					salrMenu.setAttribute("label", forumname);
-					salrMenu.setAttribute("forumnum", thisforum.getAttribute("id"));
-					salrMenu.setAttribute("onclick", "SALR_menuItemCommand(event,this,'click');");
-					salrMenu.setAttribute("oncommand", "SALR_menuItemCommand(event,this,'command');");
-					salrMenu.setAttribute("class", "lastread_menu_sub");
-					menupopup.appendChild(salrMenu);
-				} else if(pinnedForumNumbers[j]=="sep") {
-					menupopup.appendChild(document.createElement("menuseparator"));
-				} else if (typeof(pinnedForumNumbers[j]) == "string" && pinnedForumNumbers[j].substring(0, 3) == "URL") {
-					var umatch = pinnedForumNumbers[j].match(/^URL\[(.*?)\]\[(.*?)\]$/);
-					if(umatch) {
-						var salrMenu = document.createElement("menuitem");
-							salrMenu.setAttribute("label", gSALR.service.UnescapeMenuURL(umatch[1]));
-							salrMenu.setAttribute("targeturl", gSALR.service.UnescapeMenuURL(umatch[2]));
-							salrMenu.setAttribute("onclick", "SALR_menuItemCommandURL(event,this,'click');");
-							salrMenu.setAttribute("oncommand", "SALR_menuItemCommandURL(event,this,'command');");
-							salrMenu.setAttribute("class", "lastread_menu_sub");
-
-						menupopup.appendChild(salrMenu);
-					}
-				} else if (pinnedForumNumbers[j]=="starred") {
-					var salrMenu = document.createElement("menu");
-						salrMenu.setAttribute("label", "Starred Threads");
-						salrMenu.setAttribute("image", "chrome://salastread/skin/star.png");
-						salrMenu.setAttribute("class", "menu-iconic lastread_menu_starred");
-
-					var subpopup = document.createElement("menupopup");
-						subpopup.id = "salr_tb_starredthreadmenupopup";
-
-					salrMenu.appendChild(subpopup);
-					menupopup.appendChild(salrMenu);
-
-					subpopup.setAttribute("onpopupshowing", "SALR_TBStarredThreadMenuShowing();");
-					
-				}
-			}
-
-			if(gSALR.service.getPreference('showMenuPinHelper')) {
-				var ms = document.createElement("menuseparator");
-				ms.id = "salr_tb_pinhelper_sep";
-
-				menupopup.appendChild(ms);
-
-				var salrMenu = document.createElement("menuitem");
-				salrMenu.id = "salr_tb_pinhelper_item";
-				salrMenu.setAttribute("label", "Learn how to pin forums to this menu...");
-				salrMenu.setAttribute("image", "chrome://salastread/skin/eng101-16x16.png");
-				salrMenu.setAttribute("oncommand", "SALR_LaunchPinHelper();");
-				salrMenu.setAttribute("class", "menuitem-iconic lastread_menu_sub");
-
-				menupopup.appendChild(salrMenu);
-			}
-		}
-	}
-}
-
-function SALR_buildForumMenu()
-{
-	// If there are any other SA menus, hide them.  Why? Who knows
-	// Since this now defaults to off, it might not work, keep an eye out if anyone cares
-	if (gSALR.service.getPreference('hideOtherSAMenus'))
-	{
-		var mmb = document.getElementById("main-menubar");
-		for (var x=0; x<mmb.childNodes.length; x++)
-		{
-			var thischild = mmb.childNodes[x];
-			if (thischild.nodeName=="menu")
-			{
-				if ((thischild.getAttribute("label")=="SA" || thischild.id=="menu-sa") && thischild.id!="salr-menu")
-				{
-					mmb.removeChild(thischild);
-					x--;
-				}
-			}
-		}
-	}
-
-	var menupopup = document.getElementById("menupopup_SAforums");
-	if (menupopup == null)
-	{
-		var iBefore = document.getElementById("tools-menu");
-		if (!iBefore)
-		{
-			iBefore = document.getElementById("main-menubar").lastChild;
-		}
-		var salrMenu = document.createElement("menu");
-		salrMenu.id = "salr-menu";
-		salrMenu.setAttribute("label", "SA");
-		salrMenu.setAttribute("accesskey", gSALR.service.getPreference('menuAccessKey'));
-		salrMenu.style.display = "none";
-		menupopup = document.createElement("menupopup");
-		menupopup.id = "menupopup_SAforums";
-		menupopup.className = "lastread_menu";
-		salrMenu.appendChild(menupopup);
-		iBefore.parentNode.insertBefore(salrMenu, iBefore);
-		menupopup.addEventListener("popupshowing", SALR_SAMenuShowing, false);
-	}
-
-	if (gSALR.service.getPreference('useSAForumMenuBackground'))
-	{
-		menupopup.className = "lastread_menu";
-	}
-	else
-	{
-		menupopup.className = "";
-	}
-
-	while (menupopup.firstChild) {
-		menupopup.removeChild(menupopup.firstChild);
-	}
-	var forumsDoc = gSALR.service.forumListXml;
-	var nested_menus = gSALR.service.getPreference('nestSAForumMenu');
-	var salrMenu = document.createElement("menuitem");
-	var pinnedForumNumbers = new Array();
-	var pinnedForumElements = new Array();
-	if (nested_menus && gSALR.service.getPreference('menuPinnedForums')) {
-		pinnedForumNumbers = gSALR.service.getPreference('menuPinnedForums').split(",");
-	}
-	salrMenu.setAttribute("label","Something Awful");
-	salrMenu.setAttribute("image", "chrome://salastread/skin/sa.png");
-	salrMenu.setAttribute("onclick", "SALR_menuItemCommandURL(event,'http://www.somethingawful.com','click');");
-	salrMenu.setAttribute("oncommand", "SALR_menuItemCommandURL(event,'http://www.somethingawful.com','command');");
-	salrMenu.setAttribute("class","menuitem-iconic lastread_menu_frontpage");
-	menupopup.appendChild(salrMenu);
-	menupopup.appendChild(document.createElement("menuseparator"));
-
-	var lsalrMenu = document.createElement("menuitem");
-	lsalrMenu.setAttribute("label","Configure SALastRead...");
-	lsalrMenu.setAttribute("oncommand", "gSALR.runConfig('command');");
-
-	menupopup.appendChild(lsalrMenu);
-
-	menupopup.appendChild(document.createElement("menuseparator"));
-
-	populateForumMenuFrom(nested_menus,menupopup,forumsDoc ? forumsDoc.documentElement : null,pinnedForumNumbers,pinnedForumElements);
-
-	if(nested_menus && (pinnedForumElements.length > 0 || pinnedForumNumbers.length > 0)) {
-		menupopup.appendChild(document.createElement("menuseparator"));
-		for(var j = 0; j < pinnedForumElements.length || j < pinnedForumNumbers.length; j++) {
-			if(pinnedForumElements[j]) {
-				var thisforum = pinnedForumElements[j];
-				var salrMenu = document.createElement("menuitem");
-				var forumname = thisforum.getAttribute("name");
-				while (forumname.substring(0,1)==" ") {
-					forumname = forumname.substring(1);
-				}
-				salrMenu.setAttribute("label", forumname);
-				salrMenu.setAttribute("forumnum", thisforum.getAttribute("id"));
-				salrMenu.setAttribute("onclick", "SALR_menuItemCommand(event,this,'click');");
-				salrMenu.setAttribute("oncommand", "SALR_menuItemCommand(event,this,'command');");
-				salrMenu.setAttribute("class", "lastread_menu_sub");
-				menupopup.appendChild(salrMenu);
-			} else if(pinnedForumNumbers[j]=="sep") {
-				menupopup.appendChild(document.createElement("menuseparator"));
-			} else if (typeof(pinnedForumNumbers[j]) == "string" && pinnedForumNumbers[j].substring(0, 3) == "URL") {
-				var umatch = pinnedForumNumbers[j].match(/^URL\[(.*?)\]\[(.*?)\]$/);
-				if(umatch) {
-					var salrMenu = document.createElement("menuitem");
-						salrMenu.setAttribute("label", gSALR.service.UnescapeMenuURL(umatch[1]));
-						salrMenu.setAttribute("targeturl", gSALR.service.UnescapeMenuURL(umatch[2]));
-						salrMenu.setAttribute("onclick", "SALR_menuItemCommandURL(event,this,'click');");
-						salrMenu.setAttribute("oncommand", "SALR_menuItemCommandURL(event,this,'command');");
-						salrMenu.setAttribute("class", "lastread_menu_sub");
-
-					menupopup.appendChild(salrMenu);
-				}
-			} else if (pinnedForumNumbers[j]=="starred") {
-				var salrMenu = document.createElement("menu");
-					salrMenu.setAttribute("label", "Starred Threads");
-					salrMenu.setAttribute("image", "chrome://salastread/skin/star.png");
-					salrMenu.setAttribute("class", "menu-iconic lastread_menu_starred");
-
-				var subpopup = document.createElement("menupopup");
-					subpopup.id = "salr_starredthreadmenupopup";
-
-				salrMenu.appendChild(subpopup);
-				menupopup.appendChild(salrMenu);
-
-				subpopup.setAttribute("onpopupshowing", "SALR_StarredThreadMenuShowing();");
-			}
-		}
-
-		if(gSALR.service.getPreference('showMenuPinHelper')) {
-			var ms = document.createElement("menuseparator");
-			ms.id = "salr_pinhelper_sep";
-
-			menupopup.appendChild(ms);
-
-			var salrMenu = document.createElement("menuitem");
-			salrMenu.id = "salr_pinhelper_item";
-			salrMenu.setAttribute("label", "Learn how to pin forums to this menu...");
-			salrMenu.setAttribute("image", "chrome://salastread/skin/eng101-16x16.png");
-			salrMenu.setAttribute("oncommand", "SALR_LaunchPinHelper();");
-			salrMenu.setAttribute("class", "menuitem-iconic lastread_menu_sub");
-
-			menupopup.appendChild(salrMenu);
-		}
-	}
-	document.getElementById("salr-menu").style.display = "-moz-box";
-}
-
-function SALR_TBStarredThreadMenuShowing() {
-	var menupopup = document.getElementById("salr_tb_starredthreadmenupopup");
-	while (menupopup.firstChild != null) {
-		menupopup.removeChild(menupopup.firstChild);
-	}
-	var starred = gSALR.service.starList;
-
-	for(var id in starred)
-	{
-		var title = starred[id];
-		var menuel = document.createElement("menuitem");
-			menuel.setAttribute("label", title);
-			menuel.setAttribute("onclick", "SALR_menuItemCommandGoToLastPost(event, this, 'click'," + id + ");");
-			menuel.setAttribute("oncommand", "SALR_menuItemCommandGoToLastPost(event, this, 'command'," + id + ");");
-		menupopup.appendChild(menuel);
-	}
-
-	if (!menupopup.firstChild)
-	{
-		var menuel = document.createElement("menuitem");
-			menuel.setAttribute("label", "You have no threads starred.");
-			menuel.setAttribute("disabled", "true");
-		menupopup.appendChild(menuel);
-	}
-}
-
-function SALR_StarredThreadMenuShowing() {
-	var menupopup = document.getElementById("salr_starredthreadmenupopup");
-	while (menupopup.firstChild != null) {
-		menupopup.removeChild(menupopup.firstChild);
-	}
-	var starred = gSALR.service.starList;
-
-	for(var id in starred)
-	{
-		var title = starred[id];
-		var menuel = document.createElement("menuitem");
-			menuel.setAttribute("label", title);
-			menuel.setAttribute("onclick", "SALR_menuItemCommandGoToLastPost(event, this, 'click'," + id + ");");
-			menuel.setAttribute("oncommand", "SALR_menuItemCommandGoToLastPost(event, this, 'command'," + id + ");");
-		menupopup.appendChild(menuel);
-	}
-
-	if (!menupopup.firstChild)
-	{
-		var menuel = document.createElement("menuitem");
-			menuel.setAttribute("label", "You have no threads starred.");
-			menuel.setAttribute("disabled", "true");
-		menupopup.appendChild(menuel);
-	}
-}
-
-function SALR_TBMenuShowing() {
-   if ( gSALR.service.getPreference('showMenuPinHelper') == false ) {
-      var ms = document.getElementById("salr_tb_pinhelper_sep");
-      var mi = document.getElementById("salr_tb_pinhelper_item");
-      if ( ms != null ) {
-         ms.parentNode.removeChild(ms);
-      }
-      if ( mi != null ) {
-         mi.parentNode.removeChild(mi);
-      }
-   }
-}
-
-function SALR_SAMenuShowing() {
-   if ( gSALR.service.getPreference('showMenuPinHelper') == false ) {
-      var ms = document.getElementById("salr_pinhelper_sep");
-      var mi = document.getElementById("salr_pinhelper_item");
-      if ( ms != null ) {
-         ms.parentNode.removeChild(ms);
-      }
-      if ( mi != null ) {
-         mi.parentNode.removeChild(mi);
-      }
-   }
-}
-
-function SALR_LaunchPinHelper() {
-   gSALR.service.setPreference('showMenuPinHelper', false);
-
-   gSALR.runConfig("menu");
-   alert("You may return to the menu settings at any time by choosing \"Configure SALastRead...\" from the SA menu, or by "+
-         "clicking the \"Configure SALR\" link in the header of any forum page.");
-}
-
-

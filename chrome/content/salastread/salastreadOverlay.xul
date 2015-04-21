@@ -24,9 +24,9 @@
 			type="menu" label="SALR"
 			tooltiptext="Something Awful Last Read"
 			class="toolbarbutton-1 chromeclass-toolbar-additional"
-			oncommand="if (event.target == this) SALR_onTBClick(event);"
-			oncontextmenu="SALR_onTBContextMenu(event);">
-			<menupopup id="salr-toolbar-popup" onpopupshowing="SALR_onMenuShowing(event)">
+			oncommand="if (event.target == this) gSALR.onTBClick(event);"
+			oncontextmenu="gSALR.onTBContextMenu(event);">
+			<menupopup id="salr-toolbar-popup" onpopupshowing="gSALR.onTBMenuShowing(event)">
 			</menupopup>
 		</toolbarbutton>
 	</toolbarpalette>

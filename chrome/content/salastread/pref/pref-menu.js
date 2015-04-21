@@ -267,8 +267,8 @@ function RebuildSAMenus()
 			var win = enumerator.getNext();
 
 			// Rebuild SA menus in all browser windows
-			win.SALR_buildForumMenu();
-			win.SALR_buildToolbarButtonMenu();
+			win.gSALR.buildForumMenu('menubar');
+			win.gSALR.buildForumMenu('toolbar');
 		}
 		document.getElementById('salastreadpref').__SAMenuChanged = false;
 	}
@@ -302,7 +302,7 @@ function doChangeSAMenuVis()
 		// Toggle SA menus in all browser windows
 		if (showSAForumMenu.value == true)
 		{
-			win.SALR_buildForumMenu();
+			win.gSALR.buildForumMenu('menubar');
 		}
 		else
 		{
