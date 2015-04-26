@@ -1060,7 +1060,7 @@ var gSALR = {
 		}
 
 		// Add our ShowThread CSS
-		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicShowThreadCSS(forumid));
+		gSALR.service.insertDynamicCSS(doc, gSALR.service.generateDynamicShowThreadCSS(forumid, threadid, singlePost));
 
 		doc.body.className += " salastread_forum" + forumid;
 		// used by the context menu to allow options for this thread

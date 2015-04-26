@@ -643,9 +643,14 @@ salrPersistObject.prototype = {
 	},
 
 	// Return a string that contains ShowThread CSS instructions for our settings
-	generateDynamicShowThreadCSS: function(forumid)
+	generateDynamicShowThreadCSS: function(forumid, threadid, singlePost)
 	{
 		var CSSFile = '';
+		// Op/Mods view
+		if (this.isThreadOPView(threadid) && !singlePost)
+		{
+			CSSFile += '#thread table.post:not(.salrPostByOP):not(.salrPostByMod):not(.salrPostByAdmin):not(.salrPostOfSelf) { display: none !important; }\n';
+		}
 		if (!this.getPreference('dontHighlightPosts'))
 		{
 			// "FYAD" colors
@@ -1183,7 +1188,7 @@ salrPersistObject.prototype = {
 	// @return: nothing
 	populateThreadDataCache: function()
 	{
-		var statement = this.database.createStatement("SELECT `id`, `title`, `posted`, `ignore`, `star`, `options` FROM `threaddata`");
+		var statement = this.database.createStatement("SELECT `id`, `title`, `posted`, `ignore`, `star`, `opview` FROM `threaddata`");
 		var threadid;
 		while (statement.executeStep())
 		{
@@ -1194,7 +1199,7 @@ salrPersistObject.prototype = {
 			this.threadDataCache[threadid].posted = statement.getInt32(2);
 			this.threadDataCache[threadid].ignore = statement.getInt32(3);
 			this.threadDataCache[threadid].star = statement.getInt32(4);
-			this.threadDataCache[threadid].options = statement.getInt32(5);
+			this.threadDataCache[threadid].opview = statement.getInt32(5);
 		}
 		statement.reset();
 	},
@@ -1287,8 +1292,8 @@ salrPersistObject.prototype = {
 			this.threadDataCache[threadid].posted = 0;
 			this.threadDataCache[threadid].ignore = 0;
 			this.threadDataCache[threadid].star = 0;
-			this.threadDataCache[threadid].options = 0;
-			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `title`, `posted`, `ignore`, `star`, `options`) VALUES (?1, null, 0, 0, 0, 0)");
+			this.threadDataCache[threadid].opview = 0;
+			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `title`, `posted`, `ignore`, `star`, `opview`) VALUES (?1, null, 0, 0, 0, 0)");
 			statement.bindInt32Parameter(0, threadid);
 			statement.execute();
 		}
@@ -1833,6 +1838,27 @@ salrPersistObject.prototype = {
 	isThreadIgnored: function(threadid)
 	{
 		return (this.threadExists(threadid) && this.threadDataCache[threadid].ignore);
+	},
+
+	isThreadOPView: function(threadid)
+	{
+		return (this.threadExists(threadid) && this.threadDataCache[threadid].opview);
+	},
+
+	toggleThreadOPView: function(threadid)
+	{
+		if (this.threadExists(threadid))
+		{
+			var statement = this.database.createStatement("UPDATE `threaddata` SET `opview` = not(`opview`) WHERE `id` = ?1");
+			statement.bindInt32Parameter(0,threadid);
+			statement.execute();
+			this.threadDataCache[threadid].opview = !this.threadDataCache[threadid].opview;
+		}
+		else
+		{
+			this.addThread(threadid);
+			this.toggleThreadOPView(threadid);
+		}
 	},
 
 	// Toggles a thread's starred status in the database
@@ -2559,6 +2585,33 @@ salrPersistObject.prototype = {
 			statement.reset();
 		}
 
+		if (build < 150423)
+		{
+			// Check if we already did this, just to be safe:
+			statement = this.database.createStatement("SELECT * FROM `threaddata` WHERE 1=1 LIMIT 1");
+			statement.executeStep();
+			if (statement.getColumnName(5) != 'opview')
+			{
+				try
+				{
+					statement.reset();
+					// Clear out old data and change `options` to `opview`
+					this.database.beginTransactionAs(this.database.TRANSACTION_IMMEDIATE);
+					this.database.executeSimpleSQL("CREATE TABLE `threaddata_clean` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, opview BOOLEAN)");
+					this.database.executeSimpleSQL("INSERT INTO `threaddata_clean` SELECT `id`, `title`, `posted`, `ignore`, `star`, 0 FROM `threaddata` WHERE NOT (`posted`==0 AND `ignore`==0 AND `star`==0)");
+					this.database.executeSimpleSQL("DROP TABLE `threaddata`");
+					this.database.executeSimpleSQL("ALTER TABLE `threaddata_clean` RENAME TO `threaddata`");
+					this.database.commitTransaction();
+					// Keep DB tiny
+					this.database.executeSimpleSQL("PRAGMA page_size = 1024");
+					this.database.executeSimpleSQL("VACUUM");
+				}
+				catch(e)
+				{
+					this.database.rollbackTransaction();
+				}
+			}
+		}
 
 		// Always do inserts last so that any table altering takes affect first
 		// ====================================================================
