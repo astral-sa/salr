@@ -470,6 +470,7 @@ salrPersistObject.prototype = {
 	userIDCache: Array(),
 	threadDataCache: Array(),
 	iconDataCache: Array(),
+	videoTitleCache: Array(),
 
 	// Return a resource pointing to the proper preferences branch
 	get preferences()
@@ -2355,15 +2356,96 @@ salrPersistObject.prototype = {
 				}
 			}
 
-			if (enableVideoEmbeds &&
-				((link.href.search(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i) > -1) ||
-				 (link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1) ||
-				 link.href.match(/^https?\:\/\/(?:.)+\.(webm|gifv)$/i) ||
-				 link.href.match(/^https?\:\/\/i\.imgur\.com\/(?:.)+\.gifv$/i)))
+			if (enableVideoEmbeds)
 			{
-				link.style.backgroundColor = videoEmbedderBG;
-				link.addEventListener('click', SALR_vidClick, false);
+				let ytTest = link.href.match(/^https?\:\/\/(?:(?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i);
+				if (ytTest && ytTest[1])
+				{
+					link.style.backgroundColor = videoEmbedderBG;
+					// Don't add yt icon/class if there's a direct image child
+					if (!link.firstChild || link.firstChild.nodeName.toLowerCase() != "img")
+					{
+						if (!link.className.match(/bbtag_video/))
+							link.className += " bbtag_video";
+						link.style.backgroundImage = 'url("chrome://salastread/skin/yt-icon.png")';
+					}
+					if (this.getPreference('videoEmbedderGetTitles'))
+						this.getYTVideoTitle(link, ytTest[1]);
+					link.addEventListener('click', SALR_vidClick, false);
+				}
+				else if ((link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1) ||
+				 link.href.match(/^https?\:\/\/(?:.)+\.(webm|gifv)$/i) ||
+				 link.href.match(/^https?\:\/\/i\.imgur\.com\/(?:.)+\.gifv$/i))
+				{
+					link.style.backgroundColor = videoEmbedderBG;
+					link.addEventListener('click', SALR_vidClick, false);
+				}
 			}
+		}
+	},
+
+	getYTVideoTitle: function(link, vidId)
+	{
+/*	var dConsole = Components.classes["@mozilla.org/consoleservice;1"]
+		.getService(Components.interfaces.nsIConsoleService); */
+
+		// Give up if it already has some kind of title or image
+		if (link.innerHTML && !link.innerHTML.match(/^http/))
+			return;
+
+		// See if we need to make an API request at all
+		var cachedTitle = this.videoTitleCache[vidId];
+		if (cachedTitle != null)
+		{
+			link.textContent = cachedTitle;
+			link.style.fontWeight = "bold";
+		}
+		else
+		{
+			// Get the title using YouTube's v2 API
+			var XMLHttpRequest = Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
+			var ytApiTarg = "https://gdata.youtube.com/feeds/api/videos/" + vidId + "?alt=json&fields=title/text(),yt:noembed,app:control/yt:state/@reasonCode";
+			var ytTitleGetter = new XMLHttpRequest();
+			ytTitleGetter.open("GET", ytApiTarg, true);
+			ytTitleGetter.onreadystatechange = function()
+			{
+				//dConsole.logStringMessage(ytTitleGetter.responseText);
+				if (ytTitleGetter.readyState == 4)
+				{
+					var newTitle = null;
+					if (ytTitleGetter.status == 400)
+					{
+						newTitle = "(ERROR: Video does not exist; click to try to play anyway)";
+					}
+					else if (ytTitleGetter.status == 404)
+					{
+						newTitle = "(ERROR: Video unavailable; click to try to play anyway)";
+					}
+					else if (ytTitleGetter.status == 403)
+					{
+						newTitle = "(ERROR: Private or removed video; click to try to play anyway)";
+					}
+					else if (ytTitleGetter.status == 200)
+					{
+						var ytResponse = JSON.parse(ytTitleGetter.responseText);
+						if (ytResponse.entry && ytResponse.entry.title && ytResponse.entry.title.$t)
+						{
+							newTitle = ytResponse.entry.title.$t;
+						}
+						else
+						{
+							newTitle = "(ERROR: Video unavailable or couldn't get title; click to try to play anyway)";
+						}
+					}
+					if (newTitle)
+					{
+						this.videoTitleCache[vidId] = newTitle;
+						link.textContent = newTitle;
+						link.style.fontWeight = "bold";
+					}
+				}
+			}.bind(this);
+			ytTitleGetter.send(null);
 		}
 	},
 

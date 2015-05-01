@@ -20,6 +20,7 @@ pref('extensions.salastread.videoEmbedQuality', 'normal');
 pref('extensions.salastread.videoEmbedSize', 'medium');
 pref('extensions.salastread.videoEmbedCustomWidth', 640);
 pref('extensions.salastread.videoEmbedCustomHeight', 385);
+pref('extensions.salastread.videoEmbedderGetTitles', false);
 
 //OPTIONS DIALOG
 //
