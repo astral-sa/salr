@@ -2340,6 +2340,18 @@ salrPersistObject.prototype = {
 					if (link.firstChild && link.firstChild.tagName && link.firstChild.tagName.toLowerCase() == 'img' && link.firstChild.src)
 					{
 						let oldImgSrc = link.firstChild.src;
+						/* Hacky workaround for bad forum JS:
+							This workaround will 'break' (not convert) correctly-formatted
+							thumbnail links to full images in the interest of not converting
+							a good image to a bad one. Remove this if the forum JS gets removed. */
+						let imgurImageInLink = oldImgSrc.match(/^https?\:\/\/(?:www|i)\.imgur\.com\/(.{5,})(s|l|t)\.(jpg|gif|png)$/i);
+						if (imgurImageInLink)
+						{
+							let badForumJSLinkCatcher = new RegExp("^https?\:\/\/(?:www|i)\.imgur\.com\/(?:" + imgurImageInLink[1] + ")\.(jpg|gif|png)$", "i");
+							if (link.href.match(badForumJSLinkCatcher))
+								continue;
+						}
+						// End especially hacky workaround
 						newImg.onerror = function()
 						{
 							this.src = oldImgSrc;
