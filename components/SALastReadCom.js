@@ -471,6 +471,7 @@ salrPersistObject.prototype = {
 	threadDataCache: Array(),
 	iconDataCache: Array(),
 	videoTitleCache: Array(),
+	imgurWorkaroundCache: Array(),
 
 	// Return a resource pointing to the proper preferences branch
 	get preferences()
@@ -2341,24 +2342,74 @@ salrPersistObject.prototype = {
 					{
 						let oldImgSrc = link.firstChild.src;
 						/* Hacky workaround for bad forum JS:
-							This workaround will 'break' (not convert) correctly-formatted
-							thumbnail links to full images in the interest of not converting
-							a good image to a bad one. Remove this if the forum JS gets removed. */
+							Remove this and restore old logic after the forum JS gets removed. */
 						let imgurImageInLink = oldImgSrc.match(/^https?\:\/\/(?:www|i)\.imgur\.com\/(.{5,})(s|l|t)\.(jpg|gif|png)$/i);
 						if (imgurImageInLink)
 						{
 							let badForumJSLinkCatcher = new RegExp("^https?\:\/\/(?:www|i)\.imgur\.com\/(?:" + imgurImageInLink[1] + ")\.(jpg|gif|png)$", "i");
 							if (link.href.match(badForumJSLinkCatcher))
-								continue;
+							{
+								let cachedValidation = this.imgurWorkaroundCache[imgurImageInLink[1]];
+								switch (cachedValidation)
+								{
+									case true:
+										link.textContent = '';
+										link.parentNode.replaceChild(newImg, link);
+										break;
+									case false:
+										newImg.src = oldImgSrc;
+										newImg.title = "Forum bug-created link removed by SALR";
+										newImg.style.border = "none";
+										link.textContent = '';
+										link.parentNode.replaceChild(newImg, link);
+										break;
+									default:
+										let XMLHttpRequest = Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
+										let imgurApiTarg = "https://api.imgur.com/2/image/" + imgurImageInLink[1] + ".json";
+										let imgurChecker = new XMLHttpRequest();
+										imgurChecker.open("GET", imgurApiTarg, true);
+										imgurChecker.onreadystatechange = function()
+										{
+											if (imgurChecker.readyState == 4)
+											{
+												this.imgurWorkaroundCache[imgurImageInLink[1]] = true;
+												if (imgurChecker.status == 404)
+												{
+													newImg.src = oldImgSrc;
+													newImg.title = "Forum bug-created link removed by SALR";
+													newImg.style.border = "none";
+													this.imgurWorkaroundCache[imgurImageInLink[1]] = false;
+												}
+												link.textContent = '';
+												link.parentNode.replaceChild(newImg, link);
+											}
+										}.bind(this);
+										imgurChecker.send(null);
+										break;
+								}
+							}
+							else
+							{
+								link.textContent = '';
+								link.parentNode.replaceChild(newImg, link);
+							}
 						}
-						// End especially hacky workaround
+						else
+						{
+							link.textContent = '';
+							link.parentNode.replaceChild(newImg, link);
+						}
+						// End hacky workaround
 						newImg.onerror = function()
 						{
 							this.src = oldImgSrc;
 						}
 					}
-					link.textContent = '';
-					link.parentNode.replaceChild(newImg, link);
+					else
+					{
+						link.textContent = '';
+						link.parentNode.replaceChild(newImg, link);
+					}
 				}
 				else
 				{
