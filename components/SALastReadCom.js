@@ -2367,6 +2367,8 @@ salrPersistObject.prototype = {
 										let XMLHttpRequest = Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
 										let imgurApiTarg = "https://api.imgur.com/2/image/" + imgurImageInLink[1] + ".json";
 										let imgurChecker = new XMLHttpRequest();
+										let linktoCheck = link;
+										let newImgtoCheck = newImg;
 										imgurChecker.open("GET", imgurApiTarg, true);
 										imgurChecker.onreadystatechange = function()
 										{
@@ -2375,13 +2377,13 @@ salrPersistObject.prototype = {
 												this.imgurWorkaroundCache[imgurImageInLink[1]] = true;
 												if (imgurChecker.status == 404)
 												{
-													newImg.src = oldImgSrc;
-													newImg.title = "Forum bug-created link removed by SALR";
-													newImg.style.border = "none";
+													newImgtoCheck.src = oldImgSrc;
+													newImgtoCheck.title = "Forum bug-created link removed by SALR";
+													newImgtoCheck.style.border = "none";
 													this.imgurWorkaroundCache[imgurImageInLink[1]] = false;
 												}
-												link.textContent = '';
-												link.parentNode.replaceChild(newImg, link);
+												linktoCheck.textContent = '';
+												linktoCheck.parentNode.replaceChild(newImgtoCheck, linktoCheck);
 											}
 										}.bind(this);
 										imgurChecker.send(null);
