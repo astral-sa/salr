@@ -944,6 +944,9 @@ salrPersistObject.prototype = {
 			CSSFile += 'td.postbody .cancerous { opacity: 1; }\n';
 		}
 
+		// Remove forum-added blue border from our video embeds
+		CSSFile += 'td.postbody iframe.salr_video { border: none; }\n';
+
 		// Shrink posts by ignored users (and restore gradients)
 		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n';
 		CSSFile += '#thread table.ignored tr.altcolor1 td.userinfo, #thread table.ignored tr.altcolor1 td.postbody { background-image: url("http://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
