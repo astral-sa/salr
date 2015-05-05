@@ -129,24 +129,14 @@ function iframeDCL()
 	else
 		imageurl = null;
 
-	// large_thumbnail is limited to 640px wide, so we'll use that instead of small_square
-	var thumburl = selectSingleNode(cdoc, cdoc, "//large_thumbnail");
-	if (thumburl && thumburl.firstChild)
-		thumburl = thumburl.firstChild.nodeValue;
-	else
-		thumburl = null;
-
-	if (imageurl && thumburl)
+	if (imageurl)
 	{
 		if (confirm("Click OK to insert a thumbnail linked to the full image, or Cancel to insert the full sized image."))
 			useThumb = true;
-	}
 
-	if (imageurl && (thumburl || !useThumb))
-	{
 		var result = "";
 		if (useThumb)
-			result = "[URL="+imageurl+"][IMG]"+thumburl+"[/IMG][/URL]";
+			result = "[TIMG]"+imageurl+"[/TIMG]";
 		else
 			result = "[IMG]"+imageurl+"[/IMG]";
 		window.opener.imageShackResult = result;
