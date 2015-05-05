@@ -2470,11 +2470,13 @@ salrPersistObject.prototype = {
 		}
 		else
 		{
-			// Get the title using YouTube's v2 API
+			// Get the title using YouTube's v3 API
 			var XMLHttpRequest = Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
-			var ytApiTarg = "https://gdata.youtube.com/feeds/api/videos/" + vidId + "?alt=json&fields=title/text(),yt:noembed,app:control/yt:state/@reasonCode";
+			// Protect our secrets from lazy spiders
+			var ytApiTarg = "https://www.googleapis.com/youtube/v3/videos?id=" + vidId + atob("JmtleT1BSXphU3lBTWJKVW1NMlhaSG9telpLaXRNS2FFd2Z3blpOekZESUk=") + "&fields=items(snippet(title))&part=snippet";
 			var ytTitleGetter = new XMLHttpRequest();
 			ytTitleGetter.open("GET", ytApiTarg, true);
+			ytTitleGetter.setRequestHeader('Origin', "http://forums.somethingawful.com");
 			ytTitleGetter.onreadystatechange = function()
 			{
 				//dConsole.logStringMessage(ytTitleGetter.responseText);
@@ -2496,9 +2498,9 @@ salrPersistObject.prototype = {
 					else if (ytTitleGetter.status == 200)
 					{
 						var ytResponse = JSON.parse(ytTitleGetter.responseText);
-						if (ytResponse.entry && ytResponse.entry.title && ytResponse.entry.title.$t)
+						if (ytResponse.items[0] && ytResponse.items[0].snippet.title)
 						{
-							newTitle = ytResponse.entry.title.$t;
+							newTitle = ytResponse.items[0].snippet.title;
 						}
 						else
 						{
