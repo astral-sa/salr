@@ -460,12 +460,12 @@ function importData()
 }
 
 function releaseVars() {
-	window.opener.releaseQuickQuoteVars();
+	window.opener.gSALR.releaseQuickQuoteVars();
 }
 
 function doSubmit(subtype) {
 	persistObject.__quickreply__lastpost = document.getElementById("messagearea").value;
-	window.opener.quickQuoteSubmit(
+	window.opener.gSALR.quickQuoteSubmit(
 		document.getElementById("messagearea").value,
 		document.getElementById("parseurl").checked,
 		document.getElementById("subscribe").checked,

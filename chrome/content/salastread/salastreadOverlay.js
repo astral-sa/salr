@@ -43,7 +43,7 @@ var gSALR = {
 				{
 					needToShowChangeLog = !gSALR.service.IsDevelopmentRelease;
 					//needToShowChangeLog = true;
-					// Here we have to put special cases for specific dev build numbers that require the changelog dialog to appear
+					// Here we have to put special cases for specific dev build numbers that require SQL Patches
 					var buildNum = parseInt(gSALR.service.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
 					gSALR.service.checkForSQLPatches(buildNum);
 				}
@@ -317,7 +317,7 @@ var gSALR = {
 	{
 		if (gSALR.quickWindowParams.doc && e.originalTarget == gSALR.quickWindowParams.doc)
 		{
-			if (quickQuoteSubmitting)
+			if (gSALR.quickQuoteSubmitting)
 			{
 				return true;
 			}
@@ -1610,7 +1610,7 @@ var gSALR = {
 		var submitbtn = gSALR.service.selectNodes(doc, doc.body, "//INPUT[@type='submit'][@value='Save Changes']")[0];
 		var tarea = gSALR.service.selectNodes(doc, doc.body, "//TEXTAREA[@name='message']")[0];
 		if (submitbtn && tarea) {
-			submitbtn.addEventListener("click", function() { parsePLTagsInEdit(tarea); }, true);
+			submitbtn.addEventListener("click", function() { gSALR.parsePLTagsInEdit(tarea); }, true);
 			submitbtn.style.backgroundColor = gSALR.service.getPreference('postedInThreadRe');
 		}
 	},
@@ -1624,14 +1624,14 @@ var gSALR = {
 			if (tlmatch)
 			{
 				var threadid = tlmatch[1];
-				if (needRegReplyFill)
+				if (gSALR.needRegReplyFill)
 				{
 					var msgEl = gSALR.service.selectSingleNode(doc, doc.body, "//TEXTAREA[@name='message']");
 					if (msgEl)
 					{
-						msgEl.value = salastread_savedQuickReply;
+						msgEl.value = gSALR.savedQuickReply;
 					}
-					needRegReplyFill = false;
+					gSALR.needRegReplyFill = false;
 				}
 				var postbtn = gSALR.service.selectSingleNode(doc, doc.body, "//FORM[@name='vbform']//INPUT[@name='submit']");
 				if (postbtn)
@@ -1643,7 +1643,7 @@ var gSALR = {
 		}
 		else
 		{
-			if (salastread_savedQuickReply!="")
+			if (gSALR.savedQuickReply!="")
 			{
 				// TODO: Check if the stuff immediately below is broken.
 				var forgeCheck = gSALR.service.selectSingleNode(doc, doc.body, "TABLE/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[2]/TD[1]/FONT[contains(text(),'have been forged')]");
@@ -1661,17 +1661,17 @@ var gSALR = {
 					);
 					var regReplyLink = doc.createElement("A");
 					// TODO: This likely will need to be changed to an addeventlistener
-					regReplyLink.onclick = function() { needRegReplyFill = true; };
+					regReplyLink.onclick = function() { gSALR.needRegReplyFill = true; };
 					regReplyLink.href = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
-					salastread_savedQuickReplyThreadId;
+					gSALR.savedQuickReplyThreadId;
 					regReplyLink.innerHTML = "here.";
 					reqMsg.appendChild(regReplyLink);
 					forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
 				}
 				else
 				{
-					salastread_savedQuickReply = "";
-					salastread_savedQuickReplyThreadId = "";
+					gSALR.savedQuickReply = "";
+					gSALR.savedQuickReplyThreadId = "";
 				}
 			}
 		}
@@ -3178,6 +3178,134 @@ var gSALR = {
 	},
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// (Old) Globals ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	needRegReplyFill: false,
+	quickQuoteSubmitting: false,
+	savedQuickReply: "",
+	savedQuickReplyThreadId: "",
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Quick Quote/Post/Edit/Whatever Functions ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	// Quick quote / edit post util functions
+	convertPLTag: function(message)
+	{
+		return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=http://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
+	},
+
+	parsePLTagsInEdit: function(tarea)
+	{
+	   var xtxt = tarea.value;
+	   tarea.value = gSALR.convertPLTag(xtxt);
+	},
+
+	quickQuoteSubmit: function(message, parseurl, subscribe, disablesmilies, signature, subtype, formkey, attachfile, form_cookie)
+	{
+		try
+		{
+			message = gSALR.convertPLTag(message);
+			gSALR.savedQuickReply = message;
+			gSALR.savedQuickReplyThreadId = gSALR.quickWindowParams.threadid;
+
+			var doc = gSALR.quickWindowParams.doc;
+			var newform = doc.createElement("FORM");
+				newform.style.display = "none";
+				newform.action = "http://forums.somethingawful.com/newreply.php";
+
+			newform.method = "post";
+			newform.enctype = "multipart/form-data";
+			gSALR.addHiddenFormInput(doc,newform,"s","");
+
+			if (gSALR.quickWindowParams.quicktype == "newthread")
+			{
+				newform.action = "http://forums.somethingawful.com/newthread.php";
+				gSALR.addHiddenFormInput(doc, newform,"action", "postthread");
+				gSALR.addHiddenFormInput(doc, newform, "forumid",  gSALR.quickWindowParams.forumid);
+				gSALR.addHiddenFormInput(doc, newform, "iconid", gSALR.quickquotewin.document.getElementById('posticonbutton').iconid);
+				gSALR.addHiddenFormInput(doc, newform, "subject", gSALR.quickquotewin.document.getElementById('subject').value);
+			}
+			else if (gSALR.quickWindowParams.quicktype == "editpost")
+			{
+				newform.action = "http://forums.somethingawful.com/editpost.php";
+				gSALR.addHiddenFormInput(doc, newform,"action", "updatepost");
+				gSALR.addHiddenFormInput(doc, newform, "postid", gSALR.quickWindowParams.postid);
+			}
+			else if (gSALR.quickWindowParams.quicktype == "quote" || gSALR.quickWindowParams.quicktype == "reply")
+			{
+				gSALR.addHiddenFormInput(doc, newform,"action", "postreply");
+				gSALR.addHiddenFormInput(doc, newform,"threadid", gSALR.quickWindowParams.threadid);
+			}
+
+			gSALR.addHiddenFormInput(doc, newform,"parseurl", parseurl ? "yes" : "");
+			gSALR.addHiddenFormInput(doc, newform,"bookmark", subscribe ? "yes" : "");
+			gSALR.addHiddenFormInput(doc, newform,"disablesmilies", disablesmilies ? "yes" : "");
+			gSALR.addHiddenFormInput(doc, newform,"signature", signature ? "yes" : "");
+			gSALR.addHiddenFormInput(doc, newform,"message", message);
+			gSALR.addHiddenFormInput(doc, newform,"MAX_FILE_SIZE", "2097152");
+			gSALR.addHiddenFormInput(doc, newform,"formkey", formkey);
+
+			if (form_cookie != "")
+			{
+				gSALR.addHiddenFormInput(doc, newform,"form_cookie", form_cookie);
+			}
+			if (attachfile != "")
+			{
+				gSALR.quickQuoteAddFile(doc, newform,"attachment", attachfile);
+			}
+			newform.__submit = newform.submit;
+
+			if (gSALR.quickWindowParams.quicktype != "newthread")
+			{
+				if (subtype=="submit")
+				{
+					gSALR.addHiddenFormInput(doc,newform,"submit","Submit Reply");
+					gSALR.service.iPostedHere(gSALR.quickWindowParams.threadid);
+				}
+				else
+				{
+					gSALR.addHiddenFormInput(doc,newform,"preview","Preview Reply");
+				}
+			}
+			else
+			{
+				gSALR.addHiddenFormInput(doc,newform,"preview","Preview Post");
+			}
+			doc.body.appendChild(newform);
+			gSALR.quickQuoteSubmitting = true;
+			newform.__submit();
+			gSALR.quickquotewin.close();
+		}
+		catch(e)
+		{
+			alert("err: " + e);
+		}
+	},
+
+	quickQuoteAddFile: function(doc,form,name,value)
+	{
+	   var newel = doc.createElement("INPUT");
+	   newel.type = "file";
+	   newel.name = name;
+	   newel.value = value;
+	   form.appendChild(newel);
+	},
+
+	releaseQuickQuoteVars: function()
+	{
+		gSALR.quickWindowParams.quicktype = null;
+		gSALR.quickWindowParams.threadid = null;
+		gSALR.quickWindowParams.forumid = null;
+		gSALR.quickWindowParams.postid = null;
+		gSALR.quickWindowParams.doc = null;
+		gSALR.quickQuoteSubmitting = false;
+		gSALR.quickquotewin = null;
+	},
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SA Drop Down Menu Functions /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3741,140 +3869,3 @@ var gSALR = {
 };
 
 gSALR.init();
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// (Old) Globals ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-var needRegReplyFill = false;
-var quickQuoteSubmitting = false;
-var salastread_savedQuickReply = "";
-var salastread_savedQuickReplyThreadId = "";
-
-
-// Quick quote / edit post util functions
-
-function convertPLTag(message)
-{
-	return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=http://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
-}
-
-function parsePLTagsInEdit(tarea)
-{
-   var xtxt = tarea.value;
-   tarea.value = convertPLTag(xtxt);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Quick Quote/Post/Edit/Whatever Functions ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-function quickQuoteSubmit(message, parseurl, subscribe, disablesmilies, signature, subtype, formkey, attachfile, form_cookie)
-{
-	try
-	{
-		message = convertPLTag(message);
-		salastread_savedQuickReply = message;
-		salastread_savedQuickReplyThreadId = gSALR.quickWindowParams.threadid;
-
-		var doc = gSALR.quickWindowParams.doc;
-		var newform = doc.createElement("FORM");
-			newform.style.display = "none";
-			newform.action = "http://forums.somethingawful.com/newreply.php";
-
-		newform.method = "post";
-		newform.enctype = "multipart/form-data";
-		gSALR.addHiddenFormInput(doc,newform,"s","");
-
-		if (gSALR.quickWindowParams.quicktype == "newthread")
-		{
-			newform.action = "http://forums.somethingawful.com/newthread.php";
-			gSALR.addHiddenFormInput(doc, newform,"action", "postthread");
-			gSALR.addHiddenFormInput(doc, newform, "forumid",  gSALR.quickWindowParams.forumid);
-			gSALR.addHiddenFormInput(doc, newform, "iconid", gSALR.quickquotewin.document.getElementById('posticonbutton').iconid);
-			gSALR.addHiddenFormInput(doc, newform, "subject", gSALR.quickquotewin.document.getElementById('subject').value);
-		}
-		else if (gSALR.quickWindowParams.quicktype == "editpost")
-		{
-			newform.action = "http://forums.somethingawful.com/editpost.php";
-			gSALR.addHiddenFormInput(doc, newform,"action", "updatepost");
-			gSALR.addHiddenFormInput(doc, newform, "postid", gSALR.quickWindowParams.postid);
-		}
-		else if (gSALR.quickWindowParams.quicktype == "quote" || gSALR.quickWindowParams.quicktype == "reply")
-		{
-			gSALR.addHiddenFormInput(doc, newform,"action", "postreply");
-			gSALR.addHiddenFormInput(doc, newform,"threadid", gSALR.quickWindowParams.threadid);
-		}
-
-		gSALR.addHiddenFormInput(doc, newform,"parseurl", parseurl ? "yes" : "");
-		gSALR.addHiddenFormInput(doc, newform,"bookmark", subscribe ? "yes" : "");
-		gSALR.addHiddenFormInput(doc, newform,"disablesmilies", disablesmilies ? "yes" : "");
-		gSALR.addHiddenFormInput(doc, newform,"signature", signature ? "yes" : "");
-		gSALR.addHiddenFormInput(doc, newform,"message", message);
-		gSALR.addHiddenFormInput(doc, newform,"MAX_FILE_SIZE", "2097152");
-		gSALR.addHiddenFormInput(doc, newform,"formkey", formkey);
-
-		if (form_cookie != "")
-		{
-			gSALR.addHiddenFormInput(doc, newform,"form_cookie", form_cookie);
-		}
-		if (attachfile != "")
-		{
-			quickQuoteAddFile(doc, newform,"attachment", attachfile);
-		}
-		newform.__submit = newform.submit;
-
-		if (gSALR.quickWindowParams.quicktype != "newthread")
-		{
-			if (subtype=="submit")
-			{
-				gSALR.addHiddenFormInput(doc,newform,"submit","Submit Reply");
-				gSALR.service.iPostedHere(gSALR.quickWindowParams.threadid);
-			}
-			else
-			{
-				gSALR.addHiddenFormInput(doc,newform,"preview","Preview Reply");
-			}
-		}
-		else
-		{
-			gSALR.addHiddenFormInput(doc,newform,"preview","Preview Post");
-		}
-		doc.body.appendChild(newform);
-		quickQuoteSubmitting = true;
-		newform.__submit();
-		gSALR.quickquotewin.close();
-	}
-	catch(e)
-	{
-		alert("err: " + e);
-	}
-}
-
-function quickQuoteAddFile(doc,form,name,value)
-{
-   var newel = doc.createElement("INPUT");
-   newel.type = "file";
-   newel.name = name;
-   newel.value = value;
-   form.appendChild(newel);
-}
-
-function releaseQuickQuoteVarsWithClose()
-{
-	// Never called?
-   gSALR.quickquotewin.close();
-}
-
-function releaseQuickQuoteVars()
-{
-	gSALR.quickWindowParams.quicktype = null;
-	gSALR.quickWindowParams.threadid = null;
-	gSALR.quickWindowParams.forumid = null;
-	gSALR.quickWindowParams.postid = null;
-	gSALR.quickWindowParams.doc = null;
-	quickQuoteSubmitting = false;
-	gSALR.quickquotewin = null;
-}
