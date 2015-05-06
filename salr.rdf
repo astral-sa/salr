@@ -5,7 +5,7 @@
 			<r:Seq>
 				<r:li>
 					<r:Description>
-						<version>1.99.150430</version>
+						<version>1.99.150505</version>
 
 						<!-- Firefox -->
 						<targetApplication>
@@ -30,7 +30,7 @@
 				</r:li>
 			</r:Seq>
 		</updates>
-		<version>1.99.150430</version>
+		<version>1.99.150505</version>
 		<updateLink>https://github.com/astral-sa/salr/raw/master/salastread.xpi</updateLink>
 	</r:Description>
 </r:RDF>

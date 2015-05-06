@@ -511,7 +511,7 @@ salrPersistObject.prototype = {
 		this.mDBConn = storageService.openDatabase(file);
 		if (!this.mDBConn.tableExists("threaddata"))
 		{
-			this.mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, options INTEGER)");
+			this.mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, opview BOOLEAN)");
 			this.prepopulateDB("threaddata");
 		}
 		if (!this.mDBConn.tableExists("userdata"))
@@ -2737,9 +2737,9 @@ salrPersistObject.prototype = {
 			statement.reset();
 		}
 
-		if (build < 150423)
+		if (build < 150505)
 		{
-			// Check if we already did this, just to be safe:
+			// Check if we already did this:
 			statement = this.database.createStatement("SELECT * FROM `threaddata` WHERE 1=1 LIMIT 1");
 			statement.executeStep();
 			if (statement.getColumnName(5) != 'opview')
