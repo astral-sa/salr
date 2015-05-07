@@ -471,6 +471,7 @@ salrPersistObject.prototype = {
 	threadDataCache: Array(),
 	iconDataCache: Array(),
 	videoTitleCache: Array(),
+	_pendingVideoTitles: {},
 	imgurWorkaroundCache: Array(),
 
 	// Return a resource pointing to the proper preferences branch
@@ -2452,6 +2453,35 @@ salrPersistObject.prototype = {
 		}
 	},
 
+	// util functions for pending video titles
+	_clearPendingVidLinks: function(vId)
+	{
+		if (vId)
+		{
+			if (this._pendingVideoTitles.hasOwnProperty(vId))
+				delete this._pendingVideoTitles[vId];
+		}
+		else
+		{
+			for (var someVid in this._pendingVideoTitles)
+				if (this._pendingVideoTitles.hasOwnProperty(someVid))
+					delete this._pendingVideoTitles[someVid];
+		}
+	},
+
+	_addPendingVidLink: function(vId, link)
+	{
+		if (this._vidHasPendingLinks(vId))
+			this._pendingVideoTitles[vId].push(link);
+		else
+			this._pendingVideoTitles[vId] = [link];
+	},
+
+	_vidHasPendingLinks: function (vId)
+	{
+		return (this._pendingVideoTitles[vId] && this._pendingVideoTitles[vId].length > 0);
+	},
+
 	getYTVideoTitle: function(link, vidId)
 	{
 /*	var dConsole = Components.classes["@mozilla.org/consoleservice;1"]
@@ -2468,8 +2498,15 @@ salrPersistObject.prototype = {
 			link.textContent = cachedTitle;
 			link.style.fontWeight = "bold";
 		}
+		// Are we already getting the title for this video somewhere else?
+		else if (this._vidHasPendingLinks(vidId))
+		{
+			this._addPendingVidLink(vidId, link);
+		}
 		else
 		{
+			// Add to pending list
+			this._addPendingVidLink(vidId, link);
 			// Get the title using YouTube's v3 API
 			var XMLHttpRequest = Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
 			// Protect our secrets from lazy spiders
@@ -2477,9 +2514,12 @@ salrPersistObject.prototype = {
 			var ytTitleGetter = new XMLHttpRequest();
 			ytTitleGetter.open("GET", ytApiTarg, true);
 			ytTitleGetter.setRequestHeader('Origin', "http://forums.somethingawful.com");
+			ytTitleGetter.ontimeout = function()
+			{
+				this._clearPendingVidLinks(vidId);
+			}.bind(this);
 			ytTitleGetter.onreadystatechange = function()
 			{
-				//dConsole.logStringMessage(ytTitleGetter.responseText);
 				if (ytTitleGetter.readyState == 4)
 				{
 					var newTitle = null;
@@ -2499,19 +2539,31 @@ salrPersistObject.prototype = {
 					{
 						var ytResponse = JSON.parse(ytTitleGetter.responseText);
 						if (ytResponse.items[0] && ytResponse.items[0].snippet.title)
-						{
 							newTitle = ytResponse.items[0].snippet.title;
-						}
 						else
-						{
 							newTitle = "(ERROR: Video unavailable or couldn't get title; click to try to play anyway)";
-						}
 					}
 					if (newTitle)
 					{
 						this.videoTitleCache[vidId] = newTitle;
-						link.textContent = newTitle;
-						link.style.fontWeight = "bold";
+						while (this._vidHasPendingLinks(vidId))
+						{
+							let popLink = this._pendingVideoTitles[vidId].pop();
+							try
+							{
+								popLink.textContent = newTitle;
+								popLink.style.fontWeight = "bold";
+							}
+							catch (e)
+							{
+								var dConsole = Components.classes["@mozilla.org/consoleservice;1"]
+									.getService(Components.interfaces.nsIConsoleService);
+								dConsole.logStringMessage("Pending title error: " + e);
+								continue;
+							}
+							if (this._vidHasPendingLinks(vidId) == false)
+								delete this._pendingVideoTitles[vidId];
+						}
 					}
 				}
 			}.bind(this);
