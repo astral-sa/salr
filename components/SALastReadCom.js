@@ -2419,7 +2419,15 @@ salrPersistObject.prototype = {
 				}
 				else
 				{
-					link.previousSibling.textContent += link.textContent;
+					if (link.previousSibling)
+					{
+						link.previousSibling.textContent += link.textContent;
+					}
+					else
+					{
+						let newText = doc.createTextNode(link.textContent);
+						link.parentNode.insertBefore(newText, link);
+					}
 					link.textContent = '';
 					link.parentNode.replaceChild(newImg, link);
 				}
