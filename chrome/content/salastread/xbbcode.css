@@ -1,0 +1,93 @@
+.sacode-quote {
+	border-radius: 10px;
+	border: 1px solid #ADADAD;
+	background: #FAFAFA none repeat-x scroll 0% 0%;
+	box-shadow: 2px 2px 9px #CFCFCF;
+	margin: 12px 22px;
+	padding: 2px 18px;
+}
+.sacode-quote blockquote {
+	margin-top: 8px;
+	margin-bottom: 18px;
+	margin-left: 0px;
+	margin-right: 0px;
+	color: #444;
+	padding: 0px;
+}
+.sacode-quote h4 {
+	padding: 8px 0px 2px;
+	border-top: medium none;
+	font-size: 13px;
+	font-style: italic;
+	display: block;
+	color: #555;
+	margin: 0px;
+}
+.sacode-quotelink {
+	color: #4686AD;
+	text-decoration: none;
+}
+.sacode-quotelink:hover {
+	text-decoration: underline;
+}
+
+/* code and php */
+.sacode-quote h5 {
+	font-size: 12px;
+	display: block;
+	color: #555;
+	margin: 0px;
+	padding: 0px;
+	border-bottom: 1px solid #999;
+}
+.sacode-php {
+	color: #00B;
+}
+
+.sacode-fixed {
+	font-family: monospace,"Courier New";
+}
+
+.sacode-spoiler {
+	background-color: #222;
+	color: #222;
+	border-radius: 0px;
+	padding: 1px 0px 2px;
+}
+.sacode-spoiler:hover {
+	background-color: #FAFAFA;
+	cursor: pointer;
+	box-shadow: none;
+}
+.sacode-spoiler img {
+	visibility: hidden;
+}
+.sacode-spoiler:hover img {
+	visibility: visible;
+}
+
+.sacode-timg {
+	max-width: 170px;
+	max-height: 340px;
+}
+
+.xbbcode-b {
+	font-weight:bold;
+}
+
+.xbbcode-code {
+	white-space: pre-wrap;
+	font-family: monospace;
+}
+
+.xbbcode-i {
+	font-style: italic; 
+}
+
+.xbbcode-s {
+	text-decoration: line-through;
+}
+
+.xbbcode-u {
+	text-decoration: underline;
+}

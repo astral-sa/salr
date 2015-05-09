@@ -764,95 +764,11 @@ function doPreview()
 	markup = markup.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 	var vbcode = [];
 
-	// Text style
-	vbcode['<b>$1</b>'] = /\[b\](.*?)\[\/b\]/gi;
-	vbcode['<i>$1</i>'] = /\[i\](.*?)\[\/i\]/gi;
-	vbcode['<u>$1</u>'] = /\[u\](.*?)\[\/u\]/gi;
-	vbcode['<s>$1</s>'] = /\[s\](.*?)\[\/s\]/gi;
-	vbcode['<tt class="bbc">$1</tt>'] = /\[fixed\](.*?)\[\/fixed\]/gi;
-
-	vbcode['<ul>$1</ul>'] = /\[list\](.*?)\[\/list\]/gi;
-	vbcode['<li />'] = /\[\*\]/gi;
-
-	// (Temporary) sub/sup handling
-	vbcode['<sub>'] = /\[sub\]/gi;
-	vbcode['<sup>'] = /\[super\]/gi;
-	vbcode['</sub>'] = /\[\/sub\]/gi;
-	vbcode['</sup>'] = /\[\/super\]/gi;
-
-	// Spoiler
-	vbcode['<span style="background: #000000;" onmouseover="this.style.color=\'#FFFFFF\';" onmouseout="this.style.color=this.style.backgroundColor=\'#000000\'">$1</span>'] = /\[spoiler\](.*?)\[\/spoiler\]/gi;
-
-	// Code and PHP
-	vbcode['<blockquote><pre><span style="font-family: verdana,arial,helvetica; color:#555555">code:</span><hr />$1<hr /></pre></blockquote>'] = /\[code\](.*?)\[\/code\]/gi;
-	vbcode['<blockquote><pre style="color:#0000bb"><span style="font-family: verdana,arial,helvetica; color:#555555">php:</span><hr />&lt;?<br />$1<br />?&gt;<hr /></pre></blockquote>'] = /\[php\](.*?)\[\/php\]/gi;
-
-	// Links and images
-	if (document.getElementById("parseurl").checked)
-		markup = markup.replace(/(^|\s)((((ht|f)tps?:\/\/)|(www|ftp)\.)[a-zA-Z0-9\.\#\@\:%&_/\?\=\~\-]+)/gim,
-			"$1<a href=\"#\" onclick=\"parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab('$2')\">$2</a>");
-
-	vbcode['<a href="#" onclick="parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab(\'$1\')">$2</a>'] = /\[url=([^\]]+)\](.*?)\[\/url\]/gi;
-	vbcode['<a href="#" onclick="parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab(\'$1\')">$1</a>'] = /\[url\](.*?)\[\/url\]/gi;
-	vbcode['<a href="mailto:$1">$1</a>'] = /\[email\](.*?)\[\/email\]/gi;
-	vbcode['<img src="$1" alt="$1" />'] = /\[img\](.*?)\[\/img\]/gi;
-	vbcode['<a title="$1" target=\"_blank\"><img width="100" border="0" src="$1" alt="$1"/></a>'] = /\[timg\](.*?)\[\/timg\]/gi;
-
-	// Video
-	markup = markup.replace(/\[video(\stype="(.*?)")?(.*?)\](.*?)\[\/video\]/gi,
-		function (str, vidtypestr, vidtype, vidgarbage, vidinfo, offset, s)
-		{
-			var vidreturn = null;
-			var vidurl = null;
-			var viderr = '';
-
-			// User has entered stupid stuff
-			if (vidgarbage.length > 0)
-				viderr = "You entered extra stuff in your video tag that isn't a type.";
-			// If there is a type specified in the video tag
-			else if (vidtypestr.length > 0)
-			{
-				switch(vidtype)
-				{
-					case "youtube":
-						vidurl = 'http://www.youtube.com/watch?v=' + vidinfo;
-						break;
-
-					case "yahoo":
-						vidurl = 'http://video.yahoo.com/watch/' + vidinfo.replace(":", "/");
-						break;
-
-					case "foxnews":
-						vidurl = 'http://www.foxnews.com/video/index.html?playerId=011008&streamingFormat=FLASH&referralObject=' + vidinfo + '&referralPlaylistId=playlist';
-						break;
-
-					case "cnn":
-						vidurl = 'http://www.cnn.com/video/?' + vidinfo;
-						break;
-
-					default:
-						viderr = "'" + vidtype + "' is not a supported video type.";
-				}
-			}
-			// no type specified
-			else
-			{
-				// quick and extremely dirty check for approved domain words
-				if (vidinfo.match(/https?\:\/\/(?:[^\/]*?youtube\.com\/|video\.yahoo\.com\/|[^\/]*?foxnews\.com\/video\/|[^\/]*?cnn\.com\/video\/)/))
-					vidurl = vidinfo;
-				else
-					viderr = 'Unsupported domain for video tag.';
-			}
-			if (vidurl)
-				vidreturn = '<img src="http://i.somethingawful.com/core/icon/fsilk/film_link.png" /><a href="#" onclick="parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab(\'' + vidurl + '\')">' + vidurl + '</a>';
-			else
-				vidreturn = '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />' + viderr + '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />';
-			return vidreturn;
-		}
-	);
+	// Process BBCode
+	markup = XBBCODE.process({text: markup, removeMisalignedTags: false, addInLineBreaks: false}).html;
 
 	// Smileys
-	if(!document.getElementById("disablesmilies").checked)
+	if (!document.getElementById("disablesmilies").checked)
 	{
 		if (persistObject.gettingemoticons != true && (typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null)) {
 			persistObject.gettingemoticons = true;
@@ -883,31 +799,12 @@ function doPreview()
 		}
 	}
 
+	// Process newlines - rough
 	markup = markup.replace(/\n/g, "<br />");
 
 	for(var rplc in vbcode) {
 		markup = markup.replace(vbcode[rplc], rplc);
 	}
-
-	// Quote handling
-	let quoteSegment = markup.split('[/quote]');
-	for (var key = 0; key < quoteSegment.length; key++) {
-		// New style post quotes with username and postid
-		quoteSegment[key] = quoteSegment[key].replace(
-			 /\[quote="([^\]]+?)" post="(\d+?)"\](.*?)/gi,
-			'<blockquote class="qb2"><h4><a href="#" onclick="parent.window.opener.gBrowser.selectedTab = parent.window.opener.gBrowser.addTab(\'http://forums.somethingawful.com/showthread.php?goto=post&postid=$2#post$2\')">$1 posted:</a></h4><p>$3');
-
-		// Older style post quotes with only username
-		quoteSegment[key] = quoteSegment[key].replace(
-			 /\[quote="?([^\]]+?)"?\](.*?)/gi,
-			'<blockquote class="qb2"><h4>$1 posted:</h4><p>$2');
-
-		// Plain quote tags
-		quoteSegment[key] = quoteSegment[key].replace(
-			/\[quote\](.*?)/gi,
-			'<blockquote class="qb2"><h4>quote:</h4><p>$1');
-	}
-	markup = quoteSegment.join('</p></blockquote>');
 
 	var iframe = document.getElementById("previewiframe").contentWindow;
 		iframe.scrollBy(0, iframe.document.body.scrollHeight);

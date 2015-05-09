@@ -21,18 +21,23 @@
 					<text id="salrVersionText" value="Version 1.99.*"/>
 					<separator class="thin"/>
 					<hbox>
+						<text value="Developer/Maintainer (2008-present): " style="font-weight: bold"/>
+						<text value="astral"/>
+					</hbox>
+					<hbox>
+						<text value="Lead Developer (2006-2009): " style="font-weight: bold"/>
+						<text value="Ben Dusinberre (duz)"/>
+					</hbox>
+					<hbox>
 						<text value="Created by: " style="font-weight: bold"/>
 						<text value="Tim Fries (biznatchio)"/>
 					</hbox>
 					<hbox>
-						<text value="Lead Developer: " style="font-weight: bold"/>
-						<text value="Ben Dusinberre (duz)"/>
-					</hbox>
-					<hbox>
 						<text value="2.0 Contributors: " style="font-weight: bold"/>
 						<vbox>
-							<text value="erebus, camalot, SFrost007, RedKazan"/>
-							<text value="Demented Footstool, Tivac, astral"/>
+							<text value="erebus, camalot, SFrost007, RedKazan,"/>
+							<text value="Demented Footstool, Tivac, grrowl,"/>
+							<text value="Nobbler, Mithros, Dan Wendorf"/>
 						</vbox>
 					</hbox>
 					<hbox>
@@ -41,6 +46,10 @@
 							<text value="uncut product, 8ender, LonelyKing, Sebbe,"/>
 							<text value="Pahalial, ctz, Defiler, Shii, cheesypeanut"/>
 						</vbox>
+					</hbox>
+					<hbox>
+						<text value="XBBCode module: " style="font-weight: bold"/>
+						<text value="Patrick Gillespie"/>
 					</hbox>
 					<separator/>
 					<hbox>
