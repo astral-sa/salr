@@ -3,7 +3,7 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<prefpane id="threads" onpaneload="var cs=!document.getElementById('customsize').selected; document.getElementById('videoEmbedCustomWidthbox').disabled=cs; document.getElementById('videoEmbedCustomHeightbox').disabled=cs">
+	<prefpane id="threads" onpaneload="var cs=!document.getElementById('customsize').selected; document.getElementById('videoEmbedCustomWidthbox').disabled=cs; document.getElementById('videoEmbedCustomHeightbox').disabled=cs; var evec=!document.getElementById('enableVideoEmbedderCheckbox').checked;document.getElementById('videoEmbedderGetTitlesCheckbox').disabled=evec;">
 		<preferences>
 			<preference id="reanchorThreadOnLoad" 	name="extensions.salastread.reanchorThreadOnLoad" 	type="bool"/>
 			<preference id="hideReportButtons" 		name="extensions.salastread.hideReportButtons" 		type="bool"/>
@@ -38,8 +38,8 @@
 		<groupbox>
 		<caption label="Video Embed Options"/>
 			<vbox>
-				<checkbox preference="enableVideoEmbedder" label="Enable converting of video links to embeddable video" />
-				<checkbox preference="videoEmbedderGetTitles" label="Fetch YouTube video titles" style="margin-left: 20px;"/>
+				<checkbox id="enableVideoEmbedderCheckbox" preference="enableVideoEmbedder" label="Enable converting of video links to embeddable video" oncommand="var evec=!document.getElementById('enableVideoEmbedderCheckbox').checked;document.getElementById('videoEmbedderGetTitlesCheckbox').disabled=evec;"/>
+				<checkbox id="videoEmbedderGetTitlesCheckbox" preference="videoEmbedderGetTitles" label="Fetch YouTube video titles" style="margin-left: 20px;"/>
 				<separator class="thin" />
 				<!--<caption label="Embedded Youtube Player Settings:" />
 				<separator class="thin" />-->
