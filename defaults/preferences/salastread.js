@@ -17,9 +17,9 @@ pref('extensions.salastread.allowThreadListLastPostNameWrapping', false);
 pref('extensions.salastread.enableVideoEmbedder', false);
 pref('extensions.salastread.videoEmbedderBG', '#ffcccc');
 pref('extensions.salastread.videoEmbedQuality', 'normal');
-pref('extensions.salastread.videoEmbedSize', 'medium');
-pref('extensions.salastread.videoEmbedCustomWidth', 640);
-pref('extensions.salastread.videoEmbedCustomHeight', 390);
+pref('extensions.salastread.videoEmbedSize', 'large');
+pref('extensions.salastread.videoEmbedCustomWidth', 854);
+pref('extensions.salastread.videoEmbedCustomHeight', 510);
 pref('extensions.salastread.videoEmbedderGetTitles', false);
 
 //OPTIONS DIALOG
