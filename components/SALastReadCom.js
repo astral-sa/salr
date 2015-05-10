@@ -11,7 +11,7 @@ function SALR_vidClick(e)
 	if (link.nextSibling)
 	{
 		var video = link.nextSibling.firstChild;
-		if (video && video.className == 'salr_video')
+		if (video && video.className === 'salr_video')
 		{
 			link.parentNode.removeChild(link.nextSibling);
 			return;
@@ -61,27 +61,27 @@ function SALR_vidClick(e)
 		var vidsize = PersistObject.getPreference("videoEmbedSize");
 		var vidwidth, vidheight;
 
-		if (vidsize == "gigantic")
+		if (vidsize === "gigantic")
 		{
 			vidwidth = 1280;
 			vidheight = 750;
 		}
-		else if (vidsize == "large")
+		else if (vidsize === "large")
 		{
 			vidwidth = 854;
 			vidheight = 510;
 		}
-		else if (vidsize == "medium")
+		else if (vidsize === "medium")
 		{
 			vidwidth = 640;
 			vidheight = 390;
 		}
-		else if (vidsize == "small")
+		else if (vidsize === "small")
 		{
 			vidwidth = 560;
 			vidheight = 345;
 		}
-		else if (vidsize == "tiny")
+		else if (vidsize === "tiny")
 		{
 			vidwidth = 480;
 			vidheight = 300;
@@ -100,7 +100,7 @@ function SALR_vidClick(e)
 		{
 			case "webm":
 				var webmEmbed = doc.createElement("video");
-				webmEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video."
+				webmEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
 				webmEmbed.setAttribute('src',link.href);
 				webmEmbed.setAttribute('type','video/webm');
 				webmEmbed.setAttribute('class', 'salr_video');
@@ -111,7 +111,7 @@ function SALR_vidClick(e)
 			case "gifv":
 				// Special code for imgur gifv - looping webm/mp4
 				var gifvEmbed = doc.createElement("video");
-				gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video."
+				gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
 				gifvEmbed.setAttribute('class', 'salr_video');
 				gifvEmbed.setAttribute('width', vidwidth);
 				gifvEmbed.setAttribute('poster',link.href.replace(/\.gifv$/i,'h.jpg'));
@@ -145,19 +145,19 @@ function SALR_vidClick(e)
 				// Figure out quality and size to use
 				var vidqual = PersistObject.getPreference("videoEmbedQuality");
 				var qualstring = '';
-				if (vidqual == "hd1080")
+				if (vidqual === "hd1080")
 					qualstring = 'vq=hd1080';
-				else if (vidqual == "hd")
+				else if (vidqual === "hd")
 					qualstring = 'vq=hd720';
-				else if (vidqual == "hq")
+				else if (vidqual === "hq")
 					qualstring = 'vq=large';
-				else if (vidqual == "low")
+				else if (vidqual === "low")
 					qualstring = 'vq=small';
 
 				// Format for URL:
-				if (qualstring != '' && yt_start != '')
+				if (qualstring !== '' && yt_start !== '')
 					yt_start = '&' + yt_start;
-				if (qualstring != '' || yt_start != '')
+				if (qualstring !== '' || yt_start !== '')
 					qualstring = '?' + qualstring;
 
 				var embedFrame = doc.createElement("iframe");
@@ -576,6 +576,14 @@ salrPersistObject.prototype = {
 	get iconList()
 	{
 		return this.iconDataCache;
+	},
+
+	// Output some text to the browser console
+	logToConsole: function(someText)
+	{
+		var console = Components.classes["@mozilla.org/consoleservice;1"]
+						.getService(Components.interfaces.nsIConsoleService);
+		console.logStringMessage(someText);
 	},
 
 	// Return a string that contains thread list CSS instructions for our settings
@@ -1021,6 +1029,7 @@ salrPersistObject.prototype = {
 				prefValue = this.preferences.getCharPref(prefName);
 				break;
 			case this.preferences.PREF_INVALID:
+				/* falls through */
 			default:
 				prefValue = null;
 		}
@@ -1045,6 +1054,7 @@ salrPersistObject.prototype = {
 				prefValue = this.preferences.setCharPref(prefName, prefValue);
 				break;
 			case this.preferences.PREF_INVALID:
+				/* falls through */
 			default:
 				success = false;
 		}
@@ -2564,9 +2574,7 @@ salrPersistObject.prototype = {
 							}
 							catch (e)
 							{
-								var dConsole = Components.classes["@mozilla.org/consoleservice;1"]
-									.getService(Components.interfaces.nsIConsoleService);
-								dConsole.logStringMessage("Pending title error: " + e);
+								this.logToConsole("Pending title error: " + e);
 								continue;
 							}
 							if (this._vidHasPendingLinks(vidId) == false)
