@@ -13,7 +13,6 @@
 			<preference id="showThreadsWithNewPostsFirstCP" name="extensions.salastread.showThreadsWithNewPostsFirstCP" type="bool" />
 			<preference id="showThreadsWithNewPostsFirstCPStickies" name="extensions.salastread.showThreadsWithNewPostsFirstCPStickies" type="bool" />
 
-			<preference id="showSALRIcons"				name="extensions.salastread.showSALRIcons" 			type="bool"/>
 			<preference id="showGoToLastIcon"			name="extensions.salastread.showGoToLastIcon" 		type="bool"/>
 			<preference id="goToLastReadPost"			name="extensions.salastread.goToLastReadPost" 		type="string"/>
 			<preference id="alwaysShowGoToLastIcon"		name="extensions.salastread.alwaysShowGoToLastIcon" type="bool"/>

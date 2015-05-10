@@ -28,7 +28,7 @@ function SALR_vidClick(e)
 		videoId = videoIdSearch[2];
 		videoType = "youtube";
 		yt_starttime = (videoIdSearch[3] == null ? 0 : parseInt(videoIdSearch[3])) * 3600 + (videoIdSearch[4] == null ? 0 : parseInt(videoIdSearch[4])) * 60 + (videoIdSearch[5] == null ? 0 : parseInt(videoIdSearch[5]));
-		yt_start = yt_starttime == 0 ? '' : 'start=' + yt_starttime;
+		yt_start = yt_starttime === 0 ? '' : 'start=' + yt_starttime;
 	}
 	else
 	{
@@ -1977,7 +1977,7 @@ salrPersistObject.prototype = {
 		{
 			return;
 		}
-		CSSFile = 'table.salrPostBy'+userid+' td, table.salrPostBy'+userid+' tr.seen1 td, table.salrPostBy'+userid+' tr.seen2 td { background-color:';
+		var CSSFile = 'table.salrPostBy'+userid+' td, table.salrPostBy'+userid+' tr.seen1 td, table.salrPostBy'+userid+' tr.seen2 td { background-color:';
 		CSSFile += colorToUse;
 		CSSFile += ' !important; }\n';
 		this.insertDynamicCSS(doc, CSSFile);
@@ -1992,7 +1992,7 @@ salrPersistObject.prototype = {
 		{
 			return;
 		}
-		CSSFile = 'div.bbc-block.salrQuoteOf'+userid+' {';
+		var CSSFile = 'div.bbc-block.salrQuoteOf'+userid+' {';
 		CSSFile += 'background:';
 		CSSFile += colorToUse;
 		CSSFile += ' !important; };\n';
@@ -2027,7 +2027,7 @@ salrPersistObject.prototype = {
 	{
 		try
 		{
-			starIcon = doc.createElement("img");
+			var starIcon = doc.createElement("img");
 			starIcon.setAttribute("src", "chrome://salastread/skin/star.png");
 			starIcon.style.cssFloat = "left";
 			starIcon.style.marginRight = "3px";
@@ -2419,7 +2419,7 @@ salrPersistObject.prototype = {
 						newImg.onerror = function()
 						{
 							this.src = oldImgSrc;
-						}
+						};
 					}
 					else
 					{
@@ -2683,7 +2683,7 @@ salrPersistObject.prototype = {
 		}
 		else if (this.inYOSPOS(forumid))
 		{
-			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif"
+			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif";
 			button.firstChild.style.paddingBottom = "0px";
 			quickbutton.style.backgroundImage = "none !important";
 		}
@@ -2694,7 +2694,7 @@ salrPersistObject.prototype = {
 		quickbutton.src = oldsrc;
 		quickbutton.alt = "Quick " + oldalt;
 		quickbutton.title = "Quick " + oldalt;
-		quickbutton.border = "0"
+		quickbutton.border = "0";
 		quickbutton.style.cursor = "pointer";
 
 		button.parentNode.insertBefore(quickbutton, button);

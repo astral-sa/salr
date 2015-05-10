@@ -47,7 +47,7 @@ var gSALR = {
 					var buildNum = parseInt(gSALR.service.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
 					gSALR.service.checkForSQLPatches(buildNum);
 				}
-				if (needToShowChangeLog == true)
+				if (needToShowChangeLog === true)
 				{
 					needToShowChangeLog = false;
 					//openDialog("chrome://salastread/content/newfeatures/newfeatures.xul", "SALR_newfeatures", "chrome,centerscreen,dialog=no");
@@ -66,9 +66,9 @@ var gSALR = {
 				gSALR.service._needToRunOnce = false;
 			}
 		}
-		catch (e)
+		catch (ex)
 		{
-			alert("SALastRead init error: "+e);
+			alert("SALastRead init error: "+ex);
 			if (gSALR.service)
 			{
 				alert("gSALR.service._starterr =\n" + gSALR.service._starterr);
@@ -140,7 +140,7 @@ var gSALR = {
 		}
 
 		// Set a listener on the context menu
-		if (gSALR.service.getPreference("enableContextMenu") && gSALR.service.getPreference("disabled") == false)
+		if (gSALR.service.getPreference("enableContextMenu") && gSALR.service.getPreference("disabled") === false)
 			document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", gSALR.contextMenuShowing, false);
 
 		// Find the proper page handler
@@ -252,13 +252,6 @@ var gSALR = {
 				gSALR.timerPageCount++;
 			}
 
-			if (gSALR.service.getPreference('enableDebugMarkup'))
-			{
-				var dbg = doc.createElement("DIV");
-				dbg.innerHTML = SALR_debugLog.join("<br>");
-				doc.body.appendChild(dbg);
-			}
-
 			doc.__salastread_processed = true;
 		}
 		catch(ex)
@@ -345,7 +338,7 @@ var gSALR = {
 	// Do anything needed to the post list in a forum
 	handleForumDisplay: function(doc)
 	{
-		var failed, i, e;  // Little variables that'll get reused
+		var i;  // Little variables that'll get reused
 		var forumid = gSALR.service.getForumID(doc);
 		if (forumid === false)
 		{
@@ -356,7 +349,7 @@ var gSALR = {
 		var flags = {
 			"inFYAD" : gSALR.service.inFYAD(forumid),
 			"inDump" : gSALR.service.inDump(forumid),
-			"inAskTell" : gSALR.service.inAskTell(forumid),
+			//"inAskTell" : gSALR.service.inAskTell(forumid),
 			"inGasChamber" : gSALR.service.inGasChamber(forumid),
 			"inArchives" : (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1)
 		};
@@ -444,7 +437,7 @@ var gSALR = {
 			var postbutton = gSALR.service.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
 			if (postbutton)
 			{
-				gSALR.service.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, null)}, true);
+				gSALR.service.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, null);}, true);
 			}
 		}
 
@@ -476,12 +469,11 @@ var gSALR = {
 			// Capture and store the post icon # -> post icon filename relationship
 			var filterDiv = doc.getElementById("filter");
 			var tagsDiv = gSALR.service.selectSingleNode(doc, filterDiv, "div[contains(@class, 'thread_tags')]");
-			var iconNumber, iconFilename;
+			var iconNumber;
 			var postIcons = gSALR.service.selectNodes(doc, tagsDiv, "A[contains(@href,'posticon=')]");
-			var divIcon, separator, divClone, afIgnoredIcons, anyLeft, allIgnored, noneIgnored, searchString;
+			var divIcon, separator, divClone, afIgnoredIcons, allIgnored, noneIgnored, searchString;
 			var atLeastOneIgnored = false;
 			var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
-			var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
 
 			for (i in postIcons)
 			{
@@ -597,23 +589,16 @@ var gSALR = {
 		var dontHighlightThreads = gSALR.service.getPreference("dontHighlightThreads");
 		var disableNewReCount = gSALR.service.getPreference("disableNewReCount");
 		var newPostCountUseOneLine = gSALR.service.getPreference("newPostCountUseOneLine");
-		var disableGradients = gSALR.service.getPreference("disableGradients");
 		var showUnvisitIcon = gSALR.service.getPreference("showUnvisitIcon");
 		var swapIconOrder = gSALR.service.getPreference("swapIconOrder");
 		var showGoToLastIcon = gSALR.service.getPreference("showGoToLastIcon");
 		var alwaysShowGoToLastIcon = gSALR.service.getPreference("alwaysShowGoToLastIcon");
-		var readWithNewLight = gSALR.service.getPreference("readWithNewLight");
-		var readWithNewDark = gSALR.service.getPreference("readWithNewDark");
-		var readLight = gSALR.service.getPreference("readLight");
-		var readDark = gSALR.service.getPreference("readDark");
-		var postedInThreadRe = gSALR.service.getPreference("postedInThreadRe");
 		var modColor = gSALR.service.getPreference("modColor");
 		var modBackground = gSALR.service.getPreference("modBackground");
 		var adminColor = gSALR.service.getPreference("adminColor");
 		var adminBackground = gSALR.service.getPreference("adminBackground");
 		var highlightUsernames = gSALR.service.getPreference("highlightUsernames");
 		var dontBoldNames = gSALR.service.getPreference("dontBoldNames");
-		var showSALRIcons = gSALR.service.getPreference("showSALRIcons");
 		var showTWNP = gSALR.service.getPreference('showThreadsWithNewPostsFirst');
 		var showTWNPCP = gSALR.service.getPreference('showThreadsWithNewPostsFirstCP');
 		var showTWNPCPS = gSALR.service.getPreference('showThreadsWithNewPostsFirstCPStickies');
@@ -630,23 +615,25 @@ var gSALR = {
 		// We'll need lots of variables for this
 		var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox, threadLastPostBox;
 		var threadTitle, threadId, threadOPId, threadRe;
-		var threadLRCount, unvistIcon, lpIcon, lastPostName;
-		var userPosterNote, lastLink, searchString;
-		var starredthreads = gSALR.service.starList;
-		var ignoredthreads = gSALR.service.ignoreList;
-		var table = document.getElementById('forum');
+		var lastLink, searchString;
+		//var starredthreads = gSALR.service.starList;
+		//var ignoredthreads = gSALR.service.ignoreList;
+		var forumTable = doc.getElementById('forum');
+
+		if (!forumTable) // something is very wrong; abort!
+			return;
 
 		// We need to reset this every time the page is fully loaded
 		if (advancedThreadFiltering)
 			gSALR.service.setPreference("filteredThreadCount",0);
 
 		// Here be where we work on the thread rows
-		var threadlist = gSALR.service.selectNodes(doc, doc, "//table[@id='forum']/tbody/tr");
+		var threadlist = gSALR.service.selectNodes(doc, forumTable, "tbody/tr");
 
 		// These are insertion points for thread sorting
 		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
 		{
-			var anchorTop = gSALR.service.selectSingleNode(doc, doc, "//table[@id='forum']/tbody");
+			var anchorTop = gSALR.service.selectSingleNode(doc, forumTable, "tbody");
 
 			if (anchorTop)
 			{
@@ -901,7 +888,7 @@ var gSALR = {
 
 			if (highlightUsernames)
 			{
-				var userColoring, threadLastPostBox, lastPostId;
+				var userColoring, lastPostId;
 				var posterColor, posterBG;
 
 				// First color the Author column
@@ -1016,7 +1003,7 @@ var gSALR = {
 
 	handleShowThread: function(doc)
 	{
-		var failed, i, e; // Little variables that'll get reused
+		var i; // Little variables that'll get reused
 		if (doc.getElementById('thread') == null)
 		{
 			// If there is no thread div then abort since something's not right
@@ -1045,8 +1032,8 @@ var gSALR = {
 
 		// The following forums have special needs that must be dealt with
 		var inFYAD = gSALR.service.inFYAD(forumid);
-		var inDump = gSALR.service.inDump(forumid);
-		var inAskTell = gSALR.service.inAskTell(forumid);
+		//var inDump = gSALR.service.inDump(forumid);
+		//var inAskTell = gSALR.service.inAskTell(forumid);
 		var inGasChamber = gSALR.service.inGasChamber(forumid);
 		// Obsolete:
 		var inArchives = (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1);
@@ -1135,14 +1122,9 @@ var gSALR = {
 		}
 
 		// Check if the thread is closed
+		var threadClosed = true;
 		if (gSALR.service.selectSingleNode(doc, doc, "//A[contains(@href,'action=newreply&threadid')]//IMG[contains(@src,'closed')]") == null)
-		{
-			var threadClosed = false;
-		}
-		else
-		{
-			var threadClosed = true;
-		}
+			threadClosed = false;
 
 		// Replace post button
 		if (gSALR.service.getPreference("useQuickQuote") && !inGasChamber)
@@ -1152,7 +1134,7 @@ var gSALR = {
 			{
 				for (i in postbuttons)
 				{
-					gSALR.service.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid)}, true);
+					gSALR.service.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
 				}
 			}
 			if (!threadClosed)
@@ -1162,7 +1144,7 @@ var gSALR = {
 				{
 					for (i in replybuttons)
 					{
-						gSALR.service.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid)}, true);
+						gSALR.service.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
 					}
 				}
 			}
@@ -1224,7 +1206,7 @@ var gSALR = {
 				newSearchText.__unfocused = true;
 				newSearchText.addEventListener("focus", function()
 				{
-					if (newSearchText.__unfocused == true)
+					if (newSearchText.__unfocused === true)
 					{
 						newSearchText.style.fontStyle = 'normal';
 						newSearchText.style.color = '';
@@ -1266,13 +1248,12 @@ var gSALR = {
 		// get the posts to iterate through
 		var postlist = gSALR.service.selectNodes(doc, doc, "//table[contains(@id,'post')]");
 
-		var curPostId, colorDark = true, colorOfPost, postIdLink, resetLink, profileLink, posterId, postbody, postRow, f, linksUL, storeUserLink;
-		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton, reportbutton;
-		var userPosterColor, userPosterBG, userPosterNote, userQuote;
+		var curPostId, postIdLink, resetLink, profileLink, posterId, postbody;
+		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton;
+		var userPosterNote;
 
 		// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
 		var useQuickQuote = gSALR.service.getPreference('useQuickQuote');
-		var insertPostLastMarkLink = gSALR.service.getPreference("insertPostLastMarkLink");
 		var insertPostTargetLink = gSALR.service.getPreference("insertPostTargetLink");
 		var highlightUsernames = gSALR.service.getPreference("highlightUsernames");
 
@@ -1290,8 +1271,6 @@ var gSALR = {
 		var cancerTreatment = gSALR.service.getPreference("cancerTreatment");
 
 		var threadMarkedPostedIn = false;
-
-		doc.postlinks = new Array;
 
 		// Loop through each post
 		for (i in postlist)
@@ -1385,7 +1364,7 @@ var gSALR = {
 			if (posterName == username)
 			{
 				post.className += " salrPostOfSelf";
-				if (threadMarkedPostedIn == false)
+				if (threadMarkedPostedIn === false)
 				{
 					gSALR.service.iPostedHere(threadid);
 					threadMarkedPostedIn = true;
@@ -1537,11 +1516,11 @@ var gSALR = {
 				quotebutton = gSALR.service.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
 				if (quotebutton)
 				{
-					gSALR.service.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid)}, true);
+					gSALR.service.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
 				}
 				if (editbutton)
 				{
-					gSALR.service.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid)}, true);
+					gSALR.service.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
 				}
 			}
 
@@ -2193,7 +2172,7 @@ var gSALR = {
 				post.scrollIntoView(true);
 				doc.__SALR_curFocus = postId;
 			}
-		} catch(e) {dump('error:'+e);}
+		} catch(e) {window.dump('error:'+e);}
 	},
 
 	directionalNavigate: function(doc, dir)
@@ -2283,7 +2262,7 @@ var gSALR = {
 						{
 							var el = doc.getElementById("salastread_gesturenav"+dir);
 							el.parentNode.removeChild(el);
-						}
+						};
 
 			rx("top");
 			rx("left");
@@ -2400,7 +2379,7 @@ var gSALR = {
 						gSALR.contextVis();
 				}
 			}
-			catch (e) {}
+			catch (ex) {}
 		}
 	},
 
@@ -2462,7 +2441,7 @@ var gSALR = {
 			var starStatus = gSALR.service.isThreadStarred(threadid);
 			gSALR.service.toggleThreadStar(threadid);
 
-			if (starStatus == false) // we just starred it
+			if (starStatus === false) // we just starred it
 				gSALR.service.setThreadTitle(threadid, threadTitle);
 
 			if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
@@ -2492,11 +2471,11 @@ var gSALR = {
 			}
 			else
 				threadTitle = gSALR.getPageTitle(target.ownerDocument);
-			if (confirm("Are you sure you want to ignore thread #"+threadid+"?"))
+			if (window.confirm("Are you sure you want to ignore thread #"+threadid+"?"))
 			{
 				// Actually use ignoreStatus
 				var ignoreStatus = gSALR.service.isThreadIgnored(threadid);
-				if (ignoreStatus == false)
+				if (ignoreStatus === false)
 				{
 					gSALR.service.toggleThreadIgnore(threadid);
 					gSALR.service.setThreadTitle(threadid, threadTitle);
@@ -2513,7 +2492,7 @@ var gSALR = {
 	unreadThread: function()
 	{
 		var threadid = document.getElementById("salastread-context-unreadthread").data;
-		var target = document.getElementById("salastread-context-unreadthread").target;
+		//var target = document.getElementById("salastread-context-unreadthread").target;
 		if (threadid)
 		{
 			var xhr = new XMLHttpRequest();
@@ -2533,7 +2512,7 @@ var gSALR = {
 					else
 						alert("Something went wrong! Please try again.");
 				}
-			}
+			};
 			xhr.send(xhrparams);
 		}
 	},
@@ -2571,7 +2550,7 @@ var gSALR = {
 		var posts = gSALR.service.selectNodes(doc, doc, "//table[contains(@id,'post')]");
 		var post, profileLink, posterId, titleBox, toggleLink;
 
-		for (n in posts)
+		for (var n in posts)
 		{
 			post = posts[n];
 			profileLink = gSALR.service.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
@@ -2616,12 +2595,13 @@ var gSALR = {
 
 		if (toggleDiv && tagsDiv)
 		{
-			var afIgnoredIcons, afIgnoredKeywords;
-			var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
+			var afIgnoredIcons;
+			//var afIgnoredKeywords;
+			//var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
 			var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
 
 			toggleDiv.innerHTML = '';
-			var afObject = doc.createElement("b");
+			afObject = doc.createElement("b");
 			afObject.innerHTML = "Advanced thread filtering";
 			toggleDiv.appendChild(afObject);
 			afObject = doc.createElement("div");
@@ -2634,7 +2614,7 @@ var gSALR = {
 			afObject.appendChild(doc.createTextNode(" threads.)"));
 			toggleDiv.appendChild(afObject);
 
-			tagsHead = doc.createElement("div");
+			var tagsHead = doc.createElement("div");
 			tagsDiv.insertBefore(tagsHead,tagsDiv.firstChild);
 
 			// Move the current non-advanced filtered icon to the top, if applicable
@@ -2650,7 +2630,7 @@ var gSALR = {
 					afObject.firstChild.style.marginRight = '0px';
 					afObject.firstChild.style.marginBottom = '-2px';
 					afObject.href = afObject2.href;
-					afObject.innerHTML += "&nbsp;Reset"
+					afObject.innerHTML += "&nbsp;Reset";
 					afObject.style.fontSize = "75%";
 					afObject.style.fontWeight = "bold";
 					tagsHead.appendChild(afObject);
@@ -2740,7 +2720,7 @@ var gSALR = {
 				var afObject; // Temp object storage for things that really only get handled once
 				var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
 				var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
-				var anyLeft, anyLeftIn, searchString, threadBeGone;
+				var anyLeft, anyLeftIn, mirrorIcons, searchString, threadBeGone;
 				var threadList, thread, threadIcon;
 
 				afIgnoredIcons = doc.getElementById("ignoredicons");
@@ -2819,7 +2799,6 @@ var gSALR = {
 					thread = threadList[i];
 					threadIcon = gSALR.service.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]//IMG");
 					threadBeGone = false;
-					iconMatch = false;
 					if (threadIcon.src.search(/posticons\/(.*)/i) > -1)
 					{
 						var iconnum = threadIcon.src.match(/#(\d+)$/)[1];
@@ -2849,7 +2828,7 @@ var gSALR = {
 
 						for (var j in keywordList)
 						{
-							keywords = keywordList[j];
+							let keywords = keywordList[j];
 							if (!keywords)
 							{
 								continue;
@@ -2892,7 +2871,7 @@ var gSALR = {
 				var afObject; // Temp object storage for things that really only get handled once
 				var prefIgnoredKeywords = gSALR.service.getPreference("ignoredKeywords");
 				var prefIgnoredPostIcons = gSALR.service.getPreference("ignoredPostIcons");
-				var threadList, thread, threadTitleLink, threadtitle, threadBeGone;
+				var threadList, thread, threadTitleLink, threadTitle, threadBeGone;
 				var newKeywords, keywordList, keywords, searchString;
 
 				afObject = doc.getElementById("ignoredkeywords");
@@ -3014,7 +2993,7 @@ var gSALR = {
 
 		//var forumid = gSALR.service.getForumID(doc); // Make into event param
 		//var threadid = gSALR.service.getThreadID(doc); // Ditto
-		var postid = undefined;
+		var postid;
 		var quicktype = quickbutton.nextSibling.href.match(/action=(\w+)/i)[1];
 		switch (quicktype)
 		{
@@ -3027,6 +3006,7 @@ var gSALR = {
 				else
 				{
 					quicktype = 'quote';
+					break;
 				}
 			case 'editpost':
 				postid = quickbutton.nextSibling.href.match(/postid=(\d+)/i)[1];
@@ -3065,7 +3045,7 @@ var gSALR = {
 						}
 						else
 						{
-							if (confirm("You already have a quick edit window open, but it was attached to a different post.\nDo you want to change which post you're editing?"))
+							if (window.confirm("You already have a quick edit window open, but it was attached to a different post.\nDo you want to change which post you're editing?"))
 							{
 								gSALR.quickWindowParams.quicktype = quicktype;
 								gSALR.quickWindowParams.threadid = threadid;
@@ -3079,7 +3059,7 @@ var gSALR = {
 					}
 					else
 					{
-						if (confirm("You already have a quick window open. Press 'OK' to convert it to a quick edit window for this post, \nor press 'Cancel' to append this post to your quick window."))
+						if (window.confirm("You already have a quick window open. Press 'OK' to convert it to a quick edit window for this post, \nor press 'Cancel' to append this post to your quick window."))
 						{
 							gSALR.quickWindowParams.quicktype = quicktype;
 							gSALR.quickWindowParams.threadid = threadid;
@@ -3125,7 +3105,7 @@ var gSALR = {
 					}
 					else
 					{
-						if (confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick reply window for this thread, or press 'Cancel' to leave it alone."))
+						if (window.confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick reply window for this thread, or press 'Cancel' to leave it alone."))
 						{
 							gSALR.quickWindowParams.quicktype = quicktype;
 							gSALR.quickWindowParams.threadid = threadid;
@@ -3140,7 +3120,7 @@ var gSALR = {
 				// Clicked anything else
 				else
 				{
-					if (confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick " + quicktype + " window, or press 'Cancel' to leave it alone."))
+					if (window.confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick " + quicktype + " window, or press 'Cancel' to leave it alone."))
 					{
 						gSALR.quickWindowParams.quicktype = quicktype;
 						gSALR.quickWindowParams.threadid = threadid;
@@ -3321,7 +3301,7 @@ var gSALR = {
 			if (!rowList)
 			{
 				// Still couldn't find the forum list so let's stop now
-				return
+				return;
 			}
 			statsMenu = true;
 		}
@@ -3333,7 +3313,7 @@ var gSALR = {
 
 		var oDomParser = new DOMParser();
 		var forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
-		var targetEl = forumsDoc.documentElement;
+		//var targetEl = forumsDoc.documentElement;
 
 		var forumsEl = forumsDoc.createElement("forums");
 		forumsDoc.documentElement.appendChild(forumsEl);
@@ -3371,7 +3351,7 @@ var gSALR = {
 		}
 		while (true)
 		{
-			if(forumTitle.indexOf(dashes) != 0)
+			if (forumTitle.indexOf(dashes) !== 0)
 			{
 				break;
 			}
@@ -3392,7 +3372,7 @@ var gSALR = {
 		}
 
 		var fel;
-		if (depth == 0)
+		if (depth === 0)
 		{
 			fel = forumsDoc.createElement("cat");
 		}
@@ -3423,13 +3403,13 @@ var gSALR = {
 	menuItemCommand: function(event, el, etype)
 	{
 		var target = "none";
-		if (etype=="command")
+		if (etype === "command")
 			target = "current";
-		if (etype=="click")
-			if (event.button == 2 || event.button == 1)
+		if (etype === "click")
+			if (event.button === 2 || event.button === 1)
 				target = "newtab";
 
-		if (target != "none")
+		if (target !== "none")
 		{
 			// forum=search shortcut seems to be working again; comment to use new search instead:
 			if (el.getAttribute("forumnum") == "search")
@@ -3445,12 +3425,15 @@ var gSALR = {
 	menuItemCommandGoToStarredThread: function(event, el, etype, threadid)
 	{
 		// Band-aid: Don't execute this function twice on a left click.
-		if (etype == "click" && event.button == 0)
+		if (etype == "click" && event.button === 0)
 			return;
+		// Try to block Firefox's default right-click menu for this element, if applicable.
+		if (event.cancelable)
+			event.preventDefault();
 
-		if (event.ctrlKey == true && event.shiftKey == true)
+		if (event.ctrlKey === true && event.shiftKey === true)
 		{
-			if (confirm("Do you want to unstar thread \"" + gSALR.service.getThreadTitle(threadid) + "\"?"))
+			if (window.confirm("Do you want to unstar thread \"" + gSALR.service.getThreadTitle(threadid) + "\"?"))
 			{
 				gSALR.service.toggleThreadStar(threadid);
 			}
@@ -3470,35 +3453,35 @@ var gSALR = {
 	menuItemCommandURL: function(event, el, etype)
 	{
 		var target = "none";
-		if (etype=="command")
+		if (etype === "command")
 		{
 			target = "current";
 		}
-		else if (etype=="click")
+		else if (etype === "click")
 		{
-			if (event.button == 0)
+			if (event.button === 0)
 				target = "current";
-			else if (event.button == 2 || event.button == 1)
+			else if (event.button === 2 || event.button === 1)
 				target = "newtab";
 		}
 
 		var targeturl = "";
-		if (typeof(el) == "string")
+		if (typeof(el) === "string")
 			targeturl = el;
 		else
 			targeturl = el.getAttribute("targeturl");
 
-		if (target != "none")
+		if (target !== "none")
 			gSALR.menuItemGoTo(event,targeturl,target);
 	},
 
 	menuItemGoTo: function(event, url, target)
 	{
-		if (target == "newtab")
+		if (target === "newtab")
 		{
 			getBrowser().addTab(url);
 		}
-		else if (target == "current")
+		else if (target === "current")
 		{
 			if (getBrowser().selectedTab.pinned && !gSALR.service.getPreference('ignoreAppTabs'))
 				getBrowser().selectedTab = getBrowser().addTab(url);
@@ -3624,7 +3607,8 @@ var gSALR = {
 
 	buildForumMenu: function(menuLoc)
 	{
-		if (menuLoc == "menubar")
+		var menupopup = null;
+		if (menuLoc === "menubar")
 		{
 			// If there are any other SA menus, hide them.  Why? Who knows
 			// Since this now defaults to off, it might not work, keep an eye out if anyone cares
@@ -3645,8 +3629,8 @@ var gSALR = {
 				}
 			}
 
-			var menupopup = document.getElementById("menupopup_SAforums");
-			if (menupopup == null)
+			menupopup = document.getElementById("menupopup_SAforums");
+			if (menupopup === null)
 			{
 				var iBefore = document.getElementById("tools-menu");
 				if (!iBefore)
@@ -3663,9 +3647,9 @@ var gSALR = {
 				iBefore.parentNode.insertBefore(salrMenu, iBefore);
 			}
 		}
-		else if (menuLoc == "toolbar")
+		else if (menuLoc === "toolbar")
 		{
-			var menupopup = document.getElementById("salr-toolbar-popup");
+			menupopup = document.getElementById("salr-toolbar-popup");
 		}
 
 
@@ -3769,37 +3753,38 @@ var gSALR = {
 					ms.setAttribute("class", "salr_pinhelper_item");
 					menupopup.appendChild(ms);
 
-					var salrMenu = document.createElement("menuitem");
+					salrMenu = document.createElement("menuitem");
 					salrMenu.setAttribute("label", "Learn how to pin forums to this menu...");
 					salrMenu.setAttribute("image", "chrome://salastread/skin/eng101-16x16.png");
 					salrMenu.setAttribute("oncommand", "gSALR.launchPinHelper();");
 					salrMenu.setAttribute("class", "salr_pinhelper_item menuitem-iconic lastread_menu_sub");
 
-					menupopup.addEventListener("popupshowing", function(){gSALR.removeMenuPinHelper(menuLoc)}, false);
+					menupopup.addEventListener("popupshowing", function(){gSALR.removeMenuPinHelper(menuLoc);}, false);
 					menupopup.appendChild(salrMenu);
 				}
 			}
 		}
-		if (menuLoc == "menubar")
+		if (menuLoc === "menubar")
 			document.getElementById("salr-menu").style.display = "-moz-box";
 	},
 
 	starredThreadMenuShowing: function(menuLoc)
 	{
-		if (menuLoc == "menubar")
-			var menupopup = document.getElementById("salr_starredthreadmenupopup");
-		else if (menuLoc == "toolbar")
-			var menupopup = document.getElementById("salr_tb_starredthreadmenupopup");
+		var menupopup;
+		if (menuLoc === "menubar")
+			menupopup = document.getElementById("salr_starredthreadmenupopup");
+		else if (menuLoc === "toolbar")
+			menupopup = document.getElementById("salr_tb_starredthreadmenupopup");
 
 		while (menupopup.firstChild != null) {
 			menupopup.removeChild(menupopup.firstChild);
 		}
 		var starred = gSALR.service.starList;
 
-		for(var id in starred)
+		for (var id in starred)
 		{
 			var title = starred[id];
-			var menuel = document.createElement("menuitem");
+			let menuel = document.createElement("menuitem");
 				menuel.setAttribute("label", title);
 				menuel.setAttribute("onclick", "gSALR.menuItemCommandGoToStarredThread(event, this, 'click'," + id + ");");
 				menuel.setAttribute("oncommand", "gSALR.menuItemCommandGoToStarredThread(event, this, 'command'," + id + ");");
@@ -3808,7 +3793,7 @@ var gSALR = {
 
 		if (!menupopup.firstChild)
 		{
-			var menuel = document.createElement("menuitem");
+			let menuel = document.createElement("menuitem");
 				menuel.setAttribute("label", "You have no threads starred.");
 				menuel.setAttribute("disabled", "true");
 			menupopup.appendChild(menuel);
@@ -3819,9 +3804,9 @@ var gSALR = {
 	{
 		if (gSALR.service.getPreference('showMenuPinHelper') == false)
 		{
-			if (menuLoc == "menubar")
+			if (menuLoc === "menubar")
 				var menupopup = document.getElementById("menupopup_SAforums");
-			else if (menuLoc == "toolbar")
+			else if (menuLoc === "toolbar")
 				var menupopup = document.getElementById("salr-toolbar-popup");
 			if (menupopup)
 			{
@@ -3853,7 +3838,7 @@ var gSALR = {
 	{
 		// The main portion of the SALR button has been clicked.
 		// Just open the context menu, for now.
-		gSALR.onTBContextMenu(e)
+		gSALR.onTBContextMenu(e);
 	},
 
 	onTBContextMenu: function(e)

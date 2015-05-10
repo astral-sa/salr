@@ -142,7 +142,6 @@ pref('extensions.salastread.opSubText', 'Thread Poster');
 
 //THREAD OPTIONS
 pref('extensions.salastread.reanchorThreadOnLoad', true);
-pref('extensions.salastread.insertPostLastMarkLink', true);
 pref('extensions.salastread.insertPostTargetLink', true);
 pref('extensions.salastread.hideReportButtons', false);
 pref('extensions.salastread.highlightQuotes', true);
