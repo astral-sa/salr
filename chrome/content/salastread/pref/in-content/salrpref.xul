@@ -1,0 +1,1133 @@
+<?xml version="1.0"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this file,
+   - You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<?xml-stylesheet href="chrome://global/skin/global.css"?>
+
+<?xml-stylesheet href="chrome://mozapps/content/preferences/preferences.css"?>
+
+<?xml-stylesheet href="chrome://browser/skin/preferences/preferences.css"?>
+<?xml-stylesheet href="chrome://global/skin/in-content/common.css"?>
+<?xml-stylesheet
+  href="chrome://browser/skin/preferences/in-content/preferences.css"?>
+<?xml-stylesheet
+  href="chrome://browser/content/preferences/handlers.css"?>
+<?xml-stylesheet href="chrome://browser/skin/preferences/applications.css"?>
+<?xml-stylesheet href="chrome://browser/skin/preferences/in-content/search.css"?>
+
+<!-- Our stylesheets: -->
+<?xml-stylesheet href="chrome://salastread/content/pref/pref-color.css" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/colorpicker/colorpicker.css" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/pref/pref-about.css" type="text/css"?>
+
+<page xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	title="SALR Preferences">
+
+	<html:link rel="shortcut icon" href="chrome://browser/skin/preferences/in-content/favicon.ico"/>
+<!-- default:
+  <script type="application/javascript"
+		  src="chrome://browser/content/utilityOverlay.js"/> -->
+	<script type="application/javascript"
+		src="chrome://salastread/content/pref/in-content/preferences.js"/>
+	<script src="chrome://browser/content/preferences/in-content/subdialogs.js"/>
+
+	<stack flex="1">
+	<hbox flex="1">
+
+		<!-- category list -->
+		<richlistbox id="categories">
+			<richlistitem id="category-general"
+						class="category"
+						value="paneGeneral"
+						helpTopic=""
+						tooltiptext="General"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/general.png"/>
+				<label class="category-name" flex="1">General</label>
+			</richlistitem>
+
+			<richlistitem id="category-forums"
+						class="category"
+						value="paneForums"
+						helpTopic=""
+						tooltiptext="Forums"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/files.png"/>
+				<label class="category-name" flex="1">Forums</label>
+			</richlistitem>
+
+			<richlistitem id="category-threads"
+						class="category"
+						value="paneThreads"
+						helpTopic=""
+						tooltiptext="Threads"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/threads.png"/>
+				<label class="category-name" flex="1">Threads</label>
+			</richlistitem>
+
+			<richlistitem id="category-images"
+						class="category"
+						value="paneImages"
+						helpTopic=""
+						tooltiptext="Images"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/images.png"/>
+				<label class="category-name" flex="1">Images</label>
+			</richlistitem>
+
+			<richlistitem id="category-ignored"
+						class="category"
+						value="paneIgnored"
+						helpTopic=""
+						tooltiptext="Ignored Threads"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/ignored.png"/>
+				<label class="category-name" flex="1">Ignored</label>
+			</richlistitem>
+
+			<richlistitem id="category-quickreply"
+						class="category"
+						value="paneQuickReply"
+						helpTopic=""
+						tooltiptext="Quick Reply"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/quickreply.png"/>
+				<label class="category-name" flex="1">Quick Reply</label>
+			</richlistitem>
+
+			<richlistitem id="category-colors"
+						class="category"
+						value="paneColors"
+						helpTopic=""
+						tooltiptext="Colors"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/colors.png"/>
+				<label class="category-name" flex="1">Colors</label>
+			</richlistitem>
+
+			<richlistitem id="category-menus"
+						class="category"
+						value="paneMenus"
+						helpTopic=""
+						tooltiptext="Menus"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/samenu.png"/>
+				<label class="category-name" flex="1">Menus</label>
+			</richlistitem>
+
+			<richlistitem id="category-users"
+						class="category"
+						value="paneUsers"
+						helpTopic=""
+						tooltiptext="Users"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/users.png"/>
+				<label class="category-name" flex="1">Users</label>
+			</richlistitem>
+
+			<richlistitem id="category-about"
+						class="category"
+						value="paneAbout"
+						helpTopic=""
+						tooltiptext="About"
+						align="center">
+				<image src="chrome://salastread/content/pref/images/about.png"/>
+				<label class="category-name" flex="1">About</label>
+			</richlistitem>
+
+		</richlistbox>
+
+		<vbox class="main-content" flex="1">
+			<prefpane id="mainPrefPane" flex="1">
+<!-- General panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/general.js"/>
+
+<preferences>
+	<preference id="removeHeaderAndFooter" 	name="extensions.salastread.removeHeaderAndFooter" 	type="bool"/>
+	<preference id="removePageTitlePrefix" 	name="extensions.salastread.removePageTitlePrefix" 	type="bool"/>
+	<preference id="gestureEnable" 			name="extensions.salastread.gestureEnable" 			type="bool"/>
+	<preference id="showTextConfigLink" 		name="extensions.salastread.showTextConfigLink" 		type="bool"/>
+
+	<preference id="suppressErrors"			name="extensions.salastread.suppressErrors" 		type="bool"/>
+
+	<preference id="databaseStoragePath" 	name="extensions.salastread.databaseStoragePath" 	type="string"/>
+	<preference id="forumListStoragePath" 	name="extensions.salastread.forumListStoragePath" 	type="string"/>
+
+</preferences>
+
+<hbox id="header-general"
+      class="header"
+      hidden="true"
+      data-category="paneGeneral">
+	<label class="header-name">General</label>
+</hbox>
+
+<!-- General Options -->
+<groupbox id="generalGroup"
+	data-category="paneGeneral"
+	hidden="true">
+<caption label="General Options" />
+<vbox>
+	<checkbox preference="removeHeaderAndFooter" 	label="Hide Forum Header and Footer" />
+	<checkbox preference="removePageTitlePrefix" 	label="Remove 'The Something Awful Forums' from page titles" />
+
+
+	<checkbox preference="gestureEnable" 		 	label="Allow mouse gestures to navigate around threads and forums" />
+	<checkbox preference="showTextConfigLink" 		 	label="Add 'SALR Config' item to forum's menu" />
+</vbox>
+</groupbox>
+
+<groupbox id="fileLocsGroup"
+	data-category="paneGeneral"
+	hidden="true">
+	<caption label="File Locations"/>
+	<description>
+		These preferences define where SALR will store the files it uses to keep
+		track of your forums activities.  %profile% will be replaced with the path to your Firefox User Profile.
+	</description>
+	<grid>
+		<columns>
+			<column/>
+			<column flex="1"/>
+			<column/>
+		</columns>
+		<rows>
+			<row align="center">
+				<label value="Thread Data File:" control="dbStorage"/>
+				<textbox id="dbStorage" preference="databaseStoragePath"/>
+				<button id="defaultstring_databaseStoragePath" label="Default" />
+			</row>
+			<row align="center">
+				<label value="Forum Data File:" control="forumList"/>
+				<textbox id="forumList" preference="forumListStoragePath"/>
+				<button id="defaultstring_forumListStoragePath" label="Default" />
+			</row>
+		</rows>
+	</grid>
+</groupbox>
+
+<groupbox id="debuggingGroup"
+	data-category="paneGeneral"
+	hidden="true">
+	<caption label="Debugging Info"/>
+	<checkbox preference="suppressErrors" label="Don't display error popup messages" />
+</groupbox>
+
+
+<!-- Forums panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/forums.js"/>
+
+<preferences>
+	<preference id="enableForumNavigator"		name="extensions.salastread.enableForumNavigator" 	type="bool"/>
+
+	<preference id="disableNewReCount" 			name="extensions.salastread.disableNewReCount" 		type="bool" inverted="true"/>
+	<preference id="newPostCountUseOneLine" 	name="extensions.salastread.newPostCountUseOneLine" type="bool" inverted="true"/>
+	<preference id="showThreadsWithNewPostsFirst" name="extensions.salastread.showThreadsWithNewPostsFirst" type="bool" />
+	<preference id="showThreadsWithNewPostsFirstCP" name="extensions.salastread.showThreadsWithNewPostsFirstCP" type="bool" />
+	<preference id="showThreadsWithNewPostsFirstCPStickies" name="extensions.salastread.showThreadsWithNewPostsFirstCPStickies" type="bool" />
+
+	<preference id="showGoToLastIcon"			name="extensions.salastread.showGoToLastIcon" 		type="bool"/>
+	<preference id="goToLastReadPost"			name="extensions.salastread.goToLastReadPost" 		type="string"/>
+	<preference id="alwaysShowGoToLastIcon"		name="extensions.salastread.alwaysShowGoToLastIcon" type="bool"/>
+	<preference id="showUnvisitIcon"			name="extensions.salastread.showUnvisitIcon" 		type="bool"/>
+	<preference id="markThreadUnvisited"		name="extensions.salastread.markThreadUnvisited" 	type="string"/>
+	<preference id="swapIconOrder"				name="extensions.salastread.swapIconOrder" 			type="bool"/>
+	<preference id="advancedThreadFiltering"	name="extensions.salastread.advancedThreadFiltering" type="bool"/>
+	<preference id="showForumModsList"			name="extensions.salastread.showForumModsList" 		type="bool"/>
+</preferences>
+
+<hbox id="header-forums"
+      class="header"
+      hidden="true"
+      data-category="paneForums">
+	<label class="header-name">Forums</label>
+</hbox>
+
+<groupbox id="forumFeaturesGroup"
+	data-category="paneForums"
+	hidden="true">
+	<caption label="Forum Features"/>
+
+	<checkbox preference="enableForumNavigator"  label="Add a forum navigator to the lower-right corner of the browser" />
+	<checkbox preference="disableNewReCount" 		label="Show new replies count in the replies column" oncommand="gSALRForumsPane.toggleNewReCount()" id="newReCount" />
+	<checkbox preference="newPostCountUseOneLine" 	label="Show new replies count on a new line" style="margin-left: 20px;" id="newReCountNewLine" />
+	<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first in the thread list" />
+	<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads with new posts first in the bookmark list" oncommand="gSALRForumsPane.togglePromoteStickiesInCP()" id="showThreadsWNPCP" />
+	<checkbox preference="showThreadsWithNewPostsFirstCPStickies" label="Move stickies with new posts to the top of the bookmark list" style="margin-left: 20px;" id="promoteStickiesWNPCP" />
+	<checkbox preference="swapIconOrder" 			label="Swap the Mark Unvisited and Go To Last Post icon order" />
+	<checkbox preference="showForumModsList" 		label="Show list of moderators in the thread list" />
+	<checkbox preference="advancedThreadFiltering" 	label="Enable advanced thread filtering" />
+</groupbox>
+
+<groupbox id="forumIconsGroup"
+	data-category="paneForums"
+	hidden="true">
+	<caption label="Icons"/>
+
+	<vbox>
+
+		<checkbox id="alwayShowLastReadIcon" preference="alwaysShowGoToLastIcon" label="Always show 'Go To Last Post' icon, even if no new posts in thread"/>
+		<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Use this 'Go To Last Post' icon" oncommand="gSALRForumsPane.toggleLastReadIcon()"/>
+		<vbox style="margin-left: 20px">
+			<hbox align="center" flex="1">
+				<label value="Icon URL:" control="lastReadPostIcon"/>
+				<textbox id="lastReadIcon" preference="goToLastReadPost" flex="1"/>
+				<button id="lastReadIconDefault" label="Default"  onclick="gSALRForumsPane.lastReadIconDefault()"/>
+			</hbox>
+		</vbox>
+
+		<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Use this 'Mark Thread Unvisited' icon" oncommand="gSALRForumsPane.toggleUnvisitIcon()" />
+
+		<vbox style="margin-left: 20px">
+
+			<hbox align="center" flex="1">
+				<label value="Icon URL:" control="unvisitThreadIcon"/>
+				<textbox id="unvisitIcon" preference="markThreadUnvisited" flex="1"/>
+				<button id="unvisitIconDefault" label="Default" onclick="gSALRForumsPane.unvisitIconDefault()"/>
+			</hbox>
+
+		</vbox>
+	</vbox>
+</groupbox>
+
+
+<!-- Threads panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/threads.js"/>
+
+<preferences>
+	<preference id="reanchorThreadOnLoad" 	name="extensions.salastread.reanchorThreadOnLoad" 	type="bool"/>
+	<preference id="hideReportButtons" 		name="extensions.salastread.hideReportButtons" 		type="bool"/>
+	<preference id="enableVideoEmbedder" 	name="extensions.salastread.enableVideoEmbedder" 	type="bool"/>
+	<preference id="videoEmbedQuality" 	name="extensions.salastread.videoEmbedQuality" 	type="string"/>
+	<preference id="videoEmbedSize" 	name="extensions.salastread.videoEmbedSize" 	type="string"/>
+	<preference id="videoEmbedCustomWidth" 	name="extensions.salastread.videoEmbedCustomWidth" 	type="int"/>
+	<preference id="videoEmbedCustomHeight" 	name="extensions.salastread.videoEmbedCustomHeight" 	type="int"/>
+	<preference id="videoEmbedderGetTitles" 	name="extensions.salastread.videoEmbedderGetTitles" 	type="bool"/>
+	<preference id="enablePageNavigator"	name="extensions.salastread.enablePageNavigator" 	type="bool"/>
+	<preference id="enableKeyboardControls"	name="extensions.salastread.quickPostJump"			type="bool"/>
+	<preference id="hideThreadSearchBox"	name="extensions.salastread.hideThreadSearchBox"			type="bool"/>
+	<preference id="shrinkThreadListTitlePages" name="extensions.salastread.shrinkThreadListTitlePages" type="bool"/>
+</preferences>
+
+<hbox id="header-threads"
+      class="header"
+      hidden="true"
+      data-category="paneThreads">
+	<label class="header-name">Threads</label>
+</hbox>
+
+<groupbox id="threadOptionsGroup"
+	data-category="paneThreads"
+	hidden="true">
+<caption label="Thread Options"/>
+	<vbox>
+		<checkbox preference="reanchorThreadOnLoad" 	label="Reanchor threads to targetted post after all images have loaded" />
+		<checkbox preference="hideReportButtons" 		label="Hide the report button on your own posts" />
+		<checkbox preference="enablePageNavigator" 	 	label="Add a page navigator to the lower-right corner of the browser" />
+		<checkbox preference="hideThreadSearchBox" 	 	label="Hide 'Search Thread' box" />
+		<checkbox preference="shrinkThreadListTitlePages" label="Shrink 'Pages:' list below thread names" />
+	</vbox>
+</groupbox>
+<groupbox id="threadKeyNavGroup"
+	data-category="paneThreads"
+	hidden="true">
+<caption label="Keyboard Navigation Options"/>
+	<vbox>
+		<checkbox preference="enableKeyboardControls" 	 	label="Enable keyboard navigation of threads" />
+	</vbox>
+</groupbox>
+<groupbox id="threadVideoGroup"
+	data-category="paneThreads"
+	hidden="true">
+<caption label="Video Embed Options"/>
+	<vbox>
+		<checkbox id="enableVideoEmbedderCheckbox" preference="enableVideoEmbedder" label="Enable converting of video links to embeddable video:" oncommand="var evec=!document.getElementById('enableVideoEmbedderCheckbox').checked;document.getElementById('videoEmbedderGetTitlesCheckbox').disabled=evec;" />
+		<checkbox id="videoEmbedderGetTitlesCheckbox" preference="videoEmbedderGetTitles" label="Fetch YouTube video titles" style="margin-left: 20px;"/>
+		<separator class="thin" />
+		<!--<caption label="Embedded Youtube Player Settings:" />
+		<separator class="thin" />-->
+		<hbox>
+			<vbox>
+				<groupbox id="threadYTSizeGroup"
+					data-category="paneThreads">
+					<caption label="YouTube Player Size" />
+					<radiogroup id="radio_videoEmbedSize" preference="videoEmbedSize"
+							onclick="var cs=!document.getElementById('customvidsize').selected; document.getElementById('videoEmbedCustomWidthbox').disabled=cs; document.getElementById('videoEmbedCustomHeightbox').disabled=cs">
+						<radio id="tinyvidsize" value="tiny" label="Tiny (480x300)" />
+						<radio id="smallvidsize" value="small" label="Small (560x345)" />
+						<radio id="mediumvidsize" value="medium" label="Medium (640x390)" />
+						<radio id="largevidsize" value="large" label="Large (853x510)" />
+						<radio id="giganticvidsize" value="gigantic" label="Gigantic (1280x750)" />
+						<hbox align="center">
+						<vbox>
+							<radio id="customvidsize" value="custom" label="Custom:" />
+						</vbox>
+						<vbox>
+							<label value="Width:" control="videoEmbedCustomWidthbox" />
+							<textbox id="videoEmbedCustomWidthbox" preference="videoEmbedCustomWidth" size="4" maxlength="5" />
+							</vbox>
+							<vbox align="end">
+							<separator />
+							<label value="x" />
+							</vbox>
+							<vbox>
+							<label value="Height:" control="videoEmbedCustomHeightbox" />
+							<textbox id="videoEmbedCustomHeightbox" preference="videoEmbedCustomHeight" size="4" maxlength="5" />
+							</vbox>
+						</hbox>
+					</radiogroup>
+				</groupbox>
+			</vbox>
+			<vbox>
+				<groupbox id="threadYTQualGroup"
+					data-category="paneThreads">
+					<caption label="YouTube Player Default Quality" />
+					<radiogroup id="radio_videoEmbedQuality" preference="videoEmbedQuality">
+						<radio id="normalqual" value="normal" label="Automatic (quality is based on player size)" />
+						<radio id="lowqual" value="low" label="Lowest quality available" />
+						<radio id="hqqual" value="hq" label="480p SD (if available)" />
+						<radio id="hdqual" value="hd" label="720p HD (if available)" />
+						<radio id="hd1080qual" value="hd1080" label="1080p HD (if available)" />
+					</radiogroup>
+				</groupbox>
+			</vbox>
+		</hbox>
+	</vbox>
+</groupbox>
+
+
+<!-- Images panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/images.js"/>
+
+<preferences>
+	<preference id="convertTextToImage" 		name="extensions.salastread.convertTextToImage" 		type="bool"/>
+
+	<preference id="shrinkTextToImages" 		name="extensions.salastread.shrinkTextToImages" 		type="bool"/>
+	<preference id="dontTextToImageIfMayBeNws" 	name="extensions.salastread.dontTextToImageIfMayBeNws" 	type="bool"/>
+	<preference id="dontTextToImageInSpoilers" 	name="extensions.salastread.dontTextToImageInSpoilers" 	type="bool"/>
+	<preference id="dontConvertReadImages" 		name="extensions.salastread.dontConvertReadImages" 		type="bool"/>
+	<preference id="unconvertReadImages" 		name="extensions.salastread.unconvertReadImages" 		type="bool"/>
+
+	<preference id="maxWidthOfConvertedImages" 	name="extensions.salastread.maxWidthOfConvertedImages" 	type="int"/>
+	<preference id="maxHeightOfConvertedImages" name="extensions.salastread.maxHeightOfConvertedImages" type="int"/>
+
+	<preference id="thumbnailAllImages" 		name="extensions.salastread.thumbnailAllImages" 		type="bool"/>
+</preferences>
+
+<hbox id="header-images"
+      class="header"
+      hidden="true"
+      data-category="paneImages">
+	<label class="header-name">Images</label>
+</hbox>
+
+<groupbox id="imageTtIGroup"
+	data-category="paneImages"
+	hidden="true">
+	<caption label="Text-to-Image Conversion"/>
+
+	<vbox>
+		<checkbox preference="convertTextToImage" label="Convert links to images into inline images in posts" id="toggleTtICheckbox" oncommand="gSALRImagesPane.toggleTtIConvBoxes()"/>
+
+		<vbox style="margin-left: 20px">
+			<checkbox preference="dontTextToImageIfMayBeNws" label="Don't convert if post contains an NWS/NMS warning" id="dontTtINws" />
+			<checkbox preference="dontTextToImageInSpoilers" label="Don't convert links inside [spoiler] tags" id="dontTtISpoilers" />
+			<checkbox preference="dontConvertReadImages" label="Don't convert links in marked-as-read posts" id="dontTtIRead" />
+		</vbox>
+
+	</vbox>
+</groupbox>
+
+<groupbox id="imageItTGroup"
+	data-category="paneImages"
+	hidden="true">
+	<caption label="Image-to-Text Conversion"/>
+	<vbox>
+		<checkbox preference="unconvertReadImages" label="Convert all inline images in read posts into links" />
+	</vbox>
+</groupbox>
+
+<groupbox id="imageScalingGroup"
+	data-category="paneImages"
+	hidden="true">
+	<caption label="Image Scaling" />
+	<vbox>
+		<checkbox preference="thumbnailAllImages" label="Scale all forum images until clicked"
+			id="toggleImageScaleCheckbox" oncommand="gSALRImagesPane.toggleImageScaleBoxes()"/>
+		<vbox style="margin-left: 20px;">
+			<grid>
+				<columns>
+					<column />
+					<column />
+				</columns>
+
+				<rows>
+					<description>
+						Enter the values for the maximum height/width you would like SALR to scale images to.
+						All dimensions are in pixels, set to 0 to disable scaling in that direction.
+					</description>
+					<row align="center">
+						<label value="Max Width" control="maxWidth"/>
+						<textbox id="maxImgWidth" preference="maxWidthOfConvertedImages" size="3" />
+						<label value="(px)" control="maxWidth" />
+					</row>
+
+					<row align="center">
+						<label value="Max Height" control="maxHeight"/>
+						<textbox id="maxImgHeight" preference="maxHeightOfConvertedImages" size="3" />
+						<label value="(px)" control="maxHeight" />
+					</row>
+				</rows>
+			</grid>
+		</vbox>
+	</vbox>
+</groupbox>
+
+
+<!-- Ignored panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/ignored.js"/>
+
+<preferences>
+</preferences>
+
+<hbox id="header-ignored"
+      class="header"
+      hidden="true"
+      data-category="paneIgnored">
+	<label class="header-name">Ignored Threads</label>
+</hbox>
+
+<vbox id="ignoredGroup"
+	flex="1"
+	data-category="paneIgnored"
+	hidden="true">
+	<description>
+		Your ignored threads are listed below. To un-ignore a thread, choose it from the list and click the "Unignore Selected Thread" button.
+	</description>
+
+	<listbox flex="1" rows="12" id="ignored_thread_list" onselect="gSALRIgnoredPane.listSelect()" seltype="multiple">
+	</listbox>
+
+	<hbox>
+		<spacer flex="1"/>
+		<button id="unignore_selectall_button" label="Select All Threads" disabled="true" oncommand="gSALRIgnoredPane.selectAllThreads()" />
+		<button id="unignore_thread_button" label="Unignore Selected Thread" disabled="true" oncommand="gSALRIgnoredPane.unignoreThreads()" />
+	</hbox>
+</vbox>
+
+
+<!-- Quick Reply panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/quickreply.js"/>
+
+<preferences>
+	<preference id="useQuickQuote" 					 name="extensions.salastread.useQuickQuote" 				  type="bool"/>
+	
+	<preference id="quickQuoteSubscribeDefault" 	 name="extensions.salastread.quickQuoteSubscribeDefault" 	  type="bool"/>
+	<preference id="quickQuoteSignatureDefault" 	 name="extensions.salastread.quickQuoteSignatureDefault" 	  type="bool"/>
+	<preference id="quickQuoteDisableSmiliesDefault" name="extensions.salastread.quickQuoteDisableSmiliesDefault" type="bool"/>
+	<preference id="quickQuoteSwapPostPreview" 		 name="extensions.salastread.quickQuoteSwapPostPreview" 	  type="bool"/>
+	<preference id="quickQuoteLivePreview" 			 name="extensions.salastread.quickQuoteLivePreview" 		  type="bool"/>
+</preferences>
+		
+<hbox id="header-quickreply"
+      class="header"
+      hidden="true"
+      data-category="paneQuickReply">
+	<label class="header-name">Quick Reply</label>
+</hbox>
+
+<groupbox id="quickReplyGroup"
+	data-category="paneQuickReply"
+	hidden="true">
+	<caption label="Quick Reply Options"/>
+	<vbox>
+		<checkbox preference="useQuickQuote" label="Use 'Quick Quote' and 'Quick Reply' buttons"/>
+		<vbox id="qqtoggles" style="margin-left: 20px">
+			<checkbox preference="quickQuoteSubscribeDefault" 		label="Default 'Subscribe' to checked" />
+			<checkbox preference="quickQuoteSignatureDefault" 		label="Default 'Show Signature' to checked (for first post in thread only)" />
+			<checkbox preference="quickQuoteDisableSmiliesDefault" 	label="Default 'Disable Smilies' to checked" />
+			<checkbox preference="quickQuoteSwapPostPreview" 		label="Swap position of 'Submit Reply' and 'Preview Reply' buttons" />
+			<checkbox preference="quickQuoteLivePreview" 			label="Enable live preview in quick reply window" />
+		</vbox>
+	</vbox>
+</groupbox>	
+
+
+<!-- Colors panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/colors.js"/>
+
+<preferences>
+	<!-- General Colors -->
+	<preference id="videoEmbedderBG" name="extensions.salastread.readLight" type="string"/>
+
+	<!-- Normal Thread Colors -->
+	<preference id="postedInThreadRe" 		name="extensions.salastread.postedInThreadRe" 	type="string"/>
+	<preference id="readDark" 				name="extensions.salastread.readDark" 			type="string"/>
+	<preference id="readLight" 				name="extensions.salastread.readLight" 			type="string"/>
+	<preference id="readWithNewDark" 		name="extensions.salastread.readWithNewDark" 	type="string"/>
+	<preference id="readWithNewLight" 		name="extensions.salastread.readWithNewLight" 	type="string"/>
+	<preference id="seenPostDark" 			name="extensions.salastread.seenPostDark" 		type="string"/>
+	<preference id="seenPostDark2" 			name="extensions.salastread.seenPostDark2" 		type="string"/>
+	<preference id="seenPostLight" 			name="extensions.salastread.seenPostLight" 		type="string"/>
+	<preference id="seenPostLight2" 		name="extensions.salastread.seenPostLight2" 		type="string"/>
+	<preference id="unreadDark" 			name="extensions.salastread.unreadDark" 		type="string"/>
+	<preference id="unreadLight" 			name="extensions.salastread.unreadLight" 		type="string"/>
+	<preference id="unseenPostDark" 		name="extensions.salastread.unseenPostDark" 	type="string"/>
+	<preference id="unseenPostDark2" 		name="extensions.salastread.unseenPostDark2" 	type="string"/>
+	<preference id="unseenPostLight" 		name="extensions.salastread.unseenPostLight" 	type="string"/>
+	<preference id="unseenPostLight2" 		name="extensions.salastread.unseenPostLight2" 	type="string"/>
+	<preference id="highlightQuotePost"		name="extensions.salastread.highlightQuotePost" type="string"/>
+
+	<!-- FYAD Thread Colors -->
+	<preference id="postedInThreadReFYAD" 	name="extensions.salastread.postedInThreadReFYAD" 	type="string"/>
+	<preference id="readDarkFYAD" 			name="extensions.salastread.readDarkFYAD" 			type="string"/>
+	<preference id="readLightFYAD" 			name="extensions.salastread.readLightFYAD" 			type="string"/>
+	<preference id="readWithNewDarkFYAD" 	name="extensions.salastread.readWithNewDarkFYAD" 	type="string"/>
+	<preference id="readWithNewLightFYAD" 	name="extensions.salastread.readWithNewLightFYAD" 	type="string"/>
+	<preference id="seenPostDarkFYAD" 		name="extensions.salastread.seenPostDarkFYAD" 		type="string"/>
+	<preference id="seenPostDark2FYAD" 		name="extensions.salastread.seenPostDark2FYAD" 		type="string"/>
+	<preference id="seenPostLightFYAD" 		name="extensions.salastread.seenPostLightFYAD" 		type="string"/>
+	<preference id="seenPostLight2FYAD" 	name="extensions.salastread.seenPostLight2FYAD" 	type="string"/>
+	<preference id="unreadDarkFYAD" 		name="extensions.salastread.unreadDarkFYAD" 		type="string"/>
+	<preference id="unreadLightFYAD" 		name="extensions.salastread.unreadLightFYAD" 		type="string"/>
+	<preference id="unseenPostDarkFYAD" 	name="extensions.salastread.unseenPostDarkFYAD" 	type="string"/>
+	<preference id="unseenPostDark2FYAD" 	name="extensions.salastread.unseenPostDark2FYAD" 	type="string"/>
+	<preference id="unseenPostLightFYAD" 	name="extensions.salastread.unseenPostLightFYAD" 	type="string"/>
+	<preference id="unseenPostLight2FYAD" 	name="extensions.salastread.unseenPostLight2FYAD" 	type="string"/>
+	<preference id="highlightQuotePostFYAD" name="extensions.salastread.highlightQuotePostFYAD" type="string"/>
+
+	<!-- BYOB Thread Colors -->
+	<preference id="postedInThreadReBYOB" 	name="extensions.salastread.postedInThreadReBYOB" 	type="string"/>
+	<preference id="readDarkBYOB" 			name="extensions.salastread.readDarkBYOB" 			type="string"/>
+	<preference id="readLightBYOB" 			name="extensions.salastread.readLightBYOB" 			type="string"/>
+	<preference id="readWithNewDarkBYOB" 	name="extensions.salastread.readWithNewDarkBYOB" 	type="string"/>
+	<preference id="readWithNewLightBYOB" 	name="extensions.salastread.readWithNewLightBYOB" 	type="string"/>
+	<preference id="seenPostDarkBYOB" 		name="extensions.salastread.seenPostDarkBYOB" 		type="string"/>
+	<preference id="seenPostDark2BYOB" 		name="extensions.salastread.seenPostDark2BYOB" 		type="string"/>
+	<preference id="seenPostLightBYOB" 		name="extensions.salastread.seenPostLightBYOB" 		type="string"/>
+	<preference id="seenPostLight2BYOB" 	name="extensions.salastread.seenPostLight2BYOB" 		type="string"/>
+	<preference id="unreadDarkBYOB" 		name="extensions.salastread.unreadDarkBYOB" 		type="string"/>
+	<preference id="unreadLightBYOB" 		name="extensions.salastread.unreadLightBYOB" 		type="string"/>
+	<preference id="unseenPostDarkBYOB" 	name="extensions.salastread.unseenPostDarkBYOB" 	type="string"/>
+	<preference id="unseenPostDark2BYOB" 	name="extensions.salastread.unseenPostDark2BYOB" 	type="string"/>
+	<preference id="unseenPostLightBYOB" 	name="extensions.salastread.unseenPostLightBYOB" 	type="string"/>
+	<preference id="unseenPostLight2BYOB" 	name="extensions.salastread.unseenPostLight2BYOB" 	type="string"/>
+	<preference id="highlightQuotePostBYOB" name="extensions.salastread.highlightQuotePostBYOB" type="string"/>
+
+	<!-- Coloring Toggles -->
+	<preference id="dontHighlightThreads" 	name="extensions.salastread.dontHighlightThreads" 	type="bool"/>
+	<preference id="dontHighlightPosts" 	name="extensions.salastread.dontHighlightPosts" 	type="bool"/>
+	<preference id="highlightUsernames" 	name="extensions.salastread.highlightUsernames" 	type="bool"/>
+	<preference id="disableGradients" 		name="extensions.salastread.disableGradients" 		type="bool"/>
+	<preference id="highlightQuotes"    	name="extensions.salastread.highlightQuotes"	type="bool"/>
+
+</preferences>
+
+<hbox id="header-colors"
+      class="header"
+      hidden="true"
+      data-category="paneColors">
+	<label class="header-name">Colors</label>
+</hbox>
+
+<groupbox id="colorOptionsGroup"
+	data-category="paneColors"
+	hidden="true">
+	<caption label="Thread Coloring Options"/>
+
+	<checkbox preference="dontHighlightThreads" label="Don't perform color highlighting on thread lists"/>
+	<checkbox preference="dontHighlightPosts" 	label="Don't perform color highlighting on posts in a thread"/>
+	<checkbox preference="disableGradients" 	label="Disable all color gradients"/>
+	<checkbox preference="highlightQuotes"	label="Highlight quoted interesting people" />
+</groupbox>
+
+<groupbox id="colorPickerGroup"
+	data-category="paneColors"
+	hidden="true">
+	<caption label="Click on a link to adjust the specified color." />
+
+	<hbox align="center">
+		<label value="Change/view color settings for:" control="forumtype"/>
+		<menulist id="forumtype" oncommand="gSALRColorsPane.loadColors()">
+			<menupopup>
+				<menuitem label="Normal" 	value=""/>
+				<menuitem label="FYAD"		value="FYAD"/>
+				<menuitem label="BYOB"		value="BYOB"/>
+			</menupopup>
+		</menulist>
+		<button label="Load Default Colors" oncommand="gSALRColorsPane.loadDefaultColors()"/>
+	</hbox>
+	<hbox>
+		<hbox id="sampletableholder" class="sampletableholder">
+			<vbox>
+				<html:span>&#160;Forum view:</html:span>
+				<html:table id="sampletable" class="sampletable">
+				<html:tbody>
+					<html:tr>
+						<html:td class="readWithNewDark"><html:img src="chrome://salastread/content/pref/images/shitpost.gif"/></html:td>
+						<html:td class="readWithNewLight">Visited thread with new posts</html:td>
+						<html:td class="readWithNewDark" 	onclick="gSALRColorsPane.editColor(event, this);">Dark</html:td>
+						<html:td class="readWithNewLight" 	onclick="gSALRColorsPane.editColor(event, this);">Light</html:td>
+						<html:td class="postedInThreadRe" 	onclick="gSALRColorsPane.editColor(event, this);">Reply</html:td>
+					</html:tr>
+					<html:tr>
+						<html:td class="readDark"><html:img src="chrome://salastread/content/pref/images/shitpost.gif"/></html:td>
+						<html:td class="readLight">Visited thread with no new posts</html:td>
+						<html:td class="readDark" 	onclick="gSALRColorsPane.editColor(event, this);">Dark</html:td>
+						<html:td class="readLight" 	onclick="gSALRColorsPane.editColor(event, this);">Light</html:td>
+						<html:td></html:td>
+					</html:tr>
+					<html:tr>
+						<html:td class="unreadDark"><html:img src="chrome://salastread/content/pref/images/shitpost.gif"/></html:td>
+						<html:td class="unreadLight">Unvisited thread</html:td>
+						<html:td class="unreadDark"		onclick="gSALRColorsPane.editColor(event, this);">Dark</html:td>
+						<html:td class="unreadLight" 	onclick="gSALRColorsPane.editColor(event, this);">Light</html:td>
+						<html:td></html:td>
+					</html:tr>
+				</html:tbody>
+				</html:table>
+				<html:span>&#160;Thread view:</html:span>
+				<html:table id="postsampletable" class="postsampletable">
+				<html:tbody>
+					<html:tr>
+						<html:td class="seenPostLight2" 	onclick="gSALRColorsPane.editColor(event, this);">Seen Postinfo (light)</html:td>
+						<html:td class="seenPostLight" 		onclick="gSALRColorsPane.editColor(event, this);">Seen Postbody (light)</html:td>
+					</html:tr>
+					<html:tr>
+						<html:td class="seenPostDark2" 		onclick="gSALRColorsPane.editColor(event, this);">Seen Postinfo (dark)</html:td>
+						<html:td class="seenPostDark" 		onclick="gSALRColorsPane.editColor(event, this);">Seen Postbody (dark)</html:td>
+					</html:tr>
+					<html:tr>
+						<html:td class="unseenPostLight2" 	onclick="gSALRColorsPane.editColor(event, this);">Unseen Postinfo (light)</html:td>
+						<html:td class="unseenPostLight" 	onclick="gSALRColorsPane.editColor(event, this);">Unseen Postbody (light)</html:td>
+					</html:tr>
+					<html:tr>
+						<html:td class="unseenPostDark2" 	onclick="gSALRColorsPane.editColor(event, this);">Unseen Postinfo (dark)</html:td>
+						<html:td class="unseenPostDark" 	onclick="gSALRColorsPane.editColor(event, this);">Unseen Postbody (dark)</html:td>
+					</html:tr>
+					<html:tr>
+						<html:td colspan="2" class="highlightQuotePost" onclick="gSALRColorsPane.editColor(event, this);">My Post Is Quoted</html:td>
+					</html:tr>
+				</html:tbody>
+				</html:table>
+			</vbox>
+		</hbox>
+		<spacer flex="1" />
+	</hbox>
+</groupbox>
+<!-- This doesn't seem to be associated with anything; probably an unimplemented feature.
+<popupset>
+	<popup id="gradientSelectorPopup" position="at_pointer">
+		<menuitem label="Top Gradient Color" accesskey="t" oncommand="choseTopOrBottom(true);"/>
+		<menuitem label="Bottom Base Color" accesskey="b" oncommand="choseTopOrBottom(false);"/>
+	</popup>
+</popupset> -->
+
+
+<!-- Menus panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/menus.js"/>
+
+<preferences>
+	<preference id="showSAForumMenu" 			name="extensions.salastread.showSAForumMenu" 			type="bool" onchange="gSALRMenusPane.changedPrefshowSAForumMenu()"/>
+	<preference id="nestSAForumMenu" 			name="extensions.salastread.nestSAForumMenu" 			type="bool"/>
+	<preference id="useSAForumMenuBackground" 	name="extensions.salastread.useSAForumMenuBackground" 	type="bool"/>
+	<preference id="hideOtherSAMenus" 			name="extensions.salastread.hideOtherSAMenus" 			type="bool"/>
+	
+	<preference id="enableContextMenu" 			name="extensions.salastread.enableContextMenu" 			type="bool"/>
+	<preference id="contextMenuOnBottom" 		name="extensions.salastread.contextMenuOnBottom" 		type="bool"/>
+	
+	<preference id="menuPinnedForums"			name="extensions.salastread.menuPinnedForums"			type="string"/>
+</preferences>
+
+<hbox id="header-menus"
+      class="header"
+      hidden="true"
+      data-category="paneMenus">
+	<label class="header-name">Menus</label>
+</hbox>
+
+<groupbox id="toolbarGroup"
+	data-category="paneMenus"
+	hidden="true">
+	<caption label="Quick Jump Menu Settings"/>
+	<checkbox id="showSaMenu"	preference="showSAForumMenu" 			label="Show SA Forum Quick Jump menu in the menu bar"/>
+	
+	<vbox style="margin-left: 10px">
+		<checkbox id="nestSaMenu"	preference="nestSAForumMenu" 			label="Use submenus for forum categories"/>
+		<checkbox preference="useSAForumMenuBackground" label="Use SA Grenade background on Quick Jump menu"/>		
+		<checkbox preference="hideOtherSAMenus" 		label="Hide any other SA menus installed by other extensions"/>
+
+		
+		<hbox>
+			<vbox flex="1">
+				<label value="Unpinned Forums"/>
+				<listbox flex="1" id="unpinned_forums">
+				</listbox>
+			</vbox>
+			
+			<vbox align="center">
+				<spacer flex="1"/>
+				<button id="pinButton" label="Pin &gt;" oncommand="gSALRMenusPane.pinClick()" />
+				<button id="unpinButton" label="&lt; Unpin" oncommand="gSALRMenusPane.unPinClick()" />
+				<separator/>
+				<button id="moveUpButton" label="Move Up" disabled="true" oncommand="gSALRMenusPane.moveClick(false)" />
+				<button id="moveDownButton" label="Move Down" disabled="true" oncommand="gSALRMenusPane.moveClick(true)" />
+				<separator/>
+				<button id="addSeparatorButton" label="Add Sep &gt;" oncommand="gSALRMenusPane.addSepClick()" />
+				<button id="addURLButton" label="Add URL &gt;" oncommand="gSALRMenusPane.addURLClick()" />
+				<button id="addStarMenuButton" label="Add Star Menu &gt;" oncommand="gSALRMenusPane.addStarMenuClick()" />
+				<spacer flex="1"/>
+			</vbox>
+			
+			<vbox flex="1">
+				<label value="Pinned Forums"/>
+				<listbox flex="1" id="pinned_forums" onselect="gSALRMenusPane.pinnedSelect()">
+				</listbox>
+			</vbox>
+		</hbox>
+	</vbox>
+</groupbox>
+
+<groupbox id="contextGroup"
+	data-category="paneMenus"
+	hidden="true">
+	<caption label="Context Submenu Settings"/>
+	<checkbox preference="enableContextMenu" label="Show context submenu" />
+	<checkbox preference="contextMenuOnBottom" label="Put the context submenu on the bottom of the context menu instead of the top"/>
+</groupbox>
+
+
+<!-- Users panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/users.js"/>
+
+<preferences>
+	<preference id="highlightUsernames" name="extensions.salastread.highlightUsernames" type="bool"/>
+	
+	<!-- User Colors -->
+	<preference id="adminColor" 		name="extensions.salastread.adminColor" 		type="string"/>
+	<preference id="adminBackground" 	name="extensions.salastread.adminBackground" 	type="string"/>
+	<preference id="adminSubText" 		name="extensions.salastread.adminSubText" 		type="string"/>
+	
+	<preference id="modColor" 			name="extensions.salastread.modColor" 			type="string"/>
+	<preference id="modBackground" 		name="extensions.salastread.modBackground" 		type="string"/>
+	<preference id="modSubText" 		name="extensions.salastread.modSubText" 		type="string"/>
+	
+	<preference id="opColor" 			name="extensions.salastread.opColor" 			type="string"/>
+	<preference id="opBackground" 		name="extensions.salastread.opBackground" 		type="string"/>
+	<preference id="opSubText" 			name="extensions.salastread.opSubText" 			type="string"/>
+	
+	<!-- Various and Sundry Options -->
+	<preference id="dontBoldNames" 			name="extensions.salastread.dontBoldNames" 			type="bool"/>
+	<preference id="resizeCustomTitleText" 	name="extensions.salastread.resizeCustomTitleText" 	type="bool"/>
+	<preference id="hideCustomTitles" 		name="extensions.salastread.hideCustomTitles" 		type="bool"/>
+</preferences>
+
+<hbox id="header-users"
+      class="header"
+      hidden="true"
+      data-category="paneUsers">
+	<label class="header-name">Users</label>
+</hbox>
+
+<groupbox id="userDisplayGroup"
+	data-category="paneUsers"
+	hidden="true">
+	<caption label="User Display Options"/>
+	<grid>
+	    <columns>
+	    	<column flex="1"/>
+			<column flex="2"/>
+		</columns>
+		<rows>
+			<row>
+				<checkbox preference="resizeCustomTitleText"	label="Shrink Large Custom Title Texts" />
+				<checkbox preference="highlightUsernames" 		label="Highlight interesting and important usernames"/>
+			</row>
+			<row>
+				<checkbox preference="hideCustomTitles"			label="Hide all custom titles" />
+				<checkbox preference="dontBoldNames" 			label="Don't make highlighted usernames bold"/>
+			</row>
+		</rows>
+	</grid>
+</groupbox>
+
+<groupbox id="userRankHighlightingGroup"
+	data-category="paneUsers"
+	hidden="true">
+	<caption label="Special User Highlighting Colors" />
+	<grid>
+		<rows>
+			<row />
+			<row />
+		</rows>
+		<columns>
+			<column>
+				<sacolorpicker label="Admin Color:" preference-editable="true" preference="adminColor"/>
+				<sacolorpicker label="Admin Background:" preference-editable="true" preference="adminBackground"/>
+				<label value="Admin Subtext:"/>
+				<textbox id="adminSubText" preference="adminSubText" flex="1"/>
+			</column>
+			<column>
+				<sacolorpicker label="Mod Color:" preference-editable="true" preference="modColor"/>
+				<sacolorpicker label="Mod Background:" preference-editable="true" preference="modBackground"/>
+				<label value="Mod Subtext:"/>
+				<textbox id="modSubText" preference="modSubText" flex="1"/>
+			</column>
+			<column>
+				<sacolorpicker label="OP Color:" preference-editable="true" preference="opColor"/>
+				<sacolorpicker label="OP Background:" preference-editable="true" preference="opBackground"/>
+				<label value="OP Subtext:"/>
+				<textbox id="opSubText" preference="opSubText" flex="1"/>
+			</column>
+		</columns>
+	</grid>			
+</groupbox>
+
+<groupbox id="userCustomHighlightingGroup"
+	data-category="paneUsers"
+	hidden="true">
+	<caption label="Custom User Highlighting and Notes" />
+
+	<hbox>
+		<vbox flex="1">
+			<listbox id="userColoring" context="colorPopup" seltype="single" flex="1" onselect="gSALRUsersPane.updateCustomizePane()">
+				<listcols>
+					<listcol/>
+					<listcol/>
+					<listcol flex="1"/>
+				</listcols>
+
+				<listhead>
+					<listheader label="User ID"/>
+					<listheader label="User Name" />
+					<listheader label="Note" />
+				</listhead>
+			</listbox>
+
+			<hbox>
+				<button label="Add User" oncommand="gSALRUsersPane.addUser();"/>
+				<button label="Delete User" id="deleteuserbutton" oncommand="gSALRUsersPane.deleteUser();"/>
+				<spacer flex="1"/>
+			</hbox>
+		</vbox>
+		<separator/>
+		<vbox id="customizevbox" align="center">
+
+			<hbox flex="1">
+				<text value="ERROR" id="customizelabel" style="font-weight: bold"/>
+			</hbox>
+			<vbox align="end" >
+				<hbox align="center" id="foregroundcolorhbox">
+					<label value="Foreground Color:" id="fgcolorpickerlabel"/>
+					<button class="colorpicker-button"
+							id="fgcolorpickerbutton"
+							oncommand="gSALRUsersPane.colorClicked(this.firstChild, 'fgcolor')">
+						<box class="colorpickerthumbnail" id="fgthumbnail"/>
+						<image class="colorpickerdroparrow" src="chrome://global/skin/arrow/arrow-dn.gif"/>
+					</button>
+				</hbox>
+
+				<hbox align="center" id="backgroundcolorhbox">
+					<label value="Background Color:"/>
+					<button class="colorpicker-button"
+							id="bgcolorpickerbutton"
+							oncommand="gSALRUsersPane.colorClicked(this.firstChild, 'bgcolor')">
+						<box class="colorpickerthumbnail" id="bgthumbnail"/>
+						<image class="colorpickerdroparrow" src="chrome://global/skin/arrow/arrow-dn.gif"/>
+					</button>
+				</hbox>
+			</vbox>
+			<separator/>
+			<vbox align="center">
+				<vbox>
+					<label value="User Note:" style="padding-left: 0.5em;"/>
+					<textbox id="usernotebox" multiline="true" rows="3" style="height: auto;"/>
+				</vbox>
+				<vbox>
+					<button label="Update Note" align="end" oncommand="gSALRUsersPane.updateNote();"/>
+				</vbox>
+			</vbox>
+			<spacer flex="3"/>
+		</vbox>
+	</hbox>
+	
+</groupbox>
+
+<popupset id="UserColorsPopupset"
+	data-category="paneUsers"
+	hidden="true">
+	<menupopup id="colorPopup">
+		<menuitem label="Foreground Color" accesskey="f" oncommand="gSALRUsersPane.changeColor('color');"/>
+		<menuitem label="Background Color" accesskey="b" oncommand="gSALRUsersPane.changeColor('backgroundColor');"/>
+		<menuseparator />
+		<menuitem label="User Note" accesskey="n" oncommand="gSALRUsersPane.editNote();"/>
+	</menupopup>
+</popupset>
+
+
+<!-- About panel -->
+
+<script type="application/javascript"
+	src="chrome://salastread/content/pref/in-content/about.js"/>
+
+<preferences>
+	<preference id="timeSpentOnForums" name="extensions.salastread.timeSpentOnForums" type="int"/>
+	<preference id="salrVersion" name="extensions.salastread.currentVersion" type="string"/>
+</preferences>
+
+<hbox id="header-about"
+      class="header"
+      hidden="true"
+      data-category="paneAbout">
+	<label class="header-name">About</label>
+</hbox>
+
+<vbox id="mainabout" flex="1"
+	data-category="paneAbout"
+	hidden="true">
+	<hbox>
+		<spacer flex="1"/>
+		<vbox flex="1">
+			<image src="chrome://salastread/skin/salastread-large.png" maxwidth='96' maxheight='95'/>
+			<spacer flex="1"/>
+			<vbox>
+				<label id="forumlink" class="text-link" value= "SALR Thread" href="http://forums.somethingawful.com/showthread.php?threadid=2571027&amp;goto=lastpost" />
+				<separator orient="vertical"/>
+				<label id="bslink" class="text-link" value= "SALR Project Page" href="https://github.com/astral-sa/salr" />
+			</vbox>
+			<spacer flex="1"/>
+		</vbox>
+		<spacer flex="1"/>
+		<vbox>
+			<spacer flex="1"/>
+			<text value="SA Last Read" style="font-weight: bold; font-size: 120%"/>
+			<text id="salrVersionText" value="Version 1.99.*"/>
+			<separator class="thin"/>
+			<hbox>
+				<text value="Developer/Maintainer (2008-present): " style="font-weight: bold"/>
+				<text value="astral"/>
+			</hbox>
+			<hbox>
+				<text value="Lead Developer (2006-2009): " style="font-weight: bold"/>
+				<text value="Ben Dusinberre (duz)"/>
+			</hbox>
+			<hbox>
+				<text value="Created by: " style="font-weight: bold"/>
+				<text value="Tim Fries (biznatchio)"/>
+			</hbox>
+			<hbox>
+				<text value="2.0 Contributors: " style="font-weight: bold"/>
+				<vbox>
+					<text value="erebus, camalot, SFrost007, RedKazan,"/>
+					<text value="Demented Footstool, Tivac, grrowl,"/>
+					<text value="Nobbler, Mithros, Dan Wendorf"/>
+				</vbox>
+			</hbox>
+			<hbox>
+				<text value="1.0 Contributors: " style="font-weight: bold"/>
+				<vbox>
+					<text value="uncut product, 8ender, LonelyKing, Sebbe,"/>
+					<text value="Pahalial, ctz, Defiler, Shii, cheesypeanut"/>
+				</vbox>
+			</hbox>
+			<hbox>
+				<text value="XBBCode module: " style="font-weight: bold"/>
+				<text value="Patrick Gillespie"/>
+			</hbox>
+		</vbox>
+		<spacer flex="1"/>
+	</hbox>
+
+	<spacer flex="1"/>
+
+	<hbox flex="8">
+		<spacer flex="2"/>
+		<hbox class="sunkenframe" flex="96">
+			<iframe src="chrome://salastread/content/changelog.html" flex="1"/>
+		</hbox>
+		<spacer flex="2"/>
+	</hbox>
+
+	<hbox style="margin-bottom: 5px; margin-top: 5px;">
+		<spacer flex="1"/>
+		<text value="Time you've spent on the forums: " style="font-weight: bold;"/>
+		<text id="timespent" value="unknown" />
+		<spacer flex="1"/>
+	</hbox>
+</vbox>
+
+
+
+
+
+
+	  </prefpane>
+      <hbox pack="end" hidden="true">
+        <button id="help-button"
+                class="help-button"
+                aria-label="Help"/>
+      </hbox>
+    </vbox>
+  </hbox>
+
+    <vbox id="dialogOverlay" align="center" pack="center">
+      <groupbox id="dialogBox"
+                orient="vertical"
+                pack="end"
+                role="dialog"
+                aria-labelledby="dialogTitle">
+        <caption class="titlebar" flex="1" align="center">
+          <label id="dialogTitle" class="title" flex="1"></label>
+          <button id="dialogClose"
+                  class="close-icon"
+                  aria-label="Close"/>
+        </caption>
+        <browser id="dialogFrame"
+                 name="dialogFrame"
+                 autoscroll="false"
+                 disablehistory="true"/>
+      </groupbox>
+    </vbox>
+  </stack>
+</page>
+
+
+<!-- not-necessarily-yet-implemented stuff:
+<?xml-stylesheet href="chrome://salastread/content/pref.css" type="text/css"?>
+
+<prefwindow id="salastreadpref" 
+			title="SALR Preferences" 
+			type="prefwindow"
+			xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+			onload="SALR_Prefs_OnLoad(event.target);"
+			ondialogaccept="SALR_Prefs_Accept();"
+			ondialogcancel="SALR_Prefs_Close();"
+			onclose="SALR_Prefs_Close();">
+
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-about.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-users.js"/>
+
+</prefwindow>
+-->

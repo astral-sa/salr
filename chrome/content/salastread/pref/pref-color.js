@@ -34,7 +34,7 @@ function loadDefaultColors() {
 	var forumname = document.getElementById("forumtype").selectedItem.label;
 
 	// Make sure this is what they want
-	var doit = confirm("Are you sure you want to reset the " + forumname + " colors to their defaults?\nThis will apply immediately and cannot be undone.");
+	var doit = window.confirm("Are you sure you want to reset the " + forumname + " forum colors to their defaults?\nThis will apply immediately and cannot be undone.");
 	if (!doit)
 		return;
 
