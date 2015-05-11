@@ -1,4 +1,4 @@
-var backgrounds = { '' : '#FFFFFF', 'FYAD' : '#FF9999' };
+var backgrounds = { '' : '#FFFFFF', 'FYAD' : '#FF9999', 'BYOB' : '#9999FF' };
 var myprefs = Components.classes["@mozilla.org/preferences;1"].
 		getService(Components.interfaces.nsIPrefService).
 		getBranch("extensions.salastread.");
