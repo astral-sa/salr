@@ -3006,8 +3006,8 @@ var gSALR = {
 				else
 				{
 					quicktype = 'quote';
-					break;
 				}
+				/* falls through */
 			case 'editpost':
 				postid = quickbutton.nextSibling.href.match(/postid=(\d+)/i)[1];
 				break;
