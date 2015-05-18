@@ -1,11 +1,6 @@
-var persistObject;
-
 //general init
 function ignoreInit()
 {
-	persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
-					.getService().wrappedJSObject;
-
 	updateIgnoredThreadList();
 }
 
@@ -16,7 +11,7 @@ function updateIgnoredThreadList()
 	while (list.firstChild)
 		list.removeChild(list.firstChild);
 
-	var threads = persistObject.ignoreList;
+	var threads = DB.ignoreList;
 	for(var id in threads)
 	{
 		var title = threads[id];
@@ -88,7 +83,7 @@ function unignoreThreads()
 
 	for(var i = (items.length - 1); i >= 0; i--) {
 		var item = items[i];
-		persistObject.toggleThreadIgnore(item.getAttribute("threadid"));
+		DB.toggleThreadIgnore(item.getAttribute("threadid"));
 		list.removeChild(item);
 	}
 }

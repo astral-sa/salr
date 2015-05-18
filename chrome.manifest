@@ -1,13 +1,2 @@
 content	salastread	chrome/content/salastread/	contentaccessible=yes
 skin salastread	classic/1.0	skin/content/
-overlay	chrome://browser/content/browser.xul		chrome://salastread/content/salastreadOverlay.xul
-overlay	chrome://navigator/content/navigator.xul	chrome://salastread/content/salastreadOverlay.xul
-style	chrome://global/content/customizeToolbar.xul  chrome://salastread/content/chromeStyling.css
-
-# Component Registration for Firefox 4
-component {f5d9093b-8210-4a26-89ba-4c987de04efc} components/SALastReadCom.js
-contract @evercrest.com/salastread/persist-object;1 {f5d9093b-8210-4a26-89ba-4c987de04efc}
-#category profile-after-change @evercrest.com/salastread/persist-object;1 service,@evercrest.com/salastread/persist-object;1
-# about:salr registration for Firefox 4+
-component {db00d3c6-41cc-47cd-aca9-c156c297e8ae} components/aboutsalr.js
-contract @mozilla.org/network/protocol/about;1?what=salr {db00d3c6-41cc-47cd-aca9-c156c297e8ae}

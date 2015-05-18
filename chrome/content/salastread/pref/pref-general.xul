@@ -45,12 +45,14 @@
 				<row align="center">
 					<label value="Thread Data File:" control="dbStorage"/>
 					<textbox id="dbStorage" preference="databaseStoragePath"/>
-					<button id="defaultstring_databaseStoragePath" label="Default" />
+					<button id="defaultstring_databaseStoragePath"
+							oncommand="generalPane_resetPref('databaseStoragePath');" label="Default" />
 				</row>
 				<row align="center">
 					<label value="Forum Data File:" control="forumList"/>
 					<textbox id="forumList" preference="forumListStoragePath"/>
-					<button id="defaultstring_forumListStoragePath" label="Default" />
+					<button id="defaultstring_forumListStoragePath"
+							oncommand="generalPane_resetPref('forumListStoragePath');" label="Default" />
 				</row>
 			</rows>
 		</grid>

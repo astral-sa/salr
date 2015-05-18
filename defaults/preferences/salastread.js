@@ -1,4 +1,4 @@
-pref('extensions.salastread.currentVersion', '1.99.150513');
+pref('extensions.salastread.currentVersion', '1.99.150514');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 0);
 pref('extensions.salastread.enableFYAD', true);
@@ -188,6 +188,8 @@ pref('extensions.salastread.scrollPostEnable', false);
 pref('extensions.salastread.showThreadsWithNewPostsFirst', false);
 pref('extensions.salastread.showThreadsWithNewPostsFirstCP', false);
 pref('extensions.salastread.showThreadsWithNewPostsFirstCPStickies', false);
+pref('extensions.salastread.legacyToolbarId', '');
+pref('extensions.salastread.legacyToolbarNextItemId', '');
 
 
 // Keyboard Navigation Options

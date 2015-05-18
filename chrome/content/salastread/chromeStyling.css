@@ -1,3 +1,6 @@
+/* Only skin the browser */
+@-moz-document url("chrome://browser/content/browser.xul")
+{
 #salr-toolbarbutton
 {
 	list-style-image: url("chrome://salastread/skin/sa-24.png");
@@ -63,4 +66,5 @@ menuitem.lastread_menu_sub\-sub
 menuitem.lastread_menu_sub\-sub\-sub
 {
 	padding-left: 30px;
+}
 }

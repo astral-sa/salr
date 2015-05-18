@@ -3,5 +3,9 @@ var gSALRGeneralPane = {
 	init: function ()
 	{
 
-	}
+	},
+	resetPref: function(myPrefName)
+	{
+		Prefs.resetPref(myPrefName);
+	},
 };

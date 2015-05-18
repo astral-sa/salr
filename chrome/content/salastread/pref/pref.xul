@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/pref/pref.css" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/colorpicker/colorpicker.css" type="text/css"?>
+
+<prefwindow id="salastreadpref" 
+			title="SALR Preferences" 
+			type="prefwindow"
+			xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+			onload="SALR_Prefs_OnLoad(event.target);"
+			ondialogaccept="SALR_Prefs_Accept();"
+			ondialogcancel="SALR_Prefs_Close();"
+			onclose="SALR_Prefs_Close();">
+
+	<prefpane 	id="general" 
+				label="General" 
+				image="chrome://salastread/content/pref/images/general.png" 
+				src="chrome://salastread/content/pref/pref-general.xul"/>
+
+	<prefpane 	id="forums" 
+				label="Forums" 
+				image="chrome://salastread/content/pref/images/files.png"
+				src="chrome://salastread/content/pref/pref-forums.xul"/>
+	
+	<prefpane 	id="threads" 
+				label="Threads" 
+				image="chrome://salastread/content/pref/images/threads.png"
+				src="chrome://salastread/content/pref/pref-threads.xul"/>
+
+	<prefpane 	id="images" 
+				label="Images" 
+				image="chrome://salastread/content/pref/images/images.png"
+				src="chrome://salastread/content/pref/pref-images.xul"/>
+
+	<prefpane 	id="ignored" 
+				label="Ignored" 
+				image="chrome://salastread/content/pref/images/ignored.png"
+				src="chrome://salastread/content/pref/pref-ignored.xul"/>
+
+	<prefpane 	id="quickreply" 
+				label="Quick Reply" 
+				image="chrome://salastread/content/pref/images/quickreply.png"
+				src="chrome://salastread/content/pref/pref-quickreply.xul"/>
+
+	<prefpane 	id="colors" 
+				label="Colors" 
+				image="chrome://salastread/content/pref/images/colors.png"
+				src="chrome://salastread/content/pref/pref-color.xul"/>
+
+	<prefpane 	id="menu" 
+				label="Menus" 
+				image="chrome://salastread/content/pref/images/samenu.png"
+				src="chrome://salastread/content/pref/pref-menu.xul"/>
+	
+	<prefpane	id="users"
+				label="Users"
+				image="chrome://salastread/content/pref/images/users.png"
+				src="chrome://salastread/content/pref/pref-users.xul"/>
+
+	<prefpane 	id="about" 
+				label="About" 
+				image="chrome://salastread/content/pref/images/about.png"
+				src="chrome://salastread/content/pref/pref-about.xul"/>
+
+	<!-- according to docs anything not a prefpane should come last to avoid weird behavior.  Go figure. -->
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-general.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-about.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-color.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-images.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-forums.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-ignored.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-menu.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-users.js"/>
+
+</prefwindow>

@@ -14,7 +14,6 @@
   <xul:key id="close-key-alt" modifiers="alt" key="W" onkeypress="releaseVars();window.close();"/>
  </xul:keyset>
 
- <xul:script type="application/x-javascript;version=1.7" src="chrome://salastread/content/utilfunctions.js"/>
  <xul:script type="application/x-javascript;version=1.7" src="chrome://salastread/content/quickquote.js"/>
  <xul:script type="application/x-javascript;version=1.7" src="chrome://salastread/content/xbbcode.js"/>
 

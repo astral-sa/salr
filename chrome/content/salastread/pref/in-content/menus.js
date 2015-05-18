@@ -28,7 +28,7 @@ var gSALRMenusPane = {
 			upf.removeChild(upf.firstChild);
 		}
 
-		var flxml = gSALRservice.forumListXml;
+		var flxml = DB.forumListXml;
 		var pinnedstr = document.getElementById("menuPinnedForums").value;
 		var pinnedForumNumbers;
 		
@@ -52,7 +52,7 @@ var gSALRMenusPane = {
 				var umatch = thisNumber.match(/^URL\[(.*?)\]\[(.*?)\]$/);
 				
 				if (umatch) {
-					thisItem.setAttribute("label", "Link: "+ gSALRservice.UnescapeMenuURL(umatch[1]) );
+					thisItem.setAttribute("label", "Link: "+ PageUtils.UnescapeMenuURL(umatch[1]) );
 				} else {
 					thisItem.setAttribute("label", "invalid url entry");
 				}
@@ -68,7 +68,7 @@ var gSALRMenusPane = {
 		}
 		
 		if (flxml) {
-			var forumList = gSALRservice.selectNodes(flxml, flxml.documentElement, "//forum");
+			var forumList = PageUtils.selectNodes(flxml, flxml.documentElement, "//forum");
 			for (var i = 0; i < forumList.length; i++) {
 				var thisForum = forumList[i];
 				var thisId = thisForum.getAttribute("id");
@@ -228,7 +228,7 @@ var gSALRMenusPane = {
 				if (nameres && urlText.value.length > 0 && urlNameText.value.length > 0) {
 					let thisItem = document.createElement("listitem");
 						thisItem.setAttribute("label", "Link: " + urlNameText.value);
-						thisItem.setAttribute("forumnum", "URL["+gSALRservice.EscapeMenuURL(urlNameText.value)+"]["+gSALRservice.EscapeMenuURL(urlText.value)+"]");
+						thisItem.setAttribute("forumnum", "URL["+ PageUtils.EscapeMenuURL(urlNameText.value)+"]["+ PageUtils.EscapeMenuURL(urlText.value)+"]");
 					
 					document.getElementById("pinned_forums").appendChild(thisItem);
 					this.pinnedListChanged();

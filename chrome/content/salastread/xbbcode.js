@@ -373,7 +373,7 @@ var XBBCODE = (function() {
 					else
 						result = '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />' + 'Unsupported domain for video tag.' + '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" /><a>';
 				}
-				return(result);
+				return result;
 			},
 			closeTag: function(params,content) {
 				return '</a>';

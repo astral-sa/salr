@@ -3,7 +3,7 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<prefpane id="users" onpaneload="initUsers()">
+	<prefpane id="users" onpaneload="initUsers()" flex="1">
 		
 		<preferences>
 			<preference id="highlightUsernames" name="extensions.salastread.highlightUsernames" type="bool"/>
@@ -77,10 +77,10 @@
 			</grid>			
 		</groupbox>
 		
-		<groupbox>
+		<groupbox flex="1">
 			<caption label="Custom User Highlighting and Notes" />
 
-			<hbox>
+			<hbox flex="1">
 				<vbox flex="1">
 					<listbox id="userColoring" context="colorPopup" seltype="single" flex="1" onselect="updateCustomizePane()">
 						<listcols>

@@ -1,13 +1,9 @@
-var persistObject = null;
-
 function initUsers()
 {
-	//we'll need this persistObject all over, better create it now
-	persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
-					.getService().wrappedJSObject;
+	// This function gets called first if we runConfig to this pane.
 
 	//get usernames/ids
-	var users = persistObject.getCustomizedPosters();
+	var users = DB.getCustomizedPosters();
 
 	//get listbox so we can add users
 	var listBox = document.getElementById("userColoring");
@@ -24,37 +20,38 @@ function initUsers()
 		{
 			var userid = window.arguments[1].args.userid;
 			var username = window.arguments[1].args.username;
-			if (!persistObject.userExists(userid))
+			if (!DB.userExists(userid))
 			{
-				persistObject.addUser(userid, username);
-				persistObject.setPosterNotes(userid, "New User");
+				DB.addUser(userid, username);
+				DB.setPosterNotes(userid, "New User");
 				addListUser(listBox, userid, username, true);
 			}
 			else
 			{
-				var udata = persistObject.isUserIdColored(userid);
-				if (udata.color == 0 && udata.background == 0 && !persistObject.getPosterNotes(userid))
+				var udata = DB.isUserIdColored(userid);
+				if (udata.color == 0 && udata.background == 0 && !DB.getPosterNotes(userid))
 				{
-					persistObject.setPosterNotes(userid, "New User");
+					DB.setPosterNotes(userid, "New User");
 					addListUser(listBox, userid, username, true);
 				}
 				else
 				{
 					// User already exists with some color info, so highlight them
-					selectUserById(listBox, userid);
+					window.setTimeout(function() { selectUserById(listBox, userid); }, 10);
 				}
 			}
 		}
 	}
+	// Init Customize Pane for empty selection
 	updateCustomizePane();
 }
 
 //add a user to the list box with proper coloring
 function addListUser(listBox, id, name, sel)
 {
-	var color = persistObject.getPosterColor(id);
-	var bgColor = persistObject.getPosterBackground(id);
-	var notes = persistObject.getPosterNotes(id);
+	var color = DB.getPosterColor(id);
+	var bgColor = DB.getPosterBackground(id);
+	var notes = DB.getPosterNotes(id);
 	name = unescape(name);
 
 	if (bgColor == 0) bgColor = "transparent";
@@ -83,17 +80,24 @@ function addListUser(listBox, id, name, sel)
 	listBox.appendChild(li);
 	// Highlight newly added user
 	if (sel === true)
-		listBox.selectItem(li);
+	{
+		window.setTimeout(function() {
+			listBox.ensureElementIsVisible(li);
+			listBox.selectItem(li);
+		}, 10);
+	}
 }
 
 // Finds and highlights a user in the list box
 function selectUserById(listBox, userid)
 {
-	for (var i = 0; i < listBox.childNodes.length; i++)
+	let totalItems = listBox.getRowCount();
+	for (let i = 0; i < totalItems; i++)
 	{
-		if (listBox.childNodes[i].getAttribute("value") == userid)
+		if (listBox.getItemAtIndex(i).getAttribute("value") == userid)
 		{
-			listBox.selectItem(listBox.childNodes[i]);
+			listBox.ensureIndexIsVisible(i);
+			listBox.selectedIndex = i;
 			break;
 		}
 	}
@@ -110,11 +114,11 @@ function changeColor(type)
 
 	if (type === "color")
 	{
-		obj.value = persistObject.getPosterColor(userid);
+		obj.value = DB.getPosterColor(userid);
 	}
 	else
 	{
-		obj.value = persistObject.getPosterBackground(userid);
+		obj.value = DB.getPosterBackground(userid);
 	}
 
 	window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "modal,chrome", obj);
@@ -131,7 +135,7 @@ function changeColor(type)
 			}
 
 			li.childNodes[1].style.color = value;
-			persistObject.setPosterColor(li.getAttribute("value"), obj.value);
+			DB.setPosterColor(li.getAttribute("value"), obj.value);
 		}
 		else
 		{
@@ -141,7 +145,7 @@ function changeColor(type)
 			}
 
 			li.childNodes[1].style.backgroundColor = value;
-			persistObject.setPosterBackground(li.getAttribute("value"), obj.value);
+			DB.setPosterBackground(li.getAttribute("value"), obj.value);
 		}
 		updateCustomizePane();
 	}
@@ -162,18 +166,18 @@ function addUser()
 	if (result && !isNaN(text.value) && text.value != 0)
 	{
 		var listBox = document.getElementById("userColoring");
-		if (!persistObject.userExists(text.value))
+		if (!DB.userExists(text.value))
 		{
-			persistObject.addUser(text.value);
-			persistObject.setPosterNotes(text.value, "New User");
+			DB.addUser(text.value);
+			DB.setPosterNotes(text.value, "New User");
 
 			addListUser(listBox, text.value, null, true);
 		}
 		else
 		{
-			var udata = persistObject.isUserIdColored(text.value);
+			var udata = DB.isUserIdColored(text.value);
 			// user is in the database, but has no info set
-			if (udata.color == 0 && udata.background == 0 && !persistObject.getPosterNotes(text.value))
+			if (udata.color == 0 && udata.background == 0 && !DB.getPosterNotes(text.value))
 			{
 				// Make sure we aren't already working with this id
 				var foundit = false;
@@ -187,7 +191,7 @@ function addUser()
 				}
 				if (foundit == false)
 				{
-					persistObject.setPosterNotes(text.value, "New User");
+					DB.setPosterNotes(text.value, "New User");
 					addListUser(listBox, text.value, udata.username, true);
 				}
 				else
@@ -208,9 +212,9 @@ function deleteUser()
 	for (var i in items)
 	{
 		var userid = items[i].getAttribute("value");
-		persistObject.setPosterColor(userid, "0");
-		persistObject.setPosterBackground(userid, "0");
-		persistObject.setPosterNotes(userid, "");
+		DB.setPosterColor(userid, "0");
+		DB.setPosterBackground(userid, "0");
+		DB.setPosterNotes(userid, "");
 
 		listbox.removeItemAt(listbox.getIndexOfItem(items[i]));
 	}
@@ -226,13 +230,13 @@ function editNote()
 	var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
 					.getService(Components.interfaces.nsIPromptService);
 
-	var text = {value : persistObject.getPosterNotes(li.getAttribute("value"))};
+	var text = {value : DB.getPosterNotes(li.getAttribute("value"))};
 	var check = {value : false};
 	var result = prompts.prompt(null, "User Note", "Edit the note to appear for this user", text, null, check);
 
 	if (result)
 	{
-		persistObject.setPosterNotes(li.getAttribute("value"), text.value);
+		DB.setPosterNotes(li.getAttribute("value"), text.value);
 		li.childNodes[2].setAttribute("label", text.value);
 		updateCustomizePane();
 	}
@@ -300,9 +304,9 @@ function colorClicked(el, ctype)
 	var userid = li.getAttribute("value");
 	var pobj = new Object();
 	if (ctype === 'fgcolor')
-		pobj.value = persistObject.getPosterColor(userid);
+		pobj.value = DB.getPosterColor(userid);
 	else
-		pobj.value = persistObject.getPosterBackground(userid);
+		pobj.value = DB.getPosterBackground(userid);
 	pobj.accepted = false;
 	window.openDialog('chrome://salastread/content/colorpicker/colorpickerdialog.xul', 'colorpickerdialog', 'modal,chrome',pobj);
 	if (pobj.accepted)
@@ -316,12 +320,12 @@ function colorClicked(el, ctype)
 		if (ctype == 'fgcolor')
 		{
 			li.childNodes[1].style.color = friendlyvalue;
-			persistObject.setPosterColor(userid, pobj.value);
+			DB.setPosterColor(userid, pobj.value);
 		}
 		else
 		{
 			li.childNodes[1].style.backgroundColor = friendlyvalue;
-			persistObject.setPosterBackground(userid, pobj.value);
+			DB.setPosterBackground(userid, pobj.value);
 		}
 	}
 }
@@ -333,6 +337,6 @@ function updateNote()
 		return;
 	var newnotetext = document.getElementById("usernotebox").value;
 	newnotetext = newnotetext.replace(/(?:\n)/g, "<br />");
-	persistObject.setPosterNotes(li.getAttribute("value"), newnotetext);
+	DB.setPosterNotes(li.getAttribute("value"), newnotetext);
 	li.childNodes[2].setAttribute("label", newnotetext);
 }

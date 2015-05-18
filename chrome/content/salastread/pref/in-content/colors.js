@@ -1,14 +1,8 @@
 var gSALRColorsPane = {
 
-	myprefs: null,
-
 	// Initialization
 	init: function ()
 	{
-		if (this.myprefs === null)
-			this.myprefs = Components.classes["@mozilla.org/preferences;1"].
-			getService(Components.interfaces.nsIPrefService).
-			getBranch("extensions.salastread.");
 		this.loadColors();
 	},
 	backgrounds: { '' : '#FFFFFF', 'FYAD' : '#FF9999', 'BYOB' : '#9999FF' },
@@ -58,9 +52,8 @@ var gSALRColorsPane = {
 			if(pref) {
 				try {
 					// Reset the preference values for the specified forum
-					var handyname = pref.name.substring(22);
-					if (this.myprefs.prefHasUserValue(handyname))
-						this.myprefs.clearUserPref(handyname);
+					var handyName = pref.name.substring(22);
+					Prefs.resetPref(handyName);
 					// Reset any unsaved color changes for the specified forum
 					pref.value = pref.valueFromPreferences;
 				} catch (e) {}
@@ -68,7 +61,7 @@ var gSALRColorsPane = {
 		}
 		
 		this.loadColors();
-		gSALRservice.updateStyles();
+		Styles.updateStyles();
 	},
 
 	editColor: function(event, targetEl)

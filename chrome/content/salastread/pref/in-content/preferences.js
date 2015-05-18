@@ -12,7 +12,17 @@ const Cr = Components.results;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-let gSALRservice = null;
+function require(module)
+{
+  let result = {};
+  result.wrappedJSObject = result;
+  Services.obs.notifyObservers(result, "salr-require", module);
+  return result.exports;
+}
+let {Prefs} = require("prefs");
+let {DB} = require("db");
+let {Styles} = require("styles");
+let {PageUtils} = require("pageUtils");
 
 let gLastHash = "";
 
@@ -44,22 +54,6 @@ addEventListener("DOMContentLoaded", function onLoad() {
 });
 
 function init_all() {
-  try
-  {
-    gSALRservice = Components.classes['@evercrest.com/salastread/persist-object;1'].getService().wrappedJSObject;
-    if (!gSALRservice)
-    {
-      throw "Failed to create SALR service.";
-    }
-  }
-  catch (ex)
-  {
-    alert("SALastRead preference init error: "+ex);
-    if (gSALR.service)
-    {
-      alert("gSALRservice._starterr =\n" + gSALRservice._starterr);
-    }
-  }
   document.documentElement.instantApply = true;
 
   gSubDialog.init();
@@ -102,7 +96,7 @@ function init_all() {
 
   // Wait until initialization of all preferences are complete before
   // notifying observers that the UI is now ready.
-  Services.obs.notifyObservers(window, "advanced-pane-loaded", null);
+  Services.obs.notifyObservers(window, "action-args-loaded", null);
 }
 
 // Make the space above the categories list shrink on low window heights

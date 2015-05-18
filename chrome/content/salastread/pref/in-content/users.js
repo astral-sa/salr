@@ -3,7 +3,7 @@ var gSALRUsersPane = {
 	init: function()
 	{
 		//get usernames/ids
-		var users = gSALRservice.getCustomizedPosters();
+		var users = DB.getCustomizedPosters();
 
 		//get listbox so we can add users
 		var listBox = document.getElementById("userColoring");
@@ -13,44 +13,45 @@ var gSALRUsersPane = {
 		{
 			this.addListUser(listBox, users[i].userid, users[i].username, false);
 		}
-/* This will deserve an extra look or three
-		if ("arguments" in window && window.arguments.length > 0 && window.arguments[1].args)
+		this.updateCustomizePane();
+	},
+
+	handleIncomingArgs: function(args)
+	{
+		if (args.action === "addUser")
 		{
-			if (window.arguments[1].args.action == "addUser")
+			var listBox = document.getElementById("userColoring");
+			var userid = args.userid;
+			var username = args.username;
+			if (!DB.userExists(userid))
 			{
-				var userid = window.arguments[1].args.userid;
-				var username = window.arguments[1].args.username;
-				if (!gSALRservice.userExists(userid))
+				DB.addUser(userid, username);
+				DB.setPosterNotes(userid, "New User");
+				this.addListUser(listBox, userid, username, true);
+			}
+			else
+			{
+				var udata = DB.isUserIdColored(userid);
+				if (udata.color == 0 && udata.background == 0 && !DB.getPosterNotes(userid))
 				{
-					gSALRservice.addUser(userid, username);
-					gSALRservice.setPosterNotes(userid, "New User");
-					addListUser(listBox, userid, username, true);
+					DB.setPosterNotes(userid, "New User");
+					this.addListUser(listBox, userid, username, true);
 				}
 				else
 				{
-					var udata = gSALRservice.isUserIdColored(userid);
-					if (udata.color == 0 && udata.background == 0 && !gSALRservice.getPosterNotes(userid))
-					{
-						gSALRservice.setPosterNotes(userid, "New User");
-						addListUser(listBox, userid, username, true);
-					}
-					else
-					{
-						// User already exists with some color info, so highlight them
-						selectUserById(listBox, userid);
-					}
+					// User already exists with some color info, so highlight them
+					this.selectUserById(listBox, userid);
 				}
 			}
-		}*/
-		this.updateCustomizePane();
+		}
 	},
 
 	//add a user to the list box with proper coloring
 	addListUser: function(listBox, id, name, sel)
 	{
-		var color = gSALRservice.getPosterColor(id);
-		var bgColor = gSALRservice.getPosterBackground(id);
-		var notes = gSALRservice.getPosterNotes(id);
+		var color = DB.getPosterColor(id);
+		var bgColor = DB.getPosterBackground(id);
+		var notes = DB.getPosterNotes(id);
 		name = unescape(name);
 
 		if (bgColor == 0) bgColor = "transparent";
@@ -90,6 +91,7 @@ var gSALRUsersPane = {
 			if (listBox.childNodes[i].getAttribute("value") == userid)
 			{
 				listBox.selectItem(listBox.childNodes[i]);
+				listBox.ensureElementIsVisible(listBox.childNodes[i]);
 				break;
 			}
 		}
@@ -106,11 +108,11 @@ var gSALRUsersPane = {
 
 		if (type === "color")
 		{
-			obj.value = gSALRservice.getPosterColor(userid);
+			obj.value = DB.getPosterColor(userid);
 		}
 		else
 		{
-			obj.value = gSALRservice.getPosterBackground(userid);
+			obj.value = DB.getPosterBackground(userid);
 		}
 		obj.li = li;
 		obj.type = type;
@@ -132,7 +134,7 @@ var gSALRUsersPane = {
 				}
 
 				obj.li.childNodes[1].style.color = value;
-				gSALRservice.setPosterColor(obj.li.getAttribute("value"), obj.value);
+				DB.setPosterColor(obj.li.getAttribute("value"), obj.value);
 			}
 			else
 			{
@@ -142,7 +144,7 @@ var gSALRUsersPane = {
 				}
 
 				obj.li.childNodes[1].style.backgroundColor = value;
-				gSALRservice.setPosterBackground(obj.li.getAttribute("value"), obj.value);
+				DB.setPosterBackground(obj.li.getAttribute("value"), obj.value);
 			}
 			this.updateCustomizePane();
 		}
@@ -167,18 +169,18 @@ var gSALRUsersPane = {
 			if (result && !isNaN(text.value) && text.value != 0)
 			{
 				var listBox = document.getElementById("userColoring");
-				if (!gSALRservice.userExists(text.value))
+				if (!DB.userExists(text.value))
 				{
-					gSALRservice.addUser(text.value);
-					gSALRservice.setPosterNotes(text.value, "New User");
+					DB.addUser(text.value);
+					DB.setPosterNotes(text.value, "New User");
 
 					this.addListUser(listBox, text.value, null, true);
 				}
 				else
 				{
-					var udata = gSALRservice.isUserIdColored(text.value);
+					var udata = DB.isUserIdColored(text.value);
 					// user is in the database, but has no info set
-					if (udata.color == 0 && udata.background == 0 && !gSALRservice.getPosterNotes(text.value))
+					if (udata.color == 0 && udata.background == 0 && !DB.getPosterNotes(text.value))
 					{
 						// Make sure we aren't already working with this id
 						var foundit = false;
@@ -192,7 +194,7 @@ var gSALRUsersPane = {
 						}
 						if (foundit == false)
 						{
-							gSALRservice.setPosterNotes(text.value, "New User");
+							DB.setPosterNotes(text.value, "New User");
 							this.addListUser(listBox, text.value, udata.username, true);
 						}
 						else
@@ -218,9 +220,9 @@ var gSALRUsersPane = {
 		for (var i in items)
 		{
 			var userid = items[i].getAttribute("value");
-			gSALRservice.setPosterColor(userid, "0");
-			gSALRservice.setPosterBackground(userid, "0");
-			gSALRservice.setPosterNotes(userid, "");
+			DB.setPosterColor(userid, "0");
+			DB.setPosterBackground(userid, "0");
+			DB.setPosterNotes(userid, "");
 
 			listbox.removeItemAt(listbox.getIndexOfItem(items[i]));
 		}
@@ -234,7 +236,7 @@ var gSALRUsersPane = {
 		try
 		{
 			// get tab-modal prompt set up
-			let text = {value : gSALRservice.getPosterNotes(li.getAttribute("value"))};
+			let text = {value : DB.getPosterNotes(li.getAttribute("value"))};
 			let check = {value : false};
 			let factory = Components.classes["@mozilla.org/prompter;1"]
 							.getService(Components.interfaces.nsIPromptFactory);
@@ -244,7 +246,7 @@ var gSALRUsersPane = {
 			let result = prompt.prompt.apply(null, ["User Note", "Edit the note to appear for this user", text, null, check]);
 			if (result)
 			{
-				gSALRservice.setPosterNotes(li.getAttribute("value"), text.value);
+				DB.setPosterNotes(li.getAttribute("value"), text.value);
 				li.childNodes[2].setAttribute("label", text.value);
 				this.updateCustomizePane();
 			}
@@ -318,9 +320,9 @@ var gSALRUsersPane = {
 		var userid = li.getAttribute("value");
 		var pobj = new Object();
 		if (ctype === 'fgcolor')
-			pobj.value = gSALRservice.getPosterColor(userid);
+			pobj.value = DB.getPosterColor(userid);
 		else
-			pobj.value = gSALRservice.getPosterBackground(userid);
+			pobj.value = DB.getPosterBackground(userid);
 		pobj.el = el;
 		pobj.ctype = ctype;
 		pobj.li = li;
@@ -343,12 +345,12 @@ var gSALRUsersPane = {
 			if (pobj.ctype == 'fgcolor')
 			{
 				pobj.li.childNodes[1].style.color = friendlyvalue;
-				gSALRservice.setPosterColor(pobj.userid, pobj.value);
+				DB.setPosterColor(pobj.userid, pobj.value);
 			}
 			else
 			{
 				pobj.li.childNodes[1].style.backgroundColor = friendlyvalue;
-				gSALRservice.setPosterBackground(pobj.userid, pobj.value);
+				DB.setPosterBackground(pobj.userid, pobj.value);
 			}
 		}
 	},
@@ -360,7 +362,7 @@ var gSALRUsersPane = {
 			return;
 		var newnotetext = document.getElementById("usernotebox").value;
 		newnotetext = newnotetext.replace(/(?:\n)/g, "<br />");
-		gSALRservice.setPosterNotes(li.getAttribute("value"), newnotetext);
+		DB.setPosterNotes(li.getAttribute("value"), newnotetext);
 		li.childNodes[2].setAttribute("label", newnotetext);
 	}
 

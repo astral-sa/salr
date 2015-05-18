@@ -12,7 +12,7 @@ var gSALRIgnoredPane = {
 		while (list.firstChild)
 			list.removeChild(list.firstChild);
 
-		var threads = gSALRservice.ignoreList;
+		var threads = DB.ignoreList;
 		for(var id in threads)
 		{
 			var title = threads[id];
@@ -84,7 +84,7 @@ var gSALRIgnoredPane = {
 
 		for(var i = (items.length - 1); i >= 0; i--) {
 			var item = items[i];
-			gSALRservice.toggleThreadIgnore(item.getAttribute("threadid"));
+			DB.toggleThreadIgnore(item.getAttribute("threadid"));
 			list.removeChild(item);
 		}
 	},

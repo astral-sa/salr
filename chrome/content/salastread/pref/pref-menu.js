@@ -24,10 +24,7 @@ function pinnedListInit() {
 		upf.removeChild(upf.firstChild);
 	}
 
-	var pobj = Components.classes['@evercrest.com/salastread/persist-object;1']  
-					.getService().wrappedJSObject;
-	
-	var flxml = pobj.forumListXml;
+	var flxml = DB.forumListXml;
 	var pinnedstr = document.getElementById("menuPinnedForums").value;
 	var pinnedForumNumbers;
 	
@@ -40,17 +37,17 @@ function pinnedListInit() {
 	document.getElementById("addStarMenuButton").setAttribute("disabled",false);
 	
 	var pinnedForumElements = new Array();
-	
+	var thisItem;
 	for (var j = 0; j < pinnedForumNumbers.length; j++) {
 		var thisNumber = pinnedForumNumbers[j];
-		var thisItem = document.createElement("listitem");
+		thisItem = document.createElement("listitem");
 		if(thisNumber == "sep") {
 			thisItem.setAttribute("label", "-------------------------");
 		} else if ( thisNumber.substring(0,3)=="URL" ) {
 			var umatch = thisNumber.match(/^URL\[(.*?)\]\[(.*?)\]$/);
 			
 			if (umatch) {
-				thisItem.setAttribute("label", "Link: "+ pobj.UnescapeMenuURL(umatch[1]) );
+				thisItem.setAttribute("label", "Link: "+ PageUtils.UnescapeMenuURL(umatch[1]) );
 			} else {
 				thisItem.setAttribute("label", "invalid url entry");
 			}
@@ -66,11 +63,11 @@ function pinnedListInit() {
 	}
 	
 	if (flxml) {
-		var forumList = pobj.selectNodes(flxml, flxml.documentElement, "//forum");
+		var forumList = PageUtils.selectNodes(flxml, flxml.documentElement, "//forum");
 		for (var i = 0; i < forumList.length; i++) {
 			var thisForum = forumList[i];
 			var thisId = thisForum.getAttribute("id");
-			var thisItem = document.createElement("listitem");
+			thisItem = document.createElement("listitem");
 				thisItem.setAttribute("label", thisForum.getAttribute("name"));
 				thisItem.setAttribute("forumnum", thisId);
 			
@@ -200,16 +197,13 @@ function addSepClick() {
 }
 
 function addURLClick() {
-	var pobj = Components.classes['@evercrest.com/salastread/persist-object;1']  
-					.getService().wrappedJSObject;
-	
 	var url = prompt("Please enter the URL you wish to link to.");
 	if (url) {
 		var name = prompt("Please enter the name you wish to assign to this menu item.");
 		if (name) {
 			var thisItem = document.createElement("listitem");
 				thisItem.setAttribute("label", "Link: " + name);
-				thisItem.setAttribute("forumnum", "URL["+pobj.EscapeMenuURL(name)+"]["+pobj.EscapeMenuURL(url)+"]");
+				thisItem.setAttribute("forumnum", "URL["+ PageUtils.EscapeMenuURL(name)+"]["+ PageUtils.EscapeMenuURL(url)+"]");
 			
 			document.getElementById("pinned_forums").appendChild(thisItem);
 			pinnedListChanged();

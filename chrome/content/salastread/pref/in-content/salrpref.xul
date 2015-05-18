@@ -200,12 +200,14 @@
 			<row align="center">
 				<label value="Thread Data File:" control="dbStorage"/>
 				<textbox id="dbStorage" preference="databaseStoragePath"/>
-				<button id="defaultstring_databaseStoragePath" label="Default" />
+				<button id="defaultstring_databaseStoragePath"
+						oncommand="gSALRGeneralPane.resetPref('databaseStoragePath');" label="Default" />
 			</row>
 			<row align="center">
 				<label value="Forum Data File:" control="forumList"/>
 				<textbox id="forumList" preference="forumListStoragePath"/>
-				<button id="defaultstring_forumListStoragePath" label="Default" />
+				<button id="defaultstring_forumListStoragePath"
+						oncommand="gSALRGeneralPane.resetPref('forumListStoragePath');" label="Default" />
 			</row>
 		</rows>
 	</grid>
@@ -1114,7 +1116,7 @@
 
 
 <!-- not-necessarily-yet-implemented stuff:
-<?xml-stylesheet href="chrome://salastread/content/pref.css" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/pref/pref.css" type="text/css"?>
 
 <prefwindow id="salastreadpref" 
 			title="SALR Preferences" 
@@ -1125,7 +1127,7 @@
 			ondialogcancel="SALR_Prefs_Close();"
 			onclose="SALR_Prefs_Close();">
 
-	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref.js"/>
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref.js"/>
 	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-about.js"/>
 	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-users.js"/>
 

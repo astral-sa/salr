@@ -64,6 +64,10 @@ ul#vers > li > div.dev {
  color: #e00;
 }
 
+ul#vers > li > div.rel {
+ color: #003366;
+}
+
 ul#vers > li {
  margin-bottom: 8px;
  font-size: 8.25pt;

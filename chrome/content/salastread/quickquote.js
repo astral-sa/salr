@@ -1,8 +1,18 @@
-//<script>
-//netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-var persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
-					.getService().wrappedJSObject;
-
+Components.utils.import("resource://gre/modules/Services.jsm");
+function require(module)
+{
+  let result = {};
+  result.wrappedJSObject = result;
+  Services.obs.notifyObservers(result, "salr-require", module);
+  return result.exports;
+}
+let {Prefs} = require("prefs");
+let {DB} = require("db");
+let {PageUtils} = require("pageUtils");
+//
+// Note: quickquote sticks some extra vars into DB that aren't dealt with by DB.
+// This should be dealt with in the quick post overhaul.
+//
 var quickParams = null;
 
 var hasSpellCheck = false;
@@ -62,9 +72,9 @@ function doWaffleImages() {
 }
 
 function recoverLastPost() {
-	if(persistObject.__quickreply__lastpost) {
+	if(DB.__quickreply__lastpost) {
 		if(confirm("Do you want to replace the contents of this Quick Reply window with the text of the last reply you attempted to submit? The text of the current reply will be lost.")) {
-			document.getElementById("messagearea").value = persistObject.__quickreply__lastpost;
+			document.getElementById("messagearea").value = DB.__quickreply__lastpost;
 		}
 	} else {
 		alert("There is no last post to recover.");
@@ -129,7 +139,7 @@ function addQuoteText(txt) {
 function emotRegex(s) {
 	emotRe = /<div class="text">(.*?)<\/div>[\s\S]*?src="(.*?)"/i;
 	emotRe.exec(s);
-	persistObject.emoticons.push(new Array(RegExp.$1, RegExp.$2));
+	DB.emoticons.push(new Array(RegExp.$1, RegExp.$2));
 }
 
 var emoteGetter = null;
@@ -152,7 +162,7 @@ function getEmoticonsCallback()
 			if(emoteGetter.status != 200)
 			{
 				emoteGetter.abort();
-				persistObject.gettingemoticons = false;
+				DB.gettingemoticons = false;
 				alert("Failed to communicate with forums.somethingawful.com for emoticons");
 			}
 		}
@@ -163,7 +173,7 @@ function getEmoticonsCallback()
 				finalizeEmotesGrab(respText);
 			else
 			{
-				persistObject.gettingemoticons = false;
+				DB.gettingemoticons = false;
 				alert("Failed to communicate with forums.somethingawful.com for emoticons");
 			}
 		}
@@ -172,14 +182,14 @@ function getEmoticonsCallback()
 
 function finalizeEmotesGrab(restext)
 {
-	persistObject.emoticons = new Array();
+	DB.emoticons = new Array();
 
 	emotRe = /<li class="smilie">([\s\S]*?)<img.*?>/gi;
 	emotArray = restext.match(emotRe);
 
 	emotArray.forEach(emotRegex);
-	persistObject.emoticons.sort();
-	persistObject.gettingemoticons = false;
+	DB.emoticons.sort();
+	DB.gettingemoticons = false;
 
 	// Make sure we see the emoticons we just got.
 	doPreview();
@@ -203,9 +213,9 @@ function updateEmoticonList()
 	//while(menu.firstChild!=null) {
 	//   menu.removeChild(menu.firstChild);
 	//}
-	for (var i = 0; i < persistObject.emoticons.length; i++)
+	for (var i = 0; i < DB.emoticons.length; i++)
 	{
-		var thisemot = persistObject.emoticons[i];
+		var thisemot = DB.emoticons[i];
 		if (thisemot[0] != null && thisemot[0].length > 0)
 		{
 			addMenuItem(menu, thisemot[0], thisemot[1]);
@@ -221,7 +231,7 @@ function updateEmoticonList()
 
 var pageGetter = null;
 
-var sa_formkey =(persistObject.__cachedFormKey && persistObject.__cachedFormKey!="") ? persistObject.__cachedFormKey : "";
+var sa_formkey =(DB.__cachedFormKey && DB.__cachedFormKey!="") ? DB.__cachedFormKey : "";
 
 function showDebugData(event) {
 	if(event.button == 2) {
@@ -301,7 +311,7 @@ function finalizeTextGrab(restext)
 
 	var el = document.getElementById("replypage").contentDocument.body;
 		el.innerHTML = restext;
-	var tnode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//TEXTAREA[@name='message']");
+	var tnode = PageUtils.selectSingleNode(document.getElementById("replypage").contentDocument, el, "//TEXTAREA[@name='message']");
 
 	// There was a response, but it wasn't what we expected.
 	// This can be caused by not accepting third-party cookies, but we add a load flag that should fix that.
@@ -313,14 +323,14 @@ function finalizeTextGrab(restext)
 
 	document.getElementById("messagearea").value = before + tnode.value;
 
-	var fknode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='formkey']");
+	var fknode = PageUtils.selectSingleNode(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='formkey']");
 	if (fknode)
 	{
 		sa_formkey = fknode.value;
-		persistObject.__cachedFormKey = sa_formkey;
+		DB.__cachedFormKey = sa_formkey;
 	}
 
-	var fcnode = selectSingleNode(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='form_cookie']");
+	var fcnode = PageUtils.selectSingleNode(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='form_cookie']");
 	if (fcnode)
 	{
 		window.__salastread_form_cookie = fcnode.value;
@@ -340,7 +350,7 @@ function finalizeTextGrab(restext)
 	{
 		document.getElementById('quickpostoptions').setAttribute('collapsed', 'false');
 		//Uh, also load the post icons
-		var iconz = selectNodes(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='iconid']");
+		var iconz = PageUtils.selectNodes(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='iconid']");
 		var iconmenu = document.getElementById('posticonmenu');
 		var hbox = document.getElementById('posticonmenuhbox');
 		
@@ -392,7 +402,7 @@ function importData()
 	{
 		var messagearea = document.getElementById("messagearea");
 	
-		if (persistObject.getPreference('quickQuoteSwapPostPreview'))
+		if (Prefs.getPref('quickQuoteSwapPostPreview'))
 		{
 			document.getElementById("submit-swap").style.display = "-moz-box";
 			document.getElementById("submit-normal").style.display = "none";
@@ -410,7 +420,7 @@ function importData()
 		quickParams = window.opener.gSALR.quickWindowParams;
 
 		//if we don't have a cached form key go get it
-		if (persistObject.__cachedFormKey)
+		if (DB.__cachedFormKey)
 		{
 			startPostTextGrab(false);
 			
@@ -433,22 +443,22 @@ function importData()
 			document.getElementById("spellcheckbutton").style.display = "-moz-box";
 		}
 
-		if (persistObject.getPreference('quickQuoteSubscribeDefault') || (quickParams.quicktype != "newthread" && persistObject.selectSingleNode(quickParams.doc,quickParams.doc,"//ul[contains(@class, 'postbuttons')]//img[contains(@class, 'unbookmark')]")))
+		if (Prefs.getPref('quickQuoteSubscribeDefault') || (quickParams.quicktype != "newthread" && PageUtils.selectSingleNode(quickParams.doc,quickParams.doc,"//ul[contains(@class, 'postbuttons')]//img[contains(@class, 'unbookmark')]")))
 		{
 			document.getElementById("subscribe").setAttribute("checked",true);
 		}
 
-		if (persistObject.getPreference('quickQuoteDisableSmiliesDefault'))
+		if (Prefs.getPref('quickQuoteDisableSmiliesDefault'))
 		{
 			document.getElementById("disablesmilies").setAttribute("checked",true);
 		}
 
-		if (persistObject.getPreference('quickQuoteSignatureDefault') && (quickParams.quicktype == "newthread" || !persistObject.didIPostHere(quickParams.threadid)))
+		if (Prefs.getPref('quickQuoteSignatureDefault') && (quickParams.quicktype == "newthread" || !DB.didIPostHere(quickParams.threadid)))
 		{
 			document.getElementById("signature").setAttribute("checked",true);
 		}
 
-		if (persistObject.getPreference('quickQuoteLivePreview'))
+		if (Prefs.getPref('quickQuoteLivePreview'))
 		{
 			document.getElementById("preview").setAttribute("checked",true);
 			togglePreview(false);
@@ -464,7 +474,7 @@ function releaseVars() {
 }
 
 function doSubmit(subtype) {
-	persistObject.__quickreply__lastpost = document.getElementById("messagearea").value;
+	DB.__quickreply__lastpost = document.getElementById("messagearea").value;
 	window.opener.gSALR.quickQuoteSubmit(
 		document.getElementById("messagearea").value,
 		document.getElementById("parseurl").checked,
@@ -516,14 +526,14 @@ function clearChildrenFrom(xid) {
 function getEmoticons() {
 	try
 	{
-		if (persistObject.gettingemoticons != true && (typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null))
+		if (DB.gettingemoticons != true && (typeof(DB.emoticons)=="undefined" || DB.emoticons==null))
 		{
-			persistObject.gettingemoticons = true;
+			DB.gettingemoticons = true;
 			getEmoticonsFromServerASync();
 		}
 		else
 		{
-			if (persistObject.gettingemoticons == false)
+			if (DB.gettingemoticons == false)
 				updateEmoticonList();
 		}
 	}
@@ -770,11 +780,11 @@ function doPreview()
 	// Smileys
 	if (!document.getElementById("disablesmilies").checked)
 	{
-		if (persistObject.gettingemoticons != true && (typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null)) {
-			persistObject.gettingemoticons = true;
+		if (DB.gettingemoticons != true && (typeof(DB.emoticons)=="undefined" || DB.emoticons==null)) {
+			DB.gettingemoticons = true;
 			getEmoticonsFromServerASync();
 		}
-		else if (persistObject.gettingemoticons == false && !(typeof(persistObject.emoticons)=="undefined" || persistObject.emoticons==null))
+		else if (DB.gettingemoticons == false && !(typeof(DB.emoticons)=="undefined" || DB.emoticons==null))
 		{
 			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/emot-goatse.gif"/>'] = /&amp;submit/gi;
 			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/smile.gif"/>'] = /:\)/gi;
@@ -786,8 +796,8 @@ function doPreview()
 
 			if (matches) {
 				for (var i = 0; i < matches.length; i++) {
-					for (var j = 0; j < persistObject.emoticons.length; j++) {
-						var thisemot = persistObject.emoticons[j];
+					for (var j = 0; j < DB.emoticons.length; j++) {
+						var thisemot = DB.emoticons[j];
 						if (thisemot[0]!=null && thisemot[0].length>0) {
 							if (matches[i] == thisemot[0]) {
 								markup = markup.replace(matches[i], '<img src="' + thisemot[1] + '"/>');
@@ -825,9 +835,9 @@ function togglePreview(doupdatepreview)
 	else
 		document.getElementById("previewbox").setAttribute('collapsed', 'true');
 
-	persistObject.setPreference('quickQuoteLivePreview', document.getElementById("preview").checked);
+	Prefs.setPref('quickQuoteLivePreview', document.getElementById("preview").checked);
 
 	window.sizeToContent();
-	if (doupdatepreview == true)
+	if (doupdatepreview === true)
 		doPreview();
 }

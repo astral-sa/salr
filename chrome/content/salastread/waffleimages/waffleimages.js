@@ -149,3 +149,7 @@ function iframeDCL()
 	}
 }
 
+function selectSingleNode(doc, context, xpath) {
+	var nodeList = doc.evaluate(xpath, context, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+	return nodeList.singleNodeValue;
+}
