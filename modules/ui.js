@@ -224,7 +224,7 @@ let UI = exports.UI =
 			{
 				id: "salastread-context-menu",
 				label: "SA Last Read Options",
-				image: "url('chrome://salastread/skin/sa.png')",
+				image: "chrome://salastread/skin/sa.png",
 				class: "menu-iconic salastread_context_menu",
 				position: "1",
 				hidden: true,
