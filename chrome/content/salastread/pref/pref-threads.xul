@@ -15,7 +15,7 @@
 			<preference id="videoEmbedderGetTitles" 	name="extensions.salastread.videoEmbedderGetTitles" 	type="bool"/>
 			<preference id="enablePageNavigator"	name="extensions.salastread.enablePageNavigator" 	type="bool"/>
 			<preference id="enableKeyboardControls"	name="extensions.salastread.quickPostJump"			type="bool"/>
-			<preference id="hideThreadSearchBox"	name="extensions.salastread.hideThreadSearchBox"			type="bool"/>
+			<preference id="hideThreadSearchBox"	name="extensions.salastread.hideThreadSearchBox"			type="bool" inverted="true"/>
 			<preference id="shrinkThreadListTitlePages" name="extensions.salastread.shrinkThreadListTitlePages" type="bool"/>
 		</preferences>
 
@@ -25,7 +25,7 @@
 				<checkbox preference="reanchorThreadOnLoad" 	label="Reanchor threads to targetted post after all images have loaded" />
 				<checkbox preference="hideReportButtons" 		label="Hide the report button on your own posts" />
 				<checkbox preference="enablePageNavigator" 	 	label="Add a page navigator to the lower-right corner of the browser" />
-				<checkbox preference="hideThreadSearchBox" 	 	label="Hide 'Search Thread' box" />
+				<checkbox preference="hideThreadSearchBox" 	 	label="Add 'Search Thread' box to threads" />
 				<checkbox preference="shrinkThreadListTitlePages" label="Shrink 'Pages:' list below thread names" />
 			</vbox>
 		</groupbox>
