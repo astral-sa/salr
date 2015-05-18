@@ -20,9 +20,9 @@ var gSALRUsersPane = {
 	{
 		if (args.action === "addUser")
 		{
-			var listBox = document.getElementById("userColoring");
-			var userid = args.userid;
-			var username = args.username;
+			let listBox = document.getElementById("userColoring");
+			let userid = args.userid;
+			let username = args.username;
 			if (!DB.userExists(userid))
 			{
 				DB.addUser(userid, username);
@@ -31,7 +31,7 @@ var gSALRUsersPane = {
 			}
 			else
 			{
-				var udata = DB.isUserIdColored(userid);
+				let udata = DB.isUserIdColored(userid);
 				if (udata.color == 0 && udata.background == 0 && !DB.getPosterNotes(userid))
 				{
 					DB.setPosterNotes(userid, "New User");
@@ -80,18 +80,24 @@ var gSALRUsersPane = {
 		listBox.appendChild(li);
 		// Highlight newly added user
 		if (sel === true)
-			listBox.selectItem(li);
+		{
+			window.setTimeout(function() {
+				listBox.ensureElementIsVisible(li);
+				listBox.selectItem(li);
+			}, 10);
+		}
 	},
 
 	// Finds and highlights a user in the list box
 	selectUserById: function(listBox, userid)
 	{
-		for (var i = 0; i < listBox.childNodes.length; i++)
+		let totalItems = listBox.getRowCount();
+		for (let i = 0; i < totalItems; i++)
 		{
-			if (listBox.childNodes[i].getAttribute("value") == userid)
+			if (listBox.getItemAtIndex(i).getAttribute("value") == userid)
 			{
-				listBox.selectItem(listBox.childNodes[i]);
-				listBox.ensureElementIsVisible(listBox.childNodes[i]);
+				listBox.ensureIndexIsVisible(i);
+				listBox.selectedIndex = i;
 				break;
 			}
 		}
