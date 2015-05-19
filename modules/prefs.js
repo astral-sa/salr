@@ -70,9 +70,12 @@ let Prefs = exports.Prefs =
 	setPref: function(prefName, prefValue)
 	{
 		let type = prefTypeMap[branch.getPrefType(prefName)];
+		let result;
 		if (type)
-			prefValue = branch["set" + type](prefName, prefValue);
-		return prefValue;
+			result = branch["set" + type](prefName, prefValue);
+		else
+			result = null;
+		return result;
 	},
 	getPref: function(prefName)
 	{
