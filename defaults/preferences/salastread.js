@@ -168,7 +168,6 @@ pref('extensions.salastread.showTextConfigLink', true);
 //FILE SETTINGS
 pref('extensions.salastread.databaseStoragePath', '%profile%salastread.sqlite');
 pref('extensions.salastread.forumListStoragePath', '%profile%saforumlist.xml');
-pref('extensions.salastread.expireMinAge', 7);
 
 //ADVANCED FILTERING SETTINGS
 pref('extensions.salastread.ignoredPostIcons', ' ');
