@@ -1066,7 +1066,7 @@
 	<hbox flex="8">
 		<spacer flex="2"/>
 		<hbox class="sunkenframe" flex="96">
-			<iframe src="chrome://salastread/content/changelog.html" flex="1"/>
+			<iframe id="changelogframe" src="chrome://salastread/content/changelog.html" flex="1"/>
 		</hbox>
 		<spacer flex="2"/>
 	</hbox>

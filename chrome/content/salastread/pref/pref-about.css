@@ -14,3 +14,7 @@
 	-moz-border-bottom-colors: ThreeDHighlight ThreeDLightShadow;
 	-moz-border-left-colors: ThreeDShadow ThreeDDarkShadow;
 }
+
+#changelogframe {
+	min-height: 14em;
+}
