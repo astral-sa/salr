@@ -1197,6 +1197,7 @@ var gSALR = {
 		var useQuickQuote = gSALR.Prefs.getPref('useQuickQuote');
 		var insertPostTargetLink = gSALR.Prefs.getPref("insertPostTargetLink");
 		var highlightUsernames = gSALR.Prefs.getPref("highlightUsernames");
+		let hideCustomTitles = gSALR.Prefs.getPref('hideCustomTitles');
 
 		//standard user colors
 		var modColor = gSALR.Prefs.getPref("modColor");
@@ -1487,23 +1488,25 @@ var gSALR = {
 			}
 
 			// Add a link to hide/unhide the user's avatar
-			var avLink = doc.createElement("li");
-			avLink.setAttribute('style', '-moz-user-select: none;');
-			avLink.style.cssFloat = 'right';
-			avLink.style.marginLeft = '4px';
-			var avAnch = doc.createElement("a");
-			avAnch.href = "#";
-			avAnch.title = "Toggle displaying this poster's avatar.";
-			if (gSALR.DB.isAvatarHidden(posterId))
-				avAnch.textContent = "Show Avatar";
-			else
-				avAnch.textContent = "Hide Avatar";
+			if (!hideCustomTitles)
+			{
+				let avLink = doc.createElement("li");
+				avLink.setAttribute('style', '-moz-user-select: none;');
+				avLink.style.cssFloat = 'right';
+				avLink.style.marginLeft = '4px';
+				let avAnch = doc.createElement("a");
+				avAnch.href = "#";
+				avAnch.title = "Toggle displaying this poster's avatar.";
+				if (gSALR.DB.isAvatarHidden(posterId))
+					avAnch.textContent = "Show Avatar";
+				else
+					avAnch.textContent = "Hide Avatar";
 
-			avAnch.addEventListener("click", gSALR.clickToggleAvatar.bind(null, posterId, posterName, postid), false);
-			avLink.appendChild(avAnch);
-			userLinks.appendChild(doc.createTextNode(" "));
-			userLinks.appendChild(avLink);
-
+				avAnch.addEventListener("click", gSALR.clickToggleAvatar.bind(null, posterId, posterName, postid), false);
+				avLink.appendChild(avAnch);
+				userLinks.appendChild(doc.createTextNode(" "));
+				userLinks.appendChild(avLink);
+			}
 			// Add a space for the Rap Sheet link added afterwards by forum JS:
 			userLinks.appendChild(doc.createTextNode(" "));
 
