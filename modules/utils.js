@@ -28,4 +28,12 @@ let Utils = exports.Utils =
 		*/
 	},
 
+	getRecentWindow: function()
+	{
+		let wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+		                   .getService(Components.interfaces.nsIWindowMediator);
+		let mainWindow = wm.getMostRecentWindow("navigator:browser");
+		return mainWindow;
+	},
+
 };
