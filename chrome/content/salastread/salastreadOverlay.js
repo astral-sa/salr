@@ -577,6 +577,11 @@ var gSALR = {
 				anchorTop.insertBefore(anchorReadStickies,threadlist[0]);
 				var anchorThreads = doc.createElement("tr");
 				anchorTop.insertBefore(anchorThreads,threadlist[0]);
+				if (flags.inUserCP)
+				{
+					var anchorUnseenThreads = doc.createElement("tr");
+					anchorTop.insertBefore(anchorUnseenThreads,threadlist[0]);
+				}
 			}
 			else
 			{
@@ -811,6 +816,10 @@ var gSALR = {
 				{
 					anchorTop.insertBefore(thread,anchorThreads);
 				}
+				else if (flags.inUserCP && thread.className.search(/seen/i) === -1)
+				{
+					anchorTop.insertBefore(thread,anchorUnseenThreads);
+				}
 			}
 
 			if (gSALR.DB.isThreadStarred(threadId))
@@ -930,6 +939,7 @@ var gSALR = {
 			anchorTop.removeChild(anchorUnreadStickies);
 			anchorTop.removeChild(anchorReadStickies);
 			anchorTop.removeChild(anchorThreads);
+			anchorTop.removeChild(anchorUnseenThreads);
 		}
 	},
 
