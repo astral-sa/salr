@@ -59,7 +59,7 @@ let DB = exports.DB =
 		this.ProfileInit();
 
 		// Check if we need some SQL patches
-		if (this.LastRunVersion != this.SALRversion)
+		if (this.LastRunVersion != this.SALRversion && this.LastRunVersion !== "0.0.0")
 		{
 			//this.needToShowChangeLog = !this.IsDevelopmentRelease;
 			this.needToShowChangeLog = true;
