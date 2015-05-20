@@ -395,7 +395,7 @@ let Styles = exports.Styles =
 		}
 
 		// Restore Arial font to date/time and postlinks
-		CSSFile += '#thread table.post td.postdate, #thread table.post td.postlinks { font-family: Arial; }\n';
+		CSSFile += '#thread table.post td.postdate, #thread table.post td.postlinks { font-family: Arial, Helvetica, sans-serif; }\n';
 		// The margin between the ? and the postdate is a little wide. Slim it down:
 		CSSFile += '#thread table.post td.postdate a:last-child { margin-right: 2px; }\n';
 
