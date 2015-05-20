@@ -346,7 +346,7 @@ function finalizeTextGrab(restext)
 		doPreview();
 
 	// Post Thread stuff
-	if (quickParams.quicktype == 'newthread')
+	if (quickParams.quicktype === 'newthread')
 	{
 		document.getElementById('quickpostoptions').setAttribute('collapsed', 'false');
 		//Uh, also load the post icons
@@ -375,6 +375,15 @@ function finalizeTextGrab(restext)
 					break;
 				}
 			}
+		}
+	}
+	// Work around single post edits not getting subscribed status from thread itself
+	else if (quickParams.quicktype === 'editpost')
+	{
+		let needToSubscribe = PageUtils.selectSingleNode(document.getElementById("replypage").contentDocument, el, "//INPUT[@name='bookmark']");
+		if (needToSubscribe.hasAttribute("checked"))
+		{
+			document.getElementById("subscribe").setAttribute("checked",true);
 		}
 	}
 	return;
