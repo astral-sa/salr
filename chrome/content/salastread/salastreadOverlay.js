@@ -16,6 +16,7 @@ var gSALR = {
 	Navigation: salr_require("navigation").Navigation,
 	Styles: salr_require("styles").Styles,
 	Timer: salr_require("timer").Timer,
+	Notifications: salr_require("notifications").Notifications,
 
 	// keeps track of how many SA timer-tracked pages are open
 	timerPageCount: 0,
@@ -2397,60 +2398,61 @@ var gSALR = {
 
 			if (starStatus === false) // we just starred it
 				gSALR.DB.setThreadTitle(threadid, threadTitle);
-
-			if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
-			{
-				// Don't refresh the page. Why would we refresh the page?
-				//target.ownerDocument.location = target.ownerDocument.location;
-			}
-			else
-			{
-				var startext = starStatus ? "unstarred" : "starred";
-				alert("This thread is now " + startext + ".");
-			}
 		}
 	},
 
 	ignoreThread: function()
 	{
-		var threadid = document.getElementById("salastread-context-ignorethread").data;
-		var target = document.getElementById("salastread-context-ignorethread").target;
+		let threadid = document.getElementById("salastread-context-ignorethread").data;
+		let target = document.getElementById("salastread-context-ignorethread").target;
 		if (threadid)
 		{
-			var threadTitle;
+			let threadTitle;
 			 // Snag the title we saved earlier
-			if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+			if (target.ownerDocument.location.href.search(/showthread.php/i) === -1)
 			{
 				threadTitle = target.__salastread_threadtitle;
 			}
 			else
 				threadTitle = gSALR.getPageTitle(target.ownerDocument);
-			if (window.confirm("Are you sure you want to ignore thread #"+threadid+"?"))
+
+			try
 			{
-				// Actually use ignoreStatus
-				var ignoreStatus = gSALR.DB.isThreadIgnored(threadid);
-				if (ignoreStatus === false)
+				// e10s note: this will change if we're in a frame script
+				let factory = Components.classes["@mozilla.org/prompter;1"]
+									.getService(Components.interfaces.nsIPromptFactory);
+				let prompt = factory.getPrompt(window.gBrowser.contentWindow, Components.interfaces.nsIPrompt);
+				let bag = prompt.QueryInterface(Components.interfaces.nsIWritablePropertyBag2);
+				bag.setPropertyAsBool("allowTabModal", true);
+				let result = prompt.confirm.apply(null, ["SALR", "Are you sure you want to ignore thread #"+threadid+"?"]);
+				if (result)
 				{
-					gSALR.DB.toggleThreadIgnore(threadid);
-					gSALR.DB.setThreadTitle(threadid, threadTitle);
-					// todo: detect by if there is a "forum" node, to cover bookmark page and control panel
-					if (target.ownerDocument.location.href.search(/showthread.php/i) == -1)
+					// Actually use ignoreStatus
+					let ignoreStatus = gSALR.DB.isThreadIgnored(threadid);
+					if (ignoreStatus === false)
 					{
-						target.parentNode.removeChild(target);
+						gSALR.DB.toggleThreadIgnore(threadid);
+						gSALR.DB.setThreadTitle(threadid, threadTitle);
+						// todo: detect by if there is a "forum" node, to cover bookmark page and control panel
+						if (target.ownerDocument.location.href.search(/showthread.php/i) === -1)
+						{
+							target.parentNode.removeChild(target);
+						}
 					}
 				}
 			}
+			catch(e) { } // Prevent exception if user closes the tab
 		}
 	},
 
 	unreadThread: function()
 	{
-		var threadid = document.getElementById("salastread-context-unreadthread").data;
-		//var target = document.getElementById("salastread-context-unreadthread").target;
+		let threadid = document.getElementById("salastread-context-unreadthread").data;
+		//let target = document.getElementById("salastread-context-unreadthread").target;
 		if (threadid)
 		{
-			var xhr = new XMLHttpRequest();
-			var xhrparams = "json=1&action=resetseen&threadid="+threadid;
+			let xhr = new XMLHttpRequest();
+			let xhrparams = "json=1&action=resetseen&threadid="+threadid;
 			xhr.open("POST", "http://forums.somethingawful.com/showthread.php", true);
 			// Ensure this load flag is set to prevent issues with third-party cookies being disabled
 			xhr.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
@@ -2461,10 +2463,22 @@ var gSALR = {
 			{
 				if (xhr.readyState == 4 && xhr.status == 200)
 				{
+					let result;
 					if (xhr.responseText.match(/threadid/))
-						alert("Thread #" + threadid + " marked as unread.");
+						result = "SALR:\n Thread #" + threadid + " marked as unread.";
 					else
-						alert("Something went wrong! Please try again.");
+						result = "SALR:\n Something went wrong marking thread #" + threadid + "\n as unread! Please try again.";
+					try
+					{
+						// e10s note: this will change if we're in a frame script
+						let factory = Components.classes["@mozilla.org/prompter;1"]
+											.getService(Components.interfaces.nsIPromptFactory);
+						let prompt = factory.getPrompt(window.gBrowser.contentWindow, Components.interfaces.nsIPrompt);
+						let bag = prompt.QueryInterface(Components.interfaces.nsIWritablePropertyBag2);
+						bag.setPropertyAsBool("allowTabModal", true);
+						prompt.alert.apply(null, ["SALR Alert", result]);
+					}
+					catch(e) { }
 				}
 			};
 			xhr.send(xhrparams);
