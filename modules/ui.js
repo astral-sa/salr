@@ -2,7 +2,8 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 let {DB} = require("db");
 let {Prefs} = require("prefs");
-let {Utils} = require("utils");
+let {Notifications} = require("notifications");
+//let {Utils} = require("utils");
 
 let CustomizableUI = null;
 
@@ -213,6 +214,26 @@ let UI = exports.UI =
 			window.gSALR.buildForumMenu('toolbar');
 	},
 
+	addPopupNotificationAnchor: function(window)
+	{
+		let doc = window.document;
+		let popupBox = doc.getElementById('notification-popup-box');
+		let newAnchor = doc.createElement('image');
+		newAnchor.setAttribute('id', 'salr-notification-icon');
+		newAnchor.setAttribute('class', 'notification-anchor-icon');
+		newAnchor.setAttribute('role', 'button');
+		newAnchor.style.listStyleImage = 'url(chrome://salastread/skin/sa.png)';
+		popupBox.appendChild(newAnchor);
+	},
+
+	removePopupNotificationAnchor: function(window)
+	{
+		let doc = window.document;
+		let ourAnchor = doc.getElementById('salr-notification-icon');
+		if (ourAnchor)
+			ourAnchor.parentNode.removeChild(ourAnchor);
+	},
+
 	addContextMenu: function(window)
 	{
 		let contentAreaContextMenu = window.document.getElementById('contentAreaContextMenu');
@@ -291,6 +312,7 @@ UI.init();
 function loadIntoWindow(window) {
 	UI.addToolbarButton(window);
 	UI.addContextMenu(window);
+	UI.addPopupNotificationAnchor(window);
 
 	if (DB._starterr)
 		window.alert("DB._starterr =\n" + DB._starterr);
@@ -309,8 +331,8 @@ function loadIntoWindow(window) {
 	{
 		DB.needToShowChangeLog = false;
 		//openDialog("chrome://salastread/content/newfeatures/newfeatures.xul", "SALR_newfeatures", "chrome,centerscreen,dialog=no");
-		// This requires a timeout to function correctly.
-		window.setTimeout(window.gSALR.showChangelogAlert, 10);
+		// Delay a bit.
+		window.setTimeout(Notifications.showChangelogAlert, 500);
 	}
 
 	// Set interval for 'Time spent on forums'
@@ -322,6 +344,7 @@ function unloadFromWindow(window) {
 	if (!CustomizableUI)
 		window.removeEventListener("aftercustomization", UI.afterLegacyCustomize, false);
 	UI.removeContextMenu(window);
+	UI.removePopupNotificationAnchor(window);
 
 	window.removeEventListener('beforeunload', window.gSALR.pageOnBeforeUnload, true);
 	window.clearInterval(window.gSALR.intervalId);

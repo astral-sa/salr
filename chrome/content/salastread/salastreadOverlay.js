@@ -24,36 +24,6 @@ var gSALR = {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Core Funtions & Events /////////////////////////////////////////////////////////////////////////////////////////////
 
-	showChangelogAlert: function()
-	{
-		var alertsService = Components.classes["@mozilla.org/alerts-service;1"].
-                      getService(Components.interfaces.nsIAlertsService);
-		try {
-		  alertsService.showAlertNotification("chrome://salastread/skin/sa-24.png", 
-									  "SALR extension updated!", "Click here for the changelog.", 
-									  true, "", gSALR.changelogListener, "");
-		} catch (e) {
-			// This can fail on Mac OS X
-		}
-	},
-
-	changelogListener:
-	{
-		observe: function(subject, topic, data)
-		{
-			// User has requested changelog
-			if (topic == "alertclickcallback")
-			{
-				gSALR.runConfig("about");
-				//gSALR.openChangelogTab();
-			}
-		},
-	},
-
-	openChangelogTab: function()
-	{
-		gBrowser.selectedTab = gBrowser.addTab("chrome://salastread/content/changelog.html");
-	},
 
 	onDOMLoad: function(e)
 	{

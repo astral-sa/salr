@@ -67,4 +67,9 @@ menuitem.lastread_menu_sub\-sub\-sub
 {
 	padding-left: 30px;
 }
+
+.popup-notification-icon[popupid="salr-update-popup"] {
+  list-style-image: url("chrome://salastread/skin/sa-64.png");
+}
+
 }

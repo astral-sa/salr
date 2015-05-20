@@ -15,6 +15,8 @@
 		<preference id="databaseStoragePath" 	name="extensions.salastread.databaseStoragePath" 	type="string"/>
 		<preference id="forumListStoragePath" 	name="extensions.salastread.forumListStoragePath" 	type="string"/>
 
+		<preference id="updateNotificationMethod" 	name="extensions.salastread.updateNotificationMethod" 	type="int"/>
+
     </preferences>
 
 	<groupbox>
@@ -53,6 +55,30 @@
 					<textbox id="forumList" preference="forumListStoragePath"/>
 					<button id="defaultstring_forumListStoragePath"
 							oncommand="generalPane_resetPref('forumListStoragePath');" label="Default" />
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+
+	<groupbox>
+		<caption label="Notification Options"/>
+		<grid>
+			<columns>
+				<column/>
+				<column flex="1"/>
+				<column/>
+			</columns>
+			<rows>
+				<row align="center">
+					<label value="Notify me when SALR has updated:" control="menulist_updateNotificationMethod"/>
+	<menulist id="menulist_updateNotificationMethod" preference="updateNotificationMethod" sizetopopup="pref">
+		<menupopup>
+			<menuitem id="notifyNever" value="0" label="Never" />
+			<menuitem id="notifyAS" value="1" label="With a corner notification box" />
+			<menuitem id="notifyPN" value="2" label="With a doorhanger notification" />
+		</menupopup>
+	</menulist>
+					<button label="Send test notification" oncommand="generalPane_testNotify()" />
 				</row>
 			</rows>
 		</grid>

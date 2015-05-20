@@ -8,4 +8,9 @@ var gSALRGeneralPane = {
 	{
 		Prefs.resetPref(myPrefName);
 	},
+
+	testNotify: function()
+	{
+		Notifications.showChangelogAlert();
+	},
 };

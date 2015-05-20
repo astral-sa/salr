@@ -10,6 +10,7 @@ let {Prefs} = require("prefs");
 let {DB} = require("db");
 let {Styles} = require("styles");
 let {PageUtils} = require("pageUtils");
+let {Notifications} = require("notifications");
 
 var rebuildCSS = true;
 var needSAMenuToggle = false;

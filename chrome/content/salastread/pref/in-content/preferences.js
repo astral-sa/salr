@@ -23,6 +23,7 @@ let {Prefs} = require("prefs");
 let {DB} = require("db");
 let {Styles} = require("styles");
 let {PageUtils} = require("pageUtils");
+let {Notifications} = require("notifications");
 
 let gLastHash = "";
 
