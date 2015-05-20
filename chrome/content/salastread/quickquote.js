@@ -310,7 +310,18 @@ function finalizeTextGrab(restext)
 		before = before.replace(quoteWaitString, "");
 
 	var el = document.getElementById("replypage").contentDocument.body;
-		el.innerHTML = restext;
+	let fragment = Components.classes["@mozilla.org/feed-unescapehtml;1"]
+                         .getService(Components.interfaces.nsIScriptableUnescapeHTML)
+                         .parseFragment(restext, false, null, el);
+/* For Firefox 14+ we can switch to: 
+	let fragment = Components.classes["@mozilla.org/parserutils;1"]
+					.getService(Components.interfaces.nsIParserUtils)
+					.parseFragment(restext, 0, false, null, el);
+*/
+	while (el.firstChild)
+		el.removeChild(el.firstChild);
+	el.appendChild(fragment);
+
 	var tnode = PageUtils.selectSingleNode(document.getElementById("replypage").contentDocument, el, "//TEXTAREA[@name='message']");
 
 	// There was a response, but it wasn't what we expected.

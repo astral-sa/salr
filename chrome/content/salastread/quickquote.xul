@@ -129,6 +129,6 @@
 
    <html:form id="floatsubmitter" method="get" action="http://forums.somethingawful.com/" target="_blank">
    </html:form>
-   <html:iframe id="replypage" style="display: none" src="about:blank"></html:iframe>
+   <xul:iframe id="replypage" style="display: none" type="content" src="data:text/html;charset=iso-8859-1,%3Chtml%3E%3Cbody%3E%3C/body%3E%3C/html%3E"></xul:iframe>
 
 </xul:window>
