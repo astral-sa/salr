@@ -1472,8 +1472,6 @@ var gSALR = {
 				a.href = "#";
 				a.textContent = "Add Coloring/Note";
 				a.title = "Add coloring and/or a note for this poster.";
-				a.dataset.salrPosterId = posterId;
-				a.dataset.salrPosterName = posterName;
 				a.addEventListener("click", gSALR.addHighlightedUser.bind(null,posterId,posterName), true);
 				li.appendChild(a);
 				userLinks.appendChild(doc.createTextNode(" "));
