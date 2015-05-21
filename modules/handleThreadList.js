@@ -13,7 +13,7 @@
 			var countElement = this.selectSingleNode(doc,newPostsBox,"a/b");
 			try
 			{
-				retNewPostCount = parseInt(countElement.innerHTML);
+				retNewPostCount = parseInt(countElement.textContent);
 			} catch (e) { }
 		}
 

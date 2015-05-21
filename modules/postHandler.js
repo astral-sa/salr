@@ -54,7 +54,7 @@ let PostHandler = exports.PostHandler =
 				newLink = doc.createElement("a");
 				newLink.href = anImage.src;
 				newLink.title = "Image unconverted by SALR";
-				newLink.innerHTML = "[Image hidden by SALR, click to view]";
+				newLink.textContent = "[Image hidden by SALR, click to view]";
 				newLink.style.border = "1px dashed red";
 				if (anImage.parentNode.tagName && (anImage.parentNode.tagName.search(/^a$/i) > -1))
 				{

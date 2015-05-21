@@ -299,13 +299,13 @@ var gSALR = {
 			}
 			if (pageList.childNodes.length > 1) // Are there pages
 			{
-				var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+				var numPages = pageList.lastChild.textContent.match(/(\d+)/);
 				var curPage = gSALR.PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 				// Suppress a page-load error - possibly unnecessary with revised logic
 				if (!numPages)
 					return;
 				numPages = parseInt(numPages[1], 10);
-				curPage = parseInt(curPage.innerHTML, 10);
+				curPage = parseInt(curPage.textContent, 10);
 			}
 			else
 			{
@@ -352,7 +352,7 @@ var gSALR = {
 			for (i = 0; i < modcount; i++)
 			{
 				let userid = modarray[i].href.match(/userid=(\d+)/i)[1];
-				let username = modarray[i].innerHTML;
+				let username = modarray[i].textContent;
 				if (!gSALR.DB.isMod(userid) && !gSALR.DB.isAdmin(userid))
 				{
 					gSALR.DB.addMod(userid, username);
@@ -590,7 +590,7 @@ var gSALR = {
 			}
 			if (!threadTitleLink) continue;
 			threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1], 10);
-			threadTitle = threadTitleLink.innerHTML;
+			threadTitle = threadTitleLink.textContent;
 			if (gSALR.DB.isThreadIgnored(threadId))
 			{
 				// If thread is ignored might as well remove it and stop now
@@ -652,7 +652,7 @@ var gSALR = {
 			{
 				let threadReCount = parseInt(threadRepliesBox.textContent, 10) + 1;
 				let lastPageNum = Math.ceil(threadReCount / postsPerPage);
-				lastLink.innerHTML += ' (' + lastPageNum + ')';
+				lastLink.textContent += ' (' + lastPageNum + ')';
 			}
 
 			// So right click star/ignore works
@@ -720,19 +720,18 @@ var gSALR = {
 					threadRe = gSALR.PageUtils.selectSingleNode(doc, iconJumpLastRead, "B");
 					threadRe = threadRe.cloneNode(true);
 					threadRe.style.fontWeight = "normal";
-					threadRe.style.fontSize = "75%";
+					threadRe.style.fontSize = "9px";
+					threadRe.textContent = "(" + threadRe.textContent + ")";
 					if (newPostCountUseOneLine)
 					{
-						threadRepliesBox.innerHTML += "&nbsp;(";
-						threadRepliesBox.appendChild(threadRe);
-						threadRepliesBox.innerHTML += ")";
+						threadRepliesBox.textContent += "&nbsp;";
 					}
 					else
 					{
-						threadRepliesBox.innerHTML += "<br />(";
-						threadRepliesBox.appendChild(threadRe);
-						threadRepliesBox.innerHTML += ")";
+						let reBr = doc.createElement('br');
+						threadRepliesBox.appendChild(reBr);
 					}
+					threadRepliesBox.appendChild(threadRe);
 				}
 
 				if (alwaysShowGoToLastIcon && !iconJumpLastRead)
@@ -744,7 +743,7 @@ var gSALR = {
 					if (disableNewReCount)
 					{
 						threadRe = doc.createElement("b");
-						threadRe.innerHTML = "0";
+						threadRe.textContent = "0";
 						iconJumpLastRead.appendChild(threadRe);
 					}
 					divLastSeen.appendChild(iconJumpLastRead);
@@ -858,7 +857,7 @@ var gSALR = {
 				let lastPostLink = threadLastPostBox.getElementsByTagName('a');
 				if (lastPostLink[0])
 				{
-					lastPostId = gSALR.DB.getUserId(lastPostLink[0].innerHTML);
+					lastPostId = gSALR.DB.getUserId(lastPostLink[0].textContent);
 				}
 
 				if (lastPostId)
@@ -989,12 +988,12 @@ var gSALR = {
 			{
 				pageList = pageList[0];
 			}
-			if (pageList.childNodes.length > 1 && pageList.lastChild && pageList.lastChild.innerHTML) // Are there pages
+			if (pageList.childNodes.length > 1 && pageList.lastChild && pageList.lastChild.textContent) // Are there pages
 			{
-				var numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+				var numPages = pageList.lastChild.textContent.match(/(\d+)/);
 				var curPage = gSALR.PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 				numPages = parseInt(numPages[1], 10);
-				curPage = parseInt(curPage.innerHTML, 10);
+				curPage = parseInt(curPage.textContent, 10);
 			}
 			else
 			{
@@ -1079,7 +1078,7 @@ var gSALR = {
 				replyCountLi.appendChild(replyCountLink);
 				replyCountLink.href = "/misc.php?action=whoposted&threadid=" + threadid + "#fromthread";
 				replyCountLink.target = "_blank";
-				replyCountLink.innerHTML = "Who posted?";
+				replyCountLink.textContent = "Who posted?";
 				replyCountLink.style.fontSize = "10px";
 				replyCountLink.style.cssFloat = "left";
 				replyCountLink.style.marginLeft = "8px";
@@ -1166,7 +1165,7 @@ var gSALR = {
 
 		// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
 		var useQuickQuote = gSALR.Prefs.getPref('useQuickQuote');
-		var insertPostTargetLink = gSALR.Prefs.getPref("insertPostTargetLink");
+		var insertPostTargetLink = gSALR.Prefs.getPref("insertPostTargetLink") && !inArchives;
 		var highlightUsernames = gSALR.Prefs.getPref("highlightUsernames");
 		let hideCustomTitles = gSALR.Prefs.getPref('hideCustomTitles');
 
@@ -1406,13 +1405,13 @@ var gSALR = {
 				{
 					slink.href = "/showthread.php?goto=post&postid="+postid;
 					slink.title = "Back to Thread";
-					slink.innerHTML = "1";
+					slink.textContent = "1";
 				}
 				else
 				{
 					slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+forumid;
 					slink.title = "Show Single Post";
-					slink.innerHTML = "1";
+					slink.textContentarc = "1";
 				}
 				postIdLink.parentNode.insertBefore(slink, postIdLink);
 				postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
@@ -1566,7 +1565,7 @@ var gSALR = {
 					regReplyLink.onclick = function() { gSALR.needRegReplyFill = true; };
 					regReplyLink.href = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
 					gSALR.savedQuickReplyThreadId;
-					regReplyLink.innerHTML = "here.";
+					regReplyLink.textContent = "here.";
 					reqMsg.appendChild(regReplyLink);
 					forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
 				}
@@ -1785,14 +1784,14 @@ var gSALR = {
 		var newImg = doc.createElement('img');
 		newImg.src = "chrome://salastread/skin/techsupport.jpg";
 		var newText = doc.createElement('p');
-		newText.innerHTML = "Please disable SA Last Read before reporting a problem with the forums";
+		newText.textContent = "Please disable SA Last Read before reporting a problem with the forums";
 		newText.style.textAlign = "center";
 		var emptyP = doc.createElement('p');
 		var newLink = doc.createElement('a');
 		emptyP.appendChild(newLink);
 		emptyP.style.textAlign = "center";
 		newLink.href = "http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost";
-		newLink.innerHTML = "Click here to report a problem with SA Last Read instead";
+		newLink.textContent = "Click here to report a problem with SA Last Read instead";
 		var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
 		supportTable.parentNode.replaceChild(newImg, supportTable);
 		newImg.parentNode.appendChild(newText);
@@ -1817,7 +1816,7 @@ var gSALR = {
 		var newLink = doc.createElement('a');
 		newLink.href = "/banlist.php?userid=" + userid;
 		newLink.title = "Show poster's ban/probation history.";
-		newLink.innerHTML = "Rap Sheet";
+		newLink.textContent = "Rap Sheet";
 		newLink.style.color = "#FFFFFF";
 		postSearchLink.parentNode.appendChild(doc.createTextNode(" ("));
 		postSearchLink.parentNode.appendChild(newLink);
@@ -1844,14 +1843,14 @@ var gSALR = {
 					pageList = pageList[pageList.length-1];
 				else
 					return;
-				var numPages = pageList.innerHTML.match(/\((\d+)\)/);
+				var numPages = pageList.textContent.match(/\((\d+)\)/);
 				if (!numPages)
 					return;
 				var curPage = gSALR.PageUtils.selectSingleNode(doc, doc, "//a[contains(@class,'current')]");
 				if (pageList.childNodes.length > 1) // Are there pages
 				{
 					numPages = parseInt(numPages[1], 10);
-					curPage = parseInt(curPage.innerHTML, 10);
+					curPage = parseInt(curPage.textContent, 10);
 				}
 				else
 				{
@@ -2581,7 +2580,7 @@ var gSALR = {
 
 			toggleDiv.innerHTML = '';
 			afObject = doc.createElement("b");
-			afObject.innerHTML = "Advanced thread filtering";
+			afObject.textContent = "Advanced thread filtering";
 			toggleDiv.appendChild(afObject);
 			afObject = doc.createElement("div");
 			afObject.id = "salr_filteredthreadcount";
@@ -2802,7 +2801,7 @@ var gSALR = {
 						{
 							threadTitleLink = gSALR.PageUtils.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
 						}
-						var threadTitle = threadTitleLink.innerHTML;
+						var threadTitle = threadTitleLink.textContent;
 						var keywordList = prefIgnoredKeywords.split("|");
 
 						for (var j in keywordList)
@@ -2880,7 +2879,7 @@ var gSALR = {
 					{
 						threadTitleLink = gSALR.PageUtils.selectSingleNode(doc, thread, "TD[contains(@class,'title')]/A[contains(@class, 'thread_title')]");
 					}
-					threadTitle = threadTitleLink.innerHTML;
+					threadTitle = threadTitleLink.textContent;
 					threadBeGone = false;
 
 					for (var j in keywordList)
