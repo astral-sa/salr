@@ -101,6 +101,21 @@ let PageUtils = exports.PageUtils =
 				if (!isNaN(fid)) break;
 			}
 
+			// Check for body data-forum or body classing
+			let body = doc.body;
+			if (body.dataset.forum)
+			{
+				fid = parseInt(body.dataset.forum,10);
+				if (!isNaN(fid)) break;
+			}
+
+			let bodyClassMatch = body.className.match(/forum_(\d+)/i);
+			if (bodyClassMatch)
+			{
+				fid = parseInt(bodyClassMatch[1],10);
+				if (!isNaN(fid)) break;
+			}
+
 			// Look in the link for the post button
 			var postbutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
 			if (postbutton)
@@ -146,6 +161,21 @@ let PageUtils = exports.PageUtils =
 			{
 				tid = parseInt(intitle[1],10);
 				if (!isNaN(tid)) break;
+			}
+
+			// Check for body data-thread or body classing
+			let body = doc.body;
+			if (body.dataset.thread)
+			{
+				fid = parseInt(body.dataset.thread,10);
+				if (!isNaN(fid)) break;
+			}
+
+			let bodyClassMatch = body.className.match(/thread_(\d+)/i);
+			if (bodyClassMatch)
+			{
+				fid = parseInt(bodyClassMatch[1],10);
+				if (!isNaN(fid)) break;
 			}
 
 			// Look in the ? Link in the first post
