@@ -1439,25 +1439,6 @@ var gSALR = {
 
 			var userLinks = profileLink.parentNode.parentNode;
 
-			// Add user coloring/note links
-			if (highlightUsernames)
-			{
-				var li = doc.createElement("li");
-				li.setAttribute('style', '-moz-user-select: none;');
-				li.style.cssFloat = 'right';
-				li.style.marginLeft = '4px';
-				var a = doc.createElement("a");
-				a.href = "#";
-				a.textContent = "Add Coloring/Note";
-				a.title = "Add coloring and/or a note for this poster.";
-				a.dataset.salrPosterId = posterId;
-				a.dataset.salrPosterName = posterName;
-				a.addEventListener("click", gSALR.addHighlightedUser.bind(null,posterId,posterName), true);
-				li.appendChild(a);
-				userLinks.appendChild(doc.createTextNode(" "));
-				userLinks.appendChild(li);
-			}
-
 			// Add a link to hide/unhide the user's avatar
 			if (!hideCustomTitles)
 			{
@@ -1478,6 +1459,27 @@ var gSALR = {
 				userLinks.appendChild(doc.createTextNode(" "));
 				userLinks.appendChild(avLink);
 			}
+
+			// Add user coloring/note links
+			// Note: this is added after, but appears to the left thanks to CSS floats.
+			if (highlightUsernames)
+			{
+				var li = doc.createElement("li");
+				li.setAttribute('style', '-moz-user-select: none;');
+				li.style.cssFloat = 'right';
+				li.style.marginLeft = '4px';
+				var a = doc.createElement("a");
+				a.href = "#";
+				a.textContent = "Add Coloring/Note";
+				a.title = "Add coloring and/or a note for this poster.";
+				a.dataset.salrPosterId = posterId;
+				a.dataset.salrPosterName = posterName;
+				a.addEventListener("click", gSALR.addHighlightedUser.bind(null,posterId,posterName), true);
+				li.appendChild(a);
+				userLinks.appendChild(doc.createTextNode(" "));
+				userLinks.appendChild(li);
+			}
+
 			// Add a space for the Rap Sheet link added afterwards by forum JS:
 			userLinks.appendChild(doc.createTextNode(" "));
 
