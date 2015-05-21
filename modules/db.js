@@ -32,7 +32,6 @@ function ReadFile(fn)
 
 function SaveFile(fn, fdata)
 {
-	Utils.logToConsole("fn: " + fn);
 	var file = Components.classes["@mozilla.org/file/local;1"]
 				.createInstance(Components.interfaces.nsILocalFile);
 	file.initWithPath(fn);
