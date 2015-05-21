@@ -260,6 +260,7 @@ let PageUtils = exports.PageUtils =
 	// Unused; probably not up to date
 	hasNoRatingBox: function(forumid)
 	{
+		// Note: 78 & 79 no longer in live forums as of 05/21/2015
 		return (forumid == 93 || forumid == 188 || forumid == 61 || forumid == 77 ||
 		 forumid == 78 || forumid == 79 || forumid == 115 || forumid == 25);
 	},

@@ -181,10 +181,10 @@ var gSALR = {
 						errstr += tn + ": " + ex[tn] + "\n";
 					}
 
-					if (!DB || !gSALR.Prefs.getPref('suppressErrors'))
+					if (!gSALR.DB || !gSALR.Prefs.getPref('suppressErrors'))
 					{
 						//alert("SALastRead application err: "+errstr);
-						alert("SALastRead application err: "+ex);
+						window.alert("SALastRead application err: "+ex);
 					}
 				}
 			}
@@ -947,8 +947,20 @@ var gSALR = {
 		//var inDump = gSALR.PageUtils.inDump(forumid);
 		//var inAskTell = gSALR.PageUtils.inAskTell(forumid);
 		var inGasChamber = gSALR.PageUtils.inGasChamber(forumid);
-		// Obsolete:
-		var inArchives = (doc.location.host.search(/^archives\.somethingawful\.com$/i) > -1);
+		/*
+			NOTE: As of 05/21/2015, archives can currently be detected by a
+			thread lacking a bookmark star and the thread rate box lacking
+			proper children. Before changing how this is determined,
+			make sure to test:
+				- Threads from live forums
+				- Threads from forums which lack a rate box
+				- Threads 'locked for archiving'
+				- Archived threads
+		*/
+		let threadRateBox = gSALR.PageUtils.selectSingleNode(doc, doc, "//DIV[@class='threadrate']");
+		let bookmarkStar = gSALR.PageUtils.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
+		let inArchives = (!bookmarkStar && !!threadRateBox && !threadRateBox.firstChild.nextSibling);
+
 		var singlePost = (doc.location.search.search(/action=showpost/i) > -1);
 		var username = unescape(gSALR.Prefs.getPref('username'));
 
@@ -1067,7 +1079,7 @@ var gSALR = {
 		}
 
 		var searchThis = gSALR.PageUtils.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
-		var placeHere = gSALR.PageUtils.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
+		var placeHere = bookmarkStar;
 		if (searchThis && placeHere && placeHere.parentNode && placeHere.parentNode.nodeName.toLowerCase() === 'li')
 		{
 			placeHere = placeHere.parentNode;
@@ -1220,24 +1232,18 @@ var gSALR = {
 				post.className += ' salrPostIgnored';
 			}
 
-			if (inFYAD && !inArchives)
+			// Should work for all thread types nowadays. (05/21/2015)
+			userNameBox = gSALR.PageUtils.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
+
+			if (userNameBox === null)
 			{
-				userNameBox = gSALR.PageUtils.selectSingleNode(doc, post, "TBODY//DIV[contains(@class,'title')]//following-sibling::B");
-			}
-			else
-			{
-				userNameBox = gSALR.PageUtils.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
+				gSALR.PageUtils.logToConsole("SALR error: can't find a user name box for post " + curPostId + " in thread " + threadid);
+				continue;
 			}
 
-			//workaround for archives + fyad-type forum, since we can't detect we're in an archived thread at the moment
-			if (userNameBox == null)
-			{
-				userNameBox = gSALR.PageUtils.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
-			}
-
-			// Standard template
+			// Standard template - should work for all thread types nowadays. (05/21/2015)
 			let titleBox = gSALR.PageUtils.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
-			// If that doesn't work, try FYAD template
+			// If that doesn't work, try old FYAD template
 			if (titleBox == null)
 				titleBox = gSALR.PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
 
@@ -1411,7 +1417,7 @@ var gSALR = {
 				{
 					slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+forumid;
 					slink.title = "Show Single Post";
-					slink.textContentarc = "1";
+					slink.textContent = "1";
 				}
 				postIdLink.parentNode.insertBefore(slink, postIdLink);
 				postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
