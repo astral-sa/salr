@@ -909,7 +909,8 @@ var gSALR = {
 			anchorTop.removeChild(anchorUnreadStickies);
 			anchorTop.removeChild(anchorReadStickies);
 			anchorTop.removeChild(anchorThreads);
-			anchorTop.removeChild(anchorUnseenThreads);
+			if (flags.inUserCP)
+				anchorTop.removeChild(anchorUnseenThreads);
 		}
 	},
 
