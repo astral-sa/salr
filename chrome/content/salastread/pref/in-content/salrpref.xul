@@ -17,7 +17,7 @@
 <?xml-stylesheet href="chrome://browser/skin/preferences/in-content/search.css"?>
 
 <!-- Our stylesheets: -->
-<?xml-stylesheet href="chrome://salastread/content/pref/pref-color.css" type="text/css"?>
+<?xml-stylesheet href="chrome://salastread/content/pref/in-content/colors.css" type="text/css"?>
 <?xml-stylesheet href="chrome://salastread/content/colorpicker/colorpicker.css" type="text/css"?>
 <?xml-stylesheet href="chrome://salastread/content/pref/pref-about.css" type="text/css"?>
 
@@ -234,7 +234,7 @@
 		<menuitem id="notifyPN" value="2" label="With a doorhanger notification" />
 	</menupopup>
 </menulist>
-				<button label="Send test notification" oncommand="gSALRGeneralPane.testNotify()" />
+				<button id="testNotify" label="Send test notification" />
 			</row>
 		</rows>
 	</grid>
@@ -285,10 +285,10 @@
 	<caption label="Forum Features"/>
 
 	<checkbox preference="enableForumNavigator"  label="Add a forum navigator to the lower-right corner of the browser" />
-	<checkbox preference="disableNewReCount" 		label="Show new replies count in the replies column" oncommand="gSALRForumsPane.toggleNewReCount()" id="newReCount" />
+	<checkbox preference="disableNewReCount" 		label="Show new replies count in the replies column" id="newReCount" />
 	<checkbox preference="newPostCountUseOneLine" 	label="Show new replies count on a new line" style="margin-left: 20px;" id="newReCountNewLine" />
 	<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first in the thread list" />
-	<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads with new posts first in the bookmark list" oncommand="gSALRForumsPane.togglePromoteStickiesInCP()" id="showThreadsWNPCP" />
+	<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads with new posts first in the bookmark list" id="showThreadsWNPCP" />
 	<checkbox preference="showThreadsWithNewPostsFirstCPStickies" label="Move stickies with new posts to the top of the bookmark list" style="margin-left: 20px;" id="promoteStickiesWNPCP" />
 	<checkbox preference="swapIconOrder" 			label="Swap the Mark Unvisited and Go To Last Post icon order" />
 	<checkbox preference="showForumModsList" 		label="Show list of moderators in the thread list" />
@@ -302,24 +302,24 @@
 
 	<vbox>
 
-		<checkbox id="alwayShowLastReadIcon" preference="alwaysShowGoToLastIcon" label="Always show 'Go To Last Post' icon, even if no new posts in thread"/>
-		<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Use this 'Go To Last Post' icon" oncommand="gSALRForumsPane.toggleLastReadIcon()"/>
+		<checkbox id="alwayShowLastReadIcon" preference="alwaysShowGoToLastIcon" label="Always show 'Go To Last Post' icon, even if no new posts in thread" />
+		<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Use this 'Go To Last Post' icon" />
 		<vbox style="margin-left: 20px">
 			<hbox align="center" flex="1">
-				<label value="Icon URL:" control="lastReadPostIcon"/>
-				<textbox id="lastReadIcon" preference="goToLastReadPost" flex="1"/>
-				<button id="lastReadIconDefault" label="Default"  onclick="gSALRForumsPane.lastReadIconDefault()"/>
+				<label id="lastReadLabel" value="Icon URL:" control="lastReadIcon" />
+				<textbox id="lastReadIcon" preference="goToLastReadPost" flex="1" />
+				<button id="lastReadIconDefault" label="Default" />
 			</hbox>
 		</vbox>
 
-		<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Use this 'Mark Thread Unvisited' icon" oncommand="gSALRForumsPane.toggleUnvisitIcon()" />
+		<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Use this 'Mark Thread Unvisited' icon" />
 
 		<vbox style="margin-left: 20px">
 
 			<hbox align="center" flex="1">
-				<label value="Icon URL:" control="unvisitThreadIcon"/>
-				<textbox id="unvisitIcon" preference="markThreadUnvisited" flex="1"/>
-				<button id="unvisitIconDefault" label="Default" onclick="gSALRForumsPane.unvisitIconDefault()"/>
+				<label id="unvisitLabel" value="Icon URL:" control="unvisitIcon" />
+				<textbox id="unvisitIcon" preference="markThreadUnvisited" flex="1" />
+				<button id="unvisitIconDefault" label="Default" />
 			</hbox>
 
 		</vbox>
@@ -379,7 +379,7 @@
 	hidden="true">
 <caption label="Video Embed Options"/>
 	<vbox>
-		<checkbox id="enableVideoEmbedderCheckbox" preference="enableVideoEmbedder" label="Enable converting of video links to embeddable video:" oncommand="var evec=!document.getElementById('enableVideoEmbedderCheckbox').checked;document.getElementById('videoEmbedderGetTitlesCheckbox').disabled=evec;" />
+		<checkbox id="enableVideoEmbedderCheckbox" preference="enableVideoEmbedder" label="Enable converting of video links to embeddable video:" />
 		<checkbox id="videoEmbedderGetTitlesCheckbox" preference="videoEmbedderGetTitles" label="Fetch YouTube video titles" style="margin-left: 20px;"/>
 		<separator class="thin" />
 		<!--<caption label="Embedded Youtube Player Settings:" />
@@ -389,8 +389,7 @@
 				<groupbox id="threadYTSizeGroup"
 					data-category="paneThreads">
 					<caption label="YouTube Player Size" />
-					<radiogroup id="radio_videoEmbedSize" preference="videoEmbedSize"
-							onclick="var cs=!document.getElementById('customvidsize').selected; document.getElementById('videoEmbedCustomWidthbox').disabled=cs; document.getElementById('videoEmbedCustomHeightbox').disabled=cs">
+					<radiogroup id="radio_videoEmbedSize" preference="videoEmbedSize">
 						<radio id="tinyvidsize" value="tiny" label="Tiny (480x300)" />
 						<radio id="smallvidsize" value="small" label="Small (560x345)" />
 						<radio id="mediumvidsize" value="medium" label="Medium (640x390)" />
@@ -401,7 +400,7 @@
 							<radio id="customvidsize" value="custom" label="Custom:" />
 						</vbox>
 						<vbox>
-							<label value="Width:" control="videoEmbedCustomWidthbox" />
+							<label id="videoEmbedCustomWidthLabel" value="Width:" control="videoEmbedCustomWidthbox" />
 							<textbox id="videoEmbedCustomWidthbox" preference="videoEmbedCustomWidth" size="4" maxlength="5" />
 							</vbox>
 							<vbox align="end">
@@ -409,13 +408,14 @@
 							<label value="x" />
 							</vbox>
 							<vbox>
-							<label value="Height:" control="videoEmbedCustomHeightbox" />
+							<label id="videoEmbedCustomHeightLabel" value="Height:" control="videoEmbedCustomHeightbox" />
 							<textbox id="videoEmbedCustomHeightbox" preference="videoEmbedCustomHeight" size="4" maxlength="5" />
 							</vbox>
 						</hbox>
 					</radiogroup>
 				</groupbox>
 			</vbox>
+			<separator class="thin" orient="vertical"/>
 			<vbox>
 				<groupbox id="threadYTQualGroup"
 					data-category="paneThreads">
@@ -467,7 +467,7 @@
 	<caption label="Text-to-Image Conversion"/>
 
 	<vbox>
-		<checkbox preference="convertTextToImage" label="Convert links to images into inline images in posts" id="toggleTtICheckbox" oncommand="gSALRImagesPane.toggleTtIConvBoxes()"/>
+		<checkbox preference="convertTextToImage" label="Convert links to images into inline images in posts" id="toggleTtICheckbox" />
 
 		<vbox style="margin-left: 20px">
 			<checkbox preference="dontTextToImageIfMayBeNws" label="Don't convert if post contains an NWS/NMS warning" id="dontTtINws" />
@@ -493,7 +493,7 @@
 	<caption label="Image Scaling" />
 	<vbox>
 		<checkbox preference="thumbnailAllImages" label="Scale all forum images until clicked"
-			id="toggleImageScaleCheckbox" oncommand="gSALRImagesPane.toggleImageScaleBoxes()"/>
+			id="toggleImageScaleCheckbox" />
 		<vbox style="margin-left: 20px;">
 			<grid>
 				<columns>
@@ -507,15 +507,15 @@
 						All dimensions are in pixels, set to 0 to disable scaling in that direction.
 					</description>
 					<row align="center">
-						<label value="Max Width" control="maxWidth"/>
+						<label id="maxImgWidthLabel" value="Max Width" control="maxWidth"/>
 						<textbox id="maxImgWidth" preference="maxWidthOfConvertedImages" size="3" />
-						<label value="(px)" control="maxWidth" />
+						<label id="maxImgWidthPx" value="(px)" control="maxWidth" />
 					</row>
 
 					<row align="center">
-						<label value="Max Height" control="maxHeight"/>
+						<label id="maxImgHeightLabel" value="Max Height" control="maxHeight"/>
 						<textbox id="maxImgHeight" preference="maxHeightOfConvertedImages" size="3" />
-						<label value="(px)" control="maxHeight" />
+						<label id="maxImgHeightPx" value="(px)" control="maxHeight" />
 					</row>
 				</rows>
 			</grid>
@@ -547,13 +547,13 @@
 		Your ignored threads are listed below. To un-ignore a thread, choose it from the list and click the "Unignore Selected Thread" button.
 	</description>
 
-	<listbox flex="1" rows="12" id="ignored_thread_list" onselect="gSALRIgnoredPane.listSelect()" seltype="multiple">
+	<listbox flex="1" rows="12" id="ignored_thread_list" seltype="multiple">
 	</listbox>
 
 	<hbox>
 		<spacer flex="1"/>
-		<button id="unignore_selectall_button" label="Select All Threads" disabled="true" oncommand="gSALRIgnoredPane.selectAllThreads()" />
-		<button id="unignore_thread_button" label="Unignore Selected Thread" disabled="true" oncommand="gSALRIgnoredPane.unignoreThreads()" />
+		<button id="unignore_selectall_button" label="Select All Threads" disabled="true" />
+		<button id="unignore_thread_button" label="Unignore Selected Thread" disabled="true" />
 	</hbox>
 </vbox>
 
@@ -585,13 +585,13 @@
 	hidden="true">
 	<caption label="Quick Reply Options"/>
 	<vbox>
-		<checkbox preference="useQuickQuote" label="Use 'Quick Quote' and 'Quick Reply' buttons"/>
+		<checkbox id="useQuickQuoteCheckbox" preference="useQuickQuote" label="Use 'Quick Quote' and 'Quick Reply' buttons"/>
 		<vbox id="qqtoggles" style="margin-left: 20px">
-			<checkbox preference="quickQuoteSubscribeDefault" 		label="Default 'Subscribe' to checked" />
-			<checkbox preference="quickQuoteSignatureDefault" 		label="Default 'Show Signature' to checked (for first post in thread only)" />
-			<checkbox preference="quickQuoteDisableSmiliesDefault" 	label="Default 'Disable Smilies' to checked" />
-			<checkbox preference="quickQuoteSwapPostPreview" 		label="Swap position of 'Submit Reply' and 'Preview Reply' buttons" />
-			<checkbox preference="quickQuoteLivePreview" 			label="Enable live preview in quick reply window" />
+			<checkbox id="qQSubDC" preference="quickQuoteSubscribeDefault" 		label="Default 'Subscribe' to checked" />
+			<checkbox id="qQSigDC" preference="quickQuoteSignatureDefault" 		label="Default 'Show Signature' to checked (for first post in thread only)" />
+			<checkbox id="qQDSDC" preference="quickQuoteDisableSmiliesDefault" 	label="Default 'Disable Smilies' to checked" />
+			<checkbox id="qQSPPC" preference="quickQuoteSwapPostPreview" 		label="Swap position of 'Submit Reply' and 'Preview Reply' buttons" />
+			<checkbox id="qQLPC" preference="quickQuoteLivePreview" 			label="Enable live preview in quick reply window" />
 		</vbox>
 	</vbox>
 </groupbox>	
@@ -604,7 +604,7 @@
 
 <preferences>
 	<!-- General Colors -->
-	<preference id="videoEmbedderBG" name="extensions.salastread.readLight" type="string"/>
+	<preference id="videoEmbedderBG" name="extensions.salastread.videoEmbedderBG" type="string"/>
 
 	<!-- Normal Thread Colors -->
 	<preference id="postedInThreadRe" 		name="extensions.salastread.postedInThreadRe" 	type="string"/>
@@ -694,68 +694,131 @@
 
 	<hbox align="center">
 		<label value="Change/view color settings for:" control="forumtype"/>
-		<menulist id="forumtype" oncommand="gSALRColorsPane.loadColors()">
+		<menulist id="colorsForumtype">
 			<menupopup>
 				<menuitem label="Normal" 	value=""/>
 				<menuitem label="FYAD"		value="FYAD"/>
 				<menuitem label="BYOB"		value="BYOB"/>
 			</menupopup>
 		</menulist>
-		<button label="Load Default Colors" oncommand="gSALRColorsPane.loadDefaultColors()"/>
+		<button id="loadDefaultColorsButton" label="Load Default Colors" />
 	</hbox>
 	<hbox>
 		<hbox id="sampletableholder" class="sampletableholder">
 			<vbox>
-				<html:span>&#160;Forum view:</html:span>
-				<html:table id="sampletable" class="sampletable">
-				<html:tbody>
-					<html:tr>
-						<html:td class="readWithNewDark"><html:img src="chrome://salastread/content/pref/images/shitpost.gif"/></html:td>
-						<html:td class="readWithNewLight">Visited thread with new posts</html:td>
-						<html:td class="readWithNewDark" 	onclick="gSALRColorsPane.editColor(event, this);">Dark</html:td>
-						<html:td class="readWithNewLight" 	onclick="gSALRColorsPane.editColor(event, this);">Light</html:td>
-						<html:td class="postedInThreadRe" 	onclick="gSALRColorsPane.editColor(event, this);">Reply</html:td>
-					</html:tr>
-					<html:tr>
-						<html:td class="readDark"><html:img src="chrome://salastread/content/pref/images/shitpost.gif"/></html:td>
-						<html:td class="readLight">Visited thread with no new posts</html:td>
-						<html:td class="readDark" 	onclick="gSALRColorsPane.editColor(event, this);">Dark</html:td>
-						<html:td class="readLight" 	onclick="gSALRColorsPane.editColor(event, this);">Light</html:td>
-						<html:td></html:td>
-					</html:tr>
-					<html:tr>
-						<html:td class="unreadDark"><html:img src="chrome://salastread/content/pref/images/shitpost.gif"/></html:td>
-						<html:td class="unreadLight">Unvisited thread</html:td>
-						<html:td class="unreadDark"		onclick="gSALRColorsPane.editColor(event, this);">Dark</html:td>
-						<html:td class="unreadLight" 	onclick="gSALRColorsPane.editColor(event, this);">Light</html:td>
-						<html:td></html:td>
-					</html:tr>
-				</html:tbody>
-				</html:table>
-				<html:span>&#160;Thread view:</html:span>
-				<html:table id="postsampletable" class="postsampletable">
-				<html:tbody>
-					<html:tr>
-						<html:td class="seenPostLight2" 	onclick="gSALRColorsPane.editColor(event, this);">Seen Postinfo (light)</html:td>
-						<html:td class="seenPostLight" 		onclick="gSALRColorsPane.editColor(event, this);">Seen Postbody (light)</html:td>
-					</html:tr>
-					<html:tr>
-						<html:td class="seenPostDark2" 		onclick="gSALRColorsPane.editColor(event, this);">Seen Postinfo (dark)</html:td>
-						<html:td class="seenPostDark" 		onclick="gSALRColorsPane.editColor(event, this);">Seen Postbody (dark)</html:td>
-					</html:tr>
-					<html:tr>
-						<html:td class="unseenPostLight2" 	onclick="gSALRColorsPane.editColor(event, this);">Unseen Postinfo (light)</html:td>
-						<html:td class="unseenPostLight" 	onclick="gSALRColorsPane.editColor(event, this);">Unseen Postbody (light)</html:td>
-					</html:tr>
-					<html:tr>
-						<html:td class="unseenPostDark2" 	onclick="gSALRColorsPane.editColor(event, this);">Unseen Postinfo (dark)</html:td>
-						<html:td class="unseenPostDark" 	onclick="gSALRColorsPane.editColor(event, this);">Unseen Postbody (dark)</html:td>
-					</html:tr>
-					<html:tr>
-						<html:td colspan="2" class="highlightQuotePost" onclick="gSALRColorsPane.editColor(event, this);">My Post Is Quoted</html:td>
-					</html:tr>
-				</html:tbody>
-				</html:table>
+				<label value="Forum view:" />
+				<grid id="sampletable" class="sampletable">
+					<columns>
+						<column/>
+						<column flex="2"/>
+						<column flex="1"/>
+						<column flex="1"/>
+						<column flex="1"/>
+					</columns>
+					<rows>
+						<row>
+							<hbox class="readWithNewDark">
+								<vbox pack="center">
+									<image src="chrome://salastread/content/pref/images/shitpost.gif" width="60" height="15" />
+								</vbox>
+							</hbox>
+							<hbox class="readWithNewLight">
+								Visited thread with new posts
+							</hbox>
+							<hbox class="readWithNewDark" pack="center">
+								<label id="sampleRWND" class="text-link" value="Dark" />
+							</hbox>
+							<hbox class="readWithNewLight" pack="center">
+								<label id="sampleRWNL" class="text-link" value="Light" />
+							</hbox>
+							<hbox class="postedInThreadRe" pack="center">
+								<label id="samplePITR" class="text-link" value="I replied" />
+							</hbox>
+						</row>
+						<row>
+							<hbox class="readDark">
+								<vbox pack="center">
+									<image src="chrome://salastread/content/pref/images/shitpost.gif" width="60" height="15" />
+								</vbox>
+							</hbox>
+							<hbox class="readLight">
+								Visited thread with no new posts
+							</hbox>
+							<hbox class="readDark" pack="center">
+								<label id="sampleRD" class="text-link" value="Dark" />
+							</hbox>
+							<hbox class="readLight" pack="center">
+								<label id="sampleRL" class="text-link" value="Light" />
+							</hbox>
+						</row>
+						<row>
+							<hbox class="unreadDark">
+								<vbox pack="center">
+									<image src="chrome://salastread/content/pref/images/shitpost.gif" width="60" height="15" />
+								</vbox>
+							</hbox>
+							<hbox class="unreadLight">
+								Unvisited thread
+							</hbox>
+							<hbox class="unreadDark" pack="center">
+								<label id="sampleURD" class="text-link" value="Dark" />
+							</hbox>
+							<hbox class="unreadLight" pack="center">
+								<label id="sampleURL" class="text-link" value="Light" />
+							</hbox>
+						</row>
+					</rows>
+				</grid>
+				<label value="Thread view:" />
+				<grid id="postsampletable" class="postsampletable">
+					<columns>
+						<column flex="1"/>
+						<column flex="4"/>
+					</columns>
+					<rows>
+						<row>
+							<hbox class="seenPostLight2" pack="center">
+								<label id="sampleASL" class="text-link" value="Author (seen, light)" />
+							</hbox>
+							<hbox class="seenPostLight" pack="center">
+								<label id="samplePSL" class="text-link" value="Post (seen, light)" />
+							</hbox>
+						</row>
+						<row>
+							<hbox class="seenPostDark2" pack="center">
+								<label id="sampleASD" class="text-link" value="Author (seen, dark)" />
+							</hbox>
+							<hbox class="seenPostDark" pack="center">
+								<label id="samplePSD" class="text-link" value="Post (seen, dark)" />
+							</hbox>
+						</row>
+						<row>
+							<hbox class="unseenPostLight2" pack="center">
+								<label id="sampleAUL" class="text-link" value="Author (unseen, light)" />
+							</hbox>
+							<hbox class="unseenPostLight" pack="center">
+								<label id="samplePUL" class="text-link" value="Post (unseen, light)" />
+							</hbox>
+						</row>
+						<row>
+							<hbox class="unseenPostDark2" pack="center">
+								<label id="sampleAUD" class="text-link" value="Author (unseen, dark)" />
+							</hbox>
+							<hbox class="unseenPostDark" pack="center">
+								<label id="samplePUD" class="text-link" value="Post (unseen, dark)" />
+							</hbox>
+						</row>
+						<spacer />
+						<row>
+							<hbox class="videoEmbedderBG" pack="center">
+								<label id="sampleEV" class="text-link" value="Embeddable Video Link" />
+							</hbox>
+							<hbox class="highlightQuotePost" pack="center">
+								<label id="sampleMPIQ" class="text-link" value="My Post Is Quoted" />
+							</hbox>
+						</row>
+					</rows>
+				</grid>
 			</vbox>
 		</hbox>
 		<spacer flex="1" />
@@ -776,7 +839,7 @@
 	src="chrome://salastread/content/pref/in-content/menus.js"/>
 
 <preferences>
-	<preference id="showSAForumMenu" 			name="extensions.salastread.showSAForumMenu" 			type="bool" onchange="gSALRMenusPane.changedPrefshowSAForumMenu()"/>
+	<preference id="showSAForumMenu" 			name="extensions.salastread.showSAForumMenu" 			type="bool"/>
 	<preference id="nestSAForumMenu" 			name="extensions.salastread.nestSAForumMenu" 			type="bool"/>
 	<preference id="useSAForumMenuBackground" 	name="extensions.salastread.useSAForumMenuBackground" 	type="bool"/>
 	<preference id="hideOtherSAMenus" 			name="extensions.salastread.hideOtherSAMenus" 			type="bool"/>
@@ -815,21 +878,21 @@
 			
 			<vbox align="center">
 				<spacer flex="1"/>
-				<button id="pinButton" label="Pin &gt;" oncommand="gSALRMenusPane.pinClick()" />
-				<button id="unpinButton" label="&lt; Unpin" oncommand="gSALRMenusPane.unPinClick()" />
+				<button id="pinButton" label="Pin &gt;" />
+				<button id="unpinButton" label="&lt; Unpin" />
 				<separator/>
-				<button id="moveUpButton" label="Move Up" disabled="true" oncommand="gSALRMenusPane.moveClick(false)" />
-				<button id="moveDownButton" label="Move Down" disabled="true" oncommand="gSALRMenusPane.moveClick(true)" />
+				<button id="moveUpButton" label="Move Up" disabled="true" />
+				<button id="moveDownButton" label="Move Down" disabled="true" />
 				<separator/>
-				<button id="addSeparatorButton" label="Add Sep &gt;" oncommand="gSALRMenusPane.addSepClick()" />
-				<button id="addURLButton" label="Add URL &gt;" oncommand="gSALRMenusPane.addURLClick()" />
-				<button id="addStarMenuButton" label="Add Star Menu &gt;" oncommand="gSALRMenusPane.addStarMenuClick()" />
+				<button id="addSeparatorButton" label="Add Sep &gt;" />
+				<button id="addURLButton" label="Add URL &gt;" />
+				<button id="addStarMenuButton" label="Add Star Menu &gt;" />
 				<spacer flex="1"/>
 			</vbox>
 			
 			<vbox flex="1">
 				<label value="Pinned Forums"/>
-				<listbox flex="1" id="pinned_forums" onselect="gSALRMenusPane.pinnedSelect()">
+				<listbox flex="1" id="pinned_forums">
 				</listbox>
 			</vbox>
 		</hbox>
@@ -940,7 +1003,7 @@
 
 	<hbox>
 		<vbox flex="1">
-			<listbox id="userColoring" context="colorPopup" seltype="single" flex="1" onselect="gSALRUsersPane.updateCustomizePane()">
+			<listbox id="userColoring" context="colorPopup" seltype="single" flex="1">
 				<listcols>
 					<listcol/>
 					<listcol/>
@@ -955,8 +1018,8 @@
 			</listbox>
 
 			<hbox>
-				<button label="Add User" oncommand="gSALRUsersPane.addUser();"/>
-				<button label="Delete User" id="deleteuserbutton" oncommand="gSALRUsersPane.deleteUser();"/>
+				<button id="addUserButton" label="Add User" />
+				<button id="deleteuserbutton" label="Delete User" />
 				<spacer flex="1"/>
 			</hbox>
 		</vbox>
@@ -970,8 +1033,7 @@
 				<hbox align="center" id="foregroundcolorhbox">
 					<label value="Foreground Color:" id="fgcolorpickerlabel"/>
 					<button class="colorpicker-button"
-							id="fgcolorpickerbutton"
-							oncommand="gSALRUsersPane.colorClicked(this.firstChild, 'fgcolor')">
+							id="fgcolorpickerbutton">
 						<box class="colorpickerthumbnail" id="fgthumbnail"/>
 						<image class="colorpickerdroparrow" src="chrome://global/skin/arrow/arrow-dn.gif"/>
 					</button>
@@ -980,8 +1042,7 @@
 				<hbox align="center" id="backgroundcolorhbox">
 					<label value="Background Color:"/>
 					<button class="colorpicker-button"
-							id="bgcolorpickerbutton"
-							oncommand="gSALRUsersPane.colorClicked(this.firstChild, 'bgcolor')">
+							id="bgcolorpickerbutton">
 						<box class="colorpickerthumbnail" id="bgthumbnail"/>
 						<image class="colorpickerdroparrow" src="chrome://global/skin/arrow/arrow-dn.gif"/>
 					</button>
@@ -994,7 +1055,7 @@
 					<textbox id="usernotebox" multiline="true" rows="3" style="height: auto;"/>
 				</vbox>
 				<vbox>
-					<button label="Update Note" align="end" oncommand="gSALRUsersPane.updateNote();"/>
+					<button id="updateNoteButton" label="Update Note" align="end" />
 				</vbox>
 			</vbox>
 			<spacer flex="3"/>
@@ -1007,10 +1068,10 @@
 	data-category="paneUsers"
 	hidden="true">
 	<menupopup id="colorPopup">
-		<menuitem label="Foreground Color" accesskey="f" oncommand="gSALRUsersPane.changeColor('color');"/>
-		<menuitem label="Background Color" accesskey="b" oncommand="gSALRUsersPane.changeColor('backgroundColor');"/>
+		<menuitem id="fgColorPopupItem" label="Foreground Color" accesskey="f" />
+		<menuitem id="bgColorPopupItem" label="Background Color" accesskey="b" />
 		<menuseparator />
-		<menuitem label="User Note" accesskey="n" oncommand="gSALRUsersPane.editNote();"/>
+		<menuitem id="notePopupItem" label="User Note" accesskey="n" />
 	</menupopup>
 </popupset>
 

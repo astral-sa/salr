@@ -2,7 +2,17 @@ var gSALRIgnoredPane = {
 	// Initialization
 	init: function ()
 	{
+		function setEventListener(aId, aEventType, aCallback)
+		{
+			document.getElementById(aId)
+			.addEventListener(aEventType, aCallback.bind(gSALRIgnoredPane));
+		}
+
 		this.updateIgnoredThreadList();
+
+		setEventListener("ignored_thread_list", "select", gSALRIgnoredPane.listSelect);
+		setEventListener("unignore_selectall_button", "command", gSALRIgnoredPane.selectAllThreads);
+		setEventListener("unignore_thread_button", "command", gSALRIgnoredPane.unignoreThreads);
 	},
 
 	// allegedly only ever called once:

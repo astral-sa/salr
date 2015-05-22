@@ -2,7 +2,13 @@ var gSALRGeneralPane = {
 	// Initialization
 	init: function ()
 	{
+		function setEventListener(aId, aEventType, aCallback)
+		{
+			document.getElementById(aId)
+			.addEventListener(aEventType, aCallback.bind(gSALRGeneralPane));
+		}
 
+		setEventListener("testNotify", "command", gSALRGeneralPane.testNotify);
 	},
 	resetPref: function(myPrefName)
 	{

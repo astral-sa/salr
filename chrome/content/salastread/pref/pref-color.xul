@@ -8,7 +8,7 @@
 
 		<preferences>
 			<!-- General Colors -->
-			<preference id="videoEmbedderBG" name="extensions.salastread.readLight" type="string"/>
+			<preference id="videoEmbedderBG" name="extensions.salastread.videoEmbedderBG" type="string"/>
 
 			<!-- Normal Thread Colors -->
 			<preference id="postedInThreadRe" 		name="extensions.salastread.postedInThreadRe" 	type="string"/>
@@ -145,7 +145,8 @@
 							<html:td class="unseenPostDark" 	onclick="editColor(event, this);">Unseen Postbody (dark)</html:td>
 						</html:tr>
 						<html:tr>
-							<html:td colspan="2" class="highlightQuotePost" onclick="editColor(event, this);">My Post Is Quoted</html:td>
+							<html:td class="videoEmbedderBG" 	onclick="editColor(event, this);">Embeddable Video Link</html:td>
+							<html:td class="highlightQuotePost" onclick="editColor(event, this);">My Post Is Quoted</html:td>
 						</html:tr>
 					</html:tbody>
 					</html:table>

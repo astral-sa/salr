@@ -2,21 +2,43 @@ var gSALRImagesPane = {
 	// Initialization
 	init: function ()
 	{
-		this.toggleTtIConvBoxes();
-		this.toggleImageScaleBoxes();
+		function setEventListener(aId, aEventType, aCallback)
+		{
+			document.getElementById(aId)
+			.addEventListener(aEventType, aCallback.bind(gSALRImagesPane));
+		}
+
+		this.toggleDependentPrefUI("toggleTtICheckbox","dontTtINws","dontTtISpoilers","dontTtIRead");
+		this.toggleDependentPrefUI("toggleImageScaleCheckbox","maxImgWidth","maxImgWidthLabel","maxImgWidthPx",
+			"maxImgHeight","maxImgHeightLabel","maxImgHeightPx");
+
+		setEventListener("toggleTtICheckbox", "command", function () {
+			gSALRImagesPane.toggleDependentPrefUI("toggleTtICheckbox",
+				"dontTtINws","dontTtISpoilers","dontTtIRead");});
+		setEventListener("toggleImageScaleCheckbox", "command", function () {
+			gSALRImagesPane.toggleDependentPrefUI("toggleImageScaleCheckbox",
+				"maxImgWidth","maxImgWidthLabel","maxImgWidthPx",
+				"maxImgHeight","maxImgHeightLabel","maxImgHeightPx");});
 	},
-	// the below functions enable/disable UI elements based upon preference settings
-	toggleTtIConvBoxes: function()
+
+	/* Function to toggle the disabled status of preferences
+	that depend on the status of another preference.
+	Supported controller types: checkbox, radio */
+	toggleDependentPrefUI: function(controller)
 	{
-		var cTtId = !document.getElementById("toggleTtICheckbox").checked;
-		document.getElementById("dontTtINws").disabled = cTtId;
-		document.getElementById("dontTtISpoilers").disabled = cTtId;
-		document.getElementById("dontTtIRead").disabled = cTtId;
+		let totalArgs = arguments.length;
+		if (totalArgs > 1)
+		{
+			let valToUse;
+			let controlNode = document.getElementById(controller);
+			if (controlNode.nodeName.toLowerCase() === "checkbox")
+				valToUse = !controlNode.checked;
+			else if (controlNode.nodeName.toLowerCase() === "radio")
+				valToUse = !controlNode.selected;
+			else return;
+			for (let i = 1; i < totalArgs; i++)
+				document.getElementById(arguments[i]).disabled = valToUse;
+		}
 	},
-	toggleImageScaleBoxes: function()
-	{
-		var sId = !document.getElementById("toggleImageScaleCheckbox").checked;
-		document.getElementById("maxImgWidth").disabled = sId;
-		document.getElementById("maxImgHeight").disabled = sId;
-	}
+
 };

@@ -1,0 +1,31 @@
+.sampletableholder {
+	background-color: #fff;
+}
+
+.sampletable, .postsampletable {
+	width: 92%;
+	border-collapse: collapse;
+	border: 1px solid #ddd;
+	margin: 4px 1px;
+}
+
+.sampletable hbox, .postsampletable hbox {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: small;
+	padding: 5px;
+	border: 1px solid #ddd;
+	background: #fff;
+	color: #000;
+}
+
+.sampletable hbox > label, .postsampletable hbox > label {
+	color: #000000;
+	text-decoration: underline;
+	cursor: pointer;
+}	
+
+.postsampletable hbox {
+	text-align: center;
+	vertical-align: middle;
+	height: 30px;
+}

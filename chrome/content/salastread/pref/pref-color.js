@@ -57,10 +57,16 @@ function loadDefaultColors() {
 
 function editColor(event, targetEl) {
 	//check the dropdown's value
-	var forum = document.getElementById("forumtype").selectedItem.value;
+	let forum = document.getElementById("forumtype").selectedItem.value;
 
-	var pref = document.getElementById(targetEl.className + forum);
-	if(pref) {
+	let pref;
+	// Add exceptions
+	if (targetEl.className === "videoEmbedderBG")
+		pref = document.getElementById(targetEl.className);
+	else
+		pref = document.getElementById(targetEl.className + forum);
+	if (pref)
+	{
 		var obj = {};
 			obj.value = pref.value;
 	

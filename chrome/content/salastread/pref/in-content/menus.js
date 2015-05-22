@@ -3,6 +3,24 @@ var gSALRMenusPane = {
 	// Initialization
 	init: function ()
 	{
+		function setEventListener(aId, aEventType, aCallback)
+		{
+			document.getElementById(aId)
+			.addEventListener(aEventType, aCallback.bind(gSALRMenusPane));
+		}
+
+		setEventListener("showSAForumMenu", "change", gSALRMenusPane.changedPrefshowSAForumMenu);
+		setEventListener("pinButton", "command", gSALRMenusPane.pinClick);
+		setEventListener("unpinButton", "command", gSALRMenusPane.unPinClick);
+		setEventListener("moveUpButton", "command", function () {
+			gSALRMenusPane.moveClick(false);});
+		setEventListener("moveDownButton", "command", function () {
+			gSALRMenusPane.moveClick(true);});
+		setEventListener("addSeparatorButton", "command", gSALRMenusPane.addSepClick);
+		setEventListener("addURLButton", "command", gSALRMenusPane.addURLClick);
+		setEventListener("addStarMenuButton", "command", gSALRMenusPane.addStarMenuClick);
+		setEventListener("pinned_forums", "select", gSALRMenusPane.pinnedSelect);
+
 		try
 		{
 			this.pinnedListInit();

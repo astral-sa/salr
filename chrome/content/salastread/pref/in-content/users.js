@@ -2,6 +2,26 @@ var gSALRUsersPane = {
 	// Initialization
 	init: function()
 	{
+		function setEventListener(aId, aEventType, aCallback)
+		{
+			document.getElementById(aId)
+			.addEventListener(aEventType, aCallback.bind(gSALRUsersPane));
+		}
+
+		setEventListener("userColoring", "select", gSALRUsersPane.updateCustomizePane);
+		setEventListener("addUserButton", "command", gSALRUsersPane.addUser);
+		setEventListener("deleteuserbutton", "command", gSALRUsersPane.deleteUser);
+		setEventListener("fgcolorpickerbutton", "command", function () {
+			gSALRUsersPane.colorClicked(this.firstChild, 'fgcolor');});
+		setEventListener("bgcolorpickerbutton", "command", function () {
+			gSALRUsersPane.colorClicked(this.firstChild, 'bgcolor');});
+		setEventListener("updateNoteButton", "command", gSALRUsersPane.updateNote);
+		setEventListener("fgColorPopupItem", "command", function () {
+			gSALRUsersPane.changeColor('color');});
+		setEventListener("bgColorPopupItem", "command", function () {
+			gSALRUsersPane.changeColor('backgroundColor');});
+		setEventListener("notePopupItem", "command", gSALRUsersPane.editNote);
+
 		//get usernames/ids
 		var users = DB.getCustomizedPosters();
 

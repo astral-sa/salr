@@ -14,7 +14,7 @@ pref('extensions.salastread.ignoreAppTabs', false);
 pref('extensions.salastread.allowThreadListLastPostNameWrapping', false);
 
 //VIDEO EMBEDDER
-pref('extensions.salastread.enableVideoEmbedder', false);
+pref('extensions.salastread.enableVideoEmbedder', true);
 pref('extensions.salastread.videoEmbedderBG', '#ffcccc');
 pref('extensions.salastread.videoEmbedQuality', 'normal');
 pref('extensions.salastread.videoEmbedSize', 'large');
