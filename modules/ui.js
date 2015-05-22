@@ -3,7 +3,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 let {DB} = require("db");
 let {Prefs} = require("prefs");
 let {Notifications} = require("notifications");
-//let {Utils} = require("utils");
+let {Utils} = require("utils");
 
 let CustomizableUI = null;
 
@@ -23,6 +23,29 @@ var WindowListener =
 	},
 	onCloseWindow: function(xulWindow) { },
 	onWindowTitleChange: function(xulWindow, newTitle) { }
+};
+
+let SALRConfigObserver =
+{
+	observe: function(subject, topic, data)
+	{
+		if (topic == "addon-options-displayed")
+		{
+			let {addonID} = require("info");
+			if (data == addonID)
+			{
+				// Workaround - don't let add-ons manager open details from options
+				let doc = subject;
+				let win = doc.defaultView;
+				if (win.location.href === "about:addons")
+					win.history.back();
+				// Open the config
+				let rWin = Utils.getRecentWindow();
+				rWin.gSALR.runConfig();
+			}
+		}
+	},
+	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupportsWeakReference, Ci.nsIObserver])
 };
 
 let UI = exports.UI =
@@ -55,6 +78,10 @@ let UI = exports.UI =
 		// Load UI elements
 		forEachOpenWindow(loadIntoWindow);
 		Services.wm.addListener(WindowListener);
+
+		// Add observer for opening SALR Config from Addons page
+		Services.obs.addObserver(SALRConfigObserver, "addon-options-displayed", true);
+		onShutdown.add(function() Services.obs.removeObserver(SALRConfigObserver, "addon-options-displayed"));
 	},
 
 	addToolbarButton: function(window)
