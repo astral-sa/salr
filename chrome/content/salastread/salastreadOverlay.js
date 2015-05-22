@@ -1891,7 +1891,12 @@ var gSALR = {
 			newlink.appendChild( doc.createTextNode("Configure SALR") );
 			usercpnode.parentNode.parentNode.insertBefore(containerLi, usercpnode.parentNode.nextSibling);
 			newlink.href = "#";
-			newlink.addEventListener("click", gSALR.runConfig, true);
+			newlink.addEventListener("click", function(e)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+				gSALR.runConfig();
+			}, true);
 		}
 	},
 
