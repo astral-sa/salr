@@ -11,7 +11,7 @@ let PageUtils = exports.PageUtils =
 	{
 		let dConsole = Components.classes["@mozilla.org/consoleservice;1"]
 					.getService(Components.interfaces.nsIConsoleService);
-		dConsole.logStringMessage(someText);			
+		dConsole.logStringMessage(someText);
 		/* Doesn't work on e10s
 		try
 		{
