@@ -119,6 +119,10 @@ var gSALR = {
 					case "modqueue":
 						pageHandler = gSALR.handleModQueue;
 						break;
+
+					case "query":
+						pageHandler = gSALR.handleQuery;
+						break;
 				}
 			}
 			else
@@ -1776,6 +1780,38 @@ var gSALR = {
 	{
 	},
 
+	handleQuery: function(doc)
+	{
+		// Add support for mouse gestures / pagination
+		if (gSALR.Prefs.getPref("gestureEnable"))
+		{
+			let curPage = gSALR.PageUtils.selectSingleNode(doc, doc, "//span[contains(@class,'this_page')]");
+			// Set a dummy value if there aren't any pages to allow upward nav
+			if (!curPage)
+				curPage = 1;
+			else
+				curPage = parseInt(curPage.textContent, 10);
+
+			let numPages;
+			let lastNode = gSALR.PageUtils.selectSingleNode(doc, doc, "//UL[@class='pages']/LI[@class='last_page']/A");
+			if (lastNode)
+			{
+				numPages = lastNode.href.match(/page=(\d+)/i)[1];
+				numPages = parseInt(numPages, 10);
+			}
+			else
+			{
+				numPages = curPage;
+			}
+
+			doc.__SALR_curPage = curPage;
+			doc.__SALR_maxPage = numPages;
+
+			doc.body.addEventListener('mousedown', gSALR.pageMouseDown, false);
+			doc.body.addEventListener('mouseup', gSALR.pageMouseUp, false);
+		}
+	},
+
 	handleSearch: function(doc)
 	{
 		// Add support for mouse gestures / pagination
@@ -2078,7 +2114,8 @@ var gSALR = {
 		var perpage = "&perpage=" + gSALR.Prefs.getPref("postsPerPage");
 		var forumid = doc.location.href.match(/forumid=[0-9]+/);
 		var posticon = doc.location.href.match(/posticon=[0-9]+/);
-		var inSearch = (doc.location.pathname == '/f/search/result');
+		let inOldSearch = (doc.location.pathname == '/f/search/result');
+		let inNewSearch = (doc.location.pathname == '/query.php');
 		var searchid = doc.location.href.match(/qid=[0-9]+/);
 
 		if (!posticon)
@@ -2095,12 +2132,13 @@ var gSALR = {
 		var userfilter = doc.location.href.match(/&userid=[0-9]+/);
 		if (!userfilter)
 			userfilter = "";
+		let threadid;
 
 		if (dir == "top")
 		{
 			var threadForum = doc.__SALR_forumid;
 
-			if ((curPage == 1 && !threadForum) || inSearch)
+			if ((curPage == 1 && !threadForum) || inNewSearch || inOldSearch)
 			{
 				doc.location = urlbase + "/index.php";
 			}
@@ -2116,10 +2154,12 @@ var gSALR = {
 		{
 			if (curPage > 1)
 			{
-				var threadid = doc.__SALR_threadid;
+				threadid = doc.__SALR_threadid;
 				if (threadid)
 					doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage - 1);
-				else if (inSearch)
+				else if (inNewSearch)
+					doc.location = urlbase + "/query.php?action=results&" + searchid + "&page=" + (curPage - 1);
+				else if (inOldSearch)
 					doc.location = urlbase + "/f/search/result?" + searchid + "&p=" + (curPage - 1);
 				else
 					doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage - 1);
@@ -2130,10 +2170,12 @@ var gSALR = {
 			var maxPage = doc.__SALR_maxPage;
 			if (maxPage > curPage)
 			{
-				var threadid = doc.__SALR_threadid;
+				threadid = doc.__SALR_threadid;
 				if (threadid)
 					doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage + 1);
-				else if (inSearch)
+				else if (inNewSearch)
+					doc.location = urlbase + "/query.php?action=results&" + searchid + "&page=" + (curPage + 1);
+				else if (inOldSearch)
 					doc.location = urlbase + "/f/search/result?" + searchid + "&p=" + (curPage + 1);
 				else
 					doc.location = urlbase + "/forumdisplay.php?" + forumid + daysprune + sortorder + sortfield + perpage + posticon + "&pagenumber=" + (curPage + 1);
