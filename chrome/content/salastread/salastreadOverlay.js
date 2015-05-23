@@ -3333,10 +3333,12 @@ var gSALR = {
 
 		if (target !== "none")
 		{
-			// forum=search shortcut seems to be working again; comment to use new search instead:
+			// uncomment to use older search instead:
+/*
 			if (el.getAttribute("forumnum") == "search")
 				gSALR.menuItemGoTo(event,"http://forums.somethingawful.com/f/search",target);
 			else
+*/
 				gSALR.menuItemGoTo(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"),target);
 			// Try to block Firefox's default right-click menu for this element, if applicable.
 			if (event.cancelable)
