@@ -1,18 +1,17 @@
 /*
 
-	Functions that deal exclusively with post handling
+	Functions that deal exclusively with showthread & individual post handling
 
 */
 
 // Called from old Overlay
+let {DB} = require("db");
 let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
 
-let PostHandler = exports.PostHandler =
+let ShowThreadHandler = exports.ShowThreadHandler =
 {
-	videoTitleCache: Array(),
 	_pendingVideoTitles: {},
-	imgurWorkaroundCache: Array(),
 
 	// Convert image/videos links in threads to inline images/videos
 	// @param: post body (td), document body
@@ -180,7 +179,7 @@ let PostHandler = exports.PostHandler =
 							let badForumJSLinkCatcher = new RegExp("^https?\:\/\/(?:www|i)\.imgur\.com\/(?:" + imgurImageInLink[1] + ")\.(jpg|gif|png)$", "i");
 							if (link.href.match(badForumJSLinkCatcher))
 							{
-								let cachedValidation = this.imgurWorkaroundCache[imgurImageInLink[1]];
+								let cachedValidation = DB.imgurWorkaroundCache[imgurImageInLink[1]];
 								switch (cachedValidation)
 								{
 									case true:
@@ -205,13 +204,13 @@ let PostHandler = exports.PostHandler =
 										{
 											if (imgurChecker.readyState == 4)
 											{
-												this.imgurWorkaroundCache[imgurImageInLink[1]] = true;
+												DB.imgurWorkaroundCache[imgurImageInLink[1]] = true;
 												if (imgurChecker.status == 404)
 												{
 													newImgtoCheck.src = oldImgSrc;
 													newImgtoCheck.title = "Forum bug-created link removed by SALR";
 													newImgtoCheck.style.border = "none";
-													this.imgurWorkaroundCache[imgurImageInLink[1]] = false;
+													DB.imgurWorkaroundCache[imgurImageInLink[1]] = false;
 												}
 												linktoCheck.textContent = '';
 												linktoCheck.parentNode.replaceChild(newImgtoCheck, linktoCheck);
@@ -294,14 +293,14 @@ let PostHandler = exports.PostHandler =
 					}
 					if (Prefs.getPref('videoEmbedderGetTitles'))
 						this.getYTVideoTitle(link, ytTest[1]);
-					link.addEventListener('click', PostHandler.SALR_vidClick, false);
+					link.addEventListener('click', ShowThreadHandler.SALR_vidClick, false);
 				}
 				else if ((link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1) ||
 				 link.href.match(/^https?\:\/\/(?:.)+\.(webm|gifv)$/i) ||
 				 link.href.match(/^https?\:\/\/i\.imgur\.com\/(?:.)+\.gifv$/i))
 				{
 					link.style.backgroundColor = videoEmbedderBG;
-					link.addEventListener('click', PostHandler.SALR_vidClick, false);
+					link.addEventListener('click', ShowThreadHandler.SALR_vidClick, false);
 				}
 			}
 		}
@@ -407,7 +406,7 @@ let PostHandler = exports.PostHandler =
 			return;
 
 		// See if we need to make an API request at all
-		var cachedTitle = this.videoTitleCache[vidId];
+		var cachedTitle = DB.videoTitleCache[vidId];
 		if (cachedTitle != null)
 		{
 			link.textContent = cachedTitle;
@@ -460,7 +459,7 @@ let PostHandler = exports.PostHandler =
 					}
 					if (newTitle)
 					{
-						this.videoTitleCache[vidId] = newTitle;
+						DB.videoTitleCache[vidId] = newTitle;
 						while (this._vidHasPendingLinks(vidId))
 						{
 							let popLink = this._pendingVideoTitles[vidId].pop();

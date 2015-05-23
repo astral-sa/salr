@@ -12,7 +12,7 @@ var gSALR = {
 	DB: salr_require("db").DB,
 	Prefs: salr_require("prefs").Prefs,
 	PageUtils: salr_require("pageUtils").PageUtils,
-	PostHandler: salr_require("postHandler").PostHandler,
+	ShowThreadHandler: salr_require("showthreadHandler").ShowThreadHandler,
 	Navigation: salr_require("navigation").Navigation,
 	Styles: salr_require("styles").Styles,
 	Timer: salr_require("timer").Timer,
@@ -340,7 +340,7 @@ var gSALR = {
 			var postbutton = gSALR.PageUtils.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
 			if (postbutton)
 			{
-				gSALR.PostHandler.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, null);}, true);
+				gSALR.ShowThreadHandler.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, null);}, true);
 			}
 		}
 
@@ -1058,7 +1058,7 @@ var gSALR = {
 			{
 				for (i in postbuttons)
 				{
-					gSALR.PostHandler.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+					gSALR.ShowThreadHandler.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
 				}
 			}
 			if (!threadClosed)
@@ -1068,7 +1068,7 @@ var gSALR = {
 				{
 					for (i in replybuttons)
 					{
-						gSALR.PostHandler.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+						gSALR.ShowThreadHandler.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
 					}
 				}
 			}
@@ -1346,7 +1346,7 @@ var gSALR = {
 
 			if (posterBG != "0")
 			{
-				gSALR.PostHandler.colorPost(doc, posterBG, posterId);
+				gSALR.ShowThreadHandler.colorPost(doc, posterBG, posterId);
 			}
 
 			// Check for quotes that need to be colored or superIgnored
@@ -1372,7 +1372,7 @@ var gSALR = {
 							if (userQuotedDetails)
 							{
 								anyQuotes[quote].className += ' salrQuoteOf' + userQuotedDetails.userid;
-								gSALR.PostHandler.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
+								gSALR.ShowThreadHandler.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
 							}
 						}
 					}
@@ -1435,11 +1435,11 @@ var gSALR = {
 				quotebutton = gSALR.PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
 				if (quotebutton)
 				{
-					gSALR.PostHandler.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+					gSALR.ShowThreadHandler.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
 				}
 				if (editbutton)
 				{
-					gSALR.PostHandler.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+					gSALR.ShowThreadHandler.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", function(event){gSALR.quickButtonClicked(event, forumid, threadid);}, true);
 				}
 			}
 
@@ -1505,8 +1505,8 @@ var gSALR = {
 						post.style.display = "none";
 				}
 			}
-			gSALR.PostHandler.convertSpecialLinks(postbody, doc);
-			gSALR.PostHandler.processImages(postbody, doc);
+			gSALR.ShowThreadHandler.convertSpecialLinks(postbody, doc);
+			gSALR.ShowThreadHandler.processImages(postbody, doc);
 		}
 
 		doc.__salastread_loading = true;

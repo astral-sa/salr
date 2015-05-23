@@ -267,6 +267,8 @@ let DB = exports.DB =
 	userIDCache: Array(),
 	threadDataCache: Array(),
 	iconDataCache: Array(),
+	videoTitleCache: Array(),
+	imgurWorkaroundCache: Array(),
 
 	// Return a connection to the database
 	// Create database if it doesn't exist yet
