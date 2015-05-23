@@ -11,10 +11,8 @@ var gSALRUsersPane = {
 		setEventListener("userColoring", "select", gSALRUsersPane.updateCustomizePane);
 		setEventListener("addUserButton", "command", gSALRUsersPane.addUser);
 		setEventListener("deleteuserbutton", "command", gSALRUsersPane.deleteUser);
-		setEventListener("fgcolorpickerbutton", "command", function () {
-			gSALRUsersPane.colorClicked(this.firstChild, 'fgcolor');});
-		setEventListener("bgcolorpickerbutton", "command", function () {
-			gSALRUsersPane.colorClicked(this.firstChild, 'bgcolor');});
+		setEventListener("fgcolorpickerbutton", "command", gSALRUsersPane.colorClicked);
+		setEventListener("bgcolorpickerbutton", "command", gSALRUsersPane.colorClicked);
 		setEventListener("updateNoteButton", "command", gSALRUsersPane.updateNote);
 		setEventListener("fgColorPopupItem", "command", function () {
 			gSALRUsersPane.changeColor('color');});
@@ -338,14 +336,16 @@ var gSALRUsersPane = {
 		}
 	},
 
-	colorClicked: function(el, ctype)
+	colorClicked: function(event)
 	{
-		var li = document.getElementById("userColoring").selectedItem;
+		let el = event.target.firstChild;
+		let ctype = el.id;
+		let li = document.getElementById("userColoring").selectedItem;
 		if (!li)
 			return;
-		var userid = li.getAttribute("value");
-		var pobj = new Object();
-		if (ctype === 'fgcolor')
+		let userid = li.getAttribute("value");
+		let pobj = {};
+		if (ctype === 'fgthumbnail')
 			pobj.value = DB.getPosterColor(userid);
 		else
 			pobj.value = DB.getPosterBackground(userid);
@@ -362,13 +362,13 @@ var gSALRUsersPane = {
 	{
 		if (pobj.accepted)
 		{
-			var friendlyvalue = pobj.value;
-			if (pobj.value == 0 && pobj.ctype == 'bgcolor')
+			let friendlyvalue = pobj.value;
+			if (pobj.value == 0 && pobj.ctype == 'bgthumbnail')
 			{
 				friendlyvalue = 'transparent';
 			}
 			pobj.el.style.backgroundColor = friendlyvalue;
-			if (pobj.ctype == 'fgcolor')
+			if (pobj.ctype === 'fgthumbnail')
 			{
 				pobj.li.childNodes[1].style.color = friendlyvalue;
 				DB.setPosterColor(pobj.userid, pobj.value);
