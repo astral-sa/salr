@@ -382,6 +382,13 @@ let Styles = exports.Styles =
 		// Remove forum-added blue border from our video embeds
 		CSSFile += 'td.postbody iframe.salr_video { border: none; }\n';
 
+		// Style SALR search box
+		CSSFile += '#salrsearchdiv { margin-left: 6px; line-height: 22px; }\n';
+		// Firefox <19
+		CSSFile += ':-moz-placeholder { font-style: italic; color: #999; }\n';
+		// Firefox 19+
+		CSSFile += '#salrsearchbox::-moz-placeholder { font-style: italic; color: #999; }\n';
+
 		// Shrink posts by ignored users (and restore gradients)
 		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n';
 		CSSFile += '#thread table.ignored tr.altcolor1 td.userinfo, #thread table.ignored tr.altcolor1 td.postbody { background-image: url("http://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';

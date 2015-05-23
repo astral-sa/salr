@@ -13,6 +13,91 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 {
 	_pendingVideoTitles: {},
 
+	// Adds "Search Thread" box to document - new search
+	addNewThreadSearchBox: function(doc, forumid, threadid, searchThis, placeHere)
+	{
+		// Prevent weird zoom behavior
+		searchThis.parentNode.style.overflow = "hidden";
+		let newSearchBox = doc.createElement('li');
+		let newSearchForm = doc.createElement('form');
+		newSearchBox.appendChild(newSearchForm);
+		newSearchForm.action = 'http://forums.somethingawful.com/query.php';
+		newSearchForm.method = 'post';
+		newSearchForm.className = 'threadsearch'; 
+		let newSearchDiv = doc.createElement('div');
+		newSearchDiv.setAttribute('id','salrsearchdiv');
+		newSearchForm.appendChild(newSearchDiv);
+		PageUtils.addHiddenFormInput(doc, newSearchDiv, 'action', 'query');
+		PageUtils.addHiddenFormInput(doc, newSearchDiv, 'forums[]', forumid);
+		let newSearchText = doc.createElement('input');
+		newSearchText.setAttribute('id','salrsearchbox');
+		newSearchText.setAttribute('required','');
+		newSearchText.size = '25';
+		newSearchText.placeholder = ' Added by SALR';
+		newSearchDiv.appendChild(newSearchText);
+		let newSearchButton = doc.createElement('input');
+		newSearchButton.type = 'submit';
+		newSearchButton.value = 'Search thread';
+		newSearchDiv.appendChild(newSearchButton);
+
+		// Don't accidentally trigger keyboard navigation
+		newSearchText.addEventListener("keypress", function(e) { e.stopPropagation(); }, true);
+
+		// Work some magic on submit
+		newSearchForm.addEventListener('submit', function(event)
+		{
+			event.preventDefault();
+			PageUtils.addHiddenFormInput(doc,newSearchDiv,'q','threadid:'+threadid+' '+newSearchText.value);
+			newSearchForm.submit();
+		}, false);
+		placeHere.parentNode.insertBefore(newSearchBox,placeHere.nextSibling);
+	},
+
+	// Adds "Search Thread" box to document - old search
+	addOldThreadSearchBox: function(doc, forumid, threadid, searchThis, placeHere)
+	{
+		// Prevent weird zoom behavior
+		searchThis.parentNode.style.overflow = "hidden";
+		var newSearchBox = doc.createElement('li');
+		var newSearchForm = doc.createElement('form');
+		newSearchBox.appendChild(newSearchForm);
+		newSearchForm.action = 'http://forums.somethingawful.com/f/search/submit';
+		newSearchForm.method = 'post';
+		newSearchForm.className = 'threadsearch'; 
+		var newSearchDiv = doc.createElement('div');
+		newSearchDiv.setAttribute('id','salrsearchdiv');
+		newSearchForm.appendChild(newSearchDiv);
+		PageUtils.addHiddenFormInput(doc,newSearchDiv,'forumids',forumid);
+		PageUtils.addHiddenFormInput(doc,newSearchDiv,'groupmode','0');
+		PageUtils.addHiddenFormInput(doc,newSearchDiv,'opt_search_posts','on');
+		PageUtils.addHiddenFormInput(doc,newSearchDiv,'perpage','20');
+		PageUtils.addHiddenFormInput(doc,newSearchDiv,'search_mode','ext');
+		PageUtils.addHiddenFormInput(doc,newSearchDiv,'show_post_previews','1');
+		PageUtils.addHiddenFormInput(doc,newSearchDiv,'sortmode','1');
+		var newSearchText = doc.createElement('input');
+		newSearchText.setAttribute('id','salrsearchbox');
+		newSearchText.setAttribute('required','');
+		newSearchText.size = '25';
+		newSearchText.placeholder = ' Added by SALR';
+		newSearchDiv.appendChild(newSearchText);
+		var newSearchButton = doc.createElement('input');
+		newSearchButton.type = 'submit';
+		newSearchButton.value = 'Search thread';
+		newSearchDiv.appendChild(newSearchButton);
+
+		// Don't accidentally trigger keyboard navigation
+		newSearchText.addEventListener("keypress", function(e) { e.stopPropagation(); }, true);
+
+		// Work some magic on submit
+		newSearchForm.addEventListener('submit', function(event)
+		{
+			event.preventDefault();
+			PageUtils.addHiddenFormInput(doc,newSearchForm,'keywords','threadid:'+threadid+' '+newSearchText.value);
+			newSearchForm.submit();
+		}, false);
+		placeHere.parentNode.insertBefore(newSearchBox,placeHere.nextSibling);
+	},
+
 	// Convert image/videos links in threads to inline images/videos
 	// @param: post body (td), document body
 	// @return: nothing

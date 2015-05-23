@@ -27,6 +27,16 @@ let PageUtils = exports.PageUtils =
 		*/
 	},
 
+	// Adds a hidden form input to a form. Used by showthreadHandler and Quick Quote
+	addHiddenFormInput: function(doc, form, name, value)
+	{
+	   let newel = doc.createElement("INPUT");
+	   newel.type = "hidden";
+	   newel.name = name;
+	   newel.value = value;
+	   form.appendChild(newel);
+	},
+
 	// Used by overlay and preferences -> UI
 	EscapeMenuURL: function(murl)
 	{

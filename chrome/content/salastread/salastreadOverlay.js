@@ -1103,69 +1103,7 @@ var gSALR = {
 			// SA's "Search thread" box is disabled; add our own
 			if (!gSALR.Prefs.getPref("hideThreadSearchBox") && searchThis.firstChild.nodeName == '#text')
 			{
-				// Prevent weird zoom behavior
-				searchThis.parentNode.style.overflow = "hidden";
-				var newSearchBox = doc.createElement('li');
-				var newSearchForm = doc.createElement('form');
-				newSearchBox.appendChild(newSearchForm);
-				newSearchForm.action = 'http://forums.somethingawful.com/f/search/submit';
-				newSearchForm.method = 'post';
-				newSearchForm.className = 'threadsearch'; 
-				var newSearchDiv = doc.createElement('div');
-				newSearchForm.appendChild(newSearchDiv);
-				newSearchDiv.style.marginLeft = '6px';
-				newSearchDiv.style.lineHeight = '22px';
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'forumids',forumid);
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'groupmode','0');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'opt_search_posts','on');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'perpage','20');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'search_mode','ext');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'show_post_previews','1');
-				gSALR.addHiddenFormInput(doc,newSearchDiv,'sortmode','1');
-				var newSearchText = doc.createElement('input');
-				newSearchText.size = '25';
-				newSearchText.value = 'Added by SALR';
-				newSearchText.style.fontStyle = 'italic';
-				newSearchText.style.color = '#BBBBBB';
-				newSearchText.__unfocused = true;
-				newSearchText.addEventListener("focus", function()
-				{
-					if (newSearchText.__unfocused === true)
-					{
-						newSearchText.style.fontStyle = 'normal';
-						newSearchText.style.color = '';
-						newSearchText.value = '';
-						newSearchText.__unfocused = false;
-					}
-				}, true);
-
-				// Don't accidentally trigger keyboard navigation
-				newSearchText.addEventListener("keypress", function(evt)
-				{
-					// User hit enter
-					if (evt.keyCode == 13)
-					{
-						if (newSearchText.__unfocused)
-							return false;
-						gSALR.addHiddenFormInput(doc,newSearchForm,'keywords','threadid:'+threadid+' '+newSearchText.value);
-						newSearchForm.submit();
-						return false;
-					}
-					evt.stopPropagation();
-				}, true);
-				newSearchDiv.appendChild(newSearchText);
-				var newSearchButton = doc.createElement('input');
-				newSearchButton.type='button';
-				newSearchButton.value='Search thread';
-				newSearchButton.addEventListener("click", function()
-				{
-					if (newSearchText.__unfocused)
-						return false;
-					gSALR.addHiddenFormInput(doc,newSearchForm,'keywords','threadid:'+threadid+' '+newSearchText.value);
-					newSearchForm.submit();
-				}, true);
-				newSearchDiv.appendChild(newSearchButton);
-				placeHere.parentNode.insertBefore(newSearchBox,placeHere.nextSibling);
+				gSALR.ShowThreadHandler.addNewThreadSearchBox(doc, forumid, threadid, searchThis, placeHere);
 			}
 		}
 
@@ -1982,14 +1920,6 @@ var gSALR = {
 		}
 	},
 
-	addHiddenFormInput: function(doc,form,name,value)
-	{
-	   var newel = doc.createElement("INPUT");
-	   newel.type = "hidden";
-	   newel.name = name;
-	   newel.value = value;
-	   form.appendChild(newel);
-	},
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CSS & Formatting Functions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3189,39 +3119,39 @@ var gSALR = {
 
 			newform.method = "post";
 			newform.enctype = "multipart/form-data";
-			gSALR.addHiddenFormInput(doc,newform,"s","");
+			gSALR.PageUtils.addHiddenFormInput(doc,newform,"s","");
 
 			if (gSALR.quickWindowParams.quicktype == "newthread")
 			{
 				newform.action = "http://forums.somethingawful.com/newthread.php";
-				gSALR.addHiddenFormInput(doc, newform,"action", "postthread");
-				gSALR.addHiddenFormInput(doc, newform, "forumid",  gSALR.quickWindowParams.forumid);
-				gSALR.addHiddenFormInput(doc, newform, "iconid", gSALR.quickquotewin.document.getElementById('posticonbutton').iconid);
-				gSALR.addHiddenFormInput(doc, newform, "subject", gSALR.quickquotewin.document.getElementById('subject').value);
+				gSALR.PageUtils.addHiddenFormInput(doc, newform,"action", "postthread");
+				gSALR.PageUtils.addHiddenFormInput(doc, newform, "forumid",  gSALR.quickWindowParams.forumid);
+				gSALR.PageUtils.addHiddenFormInput(doc, newform, "iconid", gSALR.quickquotewin.document.getElementById('posticonbutton').iconid);
+				gSALR.PageUtils.addHiddenFormInput(doc, newform, "subject", gSALR.quickquotewin.document.getElementById('subject').value);
 			}
 			else if (gSALR.quickWindowParams.quicktype == "editpost")
 			{
 				newform.action = "http://forums.somethingawful.com/editpost.php";
-				gSALR.addHiddenFormInput(doc, newform,"action", "updatepost");
-				gSALR.addHiddenFormInput(doc, newform, "postid", gSALR.quickWindowParams.postid);
+				gSALR.PageUtils.addHiddenFormInput(doc, newform,"action", "updatepost");
+				gSALR.PageUtils.addHiddenFormInput(doc, newform, "postid", gSALR.quickWindowParams.postid);
 			}
 			else if (gSALR.quickWindowParams.quicktype == "quote" || gSALR.quickWindowParams.quicktype == "reply")
 			{
-				gSALR.addHiddenFormInput(doc, newform,"action", "postreply");
-				gSALR.addHiddenFormInput(doc, newform,"threadid", gSALR.quickWindowParams.threadid);
+				gSALR.PageUtils.addHiddenFormInput(doc, newform,"action", "postreply");
+				gSALR.PageUtils.addHiddenFormInput(doc, newform,"threadid", gSALR.quickWindowParams.threadid);
 			}
 
-			gSALR.addHiddenFormInput(doc, newform,"parseurl", parseurl ? "yes" : "");
-			gSALR.addHiddenFormInput(doc, newform,"bookmark", subscribe ? "yes" : "");
-			gSALR.addHiddenFormInput(doc, newform,"disablesmilies", disablesmilies ? "yes" : "");
-			gSALR.addHiddenFormInput(doc, newform,"signature", signature ? "yes" : "");
-			gSALR.addHiddenFormInput(doc, newform,"message", message);
-			gSALR.addHiddenFormInput(doc, newform,"MAX_FILE_SIZE", "2097152");
-			gSALR.addHiddenFormInput(doc, newform,"formkey", formkey);
+			gSALR.PageUtils.addHiddenFormInput(doc, newform,"parseurl", parseurl ? "yes" : "");
+			gSALR.PageUtils.addHiddenFormInput(doc, newform,"bookmark", subscribe ? "yes" : "");
+			gSALR.PageUtils.addHiddenFormInput(doc, newform,"disablesmilies", disablesmilies ? "yes" : "");
+			gSALR.PageUtils.addHiddenFormInput(doc, newform,"signature", signature ? "yes" : "");
+			gSALR.PageUtils.addHiddenFormInput(doc, newform,"message", message);
+			gSALR.PageUtils.addHiddenFormInput(doc, newform,"MAX_FILE_SIZE", "2097152");
+			gSALR.PageUtils.addHiddenFormInput(doc, newform,"formkey", formkey);
 
 			if (form_cookie != "")
 			{
-				gSALR.addHiddenFormInput(doc, newform,"form_cookie", form_cookie);
+				gSALR.PageUtils.addHiddenFormInput(doc, newform,"form_cookie", form_cookie);
 			}
 			if (attachfile != "")
 			{
@@ -3233,17 +3163,17 @@ var gSALR = {
 			{
 				if (subtype=="submit")
 				{
-					gSALR.addHiddenFormInput(doc,newform,"submit","Submit Reply");
+					gSALR.PageUtils.addHiddenFormInput(doc,newform,"submit","Submit Reply");
 					gSALR.DB.iPostedHere(gSALR.quickWindowParams.threadid);
 				}
 				else
 				{
-					gSALR.addHiddenFormInput(doc,newform,"preview","Preview Reply");
+					gSALR.PageUtils.addHiddenFormInput(doc,newform,"preview","Preview Reply");
 				}
 			}
 			else
 			{
-				gSALR.addHiddenFormInput(doc,newform,"preview","Preview Post");
+				gSALR.PageUtils.addHiddenFormInput(doc,newform,"preview","Preview Post");
 			}
 			doc.body.appendChild(newform);
 			gSALR.quickQuoteSubmitting = true;
