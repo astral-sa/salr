@@ -1,0 +1,10 @@
+{
+  "moz": true, // true -> use Mozillaoz JS extensions
+  "bitwise": false, // false -> don't complain about bitwise ops
+  "nonstandard": true, // true -> allow escape & unescape
+  "browser": true, // true -> define browser globals
+  "curly": false, // false -> don't require curly braces everywhere
+  "latedef": "nofunc", // nofunc -> allow functions to be used above their definitions
+  "funcscope": true, // true -> suppress warnings about declaring vars in control structures
+  "proto": true, // true -> suppress warnings about __proto__
+}
