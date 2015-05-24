@@ -6,3 +6,5 @@ languages:
 exclude_paths:
 - "extension/content/newfeatures/*"
 - "extension/defaults/*"
+- "extension/content/pref/in-content/preferences.js"
+- "extension/content/xbbcode.js"
