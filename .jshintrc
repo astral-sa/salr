@@ -1,4 +1,6 @@
 {
+  "strict": false,
+  "globalstrict": true,
   "moz": true, // true -> use Mozillaoz JS extensions
   "bitwise": false, // false -> don't complain about bitwise ops
   "nonstandard": true, // true -> allow escape & unescape
@@ -8,5 +10,5 @@
   "funcscope": true, // true -> suppress warnings about declaring vars in control structures
   "proto": true, // true -> suppress warnings about __proto__
   "node": true, // defines globals for node
-  "globals": { "Components": true, }
+  "globals": { "Components": true }
 }
