@@ -6,7 +6,7 @@
 
 Cu.import("resource://gre/modules/Services.jsm");
 let {Prefs} = require("prefs");
-let {Utils} = require("utils");
+//let {Utils} = require("utils");
 
 function ReadFile(fn)
 {
@@ -62,9 +62,12 @@ let DB = exports.DB =
 		{
 			//this.needToShowChangeLog = !this.IsDevelopmentRelease;
 			this.needToShowChangeLog = true;
-			// Here we have to put special cases for specific dev build numbers that require SQL Patches
-			var buildNum = parseInt(this.LastRunVersion.match(/^(\d+)\.(\d+)\.(\d+)/)[3], 10);
-			this.checkForSQLPatches(buildNum);
+			// Check for pre-3.0 SQL patches
+			let hasBuildNum = this.LastRunVersion.match(/^1\.99\.(\d+)/);
+			if (hasBuildNum && hasBuildNum[1])
+			{
+				this.checkForSQLPatches(parseInt(hasBuildNum[1], 10));
+			}
 		}
 
 		// Fill up the cache
