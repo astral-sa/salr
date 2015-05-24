@@ -7,4 +7,6 @@
   "latedef": "nofunc", // nofunc -> allow functions to be used above their definitions
   "funcscope": true, // true -> suppress warnings about declaring vars in control structures
   "proto": true, // true -> suppress warnings about __proto__
+  "node": true, // defines globals for node
+  "globals": { "Components": true, }
 }
