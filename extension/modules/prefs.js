@@ -61,7 +61,7 @@ function init()
 			setter(defaultBranch, prefName, defaultValue);
 		}
 	};
-	Services.scriptloader.loadSubScript(addonRoot + "defaults/preferences/salastread.js", scope);
+	Services.scriptloader.loadSubScript(addonRoot + "defaults/salastreadprefs.js", scope);
 }
 
 // Expose functions to get&set preferences
