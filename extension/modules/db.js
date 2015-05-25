@@ -341,7 +341,7 @@ let DB = exports.DB =
 	// and the thread title as the value
 	get starList()
 	{
-		if (this.threadDataCache.length == 0)
+		if (this.threadDataCache.length === 0)
 		{
 			this.populateThreadDataCache();
 		}

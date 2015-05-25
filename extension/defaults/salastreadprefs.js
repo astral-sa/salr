@@ -157,7 +157,6 @@ pref('extensions.salastread.hideCustomTitles', false);
 pref('extensions.salastread.showSAForumMenu', true);
 pref('extensions.salastread.nestSAForumMenu', true);
 pref('extensions.salastread.useSAForumMenuBackground', true);
-pref('extensions.salastread.hideOtherSAMenus', false); // Why false? To increase speed
 pref('extensions.salastread.menuAccessKey', 'A');
 pref('extensions.salastread.menuPinnedForums', '1,22,44,144');
 pref('extensions.salastread.contextMenuOnBottom', true);

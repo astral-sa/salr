@@ -1,6 +1,8 @@
 /* Only skin the browser */
 @-moz-document url("chrome://browser/content/browser.xul")
 {
+
+/* Toolbar CSS */
 #salr-toolbarbutton
 {
 	list-style-image: url("chrome://salastread/skin/sa-24.png");
@@ -31,6 +33,7 @@ toolbarpaletteitem[place="palette"] > #salr-toolbarbutton {
 	-moz-box-orient: horizontal !important;
 }
 
+/* Menu CSS */
 menupopup.lastread_menu
 {
 	-moz-appearance: none;

@@ -36,4 +36,17 @@ let Utils = exports.Utils =
 		return mainWindow;
 	},
 
+	// Used by UI
+	EscapeMenuURL: function(murl)
+	{
+		var res = murl.replace("&","&amp;");
+		return res.replace(",","&comma;");
+	},
+
+	UnescapeMenuURL: function(murl)
+	{
+		var res = murl.replace("&comma;",",");
+		return res.replace("&amp;","&");
+	},
+
 };

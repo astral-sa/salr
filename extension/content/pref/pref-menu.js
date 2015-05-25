@@ -7,7 +7,7 @@ function menuInit()
 	}
 	catch(e)
 	{
-		alert("init error: "+e);
+		window.alert("init error: "+e);
 	}
 	document.getElementById('salastreadpref').__SAMenuChanged = false;
 }
@@ -28,22 +28,22 @@ function pinnedListInit() {
 	var pinnedstr = document.getElementById("menuPinnedForums").value;
 	var pinnedForumNumbers;
 	
-	if (pinnedstr!=",") {
+	if (pinnedstr!==",") {
 		pinnedForumNumbers = document.getElementById("menuPinnedForums").value.split(",");
 	} else {
-		pinnedForumNumbers = new Array();
+		pinnedForumNumbers = [];
 	}
 	
 	document.getElementById("addStarMenuButton").setAttribute("disabled",false);
 	
-	var pinnedForumElements = new Array();
+	var pinnedForumElements = [];
 	var thisItem;
 	for (var j = 0; j < pinnedForumNumbers.length; j++) {
 		var thisNumber = pinnedForumNumbers[j];
 		thisItem = document.createElement("listitem");
-		if(thisNumber == "sep") {
+		if(thisNumber === "sep") {
 			thisItem.setAttribute("label", "-------------------------");
-		} else if ( thisNumber.substring(0,3)=="URL" ) {
+		} else if ( thisNumber.substring(0,3)==="URL" ) {
 			var umatch = thisNumber.match(/^URL\[(.*?)\]\[(.*?)\]$/);
 			
 			if (umatch) {
@@ -51,7 +51,7 @@ function pinnedListInit() {
 			} else {
 				thisItem.setAttribute("label", "invalid url entry");
 			}
-		} else if ( thisNumber=="starred" ) {
+		} else if ( thisNumber==="starred" ) {
 			thisItem.setAttribute("label", ">> Starred Thread Menu <<");
 			document.getElementById("addStarMenuButton").setAttribute("disabled",true);
 		} else {
@@ -73,7 +73,7 @@ function pinnedListInit() {
 			
 			var isPinned = false;
 			for(var k = 0; k < pinnedForumNumbers.length; k++) {
-				if (pinnedForumNumbers[k] == thisId) {
+				if (pinnedForumNumbers[k] === thisId) {
 					pinnedForumElements[k] = thisItem;
 					isPinned = true;
 				}
@@ -135,7 +135,7 @@ function pinnedSelect() {
 			document.getElementById("moveDownButton").setAttribute("disabled", sellist.nextSibling ? false : true);
 		}
 	} catch(e) { 
-		alert("pinned select error: " + e); 
+		window.alert("pinned select error: " + e); 
 	}
 }
 
@@ -151,7 +151,7 @@ function moveClick(moveDown) {
 		addBefore = sellist.previousSibling;
 	}
 	
-	var parent = sellist.parentNode
+	var parent = sellist.parentNode;
 	parent.removeChild(sellist);
 	
 	if (addBefore) {
@@ -221,7 +221,7 @@ function addStarMenuClick() {
 }
 
 function pinnedListChanged() {
-	var pflist = new Array();
+	var pflist = [];
 	var pf = document.getElementById("pinned_forums");
 	var child = pf.firstChild;
 	
@@ -241,7 +241,7 @@ function pinnedListChanged() {
 	var menustr = pflist.join(",");
 	var oldmenustr = document.getElementById("menuPinnedForums").value;
 	
-	if (menustr != "") {
+	if (menustr !== "") {
 		document.getElementById("menuPinnedForums").value = menustr;
 	} else {
 		document.getElementById("menuPinnedForums").value = ",";
@@ -261,8 +261,8 @@ function RebuildSAMenus()
 			var win = enumerator.getNext();
 
 			// Rebuild SA menus in all browser windows
-			win.gSALR.buildForumMenu('menubar');
-			win.gSALR.buildForumMenu('toolbar');
+			UI.buildForumMenu(win, 'menubar');
+			UI.buildForumMenu(win, 'toolbar');
 		}
 		document.getElementById('salastreadpref').__SAMenuChanged = false;
 	}
@@ -294,9 +294,9 @@ function doChangeSAMenuVis()
 		var win = enumerator.getNext();
 
 		// Toggle SA menus in all browser windows
-		if (showSAForumMenu.value == true)
+		if (showSAForumMenu.value === true)
 		{
-			win.gSALR.buildForumMenu('menubar');
+			UI.buildForumMenu(win,'menubar');
 		}
 		else
 		{
