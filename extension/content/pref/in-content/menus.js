@@ -10,6 +10,7 @@ var gSALRMenusPane = {
 		}
 
 		setEventListener("showSAForumMenu", "change", gSALRMenusPane.changedPrefshowSAForumMenu);
+		setEventListener("nestSaMenu", "command", gSALRMenusPane.mcbSet);
 		setEventListener("pinButton", "command", gSALRMenusPane.pinClick);
 		setEventListener("unpinButton", "command", gSALRMenusPane.unPinClick);
 		setEventListener("moveUpButton", "command", function () {
@@ -31,6 +32,26 @@ var gSALRMenusPane = {
 			window.alert("init error: "+e);
 		}
 		//this._SAMenuChanged = false;
+	},
+
+	/* Function to toggle the disabled status of preferences
+		that depend on the status of another preference.
+		Supported controller types: checkbox, radio */
+	toggleDependentPrefUI: function(controller)
+	{
+		let totalArgs = arguments.length;
+		if (totalArgs > 1)
+		{
+			let valToUse;
+			let controlNode = document.getElementById(controller);
+			if (controlNode.nodeName.toLowerCase() === "checkbox")
+				valToUse = !controlNode.checked;
+			else if (controlNode.nodeName.toLowerCase() === "radio")
+				valToUse = !controlNode.selected;
+			else return;
+			for (let i = 1; i < totalArgs; i++)
+				document.getElementById(arguments[i]).disabled = valToUse;
+		}
 	},
 
 	pinnedListInit: function()
@@ -55,9 +76,7 @@ var gSALRMenusPane = {
 		} else {
 			pinnedForumNumbers = [];
 		}
-		
-		document.getElementById("addStarMenuButton").setAttribute("disabled",false);
-		
+
 		var pinnedForumElements = [];
 		var thisItem;
 
@@ -75,8 +94,8 @@ var gSALRMenusPane = {
 					thisItem.setAttribute("label", "invalid url entry");
 				}
 			} else if ( thisNumber==="starred" ) {
+				thisItem.setAttribute("id", "salr_starmenupinneditem");
 				thisItem.setAttribute("label", ">> Starred Thread Menu <<");
-				document.getElementById("addStarMenuButton").setAttribute("disabled",true);
 			} else {
 				thisItem.setAttribute("label", "unknown forum ["+thisNumber+"]");
 			}
@@ -115,47 +134,35 @@ var gSALRMenusPane = {
 
 	mcbSet: function()
 	{
-		var dis = false;
-		if ( document.getElementById("showSaMenu").getAttribute("checked") ) {
-			document.getElementById("nestSaMenu").setAttribute("disabled",false);
-		} else {
-			document.getElementById("nestSaMenu").setAttribute("disabled",true);
-			dis = true;
-		}
-		
-		if ( !dis && document.getElementById("nestSaMenu").getAttribute("checked") ) {
-			document.getElementById("pinned_forums").removeAttribute("disabled");
-			document.getElementById("unpinned_forums").removeAttribute("disabled");
-			document.getElementById("pinButton").setAttribute("disabled",false);
-			document.getElementById("unpinButton").setAttribute("disabled",false);
+		this.toggleDependentPrefUI("nestSaMenu", "pinned_forums", "unpinned_forums", "pinButton", 
+			"unpinButton", "moveUpButton", "moveDownButton", "addSeparatorButton", "addURLButton");
+		let alreadyStar = document.getElementById("salr_starmenupinneditem");
+		let disableStar = !document.getElementById("nestSaMenu").checked ||
+			 (alreadyStar !== null && alreadyStar.parentNode.id === "pinned_forums");
+		document.getElementById("addStarMenuButton").setAttribute("disabled", disableStar);
+		if (document.getElementById("nestSaMenu").getAttribute("checked"))
 			this.pinnedSelect();
-		} else {
-			document.getElementById("pinned_forums").setAttribute("disabled",true);
-			document.getElementById("unpinned_forums").setAttribute("disabled",true);
-			document.getElementById("pinButton").setAttribute("disabled",true);
-			document.getElementById("unpinButton").setAttribute("disabled",true);
-			document.getElementById("moveUpButton").setAttribute("disabled",true);
-			document.getElementById("moveDownButton").setAttribute("disabled",true);
-		}
 	},
 
 	pinnedSelect: function()
 	{
 		try {
-			if (!document.getElementById("showSaMenu").getAttribute("checked") || 
-				!document.getElementById("nestSaMenu").getAttribute("checked")) {
-				
+			// mcbSet can leave these enabled when they shouldn't be. Disable them if so.
+			if (!document.getElementById("nestSaMenu").getAttribute("checked"))
+			{
 				document.getElementById("moveUpButton").setAttribute("disabled",true);
 				document.getElementById("moveDownButton").setAttribute("disabled",true);
 				return;
 			}
-			
+
 			var sellist = document.getElementById("pinned_forums").selectedItems;
-			if (sellist) {
+			// Only deal with first selected item if multiple selection
+			if (sellist)
+			{
 				sellist = sellist[0];
 			}
-
-			if (sellist) {
+			if (sellist)
+			{
 				document.getElementById("moveUpButton").setAttribute("disabled", sellist.previousSibling ? false : true);
 				document.getElementById("moveDownButton").setAttribute("disabled", sellist.nextSibling ? false : true);
 			}
@@ -208,11 +215,15 @@ var gSALRMenusPane = {
 	{
 		var sellist = document.getElementById("pinned_forums").selectedItems[0];
 		
-		if (sellist) {
+		if (sellist)
+		{
 			sellist.parentNode.removeChild(sellist);
-			// We'll add it to the end of unpinned instead of reloading the whole list.
-			document.getElementById("unpinned_forums").appendChild(sellist);
-			document.getElementById("unpinned_forums").selectItem(sellist);
+			if ((!sellist.id || sellist.id !== "salr_starmenupinneditem") && sellist.getAttribute("label") !== "-------------------------")
+			{
+				// We'll add it to the end of unpinned instead of reloading the whole list.
+				document.getElementById("unpinned_forums").appendChild(sellist);
+				document.getElementById("unpinned_forums").selectItem(sellist);
+			}
 			this.pinnedListChanged();
 			//this.pinnedListInit();
 		}
@@ -262,7 +273,8 @@ var gSALRMenusPane = {
 	addStarMenuClick: function()
 	{
 		var thisItem = document.createElement("listitem");
-		
+
+		thisItem.setAttribute("id", "salr_starmenupinneditem");
 		thisItem.setAttribute("label", ">> Starred Thread Menu <<");
 		thisItem.setAttribute("forumnum", "starred");
 		document.getElementById("pinned_forums").appendChild(thisItem);

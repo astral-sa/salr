@@ -1,5 +1,6 @@
 function menuInit()
 {
+	setEventListener("nestSaMenu", "command", mcbSet);
 	try
 	{
 		pinnedListInit();
@@ -34,8 +35,6 @@ function pinnedListInit() {
 		pinnedForumNumbers = [];
 	}
 	
-	document.getElementById("addStarMenuButton").setAttribute("disabled",false);
-	
 	var pinnedForumElements = [];
 	var thisItem;
 	for (var j = 0; j < pinnedForumNumbers.length; j++) {
@@ -52,8 +51,8 @@ function pinnedListInit() {
 				thisItem.setAttribute("label", "invalid url entry");
 			}
 		} else if ( thisNumber==="starred" ) {
+			thisItem.setAttribute("id", "salr_starmenupinneditem");
 			thisItem.setAttribute("label", ">> Starred Thread Menu <<");
-			document.getElementById("addStarMenuButton").setAttribute("disabled",true);
 		} else {
 			thisItem.setAttribute("label", "unknown forum ["+thisNumber+"]");
 		}
@@ -91,46 +90,35 @@ function pinnedListInit() {
 }
 
 function mcbSet() {
-	var dis = false;
-	if ( document.getElementById("showSaMenu").getAttribute("checked") ) {
-		document.getElementById("nestSaMenu").setAttribute("disabled",false);
-	} else {
-		document.getElementById("nestSaMenu").setAttribute("disabled",true);
-		dis = true;
-	}
-	
-	if ( !dis && document.getElementById("nestSaMenu").getAttribute("checked") ) {
-		document.getElementById("pinned_forums").removeAttribute("disabled");
-		document.getElementById("unpinned_forums").removeAttribute("disabled");
-		document.getElementById("pinButton").setAttribute("disabled",false);
-		document.getElementById("unpinButton").setAttribute("disabled",false);
+	toggleDependentPrefUI("nestSaMenu", "pinned_forums", "unpinned_forums", "pinButton", 
+		"unpinButton", "moveUpButton", "moveDownButton", "addSeparatorButton", "addURLButton");
+	let alreadyStar = document.getElementById("salr_starmenupinneditem");
+	let disableStar = !document.getElementById("nestSaMenu").checked ||
+		 (alreadyStar !== null && alreadyStar.parentNode.id === "pinned_forums");
+	document.getElementById("addStarMenuButton").setAttribute("disabled", disableStar);
+	if (document.getElementById("nestSaMenu").getAttribute("checked"))
 		pinnedSelect();
-	} else {
-		document.getElementById("pinned_forums").setAttribute("disabled",true);
-		document.getElementById("unpinned_forums").setAttribute("disabled",true);
-		document.getElementById("pinButton").setAttribute("disabled",true);
-		document.getElementById("unpinButton").setAttribute("disabled",true);
-		document.getElementById("moveUpButton").setAttribute("disabled",true);
-		document.getElementById("moveDownButton").setAttribute("disabled",true);
-	}
 }
 
 function pinnedSelect() {
 	try {
-		if (!document.getElementById("showSaMenu").getAttribute("checked") || 
-			!document.getElementById("nestSaMenu").getAttribute("checked")) {
-			
+		// mcbSet can leave these enabled when they shouldn't be. Disable them if so.
+		if (!document.getElementById("nestSaMenu").getAttribute("checked"))
+		{
 			document.getElementById("moveUpButton").setAttribute("disabled",true);
 			document.getElementById("moveDownButton").setAttribute("disabled",true);
 			return;
 		}
-		
+
 		var sellist = document.getElementById("pinned_forums").selectedItems;
-		if (sellist) {
+		// Only deal with first selected item if multiple selection
+		if (sellist)
+		{
 			sellist = sellist[0];
 		}
 
-		if (sellist) {
+		if (sellist)
+		{
 			document.getElementById("moveUpButton").setAttribute("disabled", sellist.previousSibling ? false : true);
 			document.getElementById("moveDownButton").setAttribute("disabled", sellist.nextSibling ? false : true);
 		}
@@ -180,10 +168,17 @@ function pinClick() {
 function unPinClick() {
 	var sellist = document.getElementById("pinned_forums").selectedItems[0];
 	
-	if (sellist) {
+	if (sellist)
+	{
 		sellist.parentNode.removeChild(sellist);
+		if ((!sellist.id || sellist.id !== "salr_starmenupinneditem") && sellist.getAttribute("label") !== "-------------------------")
+		{
+			// We'll add it to the end of unpinned instead of reloading the whole list.
+			document.getElementById("unpinned_forums").appendChild(sellist);
+			document.getElementById("unpinned_forums").selectItem(sellist);
+		}
 		pinnedListChanged();
-		pinnedListInit();
+		//pinnedListInit();
 	}
 }
 
@@ -213,7 +208,8 @@ function addURLClick() {
 
 function addStarMenuClick() {
 	var thisItem = document.createElement("listitem");
-	
+
+	thisItem.setAttribute("id", "salr_starmenupinneditem");
 	thisItem.setAttribute("label", ">> Starred Thread Menu <<");
 	thisItem.setAttribute("forumnum", "starred");
 	document.getElementById("pinned_forums").appendChild(thisItem);

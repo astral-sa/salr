@@ -842,7 +842,6 @@
 	<preference id="showSAForumMenu" 			name="extensions.salastread.showSAForumMenu" 			type="bool"/>
 	<preference id="nestSAForumMenu" 			name="extensions.salastread.nestSAForumMenu" 			type="bool"/>
 	<preference id="useSAForumMenuBackground" 	name="extensions.salastread.useSAForumMenuBackground" 	type="bool"/>
-	<preference id="hideOtherSAMenus" 			name="extensions.salastread.hideOtherSAMenus" 			type="bool"/>
 	
 	<preference id="enableContextMenu" 			name="extensions.salastread.enableContextMenu" 			type="bool"/>
 	<preference id="contextMenuOnBottom" 		name="extensions.salastread.contextMenuOnBottom" 		type="bool"/>
@@ -861,14 +860,11 @@
 	data-category="paneMenus"
 	hidden="true">
 	<caption label="Quick Jump Menu Settings"/>
-	<checkbox id="showSaMenu"	preference="showSAForumMenu" 			label="Show SA Forum Quick Jump menu in the menu bar"/>
+	<checkbox id="showSaMenu" preference="showSAForumMenu" label="Show SA Forum Quick Jump menu in the menu bar"/>
+	<checkbox preference="useSAForumMenuBackground" label="Use SA Grenade background on Quick Jump menu"/>		
+	<checkbox id="nestSaMenu" preference="nestSAForumMenu" label="Use submenus for forum categories (enables forum/thread pinning)"/>
 	
 	<vbox style="margin-left: 10px">
-		<checkbox id="nestSaMenu"	preference="nestSAForumMenu" 			label="Use submenus for forum categories"/>
-		<checkbox preference="useSAForumMenuBackground" label="Use SA Grenade background on Quick Jump menu"/>		
-		<checkbox preference="hideOtherSAMenus" 		label="Hide any other SA menus installed by other extensions"/>
-
-		
 		<hbox>
 			<vbox flex="1">
 				<label value="Unpinned Forums"/>

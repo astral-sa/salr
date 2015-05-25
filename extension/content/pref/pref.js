@@ -15,6 +15,34 @@ let {UI} = require("ui");
 
 var rebuildCSS = true;
 var needSAMenuToggle = false;
+
+/* Function to toggle the disabled status of preferences
+	that depend on the status of another preference.
+	Supported controller types: checkbox, radio */
+function toggleDependentPrefUI(controller)
+{
+	let totalArgs = arguments.length;
+	if (totalArgs > 1)
+	{
+		let valToUse;
+		let controlNode = document.getElementById(controller);
+		if (controlNode.nodeName.toLowerCase() === "checkbox")
+			valToUse = !controlNode.checked;
+		else if (controlNode.nodeName.toLowerCase() === "radio")
+			valToUse = !controlNode.selected;
+		else return;
+		for (let i = 1; i < totalArgs; i++)
+			document.getElementById(arguments[i]).disabled = valToUse;
+	}
+}
+
+/* Sets a specified event listener on a specified item with a specified callback. */
+function setEventListener(aId, aEventType, aCallback)
+{
+	document.getElementById(aId)
+	.addEventListener(aEventType, aCallback.bind(this));
+}
+
 function SALR_Prefs_OnLoad(prefwindow)
 {
 	// Init pref window
