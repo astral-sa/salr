@@ -13,83 +13,131 @@ function menuInit()
 	document.getElementById('salastreadpref').__SAMenuChanged = false;
 }
 
-function pinnedListInit() {
+/**
+ * Sets up the pinned/unpinned listboxes.
+ */
+function pinnedListInit()
+{
 	var pf = document.getElementById("pinned_forums");
 	var upf = document.getElementById("unpinned_forums");
-	
-	while (pf.firstChild) {
+
+	while (pf.firstChild)
+	{
 		pf.removeChild(pf.firstChild);
 	}
-	
-	while (upf.firstChild) {
+	while (upf.firstChild)
+	{
 		upf.removeChild(upf.firstChild);
 	}
 
-	var flxml = DB.forumListXml;
 	var pinnedstr = document.getElementById("menuPinnedForums").value;
 	var pinnedForumNumbers;
-	
-	if (pinnedstr!==",") {
+
+	if (pinnedstr !== ",")
 		pinnedForumNumbers = document.getElementById("menuPinnedForums").value.split(",");
-	} else {
+	else
 		pinnedForumNumbers = [];
-	}
-	
+
 	var pinnedForumElements = [];
-	var thisItem;
-	for (var j = 0; j < pinnedForumNumbers.length; j++) {
-		var thisNumber = pinnedForumNumbers[j];
-		thisItem = document.createElement("listitem");
-		if(thisNumber === "sep") {
+
+	// Loop through our pinned forum numbers to build our list of pinned forum elements
+	// Part 1: Fill out the list inserting placeholder labels for our pinned forums
+	initPinnedForumEls(pinnedForumNumbers, pinnedForumElements);
+
+	// Part 2: Walk through the XML to populate our unpinned box with forums
+	//     As we work, check if the current forum is pinned. If so, apply correct label.
+	//     Finally, populate the pinned box with our pinned items.
+	populatePinListBoxes(pinnedForumNumbers, pinnedForumElements);
+}
+
+/**
+ * Loops through pinned forum numbers to fills out the pinnedForumElements array.
+ *     Uses placeholder labels for pinned forums since we don't have their titles yet.
+ * @param {Array} pinnedForumNumbers  Array of strings of user-pinned items
+ * @param {Array} pinnedForumElements Array of listitems for the pinned forum box
+ */
+function initPinnedForumEls(pinnedForumNumbers, pinnedForumElements)
+{
+	for (let j = 0; j < pinnedForumNumbers.length; j++) {
+		let thisNumber = pinnedForumNumbers[j];
+		let thisItem = document.createElement("listitem");
+		if (thisNumber === "sep")
+		{
 			thisItem.setAttribute("label", "-------------------------");
-		} else if ( thisNumber.substring(0,3)==="URL" ) {
-			var umatch = thisNumber.match(/^URL\[(.*?)\]\[(.*?)\]$/);
-			
-			if (umatch) {
+		}
+		else if (thisNumber.substring(0,3) === "URL")
+		{
+			let umatch = thisNumber.match(/^URL\[(.*?)\]\[(.*?)\]$/);
+
+			if (umatch)
 				thisItem.setAttribute("label", "Link: "+ PageUtils.UnescapeMenuURL(umatch[1]) );
-			} else {
+			else
 				thisItem.setAttribute("label", "invalid url entry");
-			}
-		} else if ( thisNumber==="starred" ) {
+		}
+		else if (thisNumber === "starred")
+		{
 			thisItem.setAttribute("id", "salr_starmenupinneditem");
 			thisItem.setAttribute("label", ">> Starred Thread Menu <<");
-		} else {
+		}
+		else
+		{
 			thisItem.setAttribute("label", "unknown forum ["+thisNumber+"]");
 		}
-		
+
 		thisItem.setAttribute("forumnum", thisNumber);
 		pinnedForumElements[j] = thisItem;
 	}
-	
-	if (flxml) {
-		var forumList = PageUtils.selectNodes(flxml, flxml.documentElement, "//forum");
-		for (var i = 0; i < forumList.length; i++) {
-			var thisForum = forumList[i];
-			var thisId = thisForum.getAttribute("id");
-			thisItem = document.createElement("listitem");
+}
+
+/**
+ * Walks through the XML to populate our unpinned box with forums
+ *    As it works, it checks if the current forum is pinned.
+ *    If so, replaces placeholder label with forum name from XML.
+ *    Finally, populates the pinned box with our pinned items.
+ * @param {Array} pinnedForumNumbers  Array of strings of user-pinned items
+ * @param {Array} pinnedForumElements Array of listitems for the pinned forum box
+ */
+function populatePinListBoxes(pinnedForumNumbers, pinnedForumElements)
+{
+	let flxml = DB.forumListXml;
+	if (flxml)
+	{
+		let forumList = PageUtils.selectNodes(flxml, flxml.documentElement, "//forum");
+		for (let i = 0; i < forumList.length; i++)
+		{
+			let thisForum = forumList[i];
+			let thisId = thisForum.getAttribute("id");
+			let thisItem = document.createElement("listitem");
 				thisItem.setAttribute("label", thisForum.getAttribute("name"));
 				thisItem.setAttribute("forumnum", thisId);
-			
-			var isPinned = false;
-			for(var k = 0; k < pinnedForumNumbers.length; k++) {
-				if (pinnedForumNumbers[k] === thisId) {
+
+			let isPinned = false;
+			for (let k = 0; k < pinnedForumNumbers.length; k++)
+			{
+				if (pinnedForumNumbers[k] === thisId)
+				{
 					pinnedForumElements[k] = thisItem;
 					isPinned = true;
 				}
 			}
-			
-			if (!isPinned) {
+
+			if (!isPinned)
 				document.getElementById("unpinned_forums").appendChild(thisItem);
-			}
 		}
 	}
-	
-	for(var m = 0; m < pinnedForumElements.length; m++) {
+	// Populate pinned listbox
+	for(var m = 0; m < pinnedForumElements.length; m++)
+	{
 		document.getElementById("pinned_forums").appendChild(pinnedForumElements[m]);
 	}
 }
 
-function mcbSet() {
+/**
+ * Decides whether various UI elements need to be disabled.
+ * Calls pinnedSelect function if enabling elements.
+ */
+function mcbSet()
+{
 	toggleDependentPrefUI("nestSaMenu", "pinned_forums", "unpinned_forums", "pinButton", 
 		"unpinButton", "moveUpButton", "moveDownButton", "addSeparatorButton", "addURLButton");
 	let alreadyStar = document.getElementById("salr_starmenupinneditem");
@@ -100,15 +148,15 @@ function mcbSet() {
 		pinnedSelect();
 }
 
-function pinnedSelect() {
+/**
+ * Enables/disables the move Up/Down buttons based on selected item
+ */
+function pinnedSelect()
+{
 	try {
-		// mcbSet can leave these enabled when they shouldn't be. Disable them if so.
+		// Don't do anything if nestSaMenu isn't checked
 		if (!document.getElementById("nestSaMenu").getAttribute("checked"))
-		{
-			document.getElementById("moveUpButton").setAttribute("disabled",true);
-			document.getElementById("moveDownButton").setAttribute("disabled",true);
 			return;
-		}
 
 		var sellist = document.getElementById("pinned_forums").selectedItems;
 		// Only deal with first selected item if multiple selection
@@ -121,6 +169,11 @@ function pinnedSelect() {
 		{
 			document.getElementById("moveUpButton").setAttribute("disabled", sellist.previousSibling ? false : true);
 			document.getElementById("moveDownButton").setAttribute("disabled", sellist.nextSibling ? false : true);
+		}
+		else
+		{
+			document.getElementById("moveUpButton").setAttribute("disabled",true);
+			document.getElementById("moveDownButton").setAttribute("disabled",true);
 		}
 	} catch(e) { 
 		window.alert("pinned select error: " + e); 
@@ -227,7 +280,7 @@ function pinnedListChanged() {
 		var fnum = child.getAttribute("forumnum");
 		pflist.push( fnum );
 		
-		if (fnum=="starred") { 
+		if (fnum==="starred") { 
 			document.getElementById("addStarMenuButton").setAttribute("disabled",true);
 		}
 		
@@ -247,7 +300,7 @@ function pinnedListChanged() {
 
 function RebuildSAMenus()
 {
-	if (document.getElementById('salastreadpref').__SAMenuChanged == true)
+	if (document.getElementById('salastreadpref').__SAMenuChanged === true)
 	{
 		// Get all browser windows
 		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]  
