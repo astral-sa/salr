@@ -1,6 +1,6 @@
 {
   "name": "salr",
-  "version": "3.0.0-beta.6",
+  "version": "3.0.0-beta.7",
   "description": "SA Last Read Forum Enhancements",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
