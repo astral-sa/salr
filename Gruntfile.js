@@ -67,7 +67,7 @@ module.exports = function(grunt)
 		compress: {
 			main: {
 				options: {
-					archive: 'salastread_<%= grunt.option(\'gitRevision\') %>.xpi',
+					archive: 'salastread_v<%= grunt.option(\'gitRevision\') %>.xpi',
 					mode: 'zip',
 					level: 9
 				},
@@ -83,7 +83,7 @@ module.exports = function(grunt)
 				commitMessage: 'Release v%VERSION%',
 				commitFiles: ['package.json'],
 				createTag: true,
-				tagName: 'v%VERSION%',
+				tagName: '%VERSION%',
 				tagMessage: 'Version %VERSION%',
 				push: false,
 			}

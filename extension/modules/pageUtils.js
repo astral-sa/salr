@@ -149,7 +149,7 @@ let PageUtils = exports.PageUtils =
 			break;
 		}
 
-		if (fid == 0 || isNaN(fid))
+		if (fid === 0 || isNaN(fid))
 		{
 			fid = false;
 		}
@@ -223,7 +223,7 @@ let PageUtils = exports.PageUtils =
 			break;
 		}
 
-		if (tid == 0 || isNaN(tid))
+		if (tid === 0 || isNaN(tid))
 		{
 			tid = false;
 		}

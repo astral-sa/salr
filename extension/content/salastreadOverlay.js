@@ -1965,17 +1965,16 @@ var gSALR = {
 	// This function should be removed if SALR ever allows more detailed color settings (backgrounds, font colors, etc)
 	handleBodyClassing: function(doc)
 	{
-		var docbody = doc.body;
-		var addclass = " somethingawfulforum";
 		var phmatch = doc.location.href.match( /\/([^\/]*)\.php/ );
 		if (phmatch)
 		{
-			addclass += " somethingawfulforum_"+phmatch[1]+"_php";
-		}
-		if (docbody)
-			docbody.className += addclass;
-	},
+			var addclass = " somethingawfulforum_"+phmatch[1]+"_php";
+			var docbody = doc.body;
+			if (docbody)
+				docbody.className += addclass;
 
+		}
+	},
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

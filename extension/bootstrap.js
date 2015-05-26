@@ -18,7 +18,7 @@ function startup(data,reason) {
 	addonData = data;
 
 	Services.obs.addObserver(RequireObserver, "salr-require", true);
-	onShutdown.add(function() Services.obs.removeObserver(RequireObserver, "salr-require"));
+	onShutdown.add(function() { Services.obs.removeObserver(RequireObserver, "salr-require"); });
 
 	require("main");
 }

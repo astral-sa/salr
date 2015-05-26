@@ -329,12 +329,16 @@ let DB = exports.DB =
 		{
 			this.populateThreadDataCache();
 		}
-		var threads = [];
-		for each (let threadData in this.threadDataCache)
+		let threads = [];
+		for (let threadDataKey in this.threadDataCache)
 		{
-			if (threadData.ignore == 1)
+			if (this.threadDataCache.hasOwnProperty(threadDataKey))
 			{
-				threads[threadData.threadid] = threadData.title;
+				let threadData = this.threadDataCache[threadDataKey];
+				if (threadData.ignore === 1)
+				{
+					threads[threadData.threadid] = threadData.title;
+				}
 			}
 		}
 		return threads;
@@ -349,11 +353,15 @@ let DB = exports.DB =
 			this.populateThreadDataCache();
 		}
 		var threads = [];
-		for each (let threadData in this.threadDataCache)
+		for (let threadDataKey in this.threadDataCache)
 		{
-			if (threadData.star == 1)
+			if (this.threadDataCache.hasOwnProperty(threadDataKey))
 			{
-				threads[threadData.threadid] = threadData.title;
+				let threadData = this.threadDataCache[threadDataKey];
+				if (threadData.star === 1)
+				{
+					threads[threadData.threadid] = threadData.title;
+				}
 			}
 		}
 		return threads;
@@ -774,14 +782,18 @@ let DB = exports.DB =
 	getCustomizedPosters: function()
 	{
 		var users = [];
-		for each (let userData in this.userDataCache)
+		for (let userDataKey in this.userDataCache)
 		{
-			if (userData.color != '0' || userData.background != '0' || (userData.notes != '' && userData.notes != null))
+			if (this.userDataCache.hasOwnProperty(userDataKey))
 			{
-				var user = {};
-				user.userid = userData.userid;
-				user.username = userData.username;
-				users.push(user);
+				let userData = this.userDataCache[userDataKey];
+				if (userData.color !== '0' || userData.background !== '0' || (userData.notes !== '' && userData.notes !== null))
+				{
+					var user = {};
+					user.userid = userData.userid;
+					user.username = userData.username;
+					users.push(user);
+				}
 			}
 		}
 		return users;
