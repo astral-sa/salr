@@ -11,12 +11,14 @@ var gSALRThreadsPane = {
 		this.toggleDependentPrefUI("enableVideoEmbedderCheckbox","videoEmbedderGetTitlesCheckbox");
 		this.toggleDependentPrefUI("customvidsize","videoEmbedCustomWidthbox","videoEmbedCustomWidthLabel","videoEmbedCustomHeightbox","videoEmbedCustomHeightLabel");
 
-		setEventListener("enableVideoEmbedderCheckbox", "command", function () {
+		setEventListener("enableVideoEmbedderCheckbox", "command", function() {
 			gSALRThreadsPane.toggleDependentPrefUI("enableVideoEmbedderCheckbox",
 				"videoEmbedderGetTitlesCheckbox");});
-		setEventListener("radio_videoEmbedSize", "command", function () {
+		setEventListener("radio_videoEmbedSize", "command", function() {
 			gSALRThreadsPane.toggleDependentPrefUI("customvidsize",
 				"videoEmbedCustomWidthbox","videoEmbedCustomWidthLabel","videoEmbedCustomHeightbox","videoEmbedCustomHeightLabel");});
+		setEventListener("hideReportButtons", "change", Styles.updateStyles);
+		setEventListener("shrinkThreadListTitlePages", "change", Styles.updateStyles);
 	},
 
 	/* Function to toggle the disabled status of preferences

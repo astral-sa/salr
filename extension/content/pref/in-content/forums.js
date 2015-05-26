@@ -13,16 +13,20 @@ var gSALRForumsPane = {
 		this.toggleDependentPrefUI("toggleLastReadIcon","lastReadLabel","lastReadIcon","lastReadIconDefault");
 		this.toggleDependentPrefUI("toggleUnvisitIcon","unvisitLabel","unvisitIcon","unvisitIconDefault");
 
-		setEventListener("newReCount", "command", function () {
+		setEventListener("newReCount", "command", function() {
+			window.setTimeout(Styles.updateStyles, 100);
 			gSALRForumsPane.toggleDependentPrefUI("newReCount","newReCountNewLine");});
-		setEventListener("showThreadsWNPCP", "command", function () {
+		setEventListener("showThreadsWNPCP", "command", function() {
 			gSALRForumsPane.toggleDependentPrefUI("showThreadsWNPCP","promoteStickiesWNPCP");});
-		setEventListener("toggleLastReadIcon", "command", function () {
+		setEventListener("toggleLastReadIcon", "command", function() {
+			window.setTimeout(Styles.updateStyles, 100);
 			gSALRForumsPane.toggleDependentPrefUI("toggleLastReadIcon","lastReadLabel","lastReadIcon","lastReadIconDefault");});
-		setEventListener("toggleUnvisitIcon", "command", function () {
+		setEventListener("toggleUnvisitIcon", "command", function() {
+			window.setTimeout(Styles.updateStyles, 100);
 			gSALRForumsPane.toggleDependentPrefUI("toggleUnvisitIcon","unvisitLabel","unvisitIcon","unvisitIconDefault");});
 		setEventListener("lastReadIconDefault", "command", gSALRForumsPane.lastReadIconDefault);
 		setEventListener("unvisitIconDefault", "command", gSALRForumsPane.unvisitIconDefault);
+		setEventListener("showForumModsList", "change", Styles.updateStyles);
 	},
 
 	/* Function to toggle the disabled status of preferences

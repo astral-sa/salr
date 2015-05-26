@@ -16,8 +16,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	// Adds "Search Thread" box to document - new search
 	addNewThreadSearchBox: function(doc, forumid, threadid, searchThis, placeHere)
 	{
-		// Prevent weird zoom behavior
-		searchThis.parentNode.style.overflow = "hidden";
 		let newSearchBox = doc.createElement('li');
 		let newSearchForm = doc.createElement('form');
 		newSearchBox.appendChild(newSearchForm);
@@ -56,8 +54,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	// Adds "Search Thread" box to document - old search
 	addOldThreadSearchBox: function(doc, forumid, threadid, searchThis, placeHere)
 	{
-		// Prevent weird zoom behavior
-		searchThis.parentNode.style.overflow = "hidden";
 		var newSearchBox = doc.createElement('li');
 		var newSearchForm = doc.createElement('form');
 		newSearchBox.appendChild(newSearchForm);
@@ -287,10 +283,10 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 										imgurChecker.open("GET", imgurApiTarg, true);
 										imgurChecker.onreadystatechange = function()
 										{
-											if (imgurChecker.readyState == 4)
+											if (imgurChecker.readyState === 4)
 											{
 												DB.imgurWorkaroundCache[imgurImageInLink[1]] = true;
-												if (imgurChecker.status == 404)
+												if (imgurChecker.status === 404)
 												{
 													newImgtoCheck.src = oldImgSrc;
 													newImgtoCheck.title = "Forum bug-created link removed by SALR";

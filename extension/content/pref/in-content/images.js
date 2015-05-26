@@ -12,10 +12,10 @@ var gSALRImagesPane = {
 		this.toggleDependentPrefUI("toggleImageScaleCheckbox","maxImgWidth","maxImgWidthLabel","maxImgWidthPx",
 			"maxImgHeight","maxImgHeightLabel","maxImgHeightPx");
 
-		setEventListener("toggleTtICheckbox", "command", function () {
+		setEventListener("toggleTtICheckbox", "command", function() {
 			gSALRImagesPane.toggleDependentPrefUI("toggleTtICheckbox",
 				"dontTtINws","dontTtISpoilers","dontTtIRead");});
-		setEventListener("toggleImageScaleCheckbox", "command", function () {
+		setEventListener("toggleImageScaleCheckbox", "command", function() {
 			gSALRImagesPane.toggleDependentPrefUI("toggleImageScaleCheckbox",
 				"maxImgWidth","maxImgWidthLabel","maxImgWidthPx",
 				"maxImgHeight","maxImgHeightLabel","maxImgHeightPx");});

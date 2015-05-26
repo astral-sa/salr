@@ -10,7 +10,8 @@ var gSALRMenusPane = {
 		}
 
 		setEventListener("showSAForumMenu", "change", gSALRMenusPane.changedPrefshowSAForumMenu);
-		setEventListener("nestSaMenu", "command", gSALRMenusPane.nestedMenusToggled);
+		setEventListener("useSAForumMenuBackground", "change", UI.toggleMenuGrenadeBackground);
+		setEventListener("nestSAForumMenu", "change", gSALRMenusPane.nestedMenusToggled);
 		setEventListener("pinButton", "command", gSALRMenusPane.pinClick);
 		setEventListener("unpinButton", "command", gSALRMenusPane.unPinClick);
 		setEventListener("moveUpButton", "command", function () {
@@ -225,7 +226,7 @@ var gSALRMenusPane = {
 	nestedMenusToggled: function()
 	{
 		// Queue up a menu rebuild
-		window.setTimeout(UI.rebuildAllMenus, 500);
+		window.setTimeout(UI.rebuildAllMenus, 100);
 		this._SAMenuChanged = false;
 
 		// Handle enabling/disabling pref UI elements

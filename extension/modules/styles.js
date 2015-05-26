@@ -145,11 +145,11 @@ let Styles = exports.Styles =
 		// Called at first browser window load and after a change affecting our CSS
 		try
 		{
-			this.unloadStyles();
+			Styles.unloadStyles();
 			let ioService = Components.classes["@mozilla.org/network/io-service;1"]
                 .getService(Components.interfaces.nsIIOService);
-			this._salrStyleURI = ioService.newURI("data:text/css," + encodeURIComponent(this.generateSSSCSS()), null, null);
-			this.loadStyles();
+			Styles._salrStyleURI = ioService.newURI("data:text/css," + encodeURIComponent(Styles.generateSSSCSS()), null, null);
+			Styles.loadStyles();
 		}
 		catch(e)
 		{
@@ -164,24 +164,24 @@ let Styles = exports.Styles =
 
 	loadStyles: function()
 	{
-		if (this._salrStyleURI != null)
+		if (Styles._salrStyleURI !== null)
 		{
 			let styleService = Components.classes["@mozilla.org/content/style-sheet-service;1"]
                     .getService(Components.interfaces.nsIStyleSheetService);
 			// Reregister if necessary
-			if (!styleService.sheetRegistered(this._salrStyleURI, styleService.AUTHOR_SHEET))
-				styleService.loadAndRegisterSheet(this._salrStyleURI, styleService.AUTHOR_SHEET);
+			if (!styleService.sheetRegistered(Styles._salrStyleURI, styleService.AUTHOR_SHEET))
+				styleService.loadAndRegisterSheet(Styles._salrStyleURI, styleService.AUTHOR_SHEET);
 		}
 	},
 
 	unloadStyles: function()
 	{
-		if (this._salrStyleURI != null)
+		if (Styles._salrStyleURI !== null)
 		{
 			let styleService = Components.classes["@mozilla.org/content/style-sheet-service;1"]
 						.getService(Components.interfaces.nsIStyleSheetService);
-			if (styleService.sheetRegistered(this._salrStyleURI, styleService.AUTHOR_SHEET))
-				styleService.unregisterSheet(this._salrStyleURI, styleService.AUTHOR_SHEET);
+			if (styleService.sheetRegistered(Styles._salrStyleURI, styleService.AUTHOR_SHEET))
+				styleService.unregisterSheet(Styles._salrStyleURI, styleService.AUTHOR_SHEET);
 		}
 	},
 
@@ -372,7 +372,7 @@ let Styles = exports.Styles =
 		{
 			CSSFile += 'table.salrPostIgnored { display:none !important; }\n';
 		}
-		if (Prefs.getPref('cancerTreatment') == 1)
+		if (Prefs.getPref('cancerTreatment') === 1)
 		{
 			// 0 - do nothing; 1 - restore opacity and add biohazard BG; 2 - hide post entirely
 			CSSFile += 'td.postbody .cancerous { opacity: 1; }\n';
@@ -381,12 +381,13 @@ let Styles = exports.Styles =
 		// Remove forum-added blue border from our video embeds
 		CSSFile += 'td.postbody iframe.salr_video { border: none; }\n';
 
-		// Style SALR search box
-		CSSFile += '#salrsearchdiv { margin-left: 6px; line-height: 22px; }\n';
-		// Firefox <19
-		CSSFile += ':-moz-placeholder { font-style: italic; color: #999; }\n';
-		// Firefox 19+
-		CSSFile += '#salrsearchbox::-moz-placeholder { font-style: italic; color: #999; }\n';
+		/* Style SALR search box.
+			:-moz-placeholder - Firefox <19
+			::-moz-placeholder - Firefox 19+ */
+		CSSFile += 'div.threadbar.top { overflow: hidden; }\n' +
+					'#salrsearchdiv { margin-left: 6px; line-height: 22px; }\n' +
+					':-moz-placeholder { font-style: italic; color: #999; }\n' +
+					'#salrsearchbox::-moz-placeholder { font-style: italic; color: #999; }\n';
 
 		// Shrink posts by ignored users (and restore gradients)
 		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n' +
@@ -413,9 +414,8 @@ let Styles = exports.Styles =
 						'; }\n' +
 						'table.post tr.seen1 td.userinfo, table.post tr.seen1 td.postdate { background-color:' +
 						Prefs.getPref('seenPostLight2') +
-						'; }\n';
-
-			CSSFile += 'table.post tr.seen2 td { background-color:' +
+						'; }\n' +
+						'table.post tr.seen2 td { background-color:' +
 						Prefs.getPref('seenPostDark') +
 						'; }\n' +
 						'table.post tr.seen2 td.userinfo, table.post tr.seen2 td.postdate { background-color:' +
@@ -428,9 +428,8 @@ let Styles = exports.Styles =
 						'; }\n' +
 						'table.post tr.altcolor1 td.userinfo, table.post tr.altcolor1 td.postdate { background-color:' +
 						Prefs.getPref('unseenPostLight2') +
-						'; }\n';
-
-			CSSFile += 'table.post tr.altcolor2 td { background-color:' +
+						'; }\n' +
+						'table.post tr.altcolor2 td { background-color:' +
 						Prefs.getPref('unseenPostDark') +
 						'; }\n' +
 						'table.post tr.altcolor2 td.userinfo, table.post tr.altcolor2 td.postdate { background-color:' +

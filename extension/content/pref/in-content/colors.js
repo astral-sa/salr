@@ -13,6 +13,9 @@ var gSALRColorsPane = {
 
 		setEventListener("colorsForumtype", "command", gSALRColorsPane.loadColors);
 		setEventListener("loadDefaultColorsButton", "command", gSALRColorsPane.loadDefaultColors);
+		setEventListener("dontHighlightThreads", "change", Styles.updateStyles);
+		setEventListener("dontHighlightPosts", "change", Styles.updateStyles);
+		setEventListener("disableGradients", "change", Styles.updateStyles);
 		let colorSamples = ["RWND","RWNL","PITR","RD","RL","URD","URL",
 				"ASL","PSL","ASD","PSD","AUL","PUL","AUD","PUD","EV","MPIQ"];
 		for (let i = 0; i < colorSamples.length; i++)

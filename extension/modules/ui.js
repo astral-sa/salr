@@ -82,7 +82,7 @@ let UI = exports.UI =
 
 		// Add observer for opening SALR Config from Addons page
 		Services.obs.addObserver(SALRConfigObserver, "addon-options-displayed", true);
-		onShutdown.add(function() Services.obs.removeObserver(SALRConfigObserver, "addon-options-displayed"));
+		onShutdown.add(function() { Services.obs.removeObserver(SALRConfigObserver, "addon-options-displayed"); });
 	},
 
 	addToolbarButton: function(window)
@@ -713,6 +713,21 @@ let UI = exports.UI =
 			UI.buildForumMenu(win, 'menubar');
 			UI.buildForumMenu(win, 'toolbar');
 		}
+	},
+
+	/** Iterates through windows to set or remove menu grenade BG class */
+	toggleMenuGrenadeBackground: function()
+	{
+		let useGrenade = Prefs.getPref('useSAForumMenuBackground');
+		forEachOpenWindow(function(window) {
+			let doc = window.document;
+			let menubar = doc.getElementById("menupopup_SAforums");
+			if (menubar)
+				menubar.className = useGrenade ? "lastread_menu" : "";
+			let toolbar = doc.getElementById("salr-toolbar-popup");
+			if (toolbar)
+				toolbar.className = useGrenade ? "lastread_menu" : "";
+		});
 	},
 
 	/**

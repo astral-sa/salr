@@ -14,11 +14,12 @@ var gSALRUsersPane = {
 		setEventListener("fgcolorpickerbutton", "command", gSALRUsersPane.colorClicked);
 		setEventListener("bgcolorpickerbutton", "command", gSALRUsersPane.colorClicked);
 		setEventListener("updateNoteButton", "command", gSALRUsersPane.updateNote);
-		setEventListener("fgColorPopupItem", "command", function () {
+		setEventListener("fgColorPopupItem", "command", function() {
 			gSALRUsersPane.changeColor('color');});
-		setEventListener("bgColorPopupItem", "command", function () {
+		setEventListener("bgColorPopupItem", "command", function() {
 			gSALRUsersPane.changeColor('backgroundColor');});
 		setEventListener("notePopupItem", "command", gSALRUsersPane.editNote);
+		setEventListener("hideCustomTitles", "change", Styles.updateStyles);
 
 		//get usernames/ids
 		var users = DB.getCustomizedPosters();
@@ -216,7 +217,7 @@ var gSALRUsersPane = {
 								break;
 							}
 						}
-						if (foundit == false)
+						if (foundit === false)
 						{
 							DB.setPosterNotes(text.value, "New User");
 							this.addListUser(listBox, text.value, udata.username, true);
