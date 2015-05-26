@@ -10,7 +10,7 @@ var gSALRMenusPane = {
 		}
 
 		setEventListener("showSAForumMenu", "change", gSALRMenusPane.changedPrefshowSAForumMenu);
-		setEventListener("nestSaMenu", "command", gSALRMenusPane.mcbSet);
+		setEventListener("nestSaMenu", "command", gSALRMenusPane.nestedMenusToggled);
 		setEventListener("pinButton", "command", gSALRMenusPane.pinClick);
 		setEventListener("unpinButton", "command", gSALRMenusPane.unPinClick);
 		setEventListener("moveUpButton", "command", function () {
@@ -221,6 +221,17 @@ var gSALRMenusPane = {
 		}
 	},
 
+	/** Called when nested menu preference is toggled. Rebuilds all menus. */
+	nestedMenusToggled: function()
+	{
+		// Queue up a menu rebuild
+		window.setTimeout(UI.rebuildAllMenus, 500);
+		this._SAMenuChanged = false;
+
+		// Handle enabling/disabling pref UI elements
+		this.mcbSet();
+	},
+
 	moveClick: function(moveDown)
 	{
 		var sellist = document.getElementById("pinned_forums").selectedItems[0];
@@ -331,28 +342,41 @@ var gSALRMenusPane = {
 		this.pinnedListChanged();
 	},
 
+	/**
+	 * The pinned list has changed: build array of pinned numbers to save
+	 *     to preferences.
+	 *     Build array of pinned elements to use for rebuilding the pin menus.
+	 */
 	pinnedListChanged: function()
 	{
 		var pflist = [];
+		var pfElements = [];
 		var pf = document.getElementById("pinned_forums");
 		var child = pf.firstChild;
 
 		document.getElementById("addStarMenuButton").setAttribute("disabled",false);
 
-		while (child) {
+		let i = 0;
+		while (child)
+		{
 			var fnum = child.getAttribute("forumnum");
 			pflist.push( fnum );
-			
-			if (fnum==="starred") { 
+			if (fnum === "starred")
+			{ 
 				document.getElementById("addStarMenuButton").setAttribute("disabled",true);
+			}
+			else if (fnum.substring(0, 4) !== "URL[" && fnum !== "sep")
+			{
+				pfElements[i] = (child.getAttribute("label"));
 			}
 
 			child = child.nextSibling;
+			i++;
 		}
 
 		var menustr = pflist.join(",");
-		//var oldmenustr = document.getElementById("menuPinnedForums").value;
 
+		// Save the preference
 		if (menustr !== "") {
 			document.getElementById("menuPinnedForums").value = menustr;
 		} else {
@@ -360,11 +384,15 @@ var gSALRMenusPane = {
 		}
 		this._SAMenuChanged = true;
 		// instant apply, so we should do this immediately.
-		// TODO: Make this more efficient than a full rebuild
-		this.RebuildSAMenus();
+		this.rebuildPinMenus(pflist, pfElements);
 	},
 
-	RebuildSAMenus: function()
+	/**
+	 * Iterates through browser windows and calls for pin rebuilds
+	 * @param {Array} pflist     Array of strings: pinned elements from listbox
+	 * @param {Array} pfElements Array of strings: forum names from listbox
+	 */
+	rebuildPinMenus: function(pflist, pfElements)
 	{
 		if (this._SAMenuChanged === true)
 		{
@@ -372,12 +400,13 @@ var gSALRMenusPane = {
 			var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]  
 						   .getService(Components.interfaces.nsIWindowMediator);  
 			var enumerator = wm.getEnumerator("navigator:browser");  
-			while(enumerator.hasMoreElements()) {  
+			while(enumerator.hasMoreElements())
+			{  
 				var win = enumerator.getNext();
 
-				// Rebuild SA menus in all browser windows
-				UI.buildForumMenu(win, 'menubar');
-				UI.buildForumMenu(win, 'toolbar');
+				// Rebuild pin menus in all browser windows
+				UI.buildPinnedForumMenuItems(win, 'menubar', pflist, pfElements);
+				UI.buildPinnedForumMenuItems(win, 'toolbar', pflist, pfElements);
 			}
 			this._SAMenuChanged = false;
 		}

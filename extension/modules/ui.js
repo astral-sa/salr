@@ -518,7 +518,9 @@ let UI = exports.UI =
 	 * @param {Window} win                 Window to build in
 	 * @param {string} menuLoc             Whether we're building in menubar or toolbar
 	 * @param {Array}  pinnedForumNumbers  Array of pinned forum numbers to build
-	 * @param {Array}  pinnedForumElements Array of pinned forum elements
+	 * @param {Array}  pinnedForumElements Array of pinned forum elements:
+	 *                                         Called from UI: XML <forum> elements
+	 *                                         Called from Prefs: strings
 	 */
 	buildPinnedForumMenuItems: function(win, menuLoc, pinnedForumNumbers, pinnedForumElements)
 	{
@@ -530,20 +532,37 @@ let UI = exports.UI =
 			menupopup = document.getElementById("salr-toolbar-popup");
 
 		let abovePinned = menupopup.getElementsByClassName("salr_sepabovepinned")[0];
-		abovePinned.hidden = false;
+
+		// Bail if the menu hasn't been created yet (toolbar)
+		if (!abovePinned)
+			return;
+
+		// Clear out any old elements we might have
+		while (abovePinned.nextSibling)
+			menupopup.removeChild(abovePinned.nextSibling);
+
+		if (pinnedForumNumbers.length > 0)
+			abovePinned.hidden = false;
+		else
+			abovePinned.hidden = true;
+
 		for (var j = 0; j < pinnedForumElements.length || j < pinnedForumNumbers.length; j++)
 		{
 			if (pinnedForumElements[j])
 			{
 				var thisforum = pinnedForumElements[j];
 				let salrMenu = document.createElement("menuitem");
-				var forumname = thisforum.getAttribute("name");
+				let forumname;
+				if (typeof thisforum === "string")
+					forumname = thisforum;
+				else
+					forumname = thisforum.getAttribute("name");
 				while (forumname.substring(0,1) === " ")
 				{
 					forumname = forumname.substring(1);
 				}
 				salrMenu.setAttribute("label", forumname);
-				salrMenu.setAttribute("forumnum", thisforum.getAttribute("id"));
+				salrMenu.setAttribute("forumnum", pinnedForumNumbers[j]);
 				salrMenu.addEventListener("click", UI.menuItemCommand, false);
 				salrMenu.addEventListener("command", UI.menuItemCommand, false);
 				salrMenu.setAttribute("class", "lastread_menu_sub");
@@ -553,7 +572,7 @@ let UI = exports.UI =
 			{
 				menupopup.appendChild(document.createElement("menuseparator"));
 			}
-			else if (typeof(pinnedForumNumbers[j]) === "string" && pinnedForumNumbers[j].substring(0, 3) === "URL")
+			else if (typeof(pinnedForumNumbers[j]) === "string" && pinnedForumNumbers[j].substring(0, 4) === "URL[")
 			{
 				var umatch = pinnedForumNumbers[j].match(/^URL\[(.*?)\]\[(.*?)\]$/);
 				if (umatch)
@@ -677,6 +696,22 @@ let UI = exports.UI =
 			// Menu is ready now; show it.
 			if (menuLoc === "menubar")
 				document.getElementById("salr-menu").style.display = "-moz-box";
+		}
+	},
+
+	// Moved from preferences. Need to redo and make more efficient
+	rebuildAllMenus: function()
+	{
+		// Get all browser windows
+		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]  
+					   .getService(Components.interfaces.nsIWindowMediator);  
+		var enumerator = wm.getEnumerator("navigator:browser");  
+		while(enumerator.hasMoreElements()) {  
+
+			var win = enumerator.getNext();
+			// Rebuild SA menus in all browser windows
+			UI.buildForumMenu(win, 'menubar');
+			UI.buildForumMenu(win, 'toolbar');
 		}
 	},
 
