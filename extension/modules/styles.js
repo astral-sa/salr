@@ -29,59 +29,59 @@ let Styles = exports.Styles =
 			// Color types
 			if (PageUtils.inFYAD(forumid))
 			{
-				CSSFile += 'tr.thread td { background-color:';
-				CSSFile += Prefs.getPref('unreadLightFYAD');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread td.icon, tr.thread td.author,';
-				CSSFile += 'tr.thread td.views, tr.thread td.lastpost { background-color:';
-				CSSFile += Prefs.getPref('unreadDarkFYAD');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen td { background-color:';
-				CSSFile += Prefs.getPref('readLightFYAD');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
-				CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
-				CSSFile += Prefs.getPref('readDarkFYAD');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen.newposts td { background-color:';
-				CSSFile += Prefs.getPref('readWithNewLightFYAD');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
-				CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
-				CSSFile += Prefs.getPref('readWithNewDarkFYAD');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
-				CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
-				CSSFile += Prefs.getPref('postedInThreadReFYAD');
-				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread td { background-color:' +
+							Prefs.getPref('unreadLightFYAD') +
+							' !important; }\n' +
+							'tr.thread td.icon, tr.thread td.author,' +
+							'tr.thread td.views, tr.thread td.lastpost { background-color:' +
+							Prefs.getPref('unreadDarkFYAD') +
+							' !important; }\n' +
+							'tr.thread.seen td { background-color:' +
+							Prefs.getPref('readLightFYAD') +
+							' !important; }\n' +
+							'tr.thread.seen td.icon, tr.thread.seen td.author,' +
+							'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:' +
+							Prefs.getPref('readDarkFYAD') +
+							' !important; }\n' +
+							'tr.thread.seen.newposts td { background-color:' +
+							Prefs.getPref('readWithNewLightFYAD') +
+							' !important; }\n' +
+							'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,' +
+							'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:' +
+							Prefs.getPref('readWithNewDarkFYAD') +
+							' !important; }\n' +
+							'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,' +
+							'tr.thread.seen td.replies.salrPostedIn { background-color:' +
+							Prefs.getPref('postedInThreadReFYAD') +
+							' !important; }\n';
 			}
 			else if (PageUtils.inBYOB(forumid))
 			{
-				CSSFile += 'tr.thread td { background-color:';
-				CSSFile += Prefs.getPref('unreadLightBYOB');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread td.icon, tr.thread td.author,';
-				CSSFile += 'tr.thread td.views, tr.thread td.lastpost { background-color:';
-				CSSFile += Prefs.getPref('unreadDarkBYOB');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen td { background-color:';
-				CSSFile += Prefs.getPref('readLightBYOB');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen td.icon, tr.thread.seen td.author,';
-				CSSFile += 'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:';
-				CSSFile += Prefs.getPref('readDarkBYOB');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen.newposts td { background-color:';
-				CSSFile += Prefs.getPref('readWithNewLightBYOB');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,';
-				CSSFile += 'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:';
-				CSSFile += Prefs.getPref('readWithNewDarkBYOB');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,';
-				CSSFile += 'tr.thread.seen td.replies.salrPostedIn { background-color:';
-				CSSFile += Prefs.getPref('postedInThreadReBYOB');
-				CSSFile += ' !important; }\n';
+				CSSFile += 'tr.thread td { background-color:' +
+							Prefs.getPref('unreadLightBYOB') +
+							' !important; }\n' +
+							'tr.thread td.icon, tr.thread td.author,' +
+							'tr.thread td.views, tr.thread td.lastpost { background-color:' +
+							Prefs.getPref('unreadDarkBYOB') +
+							' !important; }\n' +
+							'tr.thread.seen td { background-color:' +
+							Prefs.getPref('readLightBYOB') +
+							' !important; }\n' +
+							'tr.thread.seen td.icon, tr.thread.seen td.author,' +
+							'tr.thread.seen td.views, tr.thread.seen td.lastpost { background-color:' +
+							Prefs.getPref('readDarkBYOB') +
+							' !important; }\n' +
+							'tr.thread.seen.newposts td { background-color:' +
+							Prefs.getPref('readWithNewLightBYOB') +
+							' !important; }\n' +
+							'tr.thread.seen.newposts td.icon, tr.thread.seen.newposts td.author,' +
+							'tr.thread.seen.newposts td.views, tr.thread.seen.newposts td.lastpost { background-color:' +
+							Prefs.getPref('readWithNewDarkBYOB') +
+							' !important; }\n' +
+							'tr.thread.seen.newposts td.replies.salrPostedIn, tr.thread.category0 td.replies.salrPostedIn,' +
+							'tr.thread.seen td.replies.salrPostedIn { background-color:' +
+							Prefs.getPref('postedInThreadReBYOB') +
+							' !important; }\n';
 			}
 		}
 		return CSSFile;
@@ -102,37 +102,37 @@ let Styles = exports.Styles =
 			if (PageUtils.inFYAD(forumid))
 			{
 				// These are for in thread coloring
-				CSSFile += 'table.post tr.seen1 td { background-color:';
-				CSSFile += Prefs.getPref('seenPostDarkFYAD');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'table.post tr.seen2 td { background-color:';
-				CSSFile += Prefs.getPref('seenPostLightFYAD');
-				CSSFile += ' !important; }\n';
+				CSSFile += 'table.post tr.seen1 td { background-color:' +
+							Prefs.getPref('seenPostDarkFYAD') +
+							' !important; }\n' +
+							'table.post tr.seen2 td { background-color:' +
+							Prefs.getPref('seenPostLightFYAD') +
+							' !important; }\n';
 				// These are for unseen posts
-				CSSFile += 'table.post tr.altcolor2 td { background-color:';
-				CSSFile += Prefs.getPref('unseenPostDarkFYAD');
-				CSSFile += '; }\n';
-				CSSFile += 'table.post tr.altcolor1 td { background-color:';
-				CSSFile += Prefs.getPref('unseenPostLightFYAD');
-				CSSFile += '; }\n';
+				CSSFile += 'table.post tr.altcolor2 td { background-color:' +
+							Prefs.getPref('unseenPostDarkFYAD') +
+							'; }\n' +
+							'table.post tr.altcolor1 td { background-color:' +
+							Prefs.getPref('unseenPostLightFYAD') +
+							'; }\n';
 			}
 			// BYOB colors
 			else if (PageUtils.inBYOB(forumid))
 			{
 				// These are for in thread coloring
-				CSSFile += 'table.post tr.seen1 td { background-color:';
-				CSSFile += Prefs.getPref('seenPostLightBYOB');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'table.post tr.seen2 td { background-color:';
-				CSSFile += Prefs.getPref('seenPostDarkBYOB');
-				CSSFile += ' !important; }\n';
+				CSSFile += 'table.post tr.seen1 td { background-color:' +
+							Prefs.getPref('seenPostLightBYOB') +
+							' !important; }\n' +
+							'table.post tr.seen2 td { background-color:' +
+							Prefs.getPref('seenPostDarkBYOB') +
+							' !important; }\n';
 				// These are for unseen posts
-				CSSFile += 'table.post tr.altcolor2 td { background-color:';
-				CSSFile += Prefs.getPref('unseenPostLightBYOB');
-				CSSFile += ' !important; }\n';
-				CSSFile += 'table.post tr.altcolor1 td { background-color:';
-				CSSFile += Prefs.getPref('unseenPostDarkBYOB');
-				CSSFile += ' !important; }\n';
+				CSSFile += 'table.post tr.altcolor2 td { background-color:' +
+							Prefs.getPref('unseenPostLightBYOB') +
+							' !important; }\n' +
+							'table.post tr.altcolor1 td { background-color:' +
+							Prefs.getPref('unseenPostDarkBYOB') +
+							' !important; }\n';
 			}
 		}
 
@@ -188,15 +188,16 @@ let Styles = exports.Styles =
 	generateSSSCSS: function()
 	{
 		// threadlist CSS
-		let CSSFile = '@-moz-document url-prefix("http://forums.somethingawful.com/forumdisplay.php"),\n';
-		CSSFile += 'url-prefix("http://forums.somethingawful.com/usercp.php"),\n';
-		CSSFile += 'url-prefix("http://forums.somethingawful.com/bookmarkthreads.php") {\n';
+		let CSSFile = '@-moz-document url-prefix("http://forums.somethingawful.com/forumdisplay.php"),\n' +
+						'url-prefix("http://forums.somethingawful.com/usercp.php"),\n' +
+						'url-prefix("http://forums.somethingawful.com/bookmarkthreads.php") {\n';
 
 		// Shrink 'Pages:' list in thread list
 		if (Prefs.getPref('shrinkThreadListTitlePages') === true)
 		{
-			CSSFile += '.thread { height: 44px; min-height: 44px; }\n'; // Reduce the padding too
-			CSSFile += '#forum td.title, #forum td.title .title_pages a { font-size: 10px !important; }\n';
+			// Reduce the padding too
+			CSSFile += '.thread { height: 44px; min-height: 44px; }\n' +
+						'#forum td.title, #forum td.title .title_pages a { font-size: 10px !important; }\n';
 		}
 
 		// Allow usernames with multiple words to wrap in thread list
@@ -210,115 +211,115 @@ let Styles = exports.Styles =
 		}
 		if (!Prefs.getPref('disableGradients'))
 		{
-			CSSFile += '#forum tr.thread.seen td, #forum tr.thread.category0 td, ';
-			CSSFile += '#forum tr.thread.category1 td, #forum tr.thread.category2 td {';
-			CSSFile += 'background-image:url("chrome://salastread/skin/gradient.png") !important;';
-			CSSFile += 'background-repeat:repeat-x !important;';
-			CSSFile += 'background-position:center left !important;}\n';
+			CSSFile += '#forum tr.thread.seen td, #forum tr.thread.category0 td, ' +
+						'#forum tr.thread.category1 td, #forum tr.thread.category2 td {' +
+						'background-image:url("chrome://salastread/skin/gradient.png") !important;' +
+						'background-repeat:repeat-x !important;' +
+						'background-position:center left !important;}\n';
 		}
 		if (Prefs.getPref('showUnvisitIcon') && Prefs.getPref('showGoToLastIcon'))
 		{
-			CSSFile += 'td.title div.lastseen {';
-			CSSFile += 'border:0 !important;';
-			CSSFile += 'background:none !important;';
-			CSSFile += '}\n';
+			CSSFile += 'td.title div.lastseen {' +
+						'border:0 !important;' +
+						'background:none !important;' +
+						'}\n';
 		}
 		if (Prefs.getPref('showUnvisitIcon'))
 		{
-			CSSFile += '#forum td.title div.lastseen a.x {';
-			CSSFile += 'background:url(';
-			CSSFile += Prefs.getPref("markThreadUnvisited");
-			CSSFile += ') no-repeat center center !important;';
-			CSSFile += 'text-indent:-9000px !important;';
-			CSSFile += 'width:22px !important;';
-			CSSFile += 'height:22px !important;';
-			CSSFile += 'padding:0 !important;';
-			CSSFile += '}\n';
+			CSSFile += '#forum td.title div.lastseen a.x {' +
+						'background:url(' +
+						Prefs.getPref("markThreadUnvisited") +
+						') no-repeat center center !important;' +
+						'text-indent:-9000px !important;' +
+						'width:22px !important;' +
+						'height:22px !important;' +
+						'padding:0 !important;' +
+						'}\n';
 		}
 		if (Prefs.getPref('showGoToLastIcon'))
 		{
-			CSSFile += '#forum td.title div.lastseen a.count {';
-			CSSFile += 'background:url(';
-			CSSFile += Prefs.getPref("goToLastReadPost");
-			CSSFile += ') no-repeat center center !important;';
-			CSSFile += 'width:22px !important;';
-			CSSFile += 'height:22px !important;';
-			CSSFile += 'border:none !important;';
-			CSSFile += 'padding:0 !important;';
-			CSSFile += '}\n';
-			CSSFile += '#forum td.title div.lastseen a:after { content: "" !important;}';
-			CSSFile += '#forum td.title div.lastseen a.count { min-width: 0px !important; }';
-			CSSFile += '#forum td.title div.lastseen a.count b { display: none !important; }';
+			CSSFile += '#forum td.title div.lastseen a.count {' +
+						'background:url(' +
+						Prefs.getPref("goToLastReadPost") +
+						') no-repeat center center !important;' +
+						'width:22px !important;' +
+						'height:22px !important;' +
+						'border:none !important;' +
+						'padding:0 !important;' +
+						'}\n' +
+						'#forum td.title div.lastseen a:after { content: "" !important;}' +
+						'#forum td.title div.lastseen a.count { min-width: 0px !important; }' +
+						'#forum td.title div.lastseen a.count b { display: none !important; }';
 		}
 		else
 		{
 			CSSFile += '#forum td.title div.lastseen a.count b { display: !important; }';
 			if (!Prefs.getPref("disableNewReCount"))
 			{
-				CSSFile += '#forum td.title div.lastseen a.count {';
-				CSSFile += 'height:12px !important;';
-				CSSFile += '}\n';
+				CSSFile += '#forum td.title div.lastseen a.count {' +
+							'height:12px !important;' +
+							'}\n';
 			}
 		}
 		if (!Prefs.getPref('dontHighlightThreads'))
 		{
-			CSSFile += '#forum tr.thread td.title, #forum tr.thread td.star, #forum tr.thread td.replies, #forum tr.thread td.rating, #forum tr.thread td.button_remove { background-color:';
-			CSSFile += Prefs.getPref('unreadLight');
-			CSSFile += '; }\n';
-			CSSFile += '#forum tr.thread td.icon, #forum tr.thread td.icon2, #forum tr.thread td.author,';
-			CSSFile += '#forum tr.thread td.views, #forum tr.thread td.lastpost { background-color:';
-			CSSFile += Prefs.getPref('unreadDark');
-			CSSFile += '; }\n';
+			CSSFile += '#forum tr.thread td.title, #forum tr.thread td.star, #forum tr.thread td.replies, #forum tr.thread td.rating, #forum tr.thread td.button_remove { background-color:' +
+						Prefs.getPref('unreadLight') +
+						'; }\n' +
+						'#forum tr.thread td.icon, #forum tr.thread td.icon2, #forum tr.thread td.author,' +
+						'#forum tr.thread td.views, #forum tr.thread td.lastpost { background-color:' +
+						Prefs.getPref('unreadDark') +
+						'; }\n';
 
 //bookmarks need a special color if they're unread
 //blue aka "tan"
-			CSSFile += '#forum tr.thread.category0 td.title, #forum tr.thread.category0 td.star, #forum tr.thread.category0 td.replies, #forum tr.thread.category0 td.rating, #forum tr.thread.category0 td.button_remove { background-color:';
-			CSSFile += Prefs.getPref('readWithNewLight');
-			CSSFile += '; }\n'; //marking this and the below as important will cause blue-star threads with new posts to show up as blue instead of green
-			CSSFile += '#forum tr.thread.category0 td.icon, #forum tr.thread.category0 td.icon2, #forum tr.thread.category0 td.author,';
-			CSSFile += '#forum tr.thread.category0 td.views, #forum tr.thread.category0 td.lastpost { background-color:';
-			CSSFile += Prefs.getPref('readWithNewDark');
-			CSSFile += '; }\n';
+			CSSFile += '#forum tr.thread.category0 td.title, #forum tr.thread.category0 td.star, #forum tr.thread.category0 td.replies, #forum tr.thread.category0 td.rating, #forum tr.thread.category0 td.button_remove { background-color:' +
+						Prefs.getPref('readWithNewLight') +
+						'; }\n'; //marking this and the below as important will cause blue-star threads with new posts to show up as blue instead of green
+			CSSFile += '#forum tr.thread.category0 td.icon, #forum tr.thread.category0 td.icon2, #forum tr.thread.category0 td.author,' +
+						'#forum tr.thread.category0 td.views, #forum tr.thread.category0 td.lastpost { background-color:' +
+						Prefs.getPref('readWithNewDark') +
+						'; }\n';
 //red for unread
-			CSSFile += '#forum tr.thread.category1 td.title, #forum tr.thread.category1 td.star, #forum tr.thread.category1 td.replies, #forum tr.thread.category1 td.rating, #forum tr.thread.category1 td.button_remove { background-color:#f2dcdc; }\n';
-			CSSFile += '#forum tr.thread.category1 td.icon, #forum tr.thread.category1 td.icon2, #forum tr.thread.category1 td.author,';
-			CSSFile += '#forum tr.thread.category1 td.views, #forum tr.thread.category1 td.lastpost { background-color:#e3cfcf; }\n';
+			CSSFile += '#forum tr.thread.category1 td.title, #forum tr.thread.category1 td.star, #forum tr.thread.category1 td.replies, #forum tr.thread.category1 td.rating, #forum tr.thread.category1 td.button_remove { background-color:#f2dcdc; }\n' +
+						'#forum tr.thread.category1 td.icon, #forum tr.thread.category1 td.icon2, #forum tr.thread.category1 td.author,' +
+						'#forum tr.thread.category1 td.views, #forum tr.thread.category1 td.lastpost { background-color:#e3cfcf; }\n';
 //yellow for unread
-			CSSFile += '#forum tr.thread.category2 td.title, #forum tr.thread.category2 td.star, #forum tr.thread.category2 td.replies, #forum tr.thread.category2 td.rating, #forum tr.thread.category2 td.button_remove { background-color:#f2f2dc; }\n';
-			CSSFile += '#forum tr.thread.category2 td.icon, #forum tr.thread.category2 td.icon2, #forum tr.thread.category2 td.author,';
-			CSSFile += '#forum tr.thread.category2 td.views, #forum tr.thread.category2 td.lastpost { background-color:#e2e2cd; }\n';
+			CSSFile += '#forum tr.thread.category2 td.title, #forum tr.thread.category2 td.star, #forum tr.thread.category2 td.replies, #forum tr.thread.category2 td.rating, #forum tr.thread.category2 td.button_remove { background-color:#f2f2dc; }\n' +
+						'#forum tr.thread.category2 td.icon, #forum tr.thread.category2 td.icon2, #forum tr.thread.category2 td.author,' +
+						'#forum tr.thread.category2 td.views, #forum tr.thread.category2 td.lastpost { background-color:#e2e2cd; }\n';
 
 
-			CSSFile += '#forum tr.thread.seen td.title, #forum tr.thread.seen td.star, #forum tr.thread.seen td.replies, #forum tr.thread.seen td.rating, #forum tr.thread.seen td.button_remove { background-color:';
-			CSSFile += Prefs.getPref('readLight');
-			CSSFile += '; }\n';
-			CSSFile += '#forum tr.thread.seen td.icon, #forum tr.thread.seen td.icon2, #forum tr.thread.seen td.author,';
-			CSSFile += '#forum tr.thread.seen td.views, #forum tr.thread.seen td.lastpost { background-color:';
-			CSSFile += Prefs.getPref('readDark');
-			CSSFile += '; }\n';
+			CSSFile += '#forum tr.thread.seen td.title, #forum tr.thread.seen td.star, #forum tr.thread.seen td.replies, #forum tr.thread.seen td.rating, #forum tr.thread.seen td.button_remove { background-color:' +
+						Prefs.getPref('readLight') +
+						'; }\n' +
+						'#forum tr.thread.seen td.icon, #forum tr.thread.seen td.icon2, #forum tr.thread.seen td.author,' +
+						'#forum tr.thread.seen td.views, #forum tr.thread.seen td.lastpost { background-color:' +
+						Prefs.getPref('readDark') +
+						'; }\n';
 	
-			CSSFile += '#forum tr.thread.seen.newposts td.title, #forum tr.thread.seen.newposts td.star, #forum tr.thread.seen.newposts td.replies, #forum tr.thread.seen.newposts td.rating, #forum tr.thread.seen.newposts td.button_remove { background-color:';
-			CSSFile += Prefs.getPref('readWithNewLight');
-			CSSFile += '; }\n';
-			CSSFile += '#forum tr.thread.seen.newposts td.icon, #forum tr.thread.seen.newposts td.icon2, #forum tr.thread.seen.newposts td.author,';
-			CSSFile += '#forum tr.thread.seen.newposts td.views, #forum tr.thread.seen.newposts td.lastpost { background-color:';
-			CSSFile += Prefs.getPref('readWithNewDark');
-			CSSFile += '; }\n';
+			CSSFile += '#forum tr.thread.seen.newposts td.title, #forum tr.thread.seen.newposts td.star, #forum tr.thread.seen.newposts td.replies, #forum tr.thread.seen.newposts td.rating, #forum tr.thread.seen.newposts td.button_remove { background-color:' +
+						Prefs.getPref('readWithNewLight') +
+						'; }\n' +
+						'#forum tr.thread.seen.newposts td.icon, #forum tr.thread.seen.newposts td.icon2, #forum tr.thread.seen.newposts td.author,' +
+						'#forum tr.thread.seen.newposts td.views, #forum tr.thread.seen.newposts td.lastpost { background-color:' +
+						Prefs.getPref('readWithNewDark') +
+						'; }\n';
 
 //red with new
-			CSSFile += '#forum tr.thread.category1.newposts td.title, #forum tr.thread.category1.newposts td.star, #forum tr.thread.category1.newposts td.replies, #forum tr.thread.category1.newposts td.rating, #forum tr.thread.category1.newposts td.button_remove { background-color:#f2dcdc; }\n';
-			CSSFile += '#forum tr.thread.category1.newposts td.icon, #forum tr.thread.category1.newposts td.icon2, #forum tr.thread.category1.newposts td.author,';
-			CSSFile += '#forum tr.thread.category1.newposts td.views, #forum tr.thread.category1.newposts td.lastpost { background-color:#e3cfcf; }\n';
+			CSSFile += '#forum tr.thread.category1.newposts td.title, #forum tr.thread.category1.newposts td.star, #forum tr.thread.category1.newposts td.replies, #forum tr.thread.category1.newposts td.rating, #forum tr.thread.category1.newposts td.button_remove { background-color:#f2dcdc; }\n' +
+						'#forum tr.thread.category1.newposts td.icon, #forum tr.thread.category1.newposts td.icon2, #forum tr.thread.category1.newposts td.author,' +
+						'#forum tr.thread.category1.newposts td.views, #forum tr.thread.category1.newposts td.lastpost { background-color:#e3cfcf; }\n';
 //yellow with new
-			CSSFile += '#forum tr.thread.category2.newposts td.title, #forum tr.thread.category2.newposts td.star, #forum tr.thread.category2.newposts td.replies, #forum tr.thread.category2.newposts td.rating, #forum tr.thread.category2.newposts td.button_remove { background-color:#f2f2dc; }\n';
-			CSSFile += '#forum tr.thread.category2.newposts td.icon, #forum tr.thread.category2.newposts td.icon2, #forum tr.thread.category2.newposts td.author,';
-			CSSFile += '#forum tr.thread.category2.newposts td.views, #forum tr.thread.category2.newposts td.lastpost { background-color:#e2e2cd; }\n';
+			CSSFile += '#forum tr.thread.category2.newposts td.title, #forum tr.thread.category2.newposts td.star, #forum tr.thread.category2.newposts td.replies, #forum tr.thread.category2.newposts td.rating, #forum tr.thread.category2.newposts td.button_remove { background-color:#f2f2dc; }\n' +
+						'#forum tr.thread.category2.newposts td.icon, #forum tr.thread.category2.newposts td.icon2, #forum tr.thread.category2.newposts td.author,' +
+						'#forum tr.thread.category2.newposts td.views, #forum tr.thread.category2.newposts td.lastpost { background-color:#e2e2cd; }\n';
 
 
-			CSSFile += '#forum tr.thread.seen.newposts td.replies.salrPostedIn, #forum tr.thread.category0 td.replies.salrPostedIn,';
-			CSSFile += '#forum tr.thread.seen td.replies.salrPostedIn { background-color:';
-			CSSFile += Prefs.getPref('postedInThreadRe');
-			CSSFile += ' !important; }\n';
+			CSSFile += '#forum tr.thread.seen.newposts td.replies.salrPostedIn, #forum tr.thread.category0 td.replies.salrPostedIn,' +
+						'#forum tr.thread.seen td.replies.salrPostedIn { background-color:' +
+						Prefs.getPref('postedInThreadRe') +
+						' !important; }\n';
 
 		}
 		// end threadlist CSS
@@ -349,21 +350,19 @@ let Styles = exports.Styles =
 			// Only apply this class if something is actually going to be colored
 			if (selfColor != 0)
 			{
-				CSSFile += 'div.bbc-block.userquoted {';
-				CSSFile += 'background:';
-				CSSFile += selfColor;
-				CSSFile += ' !important; }\n';
+				CSSFile += 'div.bbc-block.userquoted {' +
+							'background:' + selfColor + ' !important; }\n';
 			}
 		}
 		if (Prefs.getPref('hideCustomTitles'))
 		{
-			CSSFile += 'dl.userinfo dd.title { display:none !important;}\n';
-			CSSFile += 'dl.userinfo dd.title * { display:none !important; }\n';
+			CSSFile += 'dl.userinfo dd.title { display:none !important;}\n' +
+						'dl.userinfo dd.title * { display:none !important; }\n';
 		}
 		else if (Prefs.getPref('resizeCustomTitleText'))
 		{
-			CSSFile += 'dl.userinfo dd.title { width: 159px !important;  overflow: auto !important;}\n';
-			CSSFile += 'dl.userinfo dd.title * { font-size:10px !important; }\n';
+			CSSFile += 'dl.userinfo dd.title { width: 159px !important;  overflow: auto !important;}\n' +
+						'dl.userinfo dd.title * { font-size:10px !important; }\n';
 		}
 		if (Prefs.getPref('hideReportButtons'))
 		{
@@ -390,11 +389,11 @@ let Styles = exports.Styles =
 		CSSFile += '#salrsearchbox::-moz-placeholder { font-style: italic; color: #999; }\n';
 
 		// Shrink posts by ignored users (and restore gradients)
-		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n';
-		CSSFile += '#thread table.ignored tr.altcolor1 td.userinfo, #thread table.ignored tr.altcolor1 td.postbody { background-image: url("http://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
-		CSSFile += '#thread table.ignored tr.altcolor2 td.userinfo, #thread table.ignored tr.altcolor2 td.postbody { background-image: url("http://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
-		CSSFile += '#thread table.ignored tr.seen1 td.userinfo, #thread table.ignored tr.seen1 td.postbody { background-image: url("http://fi.somethingawful.com/images/forum-bg-alt-seen1.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
-		CSSFile += '#thread table.ignored tr.seen2 td.userinfo, #thread table.ignored tr.seen2 td.postbody { background-image: url("http://fi.somethingawful.com/images/forum-bg-alt-seen2.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
+		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n' +
+					'#thread table.ignored tr.altcolor1 td.userinfo, #thread table.ignored tr.altcolor1 td.postbody { background-image: url("http://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
+					'#thread table.ignored tr.altcolor2 td.userinfo, #thread table.ignored tr.altcolor2 td.postbody { background-image: url("http://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
+					'#thread table.ignored tr.seen1 td.userinfo, #thread table.ignored tr.seen1 td.postbody { background-image: url("http://fi.somethingawful.com/images/forum-bg-alt-seen1.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
+					'#thread table.ignored tr.seen2 td.userinfo, #thread table.ignored tr.seen2 td.postbody { background-image: url("http://fi.somethingawful.com/images/forum-bg-alt-seen2.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
 
 		if (Prefs.getPref('quickPostJump'))
 		{
@@ -409,34 +408,34 @@ let Styles = exports.Styles =
 		if (!Prefs.getPref('dontHighlightPosts'))
 		{
 			// These are for in thread coloring
-			CSSFile += 'table.post tr.seen1 td { background-color:';
-			CSSFile += Prefs.getPref('seenPostLight');
-			CSSFile += '; }\n';
-			CSSFile += 'table.post tr.seen1 td.userinfo, table.post tr.seen1 td.postdate { background-color:';
-			CSSFile += Prefs.getPref('seenPostLight2');
-			CSSFile += '; }\n';
+			CSSFile += 'table.post tr.seen1 td { background-color:' +
+						Prefs.getPref('seenPostLight') +
+						'; }\n' +
+						'table.post tr.seen1 td.userinfo, table.post tr.seen1 td.postdate { background-color:' +
+						Prefs.getPref('seenPostLight2') +
+						'; }\n';
 
-			CSSFile += 'table.post tr.seen2 td { background-color:';
-			CSSFile += Prefs.getPref('seenPostDark');
-			CSSFile += '; }\n';
-			CSSFile += 'table.post tr.seen2 td.userinfo, table.post tr.seen2 td.postdate { background-color:';
-			CSSFile += Prefs.getPref('seenPostDark2');
-			CSSFile += '; }\n';
+			CSSFile += 'table.post tr.seen2 td { background-color:' +
+						Prefs.getPref('seenPostDark') +
+						'; }\n' +
+						'table.post tr.seen2 td.userinfo, table.post tr.seen2 td.postdate { background-color:' +
+						Prefs.getPref('seenPostDark2') +
+						'; }\n';
 
 			// These are for unseen posts
-			CSSFile += 'table.post tr.altcolor1 td { background-color:';
-			CSSFile += Prefs.getPref('unseenPostLight');
-			CSSFile += '; }\n';
-			CSSFile += 'table.post tr.altcolor1 td.userinfo, table.post tr.altcolor1 td.postdate { background-color:';
-			CSSFile += Prefs.getPref('unseenPostLight2');
-			CSSFile += '; }\n';
+			CSSFile += 'table.post tr.altcolor1 td { background-color:' +
+						Prefs.getPref('unseenPostLight') +
+						'; }\n' +
+						'table.post tr.altcolor1 td.userinfo, table.post tr.altcolor1 td.postdate { background-color:' +
+						Prefs.getPref('unseenPostLight2') +
+						'; }\n';
 
-			CSSFile += 'table.post tr.altcolor2 td { background-color:';
-			CSSFile += Prefs.getPref('unseenPostDark');
-			CSSFile += '; }\n';
-			CSSFile += 'table.post tr.altcolor2 td.userinfo, table.post tr.altcolor2 td.postdate { background-color:';
-			CSSFile += Prefs.getPref('unseenPostDark2');
-			CSSFile += '; }\n';
+			CSSFile += 'table.post tr.altcolor2 td { background-color:' +
+						Prefs.getPref('unseenPostDark') +
+						'; }\n' +
+						'table.post tr.altcolor2 td.userinfo, table.post tr.altcolor2 td.postdate { background-color:' +
+						Prefs.getPref('unseenPostDark2') +
+						'; }\n';
 		}
 
 		// end showthread CSS

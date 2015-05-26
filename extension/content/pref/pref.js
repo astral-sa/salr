@@ -53,7 +53,7 @@ function SALR_Prefs_OnLoad(prefwindow)
 
 function SALR_Prefs_Accept()
 {
-	if (rebuildCSS == true)
+	if (rebuildCSS === true)
 		Styles.updateStyles();
 	RebuildSAMenus();
 	if (needSAMenuToggle === true)
@@ -70,7 +70,7 @@ function SALR_Prefs_Close()
 	// 		and we want some deferred actions.
 	if (document.getElementById('salastreadpref').instantApply)
 	{
-		if (rebuildCSS == true)
+		if (rebuildCSS === true)
 			Styles.updateStyles();
 		RebuildSAMenus();
 	}

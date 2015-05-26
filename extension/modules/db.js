@@ -62,6 +62,9 @@ let DB = exports.DB =
 		{
 			//this.needToShowChangeLog = !this.IsDevelopmentRelease;
 			this.needToShowChangeLog = true;
+			// 3.0+ patches:
+			// Services.vc.compare("str1", "str2")
+
 			// Check for pre-3.0 SQL patches
 			let hasBuildNum = this.LastRunVersion.match(/^1\.99\.(\d+)/);
 			if (hasBuildNum && hasBuildNum[1])
@@ -209,7 +212,7 @@ let DB = exports.DB =
 		{
 			lrver = Prefs.getPref("lastRunVersion");
 		}
-		if (lrver == '')
+		if (lrver === '')
 		{
 			lrver = "0.0.0";
 		}
@@ -322,7 +325,7 @@ let DB = exports.DB =
 	// Returns an array of the ignored threads with the thread id as the key and the thread title as the value
 	get ignoreList()
 	{
-		if (this.threadDataCache.length == 0)
+		if (this.threadDataCache.length === 0)
 		{
 			this.populateThreadDataCache();
 		}

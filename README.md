@@ -4,4 +4,5 @@ The Something Awful Last Read (SALR) Extension for Firefox enhances the Somethin
 ## Installation
 
 The latest release version of SALR can be downloaded [here](https://github.com/astral-sa/salr/raw/master/salastread.xpi).
+
 Pre-release versions can be downloaded [in the SALR thread on Something Awful](http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost).
