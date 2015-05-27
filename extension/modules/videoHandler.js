@@ -18,11 +18,10 @@ let VideoHandler = exports.VideoHandler =
 
 	/**
 	 * Examines a link to see if it needs to be converted to an embeddable video.
-	 * @param {[type]} link The link to process.
+	 * @param {Object} link Node snapshot of the link to process.
 	 */
 	processVideoLink: function(link)
 	{
-
 		let videoEmbedderBG = Prefs.getPref("videoEmbedderBG");
 
 		let ytTest = link.href.match(/^https?\:\/\/(?:(?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i);
@@ -71,161 +70,213 @@ let VideoHandler = exports.VideoHandler =
 			}
 		}
 
-		//figure out the video type
-		var videoId, videoType, videoTLD, yt_subd, yt_starttime, yt_start;
-
-		var videoIdSearch = link.href.match(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:.*?t=(?:(\d*)h)?(?:(\d*)m)?(?:(\d*)s?)?)?/);
+		// Figure out the video type
+		let videoIdSearch = link.href.match(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:.*?t=(?:(\d*)h)?(?:(\d*)m)?(?:(\d*)s?)?)?/);
 		if (videoIdSearch)
 		{
-			yt_subd = (videoIdSearch[1] == null ? "www." : videoIdSearch[1]);
-			videoId = videoIdSearch[2];
-			videoType = "youtube";
-			yt_starttime = (videoIdSearch[3] == null ? 0 : parseInt(videoIdSearch[3])) * 3600 + (videoIdSearch[4] == null ? 0 : parseInt(videoIdSearch[4])) * 60 + (videoIdSearch[5] == null ? 0 : parseInt(videoIdSearch[5]));
-			yt_start = yt_starttime === 0 ? '' : 'start=' + yt_starttime;
-		}
-		else
-		{
-			var matchGV = link.href.match(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/);
-			if (matchGV)
-			{
-				videoTLD = matchGV[1];
-				videoId = matchGV[2];
-				videoType = "google";
-			}
-			else
-			{
-				var matchGifv = (link.href.match(/^https?\:\/\/i\.imgur\.com\/(.)+\.gifv$/i));
-				// Handle imgur gifv
-				if (matchGifv && matchGifv[1])
-				{
-					videoType = 'gifv';
-					videoId = matchGifv[1];
-				}
-				// Handle WebM
-				else if (link.href.match(/^https?\:\/\/(?:.)+\.webm$/i))
-				{
-					videoType = 'webm';
-				}
-			}
+			let yt_subd = (videoIdSearch[1] == null ? "www." : videoIdSearch[1]);
+			// videoId = videoIdSearch[2];
+			let yt_starttime = (videoIdSearch[3] == null ? 0 : parseInt(videoIdSearch[3])) * 3600 + 
+				(videoIdSearch[4] == null ? 0 : parseInt(videoIdSearch[4])) * 60 + 
+				(videoIdSearch[5] == null ? 0 : parseInt(videoIdSearch[5]));
+			let yt_start = yt_starttime === 0 ? '' : 'start=' + yt_starttime;
+			VideoHandler.embedYTVideo(link, yt_subd, videoIdSearch[2], yt_start);
+			return;
 		}
 
-		if (videoType)
+		let matchGifv = (link.href.match(/^https?\:\/\/i\.imgur\.com\/(.)+\.gifv$/i));
+		if (matchGifv && matchGifv[1])
 		{
-			var vidsize = Prefs.getPref("videoEmbedSize");
-			var vidwidth, vidheight;
+			// gifv ID: matchGifv[1]
+			VideoHandler.embedGifv(link);
+			return;
+		}
 
-			if (vidsize === "gigantic")
-			{
+		if (link.href.match(/^https?\:\/\/(?:.)+\.webm$/i))
+		{
+			VideoHandler.embedWebM(link);
+			return;
+		}
+
+		let matchGV = link.href.match(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/);
+		if (matchGV)
+		{
+			// videoTLD = matchGV[1];
+			// videoId = matchGV[2];
+			VideoHandler.embedGoogleVideo(link, matchGV[1], matchGV[2]);
+			return;
+		}
+	},
+
+	/**
+	 * Embeds a YouTube Video.
+	 * @param {Object} link     Target link to embed.
+	 * @param {string} yt_subd  Subdomain from the video link to use.
+	 * @param {string} videoId  ID of video to embed.
+	 * @param {string} yt_start Time string for the embed.
+	 */
+	embedYTVideo: function(link, yt_subd, videoId, yt_start)
+	{
+		let doc = link.ownerDocument;
+		let p = doc.createElement("p");
+
+		// Figure out quality and size to use
+		let vidqual = Prefs.getPref("videoEmbedQuality");
+		var qualstring = '';
+		if (vidqual === "hd1080")
+			qualstring = 'vq=hd1080';
+		else if (vidqual === "hd")
+			qualstring = 'vq=hd720';
+		else if (vidqual === "hq")
+			qualstring = 'vq=large';
+		else if (vidqual === "low")
+			qualstring = 'vq=small';
+
+		let vidSize = VideoHandler.getVidSizeFromPrefs();
+		let vidwidth = vidSize.width;
+		let vidheight = vidSize.height;
+
+		// Format for URL:
+		if (qualstring !== '' && yt_start !== '')
+			yt_start = '&' + yt_start;
+		if (qualstring !== '' || yt_start !== '')
+			qualstring = '?' + qualstring;
+
+		let embedFrame = doc.createElement("iframe");
+		embedFrame.setAttribute('width', vidwidth);
+		embedFrame.setAttribute('height', vidheight);
+		embedFrame.setAttribute('class', 'salr_video');
+		embedFrame.setAttribute('src', "http://" + yt_subd + "youtube.com/embed/" + videoId + qualstring + yt_start);
+		embedFrame.setAttribute('frameborder', '0');
+		embedFrame.setAttribute('mozallowfullscreen', true);
+
+		//inserts video after the link
+		p.appendChild(embedFrame);
+		link.parentNode.insertBefore(p, link.nextSibling);
+	},
+
+	/**
+	 * Embeds a Google Video.
+	 * @param {Object} link     Target link to embed.
+	 * @param {string} videoTLD TLD of the domain to use.
+	 * @param {string} videoId  ID of video to embed.
+	 */
+	embedGoogleVideo: function(link, videoTLD, videoId)
+	{
+		let doc = link.ownerDocument;
+		let p = doc.createElement("p");
+
+		let embed = doc.createElement("EMBED");
+		embed.setAttribute('width', 450);
+		embed.setAttribute('height', 370);
+		embed.setAttribute('type', "application/x-shockwave-flash");
+		embed.setAttribute('class', 'salr_video');
+		embed.setAttribute('id', videoId);
+		embed.setAttribute('flashvars', '');
+		embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en&fs=true');
+		embed.setAttribute('allowfullscreen', "true");
+
+		p.appendChild(embed);
+		link.parentNode.insertBefore(p, link.nextSibling);
+	},
+
+	/**
+	 * Embeds a WebM video.
+	 * @param {Object} link Target link to embed.
+	 */
+	embedWebM: function(link)
+	{
+		let doc = link.ownerDocument;
+		let p = doc.createElement("p");
+
+		let vidSize = VideoHandler.getVidSizeFromPrefs();
+		let vidwidth = vidSize.width; // Height handled by browser
+
+		let webmEmbed = doc.createElement("video");
+		webmEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
+		webmEmbed.setAttribute('src',link.href);
+		webmEmbed.setAttribute('type','video/webm');
+		webmEmbed.setAttribute('class', 'salr_video');
+		webmEmbed.setAttribute('width', vidwidth);
+		webmEmbed.controls = true;
+
+		p.appendChild(webmEmbed);
+		link.parentNode.insertBefore(p, link.nextSibling);
+	},
+
+	/**
+	 * Embeds a gifv video (looping webm or mp4).
+	 * @param {Object} link Target link to embed.
+	 */
+	embedGifv: function(link)
+	{
+		// Special code for imgur gifv - looping webm/mp4
+		let doc = link.ownerDocument;
+		let p = doc.createElement("p");
+
+		let vidSize = VideoHandler.getVidSizeFromPrefs();
+		let vidwidth = vidSize.width; // Height handled by browser
+
+		let gifvEmbed = doc.createElement("video");
+		gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
+		gifvEmbed.setAttribute('class', 'salr_video');
+		gifvEmbed.setAttribute('width', vidwidth);
+		gifvEmbed.setAttribute('poster',link.href.replace(/\.gifv$/i,'h.jpg'));
+		gifvEmbed.controls = true;
+		gifvEmbed.autoplay = true;
+		gifvEmbed.muted = true;
+		gifvEmbed.loop = true;
+		let gifvSource = doc.createElement("source");
+		gifvSource.setAttribute('src',link.href.replace(/\.gifv$/i,'.mp4'));
+		gifvSource.setAttribute('type','video/mp4');
+		gifvEmbed.appendChild(gifvSource);
+		gifvSource = doc.createElement("source");
+		gifvSource.setAttribute('src',link.href.replace(/\.gifv$/i,'.webm'));
+		gifvSource.setAttribute('type','video/webm');
+		gifvEmbed.appendChild(gifvSource);
+
+		p.appendChild(gifvEmbed);
+		link.parentNode.insertBefore(p, link.nextSibling);
+	},
+
+	/**
+	 * Converts string video size preference to usable numbers.
+	 * @return {Object} Width and Height from preferences.
+	 */
+	getVidSizeFromPrefs: function()
+	{
+		let vidSize = Prefs.getPref("videoEmbedSize");
+		let vidwidth;
+		let vidheight;
+
+		switch(vidSize)
+		{
+			case "gigantic":
 				vidwidth = 1280;
 				vidheight = 750;
-			}
-			else if (vidsize === "large")
-			{
+				break;
+			case "large":
 				vidwidth = 854;
 				vidheight = 510;
-			}
-			else if (vidsize === "medium")
-			{
+				break;
+			case "medium":
 				vidwidth = 640;
 				vidheight = 390;
-			}
-			else if (vidsize === "small")
-			{
+				break;
+			case "small":
 				vidwidth = 560;
 				vidheight = 345;
-			}
-			else if (vidsize === "tiny")
-			{
+				break;
+			case "tiny":
 				vidwidth = 480;
 				vidheight = 300;
-			}
-			else //if (vidsize == "custom")
-			{
+				break;
+			default: // vidsize is "custom"
 				vidwidth = Prefs.getPref("videoEmbedCustomWidth");
 				vidheight = Prefs.getPref("videoEmbedCustomHeight");
-			}
-
-			//create the embedded elements (p containing video for linebreaky goodness)
-			var doc = e.originalTarget.ownerDocument;
-			var p = doc.createElement("p");
-
-			switch (videoType)
-			{
-				case "webm":
-					var webmEmbed = doc.createElement("video");
-					webmEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
-					webmEmbed.setAttribute('src',link.href);
-					webmEmbed.setAttribute('type','video/webm');
-					webmEmbed.setAttribute('class', 'salr_video');
-					webmEmbed.setAttribute('width', vidwidth);
-					webmEmbed.controls = true;
-					p.appendChild(webmEmbed);
-					break;
-				case "gifv":
-					// Special code for imgur gifv - looping webm/mp4
-					var gifvEmbed = doc.createElement("video");
-					gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
-					gifvEmbed.setAttribute('class', 'salr_video');
-					gifvEmbed.setAttribute('width', vidwidth);
-					gifvEmbed.setAttribute('poster',link.href.replace(/\.gifv$/i,'h.jpg'));
-					gifvEmbed.controls = true;
-					gifvEmbed.autoplay = true;
-					gifvEmbed.muted = true;
-					gifvEmbed.loop = true;
-					var gifvSource = doc.createElement("source");
-					gifvSource.setAttribute('src',link.href.replace(/\.gifv$/i,'.mp4'));
-					gifvSource.setAttribute('type','video/mp4');
-					gifvEmbed.appendChild(gifvSource);
-					gifvSource = doc.createElement("source");
-					gifvSource.setAttribute('src',link.href.replace(/\.gifv$/i,'.webm'));
-					gifvSource.setAttribute('type','video/webm');
-					gifvEmbed.appendChild(gifvSource);
-					p.appendChild(gifvEmbed);
-					break;
-				case "google":
-					var embed = doc.createElement("EMBED");
-					embed.setAttribute('width', 450);
-					embed.setAttribute('height', 370);
-					embed.setAttribute('type', "application/x-shockwave-flash");
-					embed.setAttribute('class', 'salr_video');
-					embed.setAttribute('id', videoId);
-					embed.setAttribute('flashvars', '');
-					embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en&fs=true');
-					embed.setAttribute('allowfullscreen', "true");
-					p.appendChild(embed);
-					break;
-				case "youtube":
-					// Figure out quality and size to use
-					var vidqual = Prefs.getPref("videoEmbedQuality");
-					var qualstring = '';
-					if (vidqual === "hd1080")
-						qualstring = 'vq=hd1080';
-					else if (vidqual === "hd")
-						qualstring = 'vq=hd720';
-					else if (vidqual === "hq")
-						qualstring = 'vq=large';
-					else if (vidqual === "low")
-						qualstring = 'vq=small';
-
-					// Format for URL:
-					if (qualstring !== '' && yt_start !== '')
-						yt_start = '&' + yt_start;
-					if (qualstring !== '' || yt_start !== '')
-						qualstring = '?' + qualstring;
-
-					var embedFrame = doc.createElement("iframe");
-					embedFrame.setAttribute('width', vidwidth);
-					embedFrame.setAttribute('height', vidheight);
-					embedFrame.setAttribute('class', 'salr_video');
-					embedFrame.setAttribute('src', "http://" + yt_subd + "youtube.com/embed/" + videoId + qualstring + yt_start);
-					embedFrame.setAttribute('frameborder', '0');
-					embedFrame.setAttribute('mozallowfullscreen', true);
-					p.appendChild(embedFrame);
-					break;
-			}
-			//inserts video after the link
-			link.parentNode.insertBefore(p, link.nextSibling);
+				break;
 		}
+		return {width: vidwidth, height: vidheight};
 	},
 
 	// util functions for pending video titles
@@ -334,7 +385,7 @@ let VideoHandler = exports.VideoHandler =
 								PageUtils.logToConsole("Pending youtube title error: " + e);
 								continue;
 							}
-							if (this._vidHasPendingLinks(vidId) == false)
+							if (this._vidHasPendingLinks(vidId) === false)
 								delete this._pendingVideoTitles[vidId];
 						}
 					}
