@@ -11,7 +11,8 @@
 		ondialogextra2="return transparentClick();"
         title="Color Picker">
 
-	<script language="JavaScript" src="chrome://salastread/content/colorpicker/colorpickerdialog.js" />
+
+	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/colorpicker/colorpickerdialog.js" />
 
 	<hbox>
 		<stack class="box-inset cbbox-hsb" id="selbox" onclick="imageClick(event);">

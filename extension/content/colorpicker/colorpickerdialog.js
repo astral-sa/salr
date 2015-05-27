@@ -233,61 +233,9 @@ function updateHex(hex) {
 	document.getElementById("hexrgb").value = hex;
 }
 
-//GENERIC MATH FUNCTIONS
-function MIN() {
-	var min = 255;
-	for(var i = 0; i < arguments.length; i++) {
-		if(arguments[i] < min) {
-			min = arguments[i];
-		}
-	}
-	return min;
-}
-
-function MAX() {
-	var max = 0;
-	for(var i = 0; i < arguments.length; i++) {
-		if(arguments[i] > max) {
-			max = arguments[i];
-		}
-	}
-	return max;
-}
-
 //CONVERSION FUNCTIONS
-function hexNibble(val) {
-	if (val>=0 && val<=9) {
-		return ""+val;
-	}
-	else if (val==10) { return "A"; }
-	else if (val==11) { return "B"; }
-	else if (val==12) { return "C"; }
-	else if (val==13) { return "D"; }
-	else if (val==14) { return "E"; }
-	else if (val==15) { return "F"; }
-}
-
-function parseNibble(nib) {
-		 if (nib=="0") { return 0; }
-	else if (nib=="1") { return 1; }
-	else if (nib=="2") { return 2; }
-	else if (nib=="3") { return 3; }
-	else if (nib=="4") { return 4; }
-	else if (nib=="5") { return 5; }
-	else if (nib=="6") { return 6; }
-	else if (nib=="7") { return 7; }
-	else if (nib=="8") { return 8; }
-	else if (nib=="9") { return 9; }
-	else if (nib=="a" || nib=="A") { return 10; }
-	else if (nib=="b" || nib=="B") { return 11; }
-	else if (nib=="c" || nib=="C") { return 12; }
-	else if (nib=="d" || nib=="D") { return 13; }
-	else if (nib=="e" || nib=="E") { return 14; }
-	else if (nib=="f" || nib=="F") { return 15; }
-}
-
 function parseHex(hb) {	
-	return (parseNibble(hb.substring(0, 1)) * 16) + parseNibble(hb.substring(1, 2));
+	return parseInt(hb, 16);
 }
 
 function RGBtoHSB(r,g,b) {
@@ -296,13 +244,13 @@ function RGBtoHSB(r,g,b) {
 	b /= 255;
 	var min, max, delta;
 	var hsv = new Array(3);
-	min = MIN(r, g, b);
-	max = MAX(r, g, b);
+	min = Math.min(r, g, b);
+	max = Math.max(r, g, b);
 	
 	hsv[2] = max;
 	delta = max - min;
 	
-	if (max != 0) {
+	if (max !== 0) {
 		hsv[1] = delta / max;
 	} else {
 		hsv[1] = .005;
@@ -310,15 +258,15 @@ function RGBtoHSB(r,g,b) {
 		return hsv;
 	}
 	
-	if(delta == 0) {
+	if(delta === 0) {
 		hsv[1] = .005;
 		hsv[0] = 0;
 		return hsv;
 	}
 	
-	if (r == max) {
+	if (r === max) {
 		hsv[0] = (g - b) / delta;
-	} else if(g == max) {
+	} else if(g === max) {
 		hsv[0] = 2 + (b - r) / delta;
 	} else {
 		hsv[0] = 4 + (r - g) / delta;
@@ -399,32 +347,6 @@ function adjustForBrightness(bri,rgb) {
    return new Array(rgb[0] * (bri / 100), rgb[1] * (bri / 100), rgb[2] * (bri / 100));
 }
 
-function HexToNumber(hex) {
-	var res = 0;
-	for (var i=0; i<hex.length; i++) {
-		res = res * 16;
-		switch (hex[i]) {
-			case "0": res += 0; break;
-			case "1": res += 1; break;
-			case "2": res += 2; break;
-			case "3": res += 3; break;
-			case "4": res += 4; break;
-			case "5": res += 5; break;
-			case "6": res += 6; break;
-			case "7": res += 7; break;
-			case "8": res += 8; break;
-			case "9": res += 9; break;
-			case "a": case "A": res += 10; break;
-			case "b": case "B": res += 11; break;
-			case "c": case "C": res += 12; break;
-			case "d": case "D": res += 13; break;
-			case "e": case "E": res += 14; break;
-			case "f": case "F": res += 15; break;
-		}
-	}
-	return res;
-}
-
 function rgbToHex(rgb) {
 	var result = "";
 	result += getHex(rgb[0]);
@@ -434,7 +356,8 @@ function rgbToHex(rgb) {
 }
 
 function getHex(val) {
-	var hi = Math.floor((val & 240) / 16);
-	var lo = val & 15;
-	return hexNibble(hi) + hexNibble(lo);
+	let result = val.toString(16).toUpperCase();
+	if ((result.length % 2) > 0)
+		result = "0" + result;
+	return result;
 }
