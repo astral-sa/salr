@@ -137,7 +137,7 @@ function addQuoteText(txt) {
 }
 
 function emotRegex(s) {
-	emotRe = /<div class="text">(.*?)<\/div>[\s\S]*?src="(.*?)"/i;
+	let emotRe = /<div class="text">(.*?)<\/div>[\s\S]*?src="(.*?)"/i;
 	emotRe.exec(s);
 	DB.emoticons.push(new Array(RegExp.$1, RegExp.$2));
 }
@@ -157,16 +157,16 @@ function getEmoticonsFromServerASync()
 function getEmoticonsCallback()
 {
 	try {
-		if (emoteGetter.readyState == 2)
+		if (emoteGetter.readyState === 2)
 		{
-			if(emoteGetter.status != 200)
+			if(emoteGetter.status !== 200)
 			{
 				emoteGetter.abort();
 				DB.gettingemoticons = false;
 				alert("Failed to communicate with forums.somethingawful.com for emoticons");
 			}
 		}
-		else if (emoteGetter.readyState == 4)
+		else if (emoteGetter.readyState === 4)
 		{
 			var respText = emoteGetter.responseText;
 			if (respText)
@@ -184,8 +184,8 @@ function finalizeEmotesGrab(restext)
 {
 	DB.emoticons = new Array();
 
-	emotRe = /<li class="smilie">([\s\S]*?)<img.*?>/gi;
-	emotArray = restext.match(emotRe);
+	let emotRe = /<li class="smilie">([\s\S]*?)<img.*?>/gi;
+	let emotArray = restext.match(emotRe);
 
 	emotArray.forEach(emotRegex);
 	DB.emoticons.sort();
@@ -213,7 +213,7 @@ function updateEmoticonList()
 	//while(menu.firstChild!=null) {
 	//   menu.removeChild(menu.firstChild);
 	//}
-	for (var i = 0; i < DB.emoticons.length; i++)
+	for (let i = 0; i < DB.emoticons.length; i++)
 	{
 		var thisemot = DB.emoticons[i];
 		if (thisemot[0] != null && thisemot[0].length > 0)
@@ -222,7 +222,7 @@ function updateEmoticonList()
 		}
 	}
 	var children = menu.childNodes;
-	for (var i = 0; i < children.length; i++)
+	for (let i = 0; i < children.length; i++)
 	{
 		children[i].hidden = false;
 	}
@@ -231,10 +231,10 @@ function updateEmoticonList()
 
 var pageGetter = null;
 
-var sa_formkey =(DB.__cachedFormKey && DB.__cachedFormKey!="") ? DB.__cachedFormKey : "";
+var sa_formkey =(DB.__cachedFormKey && DB.__cachedFormKey!=="") ? DB.__cachedFormKey : "";
 
 function showDebugData(event) {
-	if(event.button == 2) {
+	if(event.button === 2) {
 		alert("threadid = "+quickParams.threadid+"\nformkey = "+ sa_formkey);
 	}
 }
@@ -289,12 +289,12 @@ function startPostTextGrab(getFormKeyOnly, postid)
 function postTextGrabCallback()
 {
 	try {
-		if (pageGetter.readyState == 2) {
-			if (pageGetter.status != 200) {
+		if (pageGetter.readyState === 2) {
+			if (pageGetter.status !== 200) {
 				alert("Failed to communicate with forums.somethingawful.com");
 				pageGetter.abort();
 			}
-		} else if (pageGetter.readyState == 4) {
+		} else if (pageGetter.readyState === 4) {
 			var respText = pageGetter.responseText;
 			if (respText)
 				finalizeTextGrab(respText);
@@ -354,7 +354,9 @@ function finalizeTextGrab(restext)
 
 	// Only update the preview if we need to
 	if (document.getElementById("preview").checked)
+	{
 		doPreview();
+	}
 
 	// Post Thread stuff
 	if (quickParams.quicktype === 'newthread')
@@ -379,7 +381,7 @@ function finalizeTextGrab(restext)
 						newel.addEventListener('click', qpSetPostIcon, false);
 						hbox.appendChild(newel);
 					
-					if(i % 5 == 0) {
+					if(i % 5 === 0) {
 						hbox = document.createElementNS("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul","hbox");
 						iconmenu.appendChild(hbox);
 					}
@@ -457,13 +459,16 @@ function importData()
 		}
 		messagearea.focus();
 
-		if (typeof(opener.sbOverlay) != "undefined" || typeof(Components.classes["@mozilla.org/spellbound;1"]) != "undefined")
+		if (typeof(opener.sbOverlay) !== typeof undefined || 
+			typeof(Components.classes["@mozilla.org/spellbound;1"]) !== typeof undefined)
 		{
 			hasSpellCheck = true;
 			document.getElementById("spellcheckbutton").style.display = "-moz-box";
 		}
 
-		if (Prefs.getPref('quickQuoteSubscribeDefault') || (quickParams.quicktype != "newthread" && PageUtils.selectSingleNode(quickParams.doc,quickParams.doc,"//ul[contains(@class, 'postbuttons')]//img[contains(@class, 'unbookmark')]")))
+		if (Prefs.getPref('quickQuoteSubscribeDefault') || 
+			(quickParams.quicktype !== "newthread" && 
+				PageUtils.selectSingleNode(quickParams.doc,quickParams.doc,"//ul[contains(@class, 'postbuttons')]//img[contains(@class, 'unbookmark')]")))
 		{
 			document.getElementById("subscribe").setAttribute("checked",true);
 		}
@@ -473,7 +478,7 @@ function importData()
 			document.getElementById("disablesmilies").setAttribute("checked",true);
 		}
 
-		if (Prefs.getPref('quickQuoteSignatureDefault') && (quickParams.quicktype == "newthread" || !DB.didIPostHere(quickParams.threadid)))
+		if (Prefs.getPref('quickQuoteSignatureDefault') && (quickParams.quicktype === "newthread" || !DB.didIPostHere(quickParams.threadid)))
 		{
 			document.getElementById("signature").setAttribute("checked",true);
 		}
@@ -515,18 +520,18 @@ function performSpellCheck() {
 		//alert(ma.nodeName.toLowerCase());
 		var args = [];
 		args[0] = ma;
-		if(typeof(Components.classes["@mozilla.org/spellbound;1"]) != "undefined") {
+		if(typeof(Components.classes["@mozilla.org/spellbound;1"]) !== typeof undefined) {
 			var scheck = ma.value;
 			args[0] = scheck;
 			var results = [];
 			window.openDialog("chrome://spellbound/content/SBSpellCheck.xul", "_blank", "chrome,close,titlebar,modal,resizable", false, true, true, args, results);
-			if(typeof(results[0]) != "undefined") {
+			if(typeof(results[0]) !== typeof undefined) {
 				ma.value = results[0];
 			}
 		} else {
 			var savedmatext = ma.value;
 			window.openDialog("chrome://spellbound/content/EdSpellCheck.xul", "_blank", "chrome,close,titlebar,modal,resizable", false, true, true, args);
-			if(ma.value == "undefined" || typeof(ma.value) == "undefined") {
+			if(ma.value === undefined || typeof(ma.value) === typeof undefined) {
 				ma.value = savedmatext;
 			}
 		}
@@ -538,7 +543,7 @@ function performSpellCheck() {
 
 function clearChildrenFrom(xid) {
 	var xel = document.getElementById(xid).firstChild;
-	while(xel.firstChild!=null) {
+	while(xel.firstChild !== null) {
 		xel.removeChild(xel.firstChild);
 	}
 }
@@ -546,14 +551,15 @@ function clearChildrenFrom(xid) {
 function getEmoticons() {
 	try
 	{
-		if (DB.gettingemoticons != true && (typeof(DB.emoticons)=="undefined" || DB.emoticons==null))
+		if (DB.gettingemoticons !== true && 
+			(typeof(DB.emoticons) === typeof undefined || DB.emoticons === null))
 		{
 			DB.gettingemoticons = true;
 			getEmoticonsFromServerASync();
 		}
 		else
 		{
-			if (DB.gettingemoticons == false)
+			if (DB.gettingemoticons === false)
 				updateEmoticonList();
 		}
 	}
@@ -568,30 +574,30 @@ function addMenuItem(menu, label, image) {
 	var menuch = label.match(/[a-z]/i);
 	if(menuch) {
 		var mstr = "ABCabc";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_a"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_a"; }
 		mstr = "DEFdef";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_d"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_d"; }
 		mstr = "GHIghi";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_g"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_g"; }
 		mstr = "JKLjkl";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_j"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_j"; }
 		mstr = "MNOmno";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_m"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_m"; }
 		mstr = "PQRpqr";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_p"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_p"; }
 		mstr = "STUstu";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_s"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_s"; }
 		mstr = "VWXvwx";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_v"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_v"; }
 		mstr = "YZyz";
-		if(mstr.indexOf(menuch[0]) != -1) { targetid = "menu_y"; }
+		if(mstr.indexOf(menuch[0]) !== -1) { targetid = "menu_y"; }
 	}
-	
+
 	var newel = document.createElementNS("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul","menuitem");
 		newel.className = "menuitem-iconic";
 		newel.setAttribute("label", label);
 		newel.setAttribute("image", image);
-	
+
 	//menu.appendChild(newel);
 	document.getElementById(targetid).firstChild.appendChild(newel);
 	newel.addEventListener("command", function() { selectedEmoticon(label); }, true);
@@ -620,6 +626,8 @@ function insertTags(tag, saveSel, inner, tagEquals)
 	var msgBox = document.getElementById("messagearea");
 	if (msgBox && tag)
 	{
+		var tagOpen;
+		var tagClose;
 		if (tagEquals)
 		{
 			tagOpen = "[" + tag + "=" + tagEquals + "]";
@@ -633,8 +641,8 @@ function insertTags(tag, saveSel, inner, tagEquals)
 		var selStart = msgBox.selectionStart;
 		var selEnd = msgBox.selectionEnd;
 
-		if (tag == "*") { // special case for [*] tags which should to be inside a [list]
-			if (msgBox.value.indexOf("[list]") == -1 || msgBox.value.indexOf("[list]") > selStart)
+		if (tag === "*") { // special case for [*] tags which should to be inside a [list]
+			if (msgBox.value.indexOf("[list]") === -1 || msgBox.value.indexOf("[list]") > selStart)
 			{
 				tagOpen = "[list]\n" + tagOpen;
 			}
@@ -649,7 +657,7 @@ function insertTags(tag, saveSel, inner, tagEquals)
 		msgBox.focus();
 		if (inner)
 		{
-			insert = tagOpen + inner + tagClose;
+			let insert = tagOpen + inner + tagClose;
 			msgBox.value = msgBox.value.substring(0, selStart) + insert + msgBox.value.substring(selEnd);
 			if (saveSel)
 			{
@@ -670,14 +678,14 @@ function insertTags(tag, saveSel, inner, tagEquals)
 }
 
 function doAttach() {
-	if(attachedFileName == "") {
+	if (attachedFileName === "") {
 		var nsIFilePicker = Components.interfaces.nsIFilePicker;
 		var fp = Components.classes["@mozilla.org/filepicker;1"]
 					.createInstance(nsIFilePicker);
 			fp.init(window, "Select an Image to Attach", nsIFilePicker.modeOpen);
 			fp.appendFilter("Image Files","*.gif; *.jpg; *.jpeg; *.png");
 		var res = fp.show();
-		if(res == nsIFilePicker.returnOK) {
+		if(res === nsIFilePicker.returnOK) {
 			attachedFileName = fp.file.path;
 			document.getElementById("attachbtn").setAttribute("label", "Remove");
 		}
@@ -693,14 +701,14 @@ function getvBcode(event, command) {
 	var theBox = document.getElementById("messagearea");
 	var oPosition = theBox.scrollTop;
 	var oHeight = theBox.scrollHeight;
-	
+
 	var startPos = theBox.selectionStart;
 	var endPos = theBox.selectionEnd;
 	str = theBox.value.substring(startPos, endPos);
-	
+
 	var nHeight = theBox.scrollHeight - oHeight;
 	theBox.scrollTop = oPosition + nHeight;
-	
+
 	var saveSel = event.ctrlKey;
 	
 	switch(command) {
@@ -785,11 +793,12 @@ function getvBcode(event, command) {
 function doPreview()
 {
 	// Get out of here if we don't have a preview window open.
-	if (document.getElementById("preview").checked == false)
+	if (document.getElementById("preview").checked === false)
 		return;
 
 	var preview = document.getElementById("previewiframe").contentDocument.getElementById("messagepreview");
-	var markup = document.getElementById("messagearea").value;
+	let messageArea = document.getElementById("messagearea");
+	var markup = messageArea.value;
 	
 	markup = markup.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 	var vbcode = [];
@@ -800,11 +809,14 @@ function doPreview()
 	// Smileys
 	if (!document.getElementById("disablesmilies").checked)
 	{
-		if (DB.gettingemoticons != true && (typeof(DB.emoticons)=="undefined" || DB.emoticons==null)) {
+		if (DB.gettingemoticons !== true && 
+			(typeof(DB.emoticons) === typeof undefined || DB.emoticons === null))
+		{
 			DB.gettingemoticons = true;
 			getEmoticonsFromServerASync();
 		}
-		else if (DB.gettingemoticons == false && !(typeof(DB.emoticons)=="undefined" || DB.emoticons==null))
+		else if (DB.gettingemoticons === false && 
+			!(typeof(DB.emoticons) === typeof undefined || DB.emoticons === null))
 		{
 			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/emot-goatse.gif"/>'] = /&amp;submit/gi;
 			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/smile.gif"/>'] = /:\)/gi;
@@ -818,8 +830,8 @@ function doPreview()
 				for (var i = 0; i < matches.length; i++) {
 					for (var j = 0; j < DB.emoticons.length; j++) {
 						var thisemot = DB.emoticons[j];
-						if (thisemot[0]!=null && thisemot[0].length>0) {
-							if (matches[i] == thisemot[0]) {
+						if (thisemot[0] != null && thisemot[0].length>0) {
+							if (matches[i] === thisemot[0]) {
 								markup = markup.replace(matches[i], '<img src="' + thisemot[1] + '"/>');
 							}
 						}
@@ -832,12 +844,11 @@ function doPreview()
 	// Process newlines - rough
 	markup = markup.replace(/\n/g, "<br />");
 
-	for(var rplc in vbcode) {
-		markup = markup.replace(vbcode[rplc], rplc);
+	for (let rplc in vbcode)
+	{
+		if (vbcode.hasOwnProperty(rplc))
+			markup = markup.replace(vbcode[rplc], rplc);
 	}
-
-	var iframe = document.getElementById("previewiframe").contentWindow;
-		iframe.scrollBy(0, iframe.document.body.scrollHeight);
 
     while (preview.firstChild)
         preview.removeChild(preview.firstChild);
@@ -846,6 +857,20 @@ function doPreview()
                          .getService(Components.interfaces.nsIScriptableUnescapeHTML)
                          .parseFragment(markup, false, null, preview);
     preview.appendChild(fragment);
+
+	window.setTimeout(function() {
+		let innerMessageBox = messageArea.inputField;
+		let nearend = (innerMessageBox.scrollHeight - innerMessageBox.scrollTop - innerMessageBox.clientHeight <= 20);
+		if (nearend)
+			scrollPreviewToEnd();
+	}, 10);
+}
+
+function scrollPreviewToEnd()
+{
+	let iframe = document.getElementById("previewiframe").contentWindow;
+	let endOfPreview = iframe.document.body.scrollHeight;
+	iframe.scrollBy(0, endOfPreview);
 }
 
 function togglePreview(doupdatepreview)
