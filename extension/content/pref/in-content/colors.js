@@ -33,16 +33,20 @@ var gSALRColorsPane = {
 		
 		//go through all the labels, uses their class to know what pref they belong to
 		let tds = document.getElementById('sampletableholder').getElementsByTagName("hbox");
-		for (let i in tds) {
-			let td = tds[i];
-			if (td.className)
+		for (let i in tds)
+		{
+			if (tds.hasOwnProperty(i))
 			{
-				let pref = document.getElementById(td.className + forum);
-				if (pref) {
-					if (pref.value == 0) {
-						td.style.backgroundColor = "transparent";
-					} else {
-						td.style.backgroundColor = pref.value;
+				let td = tds[i];
+				if (td.className)
+				{
+					let pref = document.getElementById(td.className + forum);
+					if (pref)
+					{
+						if (pref.value === '0')
+							td.style.backgroundColor = "transparent";
+						else
+							td.style.backgroundColor = pref.value;
 					}
 				}
 			}
@@ -62,17 +66,22 @@ var gSALRColorsPane = {
 
 		//go through all the TDs, uses their class to know what pref they belong to
 		let tds = document.getElementById("sampletableholder").getElementsByTagName("hbox");
-		for (let i in tds) {
-			let td = tds[i];
-			let pref = document.getElementById(td.className + forum);
-			if (pref) {
-				try {
-					// Reset the preference values for the specified forum
-					let handyName = pref.name.substring(22);
-					Prefs.resetPref(handyName);
-					// Reset any unsaved color changes for the specified forum
-					pref.value = pref.valueFromPreferences;
-				} catch (e) {}
+		for (let i in tds)
+		{
+			if (tds.hasOwnProperty(i))
+			{
+				let td = tds[i];
+				let pref = document.getElementById(td.className + forum);
+				if (pref)
+				{
+					try {
+						// Reset the preference values for the specified forum
+						let handyName = pref.name.substring(22);
+						Prefs.resetPref(handyName);
+						// Reset any unsaved color changes for the specified forum
+						pref.value = pref.valueFromPreferences;
+					} catch (e) {}
+				}
 			}
 		}
 		
@@ -107,10 +116,14 @@ var gSALRColorsPane = {
 		if (obj.accepted)
 		{
 			let forum = document.getElementById("colorsForumtype").selectedItem.value;
-			let pref = document.getElementById(obj.targetEl.parentNode.className + forum);
+			let colorBox = obj.targetEl.parentNode;
+			let pref = document.getElementById(colorBox.className + forum);
 			pref.value = obj.value;
-			// Probably can make the following more efficient:
-			gSALRColorsPane.loadColors();
+
+			if (pref.value === '0')
+				colorBox.style.backgroundColor = "transparent";
+			else
+				colorBox.style.backgroundColor = pref.value;
 		}
 	}
 

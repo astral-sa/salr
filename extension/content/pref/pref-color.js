@@ -9,16 +9,20 @@ function loadColors() {
 	
 	//go through all the TDs, uses their class to know what pref they belong to
 	var tds = document.getElementById('sampletableholder').getElementsByTagNameNS("http://www.w3.org/1999/xhtml","td");
-	for(var i in tds) {
-		var td = tds[i];
-		if (td.className)
+	for (let i in tds)
+	{
+		if (tds.hasOwnProperty(i))
 		{
-			var pref = document.getElementById(td.className + forum);
-			if(pref) {
-				if(pref.value == 0) {
-					td.style.backgroundColor = "transparent";
-				} else {
-					td.style.backgroundColor = pref.value;
+			let td = tds[i];
+			if (td.className)
+			{
+				let pref = document.getElementById(td.className + forum);
+				if (pref)
+				{
+					if (pref.value === '0')
+						td.style.backgroundColor = "transparent";
+					else
+						td.style.backgroundColor = pref.value;
 				}
 			}
 		}
@@ -37,17 +41,22 @@ function loadDefaultColors() {
 
 	//go through all the TDs, uses their class to know what pref they belong to
 	var tds = document.getElementById("sampletableholder").getElementsByTagNameNS("http://www.w3.org/1999/xhtml","td");
-	for(var i in tds) {
-		var td = tds[i];
-		var pref = document.getElementById(td.className + forum);
-		if(pref) {
-			try {
-				// Reset the preference values for the specified forum
-				var handyName = pref.name.substring(22);
-				Prefs.resetPref(handyName);
-				// Reset any unsaved color changes for the specified forum
-				pref.value = pref.valueFromPreferences;
-			} catch (e) {}
+	for (let i in tds)
+	{
+		if (tds.hasOwnProperty(i))
+		{
+			let td = tds[i];
+			let pref = document.getElementById(td.className + forum);
+			if (pref)
+			{
+				try {
+					// Reset the preference values for the specified forum
+					let handyName = pref.name.substring(22);
+					Prefs.resetPref(handyName);
+					// Reset any unsaved color changes for the specified forum
+					pref.value = pref.valueFromPreferences;
+				} catch (e) {}
+			}
 		}
 	}
 	
@@ -71,9 +80,13 @@ function editColor(event, targetEl) {
 			obj.value = pref.value;
 	
 		window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "modal,chrome", obj);
-		if(obj.accepted) {
+		if (obj.accepted)
+		{
 			pref.value = obj.value;
-			loadColors();
+			if (pref.value === '0')
+				targetEl.style.backgroundColor = "transparent";
+			else
+				targetEl.style.backgroundColor = pref.value;
 		}
 	}
 }
