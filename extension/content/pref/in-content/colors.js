@@ -124,6 +124,8 @@ var gSALRColorsPane = {
 				colorBox.style.backgroundColor = "transparent";
 			else
 				colorBox.style.backgroundColor = pref.value;
+
+			Styles.updateStyles();
 		}
 	}
 
