@@ -35,10 +35,10 @@
 		<groupbox>
 			<caption label="Features"/>
 
-			<checkbox preference="disableNewReCount" 		label="Show new replies count in the replies column" oncommand="toggleNewReCount()" id="newReCount" />
+			<checkbox preference="disableNewReCount" 		label="Show new replies count in the replies column" id="newReCount" />
 			<checkbox preference="newPostCountUseOneLine" 	label="Show new replies count on a new line" style="margin-left: 20px;" id="newReCountNewLine" />
 			<checkbox preference="showThreadsWithNewPostsFirst" label="Show threads with new posts first in the thread list" />
-			<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads with new posts first in the bookmark list" oncommand="togglePromoteStickiesInCP()" id="showThreadsWNPCP" />
+			<checkbox preference="showThreadsWithNewPostsFirstCP" label="Show threads with new posts first in the bookmark list" id="showThreadsWNPCP" />
 			<checkbox preference="showThreadsWithNewPostsFirstCPStickies" label="Move stickies with new posts to the top of the bookmark list" style="margin-left: 20px;" id="promoteStickiesWNPCP" />
 			<checkbox preference="swapIconOrder" 			label="Swap the Mark Unvisited and Go To Last Post icon order" />
 			<checkbox preference="showForumModsList" 		label="Show list of moderators in the thread list" />
@@ -52,23 +52,23 @@
 			<vbox>
 
 				<checkbox id="alwayShowLastReadIcon" preference="alwaysShowGoToLastIcon" label="Always show 'Go To Last Post' icon, even if no new posts in thread"/>
-				<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Use this 'Go To Last Post' icon" oncommand="toggleLastReadIcon()"/>
+				<checkbox id="toggleLastReadIcon" preference="showGoToLastIcon" label="Use this 'Go To Last Post' icon" />
 				<vbox style="margin-left: 20px">
 					<hbox align="center" flex="1">
-						<label value="Icon URL:" control="lastReadPostIcon"/>
+						<label id="lastReadLabel" value="Icon URL:" control="lastReadPostIcon"/>
 						<textbox id="lastReadIcon" preference="goToLastReadPost" flex="1"/>
-						<button id="lastReadIconDefault" label="Default"  onclick="lastReadIconDefault()"/>
+						<button id="lastReadIconDefault" label="Default" />
 					</hbox>
 				</vbox>
 
-				<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Use this 'Mark Thread Unvisited' icon" oncommand="toggleUnvisitIcon()" />
+				<checkbox id="toggleUnvisitIcon" preference="showUnvisitIcon" label="Use this 'Mark Thread Unvisited' icon" />
 
 				<vbox style="margin-left: 20px">
 
 					<hbox align="center" flex="1">
-						<label value="Icon URL:" control="unvisitThreadIcon"/>
+						<label id="unvisitLabel" value="Icon URL:" control="unvisitThreadIcon"/>
 						<textbox id="unvisitIcon" preference="markThreadUnvisited" flex="1"/>
-						<button id="unvisitIconDefault" label="Default" onclick="unvisitIconDefault()"/>
+						<button id="unvisitIconDefault" label="Default" />
 					</hbox>
 
 				</vbox>
