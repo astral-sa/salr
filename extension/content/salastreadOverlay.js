@@ -139,8 +139,6 @@ var gSALR = {
 				// Append custom CSS files to the head
 				if (gSALR.Prefs.getPref("gestureEnable"))
 					gSALR.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/gestureStyling.css");
-				if (gSALR.Prefs.getPref("removeHeaderAndFooter"))
-					gSALR.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/removeHeaderAndFooter.css");
 				if (gSALR.Prefs.getPref("enablePageNavigator") || gSALR.Prefs.getPref("enableForumNavigator"))
 					gSALR.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/pageNavigator.css");
 

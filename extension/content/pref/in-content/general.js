@@ -8,6 +8,7 @@ var gSALRGeneralPane = {
 			.addEventListener(aEventType, aCallback.bind(gSALRGeneralPane));
 		}
 
+		setEventListener("removeHeaderAndFooter", "change", Styles.updateStyles);
 		setEventListener("testNotify", "command", gSALRGeneralPane.testNotify);
 	},
 	resetPref: function(myPrefName)

@@ -442,6 +442,16 @@ let Styles = exports.Styles =
 
 		// end showthread CSS
 		CSSFile += '}\n';
+
+		if (Prefs.getPref('removeHeaderAndFooter'))
+		{
+			// global forum CSS
+			CSSFile += '@-moz-document url-prefix("http://forums.somethingawful.com/") {\n';
+			CSSFile += '#globalmenu, #nav_purchase, #navigation, #copyright { display:none; }\n';
+			// end global forum CSS
+			CSSFile += '}\n';
+		}
+
 		return CSSFile;
 	},
 
