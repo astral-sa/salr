@@ -381,6 +381,10 @@ let Styles = exports.Styles =
 			CSSFile += 'td.postbody .cancerous { opacity: 1; }\n';
 		}
 
+		// Hide timgs in spoilers - workaround forum bug
+		CSSFile += '.bbc-spoiler img.timg { visibility: hidden; }\n' +
+					'.bbc-spoiler:hover img.timg { visibility: visible; }\n';
+
 		// Remove forum-added blue border from our video embeds
 		CSSFile += 'td.postbody iframe.salr_video { border: none; }\n';
 
