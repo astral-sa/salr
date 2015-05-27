@@ -150,6 +150,7 @@ pref('extensions.salastread.shrinkThreadListTitlePages', false);
 
 //USER DISPLAY OPTIONS
 pref('extensions.salastread.resizeCustomTitleText', true);
+pref('extensions.salastread.resizeAllCustomTitleText', false);
 pref('extensions.salastread.hideCustomTitles', false);
 
 

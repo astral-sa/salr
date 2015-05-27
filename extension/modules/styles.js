@@ -361,8 +361,11 @@ let Styles = exports.Styles =
 		}
 		else if (Prefs.getPref('resizeCustomTitleText'))
 		{
-			CSSFile += 'dl.userinfo dd.title { width: 159px !important;  overflow: auto !important;}\n' +
-						'dl.userinfo dd.title * { font-size:10px !important; }\n';
+			CSSFile += 'dl.userinfo dd.title { width: 159px !important;  overflow: auto !important;}\n';
+			if (Prefs.getPref('resizeAllCustomTitleText'))
+				CSSFile += 'dl.userinfo dd.title, dl.userinfo dd.title * { font-size:10px !important; }\n';
+			else
+				CSSFile += 'dl.userinfo dd.title *:not(.bbc-center) { font-size:10px !important; }\n';
 		}
 		if (Prefs.getPref('hideReportButtons'))
 		{

@@ -270,6 +270,7 @@
 	<preference id="swapIconOrder"				name="extensions.salastread.swapIconOrder" 			type="bool"/>
 	<preference id="advancedThreadFiltering"	name="extensions.salastread.advancedThreadFiltering" type="bool"/>
 	<preference id="showForumModsList"			name="extensions.salastread.showForumModsList" 		type="bool"/>
+	<preference id="shrinkThreadListTitlePages" name="extensions.salastread.shrinkThreadListTitlePages" type="bool"/>
 </preferences>
 
 <hbox id="header-forums"
@@ -292,6 +293,7 @@
 	<checkbox preference="showThreadsWithNewPostsFirstCPStickies" label="Move stickies with new posts to the top of the bookmark list" style="margin-left: 20px;" id="promoteStickiesWNPCP" />
 	<checkbox preference="swapIconOrder" 			label="Swap the Mark Unvisited and Go To Last Post icon order" />
 	<checkbox preference="showForumModsList" 		label="Show list of moderators in the thread list" />
+	<checkbox preference="shrinkThreadListTitlePages" label="Shrink 'Pages:' list below thread names" />
 	<checkbox preference="advancedThreadFiltering" 	label="Enable advanced thread filtering" />
 </groupbox>
 
@@ -344,7 +346,6 @@
 	<preference id="enablePageNavigator"	name="extensions.salastread.enablePageNavigator" 	type="bool"/>
 	<preference id="enableKeyboardControls"	name="extensions.salastread.quickPostJump"			type="bool"/>
 	<preference id="hideThreadSearchBox"	name="extensions.salastread.hideThreadSearchBox"			type="bool" inverted="true"/>
-	<preference id="shrinkThreadListTitlePages" name="extensions.salastread.shrinkThreadListTitlePages" type="bool"/>
 </preferences>
 
 <hbox id="header-threads"
@@ -363,7 +364,6 @@
 		<checkbox preference="hideReportButtons" 		label="Hide the report button on your own posts" />
 		<checkbox preference="enablePageNavigator" 	 	label="Add a page navigator to the lower-right corner of the browser" />
 		<checkbox preference="hideThreadSearchBox" 	 	label="Add 'Search Thread' box to threads" />
-		<checkbox preference="shrinkThreadListTitlePages" label="Shrink 'Pages:' list below thread names" />
 	</vbox>
 </groupbox>
 <groupbox id="threadKeyNavGroup"
@@ -928,6 +928,7 @@
 	<!-- Various and Sundry Options -->
 	<preference id="dontBoldNames" 			name="extensions.salastread.dontBoldNames" 			type="bool"/>
 	<preference id="resizeCustomTitleText" 	name="extensions.salastread.resizeCustomTitleText" 	type="bool"/>
+	<preference id="resizeAllCustomTitleText" name="extensions.salastread.resizeAllCustomTitleText" 	type="bool"/>
 	<preference id="hideCustomTitles" 		name="extensions.salastread.hideCustomTitles" 		type="bool"/>
 </preferences>
 
@@ -949,12 +950,15 @@
 		</columns>
 		<rows>
 			<row>
-				<checkbox preference="resizeCustomTitleText"	label="Shrink Large Custom Title Texts" />
+				<checkbox preference="resizeCustomTitleText"	label="Shrink large/colorful custom title text" />
 				<checkbox preference="highlightUsernames" 		label="Highlight interesting and important usernames"/>
 			</row>
 			<row>
-				<checkbox preference="hideCustomTitles"			label="Hide all custom titles" />
+				<checkbox preference="resizeAllCustomTitleText"	label="Shrink all custom title text" style="margin-left: 20px;" />
 				<checkbox preference="dontBoldNames" 			label="Don't make highlighted usernames bold"/>
+			</row>
+			<row>
+				<checkbox preference="hideCustomTitles"			label="Hide all custom titles" />
 			</row>
 		</rows>
 	</grid>

@@ -19,6 +19,8 @@ var gSALRUsersPane = {
 		setEventListener("bgColorPopupItem", "command", function() {
 			gSALRUsersPane.changeColor('backgroundColor');});
 		setEventListener("notePopupItem", "command", gSALRUsersPane.editNote);
+		setEventListener("resizeCustomTitleText", "change", Styles.updateStyles);
+		setEventListener("resizeAllCustomTitleText", "change", Styles.updateStyles);
 		setEventListener("hideCustomTitles", "change", Styles.updateStyles);
 
 		//get usernames/ids

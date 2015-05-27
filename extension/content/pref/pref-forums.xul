@@ -21,6 +21,7 @@
 			<preference id="swapIconOrder"				name="extensions.salastread.swapIconOrder" 			type="bool"/>
 			<preference id="advancedThreadFiltering"	name="extensions.salastread.advancedThreadFiltering" type="bool"/>
 			<preference id="showForumModsList"			name="extensions.salastread.showForumModsList" 		type="bool"/>
+			<preference id="shrinkThreadListTitlePages" name="extensions.salastread.shrinkThreadListTitlePages" type="bool"/>
 		</preferences>
 
 		<groupbox>
@@ -41,6 +42,7 @@
 			<checkbox preference="showThreadsWithNewPostsFirstCPStickies" label="Move stickies with new posts to the top of the bookmark list" style="margin-left: 20px;" id="promoteStickiesWNPCP" />
 			<checkbox preference="swapIconOrder" 			label="Swap the Mark Unvisited and Go To Last Post icon order" />
 			<checkbox preference="showForumModsList" 		label="Show list of moderators in the thread list" />
+			<checkbox preference="shrinkThreadListTitlePages" label="Shrink 'Pages:' list below thread names" />
 			<checkbox preference="advancedThreadFiltering" 	label="Enable advanced thread filtering" />
 		</groupbox>
 
