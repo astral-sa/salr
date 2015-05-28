@@ -177,15 +177,15 @@ let PageUtils = exports.PageUtils =
 			let body = doc.body;
 			if (body.dataset.thread)
 			{
-				fid = parseInt(body.dataset.thread,10);
-				if (!isNaN(fid)) break;
+				tid = parseInt(body.dataset.thread,10);
+				if (!isNaN(tid)) break;
 			}
 
 			let bodyClassMatch = body.className.match(/thread_(\d+)/i);
 			if (bodyClassMatch)
 			{
-				fid = parseInt(bodyClassMatch[1],10);
-				if (!isNaN(fid)) break;
+				tid = parseInt(bodyClassMatch[1],10);
+				if (!isNaN(tid)) break;
 			}
 
 			// Look in the ? Link in the first post
