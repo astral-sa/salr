@@ -23,77 +23,46 @@ let Navigation = exports.Navigation =
 		navDiv.className = "salastread_pagenavigator";
 
 		// Create first and previous page buttons
-		let firstButtonImg = Navigation.createPaginatorButtonImg(doc, "Go to First Page", 
-			"chrome://salastread/skin/nav-firstpage.png");
-		let prevButtonImg = Navigation.createPaginatorButtonImg(doc, "Go to Previous Page", 
-			"chrome://salastread/skin/nav-prevpage.png");
-		if (pages.current === 1)
-		{
-			firstButtonImg.className = "disab";
-			navDiv.appendChild(firstButtonImg);
-			prevButtonImg.className = "disab";
-			navDiv.appendChild(prevButtonImg);
-		}
-		else
-		{
-			let firstButton = doc.createElement("a");
-			firstButton.href = this.editPageNumIntoURI(doc, "pagenumber=1");
-			firstButton.appendChild(firstButtonImg);
-			navDiv.appendChild(firstButton);
-			let prevButton = doc.createElement("a");
-			prevButton.href = this.editPageNumIntoURI(doc, "pagenumber=" + (pages.current-1));
-			prevButton.appendChild(prevButtonImg);
-			navDiv.appendChild(prevButton);
-		}
+		let firstButton = {
+			title: "Go to First Page",
+			image: "chrome://salastread/skin/nav-firstpage.png",
+			linkreq: pages.current !== 1,
+			page: "1"
+		};
+		Navigation.addPaginatorButton(doc, navDiv, firstButton);
+
+		let prevButton = {
+			title: "Go to Previous Page",
+			image: "chrome://salastread/skin/nav-prevpage.png",
+			linkreq: pages.current !== 1,
+			page: (pages.current - 1).toString(10)
+		};
+		Navigation.addPaginatorButton(doc, navDiv, prevButton);
 
 		// Create select element
-		let pageSel = Navigation.createPaginatorSelectBox(doc, pages);
-		navDiv.appendChild(pageSel);
+		Navigation.addPaginatorSelectBox(doc, pages, navDiv);
 
 		// Create next and last page buttons
-		let nextButtonImg = Navigation.createPaginatorButtonImg(doc, "Go to Next Page", 
-			"chrome://salastread/skin/nav-nextpage.png");
-		let lastButtonImg = Navigation.createPaginatorButtonImg(doc, "Go to Last Page", 
-			"chrome://salastread/skin/nav-lastpage.png");
-		if (pages.current === pages.total)
-		{
-			nextButtonImg.className = "disab";
-			navDiv.appendChild(nextButtonImg);
-			lastButtonImg.className = "disab";
-			navDiv.appendChild(lastButtonImg);
-		}
-		else
-		{
-			let nextButton = doc.createElement("a");
-			nextButton.href = this.editPageNumIntoURI(doc, "pagenumber=" + (pages.current+1));
-			nextButton.appendChild(nextButtonImg);
-			navDiv.appendChild(nextButton);
-			let lastButton = doc.createElement("a");
-			lastButton.href = this.editPageNumIntoURI(doc, "pagenumber=" + pages.total);
-			lastButton.appendChild(lastButtonImg);
-			navDiv.appendChild(lastButton);
-		}
+		let nextButton = {
+			title: "Go to Next Page",
+			image: "chrome://salastread/skin/nav-nextpage.png",
+			linkreq: pages.current !== pages.total,
+			page: (pages.current + 1).toString(10)
+		};
+		Navigation.addPaginatorButton(doc, navDiv, nextButton);
+
+		let lastButton = {
+			title: "Go to Last Page",
+			image: "chrome://salastread/skin/nav-lastpage.png",
+			linkreq: pages.current !== pages.total,
+			page: (pages.total).toString(10)
+		};
+		Navigation.addPaginatorButton(doc, navDiv, lastButton);
 
 		// Extra functionality in threads - Last Post button and bookmark star
 		if (doc.location.pathname === "/showthread.php" )
 		{
-			if (Prefs.getPref("lastPostOnNavigator"))
-			{
-				let lastPostButtonImg = Navigation.createPaginatorButtonImg(doc, "Go to First Unread Post", 
-					"chrome://salastread/skin/lastpost.png");
-				let lastPostButton = doc.createElement("a");
-				lastPostButton.href = this.editPageNumIntoURI(doc, "goto=newpost");
-				lastPostButton.appendChild(lastPostButtonImg);
-				navDiv.appendChild(lastPostButton);
-			}
-			let hasAStar = PageUtils.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
-			if (hasAStar)
-			{
-				let starButton = doc.createElement("img");
-				starButton.src = "http://fi.somethingawful.com/images/buttons/button-bookmark.png";
-				starButton.className = 'thread_bookmark';
-				navDiv.appendChild(starButton);
-			}
+			Navigation.createPaginatorThreadButtons(doc, navDiv);
 		}
 
 		doc.body.appendChild(navDiv);
@@ -101,7 +70,7 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Attempts to determine the number of pages in a document.
-	 * @param {Element} doc Document element to check.
+	 * @param  {Element} doc Document element to check.
 	 * @return {Object} Object containing total number of pages and current page.
 	 */
 	getPagesForDoc: function(doc)
@@ -119,7 +88,33 @@ let Navigation = exports.Navigation =
 	},
 
 	/**
-	 * Create a button image for our paginator.
+	 * Creates a button and adds it to the paginator.
+	 * @param {Element} doc        Document element to build in.
+	 * @param {Element} target     Paginator div to add to.
+	 * @param {Object}  buttonInfo Object with necessary button information:
+	 *                             title:     Tooltip for button.
+	 *                             image:     URL of image to use.
+	 *                             linkreq:   Whether or not we add URL. (optional)
+	 *                             page:      Page number to add URL for. (optional)
+	 */
+	addPaginatorButton: function(doc, target, buttonInfo)
+	{
+		if (!buttonInfo.image)
+			return;
+		let buttonImg = Navigation.createPaginatorButtonImg(doc, buttonInfo.title, buttonInfo.image);
+		if (!buttonInfo.linkreq || !buttonInfo.page)
+		{
+			buttonImg.className = "disab";
+			target.appendChild(buttonImg);
+			return;
+		}
+		Navigation.addPaginatorButtonLink(doc, 
+				this.editPageNumIntoURI(doc, "pagenumber=" + buttonInfo.page), 
+				buttonImg, target);
+	},
+
+	/**
+	 * Create a button image for a paginator button.
 	 * @param  {Element} doc   Document element to build in.
 	 * @param  {string}  title Title for the image.
 	 * @param  {string}  src   Source URL for the image.
@@ -134,12 +129,27 @@ let Navigation = exports.Navigation =
 	},
 
 	/**
-	 * Create the paginator select box.
-	 * @param  {Element} doc   Document element to build in.
-	 * @param  {Object} pages  Object containing total number of pages and current page.
-	 * @return {Element} Newly created select element.
+	 * Creates a link around a button image and appends it to a paginator.
+	 * @param {Element} doc    Document element to build in.
+	 * @param {string}  href   Target for link.
+	 * @param {Element} image  Image child to append.
+	 * @param {Element} target Paginator div.
 	 */
-	createPaginatorSelectBox: function(doc, pages)
+	addPaginatorButtonLink: function(doc, href, image, target)
+	{
+		let newButton = doc.createElement("a");
+		newButton.href = href;
+		newButton.appendChild(image);
+		target.appendChild(newButton);
+	},
+
+	/**
+	 * Create and append the paginator select box.
+	 * @param {Element} doc    Document element to build in.
+	 * @param {Object}  pages  Object containing total number of pages and current page.
+	 * @param {Element} navDiv Paginator div.
+	 */
+	addPaginatorSelectBox: function(doc, pages, navDiv)
 	{
 		let pageSel = doc.createElement("select");
 		pageSel.size = 1;
@@ -172,38 +182,61 @@ let Navigation = exports.Navigation =
 				}
 			};
 		}
-		return pageSel;
+		navDiv.appendChild(pageSel);
 	},
 
-	// Helper function for addPagination()
-	editPageNumIntoURI: function(doc, replacement)
+	/**
+	 * Create the paginator thread buttons (bookmark + last post)
+	 * @param {Element} doc    Document element to build thread buttons in.
+	 * @param {Element} navDiv Paginator div element to create children for.
+	 */
+	createPaginatorThreadButtons: function(doc, navDiv)
 	{
-		let result;
+		if (Prefs.getPref("lastPostOnNavigator"))
+		{
+			let lastPostButtonImg = Navigation.createPaginatorButtonImg(doc, "Go to First Unread Post", 
+				"chrome://salastread/skin/lastpost.png");
+			Navigation.addPaginatorButtonLink(doc, 
+				this.editPageNumIntoURI(doc, "goto=newpost"), 
+				lastPostButtonImg, navDiv);
+		}
+		let hasAStar = PageUtils.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
+		if (hasAStar)
+		{
+			let starButton = doc.createElement("img");
+			starButton.src = "http://fi.somethingawful.com/images/buttons/button-bookmark.png";
+			starButton.className = 'thread_bookmark';
+			navDiv.appendChild(starButton);
+		}
+	},
+
+	/**
+	 * Helper function for addPagination()
+	 * @param {Element} doc    Document element to build thread buttons in.
+	 * @param {[type]} newPageNum [description]
+	 */
+	editPageNumIntoURI: function(doc, newPageNum)
+	{
 		if (doc.baseURI.search(/pagenumber=(\d+)/) > -1) // Is the pagenumber already in the uri?
 		{
-			result = doc.baseURI.replace(/pagenumber=(\d+)/, replacement);
+			let newURI = doc.baseURI;
 			// If we're in showthread, remove the anchor since it's page specific
 			if (doc.location.pathname === "/showthread.php")
 			{
-				result = result.replace(/#.*/, '');
+				newURI = newURI.replace(/#.*/, '');
 			}
+			return newURI.replace(/pagenumber=(\d+)/, newPageNum);
 		}
-		else
+		if (doc.baseURI.search('#') === -1) // No anchor, just add pagenumber to the end
 		{
-			if (doc.baseURI.search('#') === -1) // If no anchor, just add it to the end
-			{
-				result = doc.baseURI + "&" + replacement;
-			}
-			else
-			{
-				result = doc.location.pathname + doc.location.search + "&" + replacement + doc.location.hash;
-				if (doc.location.pathname === "/showthread.php")
-				{
-					let threadid = PageUtils.getThreadId(doc);
-					result = doc.location.pathname + "?threadid=" + threadid + "&" + replacement;
-				}
-			}
+			return doc.baseURI + "&" + newPageNum;
 		}
-		return result;
+		if (doc.location.pathname === "/showthread.php") // In showthread, special handling
+		{
+			let threadid = PageUtils.getThreadId(doc);
+			return doc.location.pathname + "?threadid=" + threadid + "&" + newPageNum;
+		}
+		// Has an anchor; not in showthread
+		return doc.location.pathname + doc.location.search + "&" + newPageNum + doc.location.hash;
 	},
 };
