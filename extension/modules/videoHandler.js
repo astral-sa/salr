@@ -18,7 +18,7 @@ let VideoHandler = exports.VideoHandler =
 
 	/**
 	 * Examines a link to see if it needs to be converted to an embeddable video.
-	 * @param {Object} link Node snapshot of the link to process.
+	 * @param {Node} link Node snapshot of the link to process.
 	 */
 	processVideoLink: function(link)
 	{
@@ -110,7 +110,7 @@ let VideoHandler = exports.VideoHandler =
 
 	/**
 	 * Embeds a YouTube Video.
-	 * @param {Object} link     Target link to embed.
+	 * @param {Node}   link     Node snapshot of target link to embed.
 	 * @param {string} yt_subd  Subdomain from the video link to use.
 	 * @param {string} videoId  ID of video to embed.
 	 * @param {string} yt_start Time string for the embed.
@@ -143,12 +143,12 @@ let VideoHandler = exports.VideoHandler =
 			qualstring = '?' + qualstring;
 
 		let embedFrame = doc.createElement("iframe");
-		embedFrame.setAttribute('width', vidwidth);
-		embedFrame.setAttribute('height', vidheight);
-		embedFrame.setAttribute('class', 'salr_video');
-		embedFrame.setAttribute('src', "http://" + yt_subd + "youtube.com/embed/" + videoId + qualstring + yt_start);
+		embedFrame.width = vidwidth;
+		embedFrame.height = vidheight;
+		embedFrame.className = 'salr_video';
+		embedFrame.src = "http://" + yt_subd + "youtube.com/embed/" + videoId + qualstring + yt_start;
 		embedFrame.setAttribute('frameborder', '0');
-		embedFrame.setAttribute('mozallowfullscreen', true);
+		embedFrame.setAttribute('allowfullscreen', true);
 
 		//inserts video after the link
 		p.appendChild(embedFrame);
@@ -157,7 +157,7 @@ let VideoHandler = exports.VideoHandler =
 
 	/**
 	 * Embeds a Google Video.
-	 * @param {Object} link     Target link to embed.
+	 * @param {Node}   link     Node snapshot of target link to embed.
 	 * @param {string} videoTLD TLD of the domain to use.
 	 * @param {string} videoId  ID of video to embed.
 	 */
@@ -170,7 +170,7 @@ let VideoHandler = exports.VideoHandler =
 		embed.setAttribute('width', 450);
 		embed.setAttribute('height', 370);
 		embed.setAttribute('type', "application/x-shockwave-flash");
-		embed.setAttribute('class', 'salr_video');
+		embed.className = 'salr_video';
 		embed.setAttribute('id', videoId);
 		embed.setAttribute('flashvars', '');
 		embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en&fs=true');
@@ -182,7 +182,7 @@ let VideoHandler = exports.VideoHandler =
 
 	/**
 	 * Embeds a WebM video.
-	 * @param {Object} link Target link to embed.
+	 * @param {Node} link Node snapshot of target link to embed.
 	 */
 	embedWebM: function(link)
 	{
@@ -194,10 +194,10 @@ let VideoHandler = exports.VideoHandler =
 
 		let webmEmbed = doc.createElement("video");
 		webmEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
-		webmEmbed.setAttribute('src',link.href);
+		webmEmbed.src = link.href;
 		webmEmbed.setAttribute('type','video/webm');
-		webmEmbed.setAttribute('class', 'salr_video');
-		webmEmbed.setAttribute('width', vidwidth);
+		webmEmbed.className = 'salr_video';
+		webmEmbed.width = vidwidth;
 		webmEmbed.controls = true;
 
 		p.appendChild(webmEmbed);
@@ -206,7 +206,7 @@ let VideoHandler = exports.VideoHandler =
 
 	/**
 	 * Embeds a gifv video (looping webm or mp4).
-	 * @param {Object} link Target link to embed.
+	 * @param {Node} link Node snapshot of target link to embed.
 	 */
 	embedGifv: function(link)
 	{
@@ -219,20 +219,20 @@ let VideoHandler = exports.VideoHandler =
 
 		let gifvEmbed = doc.createElement("video");
 		gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
-		gifvEmbed.setAttribute('class', 'salr_video');
-		gifvEmbed.setAttribute('width', vidwidth);
-		gifvEmbed.setAttribute('poster',link.href.replace(/\.gifv$/i,'h.jpg'));
+		gifvEmbed.className = 'salr_video';
+		gifvEmbed.width = vidwidth;
+		gifvEmbed.poster = link.href.replace(/\.gifv$/i,'h.jpg');
 		gifvEmbed.controls = true;
 		gifvEmbed.autoplay = true;
 		gifvEmbed.muted = true;
 		gifvEmbed.loop = true;
 		let gifvSource = doc.createElement("source");
-		gifvSource.setAttribute('src',link.href.replace(/\.gifv$/i,'.mp4'));
-		gifvSource.setAttribute('type','video/mp4');
+		gifvSource.src = link.href.replace(/\.gifv$/i,'.mp4');
+		gifvSource.type = 'video/mp4';
 		gifvEmbed.appendChild(gifvSource);
 		gifvSource = doc.createElement("source");
-		gifvSource.setAttribute('src',link.href.replace(/\.gifv$/i,'.webm'));
-		gifvSource.setAttribute('type','video/webm');
+		gifvSource.src = link.href.replace(/\.gifv$/i,'.webm');
+		gifvSource.type ='video/webm';
 		gifvEmbed.appendChild(gifvSource);
 
 		p.appendChild(gifvEmbed);

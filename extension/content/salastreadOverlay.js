@@ -1104,9 +1104,9 @@ var gSALR = {
 				placeHere.parentNode.insertBefore(doc.createTextNode(" "),placeHere.nextSibling);
 			}
 			// SA's "Search thread" box is disabled; add our own
-			if (!gSALR.Prefs.getPref("hideThreadSearchBox") && searchThis.firstChild.nodeName == '#text')
+			if (!gSALR.Prefs.getPref("hideThreadSearchBox") && searchThis.firstChild.nodeName === '#text')
 			{
-				gSALR.ShowThreadHandler.addNewThreadSearchBox(doc, forumid, threadid, searchThis, placeHere);
+				gSALR.ShowThreadHandler.addThreadSearchBox(doc, forumid, threadid, placeHere, 'query');
 			}
 		}
 
@@ -1161,7 +1161,7 @@ var gSALR = {
 				continue;
 			}
 
-			if (post.id == "post") // handle adbot
+			if (post.id === "post") // handle adbot
 				continue;
 			curPostId = post.id.match(/post(\d+)/)[1];
 			profileLink = gSALR.PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
@@ -1186,7 +1186,7 @@ var gSALR = {
 			// Standard template - should work for all thread types nowadays. (05/21/2015)
 			let titleBox = gSALR.PageUtils.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
 			// If that doesn't work, try old FYAD template
-			if (titleBox == null)
+			if (titleBox === null)
 				titleBox = gSALR.PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
 
 			if (titleBox)
@@ -1204,11 +1204,11 @@ var gSALR = {
 			if (userNameBox.title.length > 0 && !inArchives)
 			{
 				posterImg = userNameBox.title;
-				if (posterImg == 'Administrator')
+				if (posterImg === 'Administrator')
 				{
 					gSALR.DB.addAdmin(posterId, posterName);
 				}
-				else if (posterImg == 'Moderator')
+				else if (posterImg === 'Moderator')
 				{
 					gSALR.DB.addMod(posterId, posterName);
 				}
@@ -1221,7 +1221,7 @@ var gSALR = {
 
 			//apply this to every post
 			post.className += " salrPostBy" + posterId + " salrPostBy" + escape(posterName);
-			if (posterName == username)
+			if (posterName === username)
 			{
 				post.className += " salrPostOfSelf";
 				if (threadMarkedPostedIn === false)
@@ -1242,7 +1242,7 @@ var gSALR = {
 			}
 			if (gSALR.DB.isMod(posterId))
 			{
-				if (posterImg == "Moderator" || posterImg == "Internet Knight" || inArchives)
+				if (posterImg === "Moderator" || posterImg === "Internet Knight" || inArchives)
 				{
 					posterColor = modColor;
 					posterBG = modBackground;
@@ -1256,7 +1256,7 @@ var gSALR = {
 			}
 			if (gSALR.DB.isAdmin(posterId))
 			{
-				if (posterImg == "Administrator" || inArchives)
+				if (posterImg === "Administrator" || inArchives)
 				{
 					posterColor = adminColor;
 					posterBG = adminBackground;
@@ -1271,7 +1271,7 @@ var gSALR = {
 			var dbUser = gSALR.DB.isUserIdColored(posterId);
 			if (dbUser)
 			{
-				if (!dbUser.username || dbUser.username != posterName)
+				if (!dbUser.username || dbUser.username !== posterName)
 				{
 					gSALR.DB.setUserName(posterId, posterName);
 				}
