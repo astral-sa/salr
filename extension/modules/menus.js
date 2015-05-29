@@ -26,23 +26,14 @@ let Menus = exports.Menus =
 				onCommand: Menus.onTBCommand.bind(Menus),
 				onBuild: function(aDocument)
 				{
-					let toolbarButton = aDocument.createElement("toolbarbutton");
-					let props = 
-					{
+					let toolbarButton = Utils.createElementWithAttrs(aDocument, 'toolbarbutton', {
 						id: "salr-toolbarbutton",
 						label: "SALR",
 						type: "menu",
 						removable: "true",
 						class: "toolbarbutton-1 chromeclass-toolbar-additional",
-						tooltiptext: "Something Awful Last Read",
-						oncommand: Menus.onTBCommand.bind(Menus),
-						oncontextmenu: Menus.onTBContextMenu.bind(Menus),
-					};
-					for (let p in props)
-					{
-						if (props.hasOwnProperty(p))
-							toolbarButton.setAttribute(p, props[p]);
-					}
+						tooltiptext: "Something Awful Last Read"
+					});
 					toolbarButton.addEventListener("command", Menus.onTBCommand.bind(Menus), false);
 					toolbarButton.addEventListener("contextmenu", Menus.onTBContextMenu.bind(Menus), false);
 					let popup = aDocument.createElement("menupopup");
@@ -56,46 +47,50 @@ let Menus = exports.Menus =
 		}
 		catch (ex)
 		{
-			let doc = window.document;
-			let toolbox = doc.getElementById("navigator-toolbox");
-			if (toolbox)
-			{
-				let button = doc.createElement("toolbarbutton");
-				button.setAttribute("id", "salr-toolbarbutton");
-				button.setAttribute("label", "SALR");
-				button.setAttribute("type", "menu");
-				button.setAttribute("removable", "true");
-				button.setAttribute("class", "toolbarbutton-1 chromeclass-toolbar-additional");
-				button.setAttribute("tooltiptext", "Something Awful Last Read");
-				let icon = "chrome://salastread/skin/sa-24.png";
-				button.style.listStyleImage = "url(" + icon + ")";
-				button.addEventListener("command", Menus.onTBCommand.bind(Menus), false);
-				button.addEventListener("contextmenu", Menus.onTBContextMenu.bind(Menus), false);
-				toolbox.palette.appendChild(button);
-				let popup = doc.createElement("menupopup");
-				popup.setAttribute("id", "salr-toolbar-popup");
-				popup.addEventListener("popupshowing", Menus.onTBMenuShowing, false);
-				button.appendChild(popup);
-
-				// move to saved toolbar position
-				let toolbarId = Prefs.getPref("legacyToolbarId");
-				let nextItemId = Prefs.getPref("legacyToolbarNextItemId");
-				let toolbar = toolbarId && doc.getElementById(toolbarId);
-				if (toolbar)
-				{
-					let nextItem = doc.getElementById(nextItemId);
-				 	toolbar.insertItem("salr-toolbarbutton", nextItem &&
-						 nextItem.parentNode.id == toolbarId &&
-						 nextItem);
-				}
-				window.addEventListener("aftercustomization", Menus.afterLegacyCustomize.bind(Menus), false);
-				onShutdown.add(function() {
-					window.removeEventListener("aftercustomization", Menus.afterLegacyCustomize, false);
-				});
-
-			}
-			onShutdown.add(function() { Menus.removeToolbarButton(window); });
+			Menus.addLegacyToolbarButton(window);
 		}
+	},
+
+	addLegacyToolbarButton: function(window)
+	{
+		let doc = window.document;
+		let toolbox = doc.getElementById("navigator-toolbox");
+		if (!toolbox)
+			return;
+
+		let button = Utils.createElementWithAttrs(doc, 'toolbarbutton', {
+			id: "salr-toolbarbutton",
+			label: "SALR",
+			type: "menu",
+			removable: "true",
+			class: "toolbarbutton-1 chromeclass-toolbar-additional",
+			tooltiptext: "Something Awful Last Read",
+		});
+		button.addEventListener("command", Menus.onTBCommand.bind(Menus), false);
+		button.addEventListener("contextmenu", Menus.onTBContextMenu.bind(Menus), false);
+		toolbox.palette.appendChild(button);
+		let popup = doc.createElement("menupopup");
+		popup.setAttribute("id", "salr-toolbar-popup");
+		popup.addEventListener("popupshowing", Menus.onTBMenuShowing, false);
+		button.appendChild(popup);
+
+		// move to saved toolbar position
+		let toolbarId = Prefs.getPref("legacyToolbarId");
+		let nextItemId = Prefs.getPref("legacyToolbarNextItemId");
+		let toolbar = toolbarId && doc.getElementById(toolbarId);
+		if (toolbar)
+		{
+			let nextItem = doc.getElementById(nextItemId);
+		 	toolbar.insertItem("salr-toolbarbutton", nextItem &&
+				 nextItem.parentNode.id == toolbarId &&
+				 nextItem);
+		}
+		window.addEventListener("aftercustomization", Menus.afterLegacyCustomize.bind(Menus), false);
+		onShutdown.add(function() {
+			window.removeEventListener("aftercustomization", Menus.afterLegacyCustomize, false);
+		});
+
+		onShutdown.add(function() { Menus.removeToolbarButton(window); });
 	},
 
 	afterLegacyCustomize: function(e)
@@ -136,6 +131,7 @@ let Menus = exports.Menus =
 	},
 
 	/**
+	 * Unused.
 	 * Checks toolbar icon visibility status for Australis.
 	 * @return {boolean} Whether toolbar icon is visible.
 	 */
@@ -242,14 +238,11 @@ let Menus = exports.Menus =
 		for (let i = 0; i < menuUtils.length; i++)
 		{
 			let thisUtil = menuUtils[i];
-			let menuel = doc.createElement("menuitem");
-			menuel.setAttribute("label", thisUtil.name);
-			menuel.setAttribute("forumnum", thisUtil.id);
-			menuel.addEventListener("click", Menus.menuItemCommand, false);
-			menuel.addEventListener("command", Menus.menuItemCommand, false);
-
 			//TODO: access keys
-			target.appendChild(menuel);
+			Menus.addMenuItemWithForumNum(doc, target, {
+				label: thisUtil.name,
+				forumnum: thisUtil.id
+			});
 		}
 		target.appendChild(doc.createElement("menuseparator"));
 
@@ -321,12 +314,6 @@ let Menus = exports.Menus =
 			else if (thisforum.nodeName === "forum")
 			{
 				foundAnything = true;
-				var menuel = doc.createElement("menuitem");
-				menuel.setAttribute("label", thisforum.getAttribute("name"));
-				menuel.setAttribute("forumnum", thisforum.getAttribute("id"));
-				menuel.addEventListener("click", Menus.menuItemCommand, false);
-				menuel.addEventListener("command", Menus.menuItemCommand, false);
-
 				var cssClass = "";
 				for (let j = 1; j <= depth; j++)
 				{
@@ -335,11 +322,13 @@ let Menus = exports.Menus =
 						cssClass += "-";
 				}
 
-				if (cssClass !== "")
-					menuel.setAttribute("class", "lastread_menu_" + cssClass);
-
 				//TODO: access keys
-				target.appendChild(menuel);
+				Menus.addMenuItemWithForumNum(doc, target, {
+					label: thisforum.getAttribute("name"),
+					forumnum: thisforum.getAttribute("id"),
+					class: (cssClass !== "") ? "lastread_menu_" + cssClass : ""
+				});
+
 				if (nested_menus)
 				{
 					// Give our pinned elements array a reference to this forum
@@ -373,6 +362,8 @@ let Menus = exports.Menus =
 			menupopup = document.getElementById("menupopup_SAforums");
 		else if (menuLoc === "toolbar")
 			menupopup = document.getElementById("salr-toolbar-popup");
+		else
+			return;
 
 		let abovePinned = menupopup.getElementsByClassName("salr_sepabovepinned")[0];
 
@@ -394,7 +385,6 @@ let Menus = exports.Menus =
 			if (pinnedForumElements[j])
 			{
 				var thisforum = pinnedForumElements[j];
-				let salrMenu = document.createElement("menuitem");
 				let forumname;
 				if (typeof thisforum === "string")
 					forumname = thisforum;
@@ -404,12 +394,11 @@ let Menus = exports.Menus =
 				{
 					forumname = forumname.substring(1);
 				}
-				salrMenu.setAttribute("label", forumname);
-				salrMenu.setAttribute("forumnum", pinnedForumNumbers[j]);
-				salrMenu.addEventListener("click", Menus.menuItemCommand, false);
-				salrMenu.addEventListener("command", Menus.menuItemCommand, false);
-				salrMenu.setAttribute("class", "lastread_menu_sub");
-				menupopup.appendChild(salrMenu);
+				Menus.addMenuItemWithForumNum(document, menupopup, {
+					label: forumname,
+					forumnum: pinnedForumNumbers[j],
+					class: "lastread_menu_sub"
+				});
 			}
 			else if (pinnedForumNumbers[j] === "sep")
 			{
@@ -420,22 +409,20 @@ let Menus = exports.Menus =
 				var umatch = pinnedForumNumbers[j].match(/^URL\[(.*?)\]\[(.*?)\]$/);
 				if (umatch)
 				{
-					let salrMenu = document.createElement("menuitem");
-					salrMenu.setAttribute("label", Utils.UnescapeMenuURL(umatch[1]));
-					salrMenu.setAttribute("targeturl", Utils.UnescapeMenuURL(umatch[2]));
-					salrMenu.addEventListener("click", Menus.menuItemCommandURL, false);
-					salrMenu.addEventListener("command", Menus.menuItemCommandURL, false);
-					salrMenu.setAttribute("class", "lastread_menu_sub");
-
-					menupopup.appendChild(salrMenu);
+					Menus.addMenuItemWithURL(document, menupopup, {
+						label: Utils.UnescapeMenuURL(umatch[1]),
+						targeturl: Utils.UnescapeMenuURL(umatch[2]),
+						class: "lastread_menu_sub"
+					});
 				}
 			}
 			else if (pinnedForumNumbers[j] === "starred")
 			{
-				let salrMenu = document.createElement("menu");
-				salrMenu.setAttribute("label", "Starred Threads");
-				salrMenu.setAttribute("image", "chrome://salastread/skin/star.png");
-				salrMenu.setAttribute("class", "menu-iconic lastread_menu_starred");
+				let salrMenu = Utils.createElementWithAttrs(document, 'menu', {
+					label: "Starred Threads",
+					image: "chrome://salastread/skin/star.png",
+					class: "menu-iconic lastread_menu_starred"
+				});
 
 				var subpopup = document.createElement("menupopup");
 				if (menuLoc === "menubar")
@@ -455,11 +442,12 @@ let Menus = exports.Menus =
 			ms.setAttribute("class", "salr_pinhelper_item");
 			menupopup.appendChild(ms);
 
-			let salrMenu = document.createElement("menuitem");
-			salrMenu.setAttribute("label", "Learn how to pin forums to this menu...");
-			salrMenu.setAttribute("image", "chrome://salastread/skin/eng101-16x16.png");
+			let salrMenu = Utils.createElementWithAttrs(document, 'menu', {
+				label: "Learn how to pin forums to this menu...",
+				image: "chrome://salastread/skin/eng101-16x16.png",
+				class: "salr_pinhelper_item menuitem-iconic lastread_menu_sub"
+			});
 			salrMenu.addEventListener("command", Menus.launchPinHelper, false);
-			salrMenu.setAttribute("class", "salr_pinhelper_item menuitem-iconic lastread_menu_sub");
 
 			// Until the user views the pin helper, each SA menu popup in each
 			//     window will check if it needs to remove the pin helper
@@ -490,56 +478,86 @@ let Menus = exports.Menus =
 		{
 			menupopup = document.getElementById("salr-toolbar-popup");
 		}
+		if (!menupopup)
+			return;
 
-		if (menupopup)
+		if (Prefs.getPref('useSAForumMenuBackground'))
+			menupopup.className = "lastread_menu";
+		else
+			menupopup.className = "";
+
+		while (menupopup.firstChild)
 		{
-			if (Prefs.getPref('useSAForumMenuBackground'))
-				menupopup.className = "lastread_menu";
-			else
-				menupopup.className = "";
-
-			while (menupopup.firstChild)
-			{
-				menupopup.removeChild(menupopup.firstChild);
-			}
-			let nested_menus = Prefs.getPref('nestSAForumMenu');
-			let salrMenu = document.createElement("menuitem");
-			salrMenu.setAttribute("label","Something Awful");
-			salrMenu.setAttribute("image", "chrome://salastread/skin/sa.png");
-			salrMenu.setAttribute("targeturl", "http://www.somethingawful.com");
-			salrMenu.addEventListener("click", Menus.menuItemCommandURL, false);
-			salrMenu.addEventListener("command", Menus.menuItemCommandURL, false);
-			salrMenu.setAttribute("class","menuitem-iconic lastread_menu_frontpage");
-			menupopup.appendChild(salrMenu);
-			menupopup.appendChild(document.createElement("menuseparator"));
-
-			let lsalrMenu = document.createElement("menuitem");
-			lsalrMenu.setAttribute("label","Configure SALastRead...");
-			lsalrMenu.setAttribute("oncommand", "gSALR.runConfig();");
-			menupopup.appendChild(lsalrMenu);
-			menupopup.appendChild(document.createElement("menuseparator"));
-
-			var pinnedForumNumbers = [];
-			var pinnedForumElements = [];
-			if (nested_menus && Prefs.getPref('menuPinnedForums'))
-				pinnedForumNumbers = Prefs.getPref('menuPinnedForums').split(",");
-
-			Menus._populateForumMenuFrom(nested_menus,menupopup,pinnedForumNumbers,pinnedForumElements);
-
-			let abovePinned = document.createElement("menuseparator");
-			abovePinned.className = 'salr_sepabovepinned';
-			abovePinned.hidden = true;
-			menupopup.appendChild(abovePinned);
-
-			// We only add pinned forums + any starred threads if nestSAForumMenu is true
-			if (nested_menus && (pinnedForumElements.length > 0 || pinnedForumNumbers.length > 0))
-			{
-				Menus.buildPinnedForumMenuItems(win, menuLoc, pinnedForumNumbers, pinnedForumElements);
-			}
-			// Menu is ready now; show it.
-			if (menuLoc === "menubar")
-				document.getElementById("salr-menu").style.display = "-moz-box";
+			menupopup.removeChild(menupopup.firstChild);
 		}
+		let nested_menus = Prefs.getPref('nestSAForumMenu');
+		Menus.addMenuItemWithURL(document, menupopup, {
+			label: "Something Awful",
+			image: "chrome://salastread/skin/sa.png",
+			targeturl: "http://www.somethingawful.com",
+			class: "menuitem-iconic lastread_menu_frontpage"
+		});
+
+		menupopup.appendChild(document.createElement("menuseparator"));
+
+		let lsalrMenu = document.createElement("menuitem");
+		lsalrMenu.setAttribute("label","Configure SALastRead...");
+		lsalrMenu.setAttribute("oncommand", "gSALR.runConfig();");
+		menupopup.appendChild(lsalrMenu);
+		menupopup.appendChild(document.createElement("menuseparator"));
+
+		var pinnedForumNumbers = [];
+		var pinnedForumElements = [];
+		if (nested_menus && Prefs.getPref('menuPinnedForums'))
+			pinnedForumNumbers = Prefs.getPref('menuPinnedForums').split(",");
+
+		Menus._populateForumMenuFrom(nested_menus,menupopup,pinnedForumNumbers,pinnedForumElements);
+
+		let abovePinned = document.createElement("menuseparator");
+		abovePinned.className = 'salr_sepabovepinned';
+		abovePinned.hidden = true;
+		menupopup.appendChild(abovePinned);
+
+		// We only add pinned forums + any starred threads if nestSAForumMenu is true
+		if (nested_menus && (pinnedForumElements.length > 0 || pinnedForumNumbers.length > 0))
+		{
+			Menus.buildPinnedForumMenuItems(win, menuLoc, pinnedForumNumbers, pinnedForumElements);
+		}
+		// Menu is ready now; show it.
+		if (menuLoc === "menubar")
+			document.getElementById("salr-menu").style.display = "-moz-box";
+	},
+
+	/**
+	 * Creates a menu item with forumnum and appends it to a menu popup.
+	 * @param {Element} doc       Document element to create in.
+	 * @param {Element} menuPopup Popup to append to.
+	 * @param {Object}  attrs     Attributes to set on the new menu item.
+	 */
+	addMenuItemWithForumNum: function(doc, menuPopup, attrs)
+	{
+		if (!doc || !menuPopup)
+			return;
+		let newMenuItem = Utils.createElementWithAttrs(doc, 'menuitem', attrs);
+		newMenuItem.addEventListener("click", Menus.menuItemCommand, false);
+		newMenuItem.addEventListener("command", Menus.menuItemCommand, false);
+		menuPopup.appendChild(newMenuItem);
+	},
+
+	/**
+	 * Creates a menu item with a destination URL and appends it to a menu popup.
+	 * @param {Element} doc       Document element to create in.
+	 * @param {Element} menuPopup Popup to append to.
+	 * @param {Object}  attrs     Attributes to set on the new menu item.
+	 */
+	addMenuItemWithURL: function(doc, menuPopup, attrs)
+	{
+		if (!doc || !menuPopup)
+			return;
+		let newMenuItem = Utils.createElementWithAttrs(doc, 'menuitem', attrs);
+		newMenuItem.addEventListener("click", Menus.menuItemCommandURL, false);
+		newMenuItem.addEventListener("command", Menus.menuItemCommandURL, false);
+		menuPopup.appendChild(newMenuItem);
 	},
 
 	// Moved from preferences. Need to redo and make more efficient
@@ -725,16 +743,14 @@ let Menus = exports.Menus =
 	 */
 	removeMenuPinHelper: function(event)
 	{
-		if (Prefs.getPref('showMenuPinHelper') === false)
-		{
-			let menupopup = event.originalTarget;
-			if (menupopup)
-			{
-				let pinhelperItems = menupopup.getElementsByClassName('salr_pinhelper_item');
-				while(pinhelperItems.length > 0)
-					menupopup.removeChild(pinhelperItems[0]);
-			}
-		}
+		if (Prefs.getPref('showMenuPinHelper') === true)
+			return;
+		let menupopup = event.originalTarget;
+		if (!menupopup)
+			return;
+		let pinhelperItems = menupopup.getElementsByClassName('salr_pinhelper_item');
+		while(pinhelperItems.length > 0)
+			menupopup.removeChild(pinhelperItems[0]);
 	},
 
 	launchPinHelper: function(event)

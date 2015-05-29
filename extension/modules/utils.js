@@ -28,6 +28,24 @@ let Utils = exports.Utils =
 		*/
 	},
 
+	/**
+	 * Simple element creation function.
+	 * @param {Element} doc   Document element to create in.
+	 * @param {string}  tag   Tag name for the new element.
+	 * @param {Object}  attrs Attributes to set on the element.
+	 */
+	createElementWithAttrs: function(doc, tag, attrs)
+	{
+		let element = doc.createElement(tag);
+		if (attrs)
+		{
+			for (let attrName in attrs)
+				if (attrs.hasOwnProperty(attrName))
+					element.setAttribute(attrName, attrs[attrName]);
+		}
+		return element;
+	},
+
 	forEachOpenWindow: function(todo)	// Apply a function to all open browser windows
 	{
 		var windows = Services.wm.getEnumerator("navigator:browser");
