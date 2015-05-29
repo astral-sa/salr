@@ -187,7 +187,28 @@ let Styles = exports.Styles =
 
 	generateSSSCSS: function()
 	{
-		// threadlist CSS
+		let CSSFile = Styles.generateThreadListSSSCSS();
+
+		CSSFile += Styles.generateShowThreadSSSCSS();
+
+		if (Prefs.getPref('removeHeaderAndFooter'))
+		{
+			// global forum CSS
+			CSSFile += '@-moz-document url-prefix("http://forums.somethingawful.com/") {\n';
+			CSSFile += '#globalmenu, #nav_purchase, #navigation, #copyright { display:none; }\n';
+			// end global forum CSS
+			CSSFile += '}\n';
+		}
+
+		return CSSFile;
+	},
+
+	/**
+	 * Generates thread list CSS for stylesheet service.
+	 * @return {string} CSS applying to the thread list.
+	 */
+	generateThreadListSSSCSS: function()
+	{
 		let CSSFile = '@-moz-document url-prefix("http://forums.somethingawful.com/forumdisplay.php"),\n' +
 						'url-prefix("http://forums.somethingawful.com/usercp.php"),\n' +
 						'url-prefix("http://forums.somethingawful.com/bookmarkthreads.php") {\n';
@@ -321,13 +342,20 @@ let Styles = exports.Styles =
 						Prefs.getPref('postedInThreadRe') +
 						' !important; }\n';
 
-		}
+		} // end thread highlighting
+
 		// end threadlist CSS
 		CSSFile += '}\n';
+		return CSSFile;
+	},
 
-
-		// showthread CSS
-		CSSFile += '@-moz-document url-prefix("http://forums.somethingawful.com/showthread.php") {\n';
+	/**
+	 * Generates showthread CSS for stylesheet service.
+	 * @return {string} CSS applying to threads.
+	 */
+	generateShowThreadSSSCSS: function()
+	{
+		let CSSFile = '@-moz-document url-prefix("http://forums.somethingawful.com/showthread.php") {\n';
 
 		if (Prefs.getPref('highlightQuotes'))
 		{
@@ -446,16 +474,6 @@ let Styles = exports.Styles =
 
 		// end showthread CSS
 		CSSFile += '}\n';
-
-		if (Prefs.getPref('removeHeaderAndFooter'))
-		{
-			// global forum CSS
-			CSSFile += '@-moz-document url-prefix("http://forums.somethingawful.com/") {\n';
-			CSSFile += '#globalmenu, #nav_purchase, #navigation, #copyright { display:none; }\n';
-			// end global forum CSS
-			CSSFile += '}\n';
-		}
-
 		return CSSFile;
 	},
 
