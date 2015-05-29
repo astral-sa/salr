@@ -108,61 +108,57 @@ let PageUtils = exports.PageUtils =
 	// @return: (int) Forum ID, or (bool) false if unable to determine
 	getForumId: function(doc)
 	{
-		var fid = 0;
+		let fid;
 
-		while (true) // Not actually going to loop, I just want to be able to break out
+		// Look in the location bar
+		let intitle = doc.location.href.match(/forumid=(\d+)/i);
+		if (intitle)
 		{
-			// Look in the location bar
-			var intitle = doc.location.href.match(/forumid=(\d+)/i);
-			if (intitle)
-			{
-				fid = parseInt(intitle[1],10);
-				if (!isNaN(fid)) break;
-			}
-
-			// Check for body data-forum or body classing
-			let body = doc.body;
-			if (body.dataset.forum)
-			{
-				fid = parseInt(body.dataset.forum,10);
-				if (!isNaN(fid)) break;
-			}
-
-			let bodyClassMatch = body.className.match(/forum_(\d+)/i);
-			if (bodyClassMatch)
-			{
-				fid = parseInt(bodyClassMatch[1],10);
-				if (!isNaN(fid)) break;
-			}
-
-			// Look in the link for the post button
-			var postbutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
-			if (postbutton)
-			{
-				var inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
-				if (inpostbutton)
-				{
-					fid = parseInt(inpostbutton[1],10);
-					if (!isNaN(fid)) break;
-				}
-			}
-
-			// Look in the hash added to urls
-			var inhash = doc.location.hash.match(/forum(\d+)/i);
-			if (inhash)
-			{
-				fid = parseInt(inhash[1],10);
-				if (!isNaN(fid)) break;
-			}
-
-			break;
+			fid = PageUtils.validateId(intitle[1]);
+			if (fid)
+				return fid;
 		}
 
-		if (fid === 0 || isNaN(fid))
+		// Check for body data-forum or body classing
+		let body = doc.body;
+		if (body.dataset.forum)
 		{
-			fid = false;
+			fid = PageUtils.validateId(body.dataset.forum);
+			if (fid)
+				return fid;
 		}
-		return fid;
+
+		let bodyClassMatch = body.className.match(/forum_(\d+)/i);
+		if (bodyClassMatch)
+		{
+			fid = PageUtils.validateId(bodyClassMatch[1]);
+			if (fid)
+				return fid;
+		}
+
+		// Look in the link for the post button
+		let postbutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
+		if (postbutton)
+		{
+			let inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
+			if (inpostbutton)
+			{
+				fid = PageUtils.validateId(inpostbutton[1]);
+				if (fid)
+					return fid;
+			}
+		}
+
+		// Look in the hash added to urls
+		let inhash = doc.location.hash.match(/forum(\d+)/i);
+		if (inhash)
+		{
+			fid = PageUtils.validateId(inhash[1]);
+				if (fid)
+					return fid;
+		}
+
+		return false;
 	},
 
 	// Try to figure out the current thread we're in
@@ -170,73 +166,86 @@ let PageUtils = exports.PageUtils =
 	// @return: (int) Thread ID, or (bool) false if unable to determine
 	getThreadId: function(doc)
 	{
-		var tid = 0;
+		let tid;
 
-		while (true) // Not actually going to loop, I just want to be able to break out
+		// Look in the location bar
+		let intitle = doc.location.href.match(/threadid=(\d+)/i);
+		if (intitle)
 		{
-			// Look in the location bar
-			var intitle = doc.location.href.match(/threadid=(\d+)/i);
-			if (intitle)
-			{
-				tid = parseInt(intitle[1],10);
-				if (!isNaN(tid)) break;
-			}
-
-			// Check for body data-thread or body classing
-			let body = doc.body;
-			if (body.dataset.thread)
-			{
-				tid = parseInt(body.dataset.thread,10);
-				if (!isNaN(tid)) break;
-			}
-
-			let bodyClassMatch = body.className.match(/thread_(\d+)/i);
-			if (bodyClassMatch)
-			{
-				tid = parseInt(bodyClassMatch[1],10);
-				if (!isNaN(tid)) break;
-			}
-
-			// Look in the ? Link in the first post
-			var filterlink = this.selectSingleNode(doc, doc, "//TD[contains(@class,'postdate')]//A[contains(@href,'threadid=')]");
-			if (filterlink)
-			{
-				var inlink = filterlink.href.match(/threadid=(\d+)/i);
-				if (inlink)
-				{
-					tid = parseInt(inlink[1],10);
-					if (!isNaN(tid)) break;
-				}
-			}
-
-			// Look in the link for the reply button
-			var replybutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'threadid=')]");
-			if (replybutton)
-			{
-				var inreplybutton = replybutton.href.match(/threadid=(\d+)/i);
-				if (inreplybutton)
-				{
-					tid = parseInt(inreplybutton[1],10);
-					if (!isNaN(tid)) break;
-				}
-			}
-
-			// Look in the hash added to urls
-			var inhash = doc.location.hash.match(/thread(\d+)/i);
-			if (inhash)
-			{
-				tid = parseInt(inhash[1],10);
-				if (!isNaN(tid)) break;
-			}
-
-			break;
+			tid = PageUtils.validateId(intitle[1]);
+			if (tid)
+				return tid;
 		}
 
-		if (tid === 0 || isNaN(tid))
+		// Check for body data-thread or body classing
+		let body = doc.body;
+		if (body.dataset.thread)
 		{
-			tid = false;
+			tid = PageUtils.validateId(body.dataset.thread);
+			if (tid)
+				return tid;
 		}
-		return tid;
+
+		let bodyClassMatch = body.className.match(/thread_(\d+)/i);
+		if (bodyClassMatch)
+		{
+
+			tid = PageUtils.validateId(bodyClassMatch[1]);
+			if (tid)
+				return tid;
+		}
+
+		// Look in the ? Link in the first post
+		let filterlink = this.selectSingleNode(doc, doc, "//TD[contains(@class,'postdate')]//A[contains(@href,'threadid=')]");
+		if (filterlink)
+		{
+			var inlink = filterlink.href.match(/threadid=(\d+)/i);
+			if (inlink)
+			{
+				tid = PageUtils.validateId(inlink[1]);
+				if (tid)
+					return tid;
+			}
+		}
+
+		// Look in the link for the reply button
+		let replybutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'threadid=')]");
+		if (replybutton)
+		{
+			var inreplybutton = replybutton.href.match(/threadid=(\d+)/i);
+			if (inreplybutton)
+			{
+				tid = PageUtils.validateId(inreplybutton[1]);
+				if (tid)
+					return tid;
+			}
+		}
+
+		// Look in the hash added to urls
+		let inhash = doc.location.hash.match(/thread(\d+)/i);
+		if (inhash)
+		{
+			tid = PageUtils.validateId(inhash[1]);
+				if (tid)
+					return tid;
+		}
+
+		return false;
+	},
+
+	/**
+	 * Validates a potential forum or thread ID
+	 * @param  {?}                id The ID to validate.
+	 * @return {(number|boolean)} Returns the ID if valid, false if invalid.
+	 */
+	validateId: function(id)
+	{
+		id = parseInt(id, 10);
+		if (id === 0 || isNaN(id))
+		{
+			id = false;
+		}
+		return id;	
 	},
 
 	// Unused
@@ -282,6 +291,37 @@ let PageUtils = exports.PageUtils =
 		// Note: 78 & 79 no longer in live forums as of 05/21/2015
 		return (forumid == 93 || forumid == 188 || forumid == 61 || forumid == 77 ||
 		 forumid == 78 || forumid == 79 || forumid == 115 || forumid == 25);
+	},
+
+	/**
+	 * Simple element creation function.
+	 * @param {Element} doc        Document element to create in.
+	 * @param {string}  tag        Tag name for the new element.
+	 * @param {Object}  attributes Attributes to set on the element.
+	 * @param {Object}  properties Properties to set on the element.
+	 * @param {Array}   children   Children to append to the element.
+	 */
+	createElement: function(doc, tag, attributes, properties, children)
+	{
+		let element = doc.createElement(tag);
+		if (attributes)
+		{
+			for (let attrName in attributes)
+				if (attributes.hasOwnProperty(attrName))
+					element.setAttribute(attrName, attributes[attrName]);
+		}
+		if (properties)
+		{
+			for (let propName in properties)
+				if (properties.hasOwnProperty(propName))
+					element[propName] = properties[propName];
+		}
+		if (children)
+		{
+			for (let child of children)
+				element.appendChild(child);
+		}
+		return element;
 	},
 
 	// Applies the given XPath and returns the first resultant node
