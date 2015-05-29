@@ -18,6 +18,9 @@ var gSALR = {
 	Timer: salr_require("timer").Timer,
 	Notifications: salr_require("notifications").Notifications,
 	UI: salr_require("ui").UI, // Temporary shim for menu work
+	MiscHandler: salr_require("miscHandler").MiscHandler,
+	ProfileViewHandler: salr_require("profileViewHandler").ProfileViewHandler,
+	SupportHandler: salr_require("supportHandler").SupportHandler,
 
 	// keeps track of how many SA timer-tracked pages are open
 	timerPageCount: 0,
@@ -98,7 +101,7 @@ var gSALR = {
 						break;
 
 					case "supportmail":
-						pageHandler = gSALR.handleSupport;
+						pageHandler = gSALR.SupportHandler.handleSupport;
 						break;
 
 					case "stats":
@@ -106,11 +109,11 @@ var gSALR = {
 						break;
 
 					case "misc":
-						pageHandler = gSALR.handleMisc;
+						pageHandler = gSALR.MiscHandler.handleMisc;
 						break;
 						
 					case "member":
-						pageHandler = gSALR.handleProfileView;
+						pageHandler = gSALR.ProfileViewHandler.handleProfileView;
 						break;
 
 					case "search":
@@ -129,7 +132,7 @@ var gSALR = {
 			else
 			{
 				// Search results
-				if (doc.location.pathname == '/f/search/result')
+				if (doc.location.pathname === '/f/search/result')
 					pageHandler = gSALR.handleSearch;
 			}
 
@@ -148,7 +151,7 @@ var gSALR = {
 
 				// Remove the page title prefix/postfix
 				if (gSALR.Prefs.getPref("removePageTitlePrefix"))
-					doc.title = gSALR.getPageTitle(doc);
+					doc.title = gSALR.PageUtils.getCleanPageTitle(doc);
 
 				// Call the proper handler for this type of page
 				pageHandler(doc);
@@ -985,7 +988,7 @@ var gSALR = {
 		/* Note: it will only actually happen if the thread's already in the cache.
 			Perhaps we can remove this call?
 		*/
-		gSALR.DB.setThreadTitle(threadid, gSALR.getPageTitle(doc));
+		gSALR.DB.setThreadTitle(threadid, gSALR.PageUtils.getCleanPageTitle(doc));
 
 		// Grab the go to dropdown
 		if (!gSALR.DB.gotForumList && !singlePost)
@@ -1558,194 +1561,6 @@ var gSALR = {
 		}
 	},
 
-	handleMisc: function(doc)
-	{
-		var action;
-		if ((action = doc.location.search.match(/action=(\w+)/i)) != null)
-		{
-			// Handle the "Who posted?" list window
-			if (action[1] == "whoposted")
-			{
-				var posterTable = gSALR.PageUtils.selectSingleNode(doc,doc,"//DIV[@id='main_stretch']/DIV/TABLE/TBODY");
-				var threadId = parseInt(doc.location.search.match(/threadid=(\d+)/i)[1], 10);
-				if (posterTable && threadId)
-				{
-					var highlightUsernames = gSALR.Prefs.getPref("highlightUsernames");
-					var sortReplyList = gSALR.Prefs.getPref("sortReplyList");
-
-					// Make some headers for sorting users by importance
-					// Custom colored users, then admins, then mods
-					if (sortReplyList)
-					{
-						var headerUsers = posterTable.firstChild;
-						headerUsers.firstChild.textContent = "Normal Users";
-
-						var headerMods = posterTable.firstChild.cloneNode(true);
-						headerMods.firstChild.textContent = "Moderators";
-						posterTable.insertBefore(headerMods,posterTable.firstChild);
-
-						var headerAdmins = posterTable.firstChild.cloneNode(true);
-						headerAdmins.firstChild.textContent = "Administrators";
-						posterTable.insertBefore(headerAdmins,posterTable.firstChild);
-
-						var headerCustom = posterTable.firstChild.cloneNode(true);
-						headerCustom.firstChild.textContent = "Users of Interest";
-						posterTable.insertBefore(headerCustom,posterTable.firstChild);
-
-						var customPosted, adminPosted, modPosted;
-					}
-
-					// Cycle through all the users listed and do whatever
-					var rows = gSALR.PageUtils.selectNodes(doc, posterTable, "TR");
-					for (var i in rows)
-					{
-						var posterId;
-						var row = rows[i];
-
-						// Skip the labels
-						if (row.className == "smalltext" || row.childNodes[1].className == "smalltext")
-						{
-							continue;
-						}
-
-						// Linkify all the post counts to lead to the thread filtered for that poster
-						posterId = parseInt(row.childNodes[1].firstChild.href.match(/userid=(\d+)/i)[1], 10);
-					//	if (posterId)
-					//	{
-					//		row.childNodes[3].innerHTML = "<a onclick=\"opener.location=('showthread.php?s=&threadid="
-					//			+ threadId + "&userid=" + posterId + "'); self.close();\" href=\"#\">" + row.childNodes[3].innerHTML + "</a>";
-					//	}
-
-						if ((highlightUsernames || sortReplyList) && posterId)
-						{
-							var userPriority = 0;
-
-							if (gSALR.DB.isMod(posterId))
-							{
-								userPriority = 1;
-							}
-							if (gSALR.DB.isAdmin(posterId))
-							{
-								userPriority = 2;
-							}
-
-							// Check for user-defined name coloring and/or mod/admin coloring
-							if (highlightUsernames)
-							{
-								var userColoring = gSALR.DB.isUserIdColored(posterId);
-								if (userColoring)
-								{
-									if (userColoring.color && userColoring.color != "0")
-									{
-										row.childNodes[1].firstChild.style.color = userColoring.color;
-										if (!gSALR.Prefs.getPref("dontBoldNames"))
-										{
-											row.childNodes[1].firstChild.style.fontWeight = "bold";
-										}
-										userPriority = 3;
-									}
-									if ((userColoring.background && userColoring.background != "0") || gSALR.DB.getPosterNotes(posterId))
-										userPriority = 3;
-								}
-								else if (userPriority == 1)
-								{
-									row.childNodes[1].firstChild.style.color = gSALR.Prefs.getPref("modColor");
-									if (!gSALR.Prefs.getPref("dontBoldNames"))
-									{
-										row.childNodes[1].firstChild.style.fontWeight = "bold";
-									}
-								}
-								else if (userPriority == 2)
-								{
-									row.childNodes[1].firstChild.style.color = gSALR.Prefs.getPref("adminColor");
-									if (!gSALR.Prefs.getPref("dontBoldNames"))
-									{
-										row.childNodes[1].firstChild.style.fontWeight = "bold";
-									}
-								}
-							}
-
-							// Sort them to the appropriate header
-							if (sortReplyList)
-							{
-								switch (userPriority)
-								{
-									// Note for clarity: we are inserting the user BEFORE the headers referenced below,
-									//   not after, thats why header and bool checks don't match up
-									case 1:
-										posterTable.insertBefore(row, headerUsers);
-										modPosted = true;
-										break;
-									case 2:
-										posterTable.insertBefore(row, headerMods);
-										adminPosted = true;
-										break;
-									case 3:
-										posterTable.insertBefore(row, headerAdmins);
-										customPosted = true;
-										break;
-								}
-							}
-						}
-					}
-
-					// If we didn't sort any users to a particular header, remove it
-					if (sortReplyList)
-					{
-						if (!customPosted)
-						{
-							posterTable.removeChild(headerCustom);
-						}
-						if (!adminPosted)
-						{
-							posterTable.removeChild(headerAdmins);
-						}
-						if (!modPosted)
-						{
-							posterTable.removeChild(headerMods);
-						}
-					}
-
-					// If we came here from a link inside the thread, we dont want the link at the bottom to take us back to page 1
-					if (doc.location.hash.search(/fromthread/i) > -1)
-					{
-						var closeLink = gSALR.PageUtils.selectSingleNode(doc, doc, "//A[contains(./text(),'show thread')]");
-						closeLink.parentNode.innerHTML = "<a style=\"color: rgb(255, 255, 255) ! important;\" onclick=\"self.close();\" href=\"#\">" + closeLink.innerHTML + "</a>";
-					}
-				}
-			}
-		}
-	},
-
-	handleSupport: function(doc)
-	{
-		if (doc.getElementById('content') == null)
-		{
-			// If there is no content div then abort since something's not right
-			return;
-		}
-		if (doc.getElementById('content').getElementsByTagName('iframe')[0].src.search(/supportfaq/) == -1)
-		{
-			// The iframe isn't there so something's changed
-			return;
-		}
-		var newImg = doc.createElement('img');
-		newImg.src = "chrome://salastread/skin/techsupport.jpg";
-		var newText = doc.createElement('p');
-		newText.textContent = "Please disable SA Last Read before reporting a problem with the forums";
-		newText.style.textAlign = "center";
-		var emptyP = doc.createElement('p');
-		var newLink = doc.createElement('a');
-		emptyP.appendChild(newLink);
-		emptyP.style.textAlign = "center";
-		newLink.href = "http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost";
-		newLink.textContent = "Click here to report a problem with SA Last Read instead";
-		var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
-		supportTable.parentNode.replaceChild(newImg, supportTable);
-		newImg.parentNode.appendChild(newText);
-		newImg.parentNode.appendChild(emptyP);
-	},
-
 	handleStats: function(doc)
 	{
 		if (doc.getElementsByName('t_forumid'))
@@ -1753,22 +1568,6 @@ var gSALR = {
 			// The forum list is here so let's update it
 			//gSALR.grabForumList(doc);
 		}
-	},
-
-	handleProfileView: function(doc)
-	{
-		var postSearchLink = gSALR.PageUtils.selectSingleNode(doc, doc, "//A[contains(./text(),'find posts by user')]");
-		if (!postSearchLink)
-			return;
-		var userid = postSearchLink.href.match(/userid=(\d+)/i)[1];
-		var newLink = doc.createElement('a');
-		newLink.href = "/banlist.php?userid=" + userid;
-		newLink.title = "Show poster's ban/probation history.";
-		newLink.textContent = "Rap Sheet";
-		newLink.style.color = "#FFFFFF";
-		postSearchLink.parentNode.appendChild(doc.createTextNode(" ("));
-		postSearchLink.parentNode.appendChild(newLink);
-		postSearchLink.parentNode.appendChild(doc.createTextNode(")"));
 	},
 
 	handleModQueue: function(doc)
@@ -1871,15 +1670,6 @@ var gSALR = {
 				gSALR.runConfig();
 			}, true);
 		}
-	},
-
-	getPageTitle: function(doc)
-	{
-		if (doc.title == "The Something Awful Forums")
-		{
-			return doc.title;
-		}
-		return doc.title.replace(/( \- )?The Something ?Awful Forums( \- )?/i, '');
 	},
 
 	runConfig: function(paneID, args)
@@ -2372,7 +2162,7 @@ var gSALR = {
 				threadTitle = target.__salastread_threadtitle;
 			}
 			else
-				threadTitle = gSALR.getPageTitle(target.ownerDocument);
+				threadTitle = gSALR.PageUtils.getCleanPageTitle(target.ownerDocument);
 
 			var starStatus = gSALR.DB.isThreadStarred(threadid);
 			gSALR.DB.toggleThreadStar(threadid);
@@ -2395,7 +2185,7 @@ var gSALR = {
 				threadTitle = target.__salastread_threadtitle;
 			}
 			else
-				threadTitle = gSALR.getPageTitle(target.ownerDocument);
+				threadTitle = gSALR.PageUtils.getCleanPageTitle(target.ownerDocument);
 
 			try
 			{

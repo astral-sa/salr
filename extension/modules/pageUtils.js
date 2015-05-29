@@ -94,6 +94,15 @@ let PageUtils = exports.PageUtils =
 		}
 	},
 
+	getCleanPageTitle: function(doc)
+	{
+		if (doc.title == "The Something Awful Forums")
+		{
+			return doc.title;
+		}
+		return doc.title.replace(/( \- )?The Something ?Awful Forums( \- )?/i, '');
+	},
+
 	// Try to figure out the current forum we're in
 	// @param: (document) The current page being viewed
 	// @return: (int) Forum ID, or (bool) false if unable to determine
