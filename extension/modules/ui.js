@@ -129,27 +129,24 @@ let UI = exports.UI =
 			let menuPopup = doc.createElement('menupopup');
 			menuPopup.setAttribute('id', 'salastread-context-menupopup');
 			menu.appendChild(menuPopup);
-			let menuItem = doc.createElement('menuitem');
-			menuItem.setAttribute('id', 'salastread-context-ignorethread');
-			menuItem.setAttribute('label', 'Ignore This Thread');
-			menuItem.setAttribute('accesskey', 'i');
-			menuItem.setAttribute('hidden', 'true');
-			menuItem.setAttribute('oncommand', 'window.gSALR.ignoreThread();');
-			menuPopup.appendChild(menuItem);
-			menuItem = doc.createElement('menuitem');
-			menuItem.setAttribute('id', 'salastread-context-starthread');
-			menuItem.setAttribute('label', 'Star This Thread');
-			menuItem.setAttribute('accesskey', 's');
-			menuItem.setAttribute('hidden', 'true');
-			menuItem.setAttribute('oncommand', 'window.gSALR.starThread();');
-			menuPopup.appendChild(menuItem);
-			menuItem = doc.createElement('menuitem');
-			menuItem.setAttribute('id', 'salastread-context-unreadthread');
-			menuItem.setAttribute('label', 'Mark This Thread Unread');
-			menuItem.setAttribute('accesskey', 'u');
-			menuItem.setAttribute('hidden', 'true');
-			menuItem.setAttribute('oncommand', 'window.gSALR.unreadThread();');
-			menuPopup.appendChild(menuItem);
+			UI.addContextMenuItem(doc, menuPopup, {
+				id: 'salastread-context-ignorethread',
+				label: 'Ignore This Thread',
+				accesskey: 'i',
+				oncommand: 'window.gSALR.ignoreThread();'
+			});
+			UI.addContextMenuItem(doc, menuPopup, {
+				id: 'salastread-context-starthread',
+				label: 'Star This Thread',
+				accesskey: 's',
+				oncommand: 'window.gSALR.starThread();'
+			});
+			UI.addContextMenuItem(doc, menuPopup, {
+				id: 'salastread-context-unreadthread',
+				label: 'Mark This Thread Unread',
+				accesskey: 'u',
+				oncommand: 'window.gSALR.unreadThread();'
+			});
 			let menuSep = doc.createElement('menuseparator');
 			menuSep.setAttribute('id', 'salastread-context-menuseparator');
 			menuSep.setAttribute('position', '2');
@@ -161,6 +158,25 @@ let UI = exports.UI =
 			//contentAreaContextMenu.addEventListener('popupshowing',UI.contextMenuShowing,false);
 		}
 	},
+
+	/**
+	 * Adds a new context menu item to a context menu popup.
+	 * @param {Element} doc          Document element to create in.
+	 * @param {Element} contextPopup Popup to append to.
+	 * @param {Object}  attrs        Attributes to set on the new menu item.
+	 */
+	addContextMenuItem: function(doc, contextPopup, attrs)
+	{
+		if (!doc || !contextPopup || !attrs)
+			return;
+		let element = doc.createElement('menuitem');
+		for (let attrName in attrs)
+			if (attrs.hasOwnProperty(attrName))
+				element.setAttribute(attrName, attrs[attrName]);
+		element.setAttribute('hidden', 'true');
+		contextPopup.appendChild(element);
+	},
+
 	removeContextMenu: function(window)
 	{
 		let doc = window.document;

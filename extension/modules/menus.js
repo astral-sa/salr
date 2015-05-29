@@ -7,13 +7,6 @@ let {Prefs} = require("prefs");
 //let {Notifications} = require("notifications");
 let {Utils} = require("utils");
 
-function forEachOpenWindow(todo)	// Apply a function to all open browser windows
-{
-	var windows = Services.wm.getEnumerator("navigator:browser");
-	while (windows.hasMoreElements())
-		todo(windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow));
-}
-
 let CustomizableUI = null;
 
 let Menus = exports.Menus = 
@@ -569,7 +562,7 @@ let Menus = exports.Menus =
 	toggleMenuGrenadeBackground: function()
 	{
 		let useGrenade = Prefs.getPref('useSAForumMenuBackground');
-		forEachOpenWindow(function(window) {
+		Utils.forEachOpenWindow(function(window) {
 			let doc = window.document;
 			let menubar = doc.getElementById("menupopup_SAforums");
 			if (menubar)

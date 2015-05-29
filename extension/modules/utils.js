@@ -28,6 +28,13 @@ let Utils = exports.Utils =
 		*/
 	},
 
+	forEachOpenWindow: function(todo)	// Apply a function to all open browser windows
+	{
+		var windows = Services.wm.getEnumerator("navigator:browser");
+		while (windows.hasMoreElements())
+			todo(windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow));
+	},
+
 	getRecentWindow: function()
 	{
 		let wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
