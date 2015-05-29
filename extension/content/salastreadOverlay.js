@@ -17,7 +17,7 @@ var gSALR = {
 	Styles: salr_require("styles").Styles,
 	Timer: salr_require("timer").Timer,
 	Notifications: salr_require("notifications").Notifications,
-	UI: salr_require("ui").UI, // Temporary shim for menu work
+	Menus: salr_require("menus").Menus, // Temporary shim for menu work
 	MiscHandler: salr_require("miscHandler").MiscHandler,
 	ProfileViewHandler: salr_require("profileViewHandler").ProfileViewHandler,
 	SupportHandler: salr_require("supportHandler").SupportHandler,
@@ -1768,7 +1768,7 @@ var gSALR = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Navbar & Mouse Gesture Functions ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+	// Keyboard navigation
 	quickPostJump: function(event)
 	{
 		try {
@@ -3079,8 +3079,7 @@ var gSALR = {
 		gSALR.DB.gotForumList = true;
 		if (gSALR.Prefs.getPref('showSAForumMenu'))
 		{
-			gSALR.UI.buildForumMenu(window, 'menubar');
-			gSALR.UI.buildForumMenu(window, 'toolbar');
+			gSALR.Menus.rebuildAllMenus();
 		}
 	},
 

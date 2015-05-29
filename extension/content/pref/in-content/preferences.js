@@ -25,6 +25,7 @@ let {Styles} = require("styles");
 let {PageUtils} = require("pageUtils");
 let {Notifications} = require("notifications");
 let {UI} = require("ui");
+let {Menus} = require("menus");
 
 let gLastHash = "";
 

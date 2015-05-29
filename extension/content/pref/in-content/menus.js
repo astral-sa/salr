@@ -10,7 +10,7 @@ var gSALRMenusPane = {
 		}
 
 		setEventListener("showSAForumMenu", "change", gSALRMenusPane.changedPrefshowSAForumMenu);
-		setEventListener("useSAForumMenuBackground", "change", UI.toggleMenuGrenadeBackground);
+		setEventListener("useSAForumMenuBackground", "change", Menus.toggleMenuGrenadeBackground);
 		setEventListener("nestSAForumMenu", "change", gSALRMenusPane.nestedMenusToggled);
 		setEventListener("pinButton", "command", gSALRMenusPane.pinClick);
 		setEventListener("unpinButton", "command", gSALRMenusPane.unPinClick);
@@ -226,7 +226,7 @@ var gSALRMenusPane = {
 	nestedMenusToggled: function()
 	{
 		// Queue up a menu rebuild
-		window.setTimeout(UI.rebuildAllMenus, 100);
+		window.setTimeout(Menus.rebuildAllMenus, 100);
 		this._SAMenuChanged = false;
 
 		// Handle enabling/disabling pref UI elements
@@ -406,8 +406,8 @@ var gSALRMenusPane = {
 				var win = enumerator.getNext();
 
 				// Rebuild pin menus in all browser windows
-				UI.buildPinnedForumMenuItems(win, 'menubar', pflist, pfElements);
-				UI.buildPinnedForumMenuItems(win, 'toolbar', pflist, pfElements);
+				Menus.buildPinnedForumMenuItems(win, 'menubar', pflist, pfElements);
+				Menus.buildPinnedForumMenuItems(win, 'toolbar', pflist, pfElements);
 			}
 			this._SAMenuChanged = false;
 		}
@@ -438,7 +438,7 @@ var gSALRMenusPane = {
 			// Toggle SA menus in all browser windows
 			if (showSAForumMenu.value === true)
 			{
-				UI.buildForumMenu(win, 'menubar');
+				Menus.buildForumMenu(win, 'menubar');
 			}
 			else
 			{

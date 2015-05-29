@@ -302,17 +302,7 @@ function RebuildSAMenus()
 {
 	if (document.getElementById('salastreadpref').__SAMenuChanged === true)
 	{
-		// Get all browser windows
-		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]  
-					   .getService(Components.interfaces.nsIWindowMediator);  
-		var enumerator = wm.getEnumerator("navigator:browser");  
-		while(enumerator.hasMoreElements()) {  
-			var win = enumerator.getNext();
-
-			// Rebuild SA menus in all browser windows
-			UI.buildForumMenu(win, 'menubar');
-			UI.buildForumMenu(win, 'toolbar');
-		}
+		Menus.rebuildAllMenus();
 		document.getElementById('salastreadpref').__SAMenuChanged = false;
 	}
 }
@@ -345,7 +335,7 @@ function doChangeSAMenuVis()
 		// Toggle SA menus in all browser windows
 		if (showSAForumMenu.value === true)
 		{
-			UI.buildForumMenu(win,'menubar');
+			Menus.buildForumMenu(win,'menubar');
 		}
 		else
 		{
