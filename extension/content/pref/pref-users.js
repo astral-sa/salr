@@ -127,23 +127,14 @@ function changeColor(type)
 	{
 		var value = obj.value;
 
+		value = (type === "color") ? "black" : "transparent";
 		if (type === "color")
 		{
-			if (value == 0)
-			{
-				value = "black";
-			}
-
 			li.childNodes[1].style.color = value;
 			DB.setPosterColor(li.getAttribute("value"), obj.value);
 		}
 		else
 		{
-			if (value == 0)
-			{
-				value = "transparent";
-			}
-
 			li.childNodes[1].style.backgroundColor = value;
 			DB.setPosterBackground(li.getAttribute("value"), obj.value);
 		}
@@ -312,12 +303,12 @@ function colorClicked(el, ctype)
 	if (pobj.accepted)
 	{
 		var friendlyvalue = pobj.value;
-		if (pobj.value == 0 && ctype == 'bgcolor')
+		if (pobj.value == 0)
 		{
-			friendlyvalue = 'transparent';
+			friendlyvalue = (ctype === 'bgcolor') ? 'transparent' : 'black';
 		}
 		el.style.backgroundColor = friendlyvalue;
-		if (ctype == 'fgcolor')
+		if (ctype === 'fgcolor')
 		{
 			li.childNodes[1].style.color = friendlyvalue;
 			DB.setPosterColor(userid, pobj.value);

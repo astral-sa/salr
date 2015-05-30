@@ -153,23 +153,14 @@ var gSALRUsersPane = {
 		{
 			var value = obj.value;
 
+			value = (obj.type === "color") ? "black" : "transparent";
 			if (obj.type === "color")
 			{
-				if (value == 0)
-				{
-					value = "black";
-				}
-
 				obj.li.childNodes[1].style.color = value;
 				DB.setPosterColor(obj.li.getAttribute("value"), obj.value);
 			}
 			else
 			{
-				if (value == 0)
-				{
-					value = "transparent";
-				}
-
 				obj.li.childNodes[1].style.backgroundColor = value;
 				DB.setPosterBackground(obj.li.getAttribute("value"), obj.value);
 			}
@@ -366,9 +357,9 @@ var gSALRUsersPane = {
 		if (pobj.accepted)
 		{
 			let friendlyvalue = pobj.value;
-			if (pobj.value == 0 && pobj.ctype == 'bgthumbnail')
+			if (pobj.value == 0)
 			{
-				friendlyvalue = 'transparent';
+				friendlyvalue = (pobj.ctype === 'bgcolor') ? 'transparent' : 'black';
 			}
 			pobj.el.style.backgroundColor = friendlyvalue;
 			if (pobj.ctype === 'fgthumbnail')

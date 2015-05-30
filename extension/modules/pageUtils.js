@@ -159,11 +159,9 @@ let PageUtils = exports.PageUtils =
 			return index+1;
 		}
 
-		var dashes = '--', elDepth = 0;
-		if (statsMenu)
-		{
-			dashes = '---';
-		}
+		var dashes = (statsMenu) ? '---' : '--';
+		var elDepth = 0;
+
 		while (true)
 		{
 			if (forumTitle.indexOf(dashes) !== 0)

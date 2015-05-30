@@ -370,13 +370,13 @@ let Styles = exports.Styles =
 			}
 
 			// But override it if they have a custom color just for their quotes
-			if (quotedColor != 0)
+			if (quotedColor !== "0")
 			{
 				selfColor = quotedColor;
 			}
 
 			// Only apply this class if something is actually going to be colored
-			if (selfColor != 0)
+			if (selfColor !== "0")
 			{
 				CSSFile += 'div.bbc-block.userquoted {' +
 							'background:' + selfColor + ' !important; }\n';
