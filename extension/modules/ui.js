@@ -5,6 +5,7 @@ let {Prefs} = require("prefs");
 let {Notifications} = require("notifications");
 let {Menus} = require("menus");
 let {Utils} = require("utils");
+let {ToolbarButton} = require("toolbarButton");
 
 var WindowListener =
 {
@@ -40,8 +41,7 @@ let SALRConfigObserver =
 				if (win.location.href === "about:addons")
 					win.history.back();
 				// Open the config
-				let rWin = Utils.getRecentWindow();
-				rWin.gSALR.runConfig();
+				Utils.runConfig();
 			}
 		}
 	},
@@ -196,7 +196,7 @@ let UI = exports.UI =
 UI.init();
 
 function loadIntoWindow(window) {
-	Menus.addToolbarButton(window);
+	ToolbarButton.addToolbarButton(window);
 	UI.addContextMenu(window);
 	UI.addPopupNotificationAnchor(window);
 

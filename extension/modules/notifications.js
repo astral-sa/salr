@@ -39,7 +39,7 @@ let Notifications = exports.Notifications =
 			{
 				label: "View changelog",
 				accessKey: "V",
-				callback: function() { rWin.gSALR.runConfig("about"); }
+				callback: function() { Utils.runConfig("about"); }
 			},
 			[ /* secondary action(s) */
 				{
@@ -51,7 +51,7 @@ let Notifications = exports.Notifications =
 				{
 					label: "Change how SALR notifies me about this in the future",
 					accessKey: "C",
-					callback: function() { rWin.gSALR.runConfig("general"); }
+					callback: function() { Utils.runConfig("general"); }
 				}
 			],
 			{ /* options */
@@ -90,10 +90,9 @@ let Notifications = exports.Notifications =
 		observe: function(subject, topic, data)
 		{
 			// User has requested changelog
-			if (topic == "alertclickcallback")
+			if (topic === "alertclickcallback")
 			{
-				let rWin = Utils.getRecentWindow();
-				rWin.gSALR.runConfig("about");
+				Utils.runConfig("about");
 			}
 		},
 	},

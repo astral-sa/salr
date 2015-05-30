@@ -327,7 +327,7 @@ let Menus = exports.Menus =
 
 		let lsalrMenu = document.createElement("menuitem");
 		lsalrMenu.setAttribute("label","Configure SALastRead...");
-		lsalrMenu.setAttribute("oncommand", "gSALR.runConfig();");
+		lsalrMenu.addEventListener("command", function() { Utils.runConfig(); }, false);
 		menupopup.appendChild(lsalrMenu);
 		menupopup.appendChild(document.createElement("menuseparator"));
 
@@ -600,7 +600,7 @@ let Menus = exports.Menus =
 	{
 		Prefs.setPref('showMenuPinHelper', false);
 		let win = event.target.ownerDocument.defaultView;
-		win.gSALR.runConfig("menu");
+		Utils.runConfig("menu");
 		win.alert("You may return to the menu settings at any time by choosing \"Configure SALastRead...\" from the SA menu, by "+
 	         "clicking the \"Configure SALR\" link in the header of any forum page, or through SALR's \"Options\" button on the Add-ons page.");
 	},

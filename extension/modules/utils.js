@@ -28,6 +28,63 @@ let Utils = exports.Utils =
 		*/
 	},
 
+	runConfig: function(paneID, args)
+	{
+		let window = Utils.getRecentWindow();
+		function handleArgs(cWin)
+		{
+			if (args && args["action"] === "addUser" )
+			{
+				cWin.gSALRUsersPane.handleIncomingArgs(args);
+				//let advancedPaneTabs = doc.getElementById("advancedPrefs");
+				//advancedPaneTabs.selectedTab = doc.getElementById(args["advancedTab"]);
+			}
+		}
+		// check browser prefs so the dialog has the proper constructor arguments
+		var prefServ = Components.classes["@mozilla.org/preferences-service;1"]
+					.getService(Components.interfaces.nsIPrefBranch);
+		var hasPrefPref = prefServ.getPrefType("browser.preferences.inContent");
+		var inContent = hasPrefPref ? prefServ.getBoolPref("browser.preferences.inContent") : false;
+		if (inContent === true)
+		{
+			let preferencesURL = "about:salr" + (paneID ? "#" + paneID : "");
+			let newLoad = !window.switchToTabHavingURI(preferencesURL, true, {ignoreFragment: true});
+			let browser = window.gBrowser.selectedBrowser;
+			if (newLoad)
+			{
+				Services.obs.addObserver(function actionArgsLoadedObs(prefWin, topic, data)
+				{
+					if (!browser) {
+						browser = window.gBrowser.selectedBrowser;
+					}
+					if (prefWin != browser.contentWindow) {
+						return;
+					}
+					Services.obs.removeObserver(actionArgsLoadedObs, "action-args-loaded");
+					handleArgs(browser.contentWindow);
+					//handleArgs(browser.contentDocument);
+				}, "action-args-loaded", false);
+			}
+			else
+			{
+				if (paneID)
+				{
+					browser.contentWindow.gotoPref(paneID);
+				}
+				handleArgs(browser.contentWindow);
+				//handleArgs(browser.contentDocument);
+			}
+			//window.openUILinkIn(preferencesURL, "tab");
+		}
+		else
+		{
+			var instantApply = prefServ.getBoolPref("browser.preferences.instantApply");
+			var features = "chrome,titlebar,toolbar,centerscreen,resizable" + (instantApply ? ",dialog=no" : ",modal");
+
+			window.openDialog("chrome://salastread/content/pref/pref.xul", "Preferences", features, paneID, { "args" : args });
+		}
+	},
+
 	/**
 	 * Simple element creation function.
 	 * @param {Element} doc   Document element to create in.

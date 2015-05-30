@@ -1,6 +1,6 @@
 /*
 
-	Functions that deal exclusively with showthread & individual post handling
+	Handler for inside threads.
 
 */
 
@@ -10,9 +10,631 @@ let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
 let {ImgurHandler} = require("imgurHandler");
 let {VideoHandler} = require("videoHandler");
+let {Styles} = require("styles");
+let {Navigation} = require("navigation");
+let {Gestures} = require("gestures");
 
 let ShowThreadHandler = exports.ShowThreadHandler =
 {
+	handleShowThread: function(doc)
+	{
+		var i; // Little variables that'll get reused
+		if (doc.getElementById('thread') === null)
+		{
+			// If there is no thread div then abort since something's not right
+			return;
+		}
+
+		try
+		{
+			var forumid = PageUtils.getForumId(doc);
+			var threadid = PageUtils.getThreadId(doc);
+
+			if (!forumid || !threadid)
+			{
+				// Feel free to elaborate on this later
+				throw false;
+			}
+		}
+		catch(e)
+		{
+			// Can't get the forum or thread id so abort for now
+			return;
+		}
+		let {Utils} = require("utils");
+		let win = Utils.getRecentWindow();
+
+		doc.__SALR_forumid = forumid;
+		doc.__SALR_threadid = threadid;
+
+		// The following forums have special needs that must be dealt with
+		var inFYAD = PageUtils.inFYAD(forumid);
+		//var inDump = PageUtils.inDump(forumid);
+		//var inAskTell = PageUtils.inAskTell(forumid);
+		var inGasChamber = PageUtils.inGasChamber(forumid);
+		/*
+			NOTE: As of 05/21/2015, archives can currently be detected by a
+			thread lacking a bookmark star and the thread rate box lacking
+			proper children. Before changing how this is determined,
+			make sure to test:
+				- Threads from live forums
+				- Threads from forums which lack a rate box
+				- Threads 'locked for archiving'
+				- Archived threads
+		*/
+		let threadRateBox = PageUtils.selectSingleNode(doc, doc, "//DIV[@class='threadrate']");
+		let bookmarkStar = PageUtils.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
+		let inArchives = (!bookmarkStar && !!threadRateBox && !threadRateBox.firstChild.nextSibling);
+
+		var singlePost = (doc.location.search.search(/action=showpost/i) > -1);
+		var username = unescape(Prefs.getPref('username'));
+
+		if (inFYAD && !Prefs.getPref("enableFYAD"))
+		{
+			// We're in FYAD and FYAD support has been turned off
+			return;
+		}
+
+		// Add our ShowThread CSS
+		PageUtils.insertDynamicCSS(doc, Styles.generateDynamicShowThreadCSS(forumid, threadid, singlePost));
+
+		doc.body.className += " salastread_forum" + forumid;
+		// used by the context menu to allow options for this thread
+		doc.body.className += " salastread_thread_" + threadid;
+
+		// Grab the thread title
+		/* Note: it will only actually happen if the thread's already in the cache.
+			Perhaps we can remove this call?
+		*/
+		DB.setThreadTitle(threadid, PageUtils.getCleanPageTitle(doc));
+
+		// Grab the go to dropdown
+		if (!DB.gotForumList && !singlePost)
+		{
+			PageUtils.grabForumList(doc);
+		}
+
+		var pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+		if (pageList[0])
+		{
+			if (pageList.length >  1)
+			{
+				pageList = pageList[pageList.length-1];
+			}
+			else
+			{
+				pageList = pageList[0];
+			}
+			if (pageList.childNodes.length > 1 && pageList.lastChild && pageList.lastChild.textContent) // Are there pages
+			{
+				var numPages = pageList.lastChild.textContent.match(/(\d+)/);
+				var curPage = PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
+				numPages = parseInt(numPages[1], 10);
+				curPage = parseInt(curPage.textContent, 10);
+			}
+			else
+			{
+				numPages = 1;
+				curPage = 1;
+			}
+		}
+
+		doc.__SALR_curPage = curPage;
+		doc.__SALR_maxPage = numPages;
+
+		// Insert the thread paginator
+		if (Prefs.getPref("enablePageNavigator") && !singlePost)
+		{
+			Navigation.addPagination(doc);
+		}
+		if (Prefs.getPref("gestureEnable"))
+		{
+			doc.body.addEventListener('mousedown', Gestures.pageMouseDown, false);
+			doc.body.addEventListener('mouseup', Gestures.pageMouseUp, false);
+		}
+
+		// Grab threads/posts per page
+		var postsPerPageOld = Prefs.getPref("postsPerPage");
+		var perpage = PageUtils.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
+		if (perpage)
+		{
+			perpage = perpage.href.match(/perpage=(\d+)/i)[1];
+			if (postsPerPageOld != perpage)
+			{
+				Prefs.setPref("postsPerPage", parseInt(perpage));
+			}
+		}
+		else
+		{
+			perpage = 0;
+		}
+
+		// Check if the thread is closed
+		var threadClosed = true;
+		if (PageUtils.selectSingleNode(doc, doc, "//A[contains(@href,'action=newreply&threadid')]//IMG[contains(@src,'closed')]") == null)
+			threadClosed = false;
+
+		// Replace post button
+		if (Prefs.getPref("useQuickQuote") && !inGasChamber)
+		{
+			var postbuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newthread')]");
+			if (postbuttons.length > 0)
+			{
+				for (i in postbuttons)
+				{
+					ShowThreadHandler.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+				}
+			}
+			if (!threadClosed)
+			{
+				var replybuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
+				if (replybuttons.length > 0)
+				{
+					for (i in replybuttons)
+					{
+						ShowThreadHandler.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+					}
+				}
+			}
+		}
+
+		if (Prefs.getPref('quickPostJump'))
+		{
+			doc.addEventListener('keypress', Navigation.quickPostJump, false);
+		}
+
+		var searchThis = PageUtils.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
+		var placeHere = bookmarkStar;
+		if (searchThis && placeHere && placeHere.parentNode && placeHere.parentNode.nodeName.toLowerCase() === 'li')
+		{
+			placeHere = placeHere.parentNode;
+			if (Prefs.getPref("replyCountLinkinThreads"))
+			{
+				var replyCountLi = doc.createElement('li');
+				var replyCountLink = doc.createElement("A");
+				replyCountLi.appendChild(replyCountLink);
+				replyCountLink.href = "/misc.php?action=whoposted&threadid=" + threadid + "#fromthread";
+				replyCountLink.target = "_blank";
+				replyCountLink.textContent = "Who posted?";
+				replyCountLink.style.fontSize = "10px";
+				replyCountLink.style.cssFloat = "left";
+				replyCountLink.style.marginLeft = "8px";
+				replyCountLink.style.color = "#FFFFFF";
+				// Plug it in right after the "Search thread:" form
+				placeHere.parentNode.insertBefore(replyCountLi,placeHere.nextSibling);
+				placeHere.parentNode.insertBefore(doc.createTextNode(" "),placeHere.nextSibling);
+			}
+			// SA's "Search thread" box is disabled; add our own
+			if (!Prefs.getPref("hideThreadSearchBox") && searchThis.firstChild.nodeName === '#text')
+			{
+				ShowThreadHandler.addThreadSearchBox(doc, forumid, threadid, placeHere, 'query');
+			}
+		}
+
+		// get the posts to iterate through
+		var postlist = PageUtils.selectNodes(doc, doc, "//table[contains(@id,'post')]");
+
+		var curPostId, postIdLink, resetLink, profileLink, posterId, postbody;
+		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton;
+		var userPosterNote;
+
+		// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
+		var useQuickQuote = Prefs.getPref('useQuickQuote');
+		var insertPostTargetLink = Prefs.getPref("insertPostTargetLink") && !inArchives;
+		var highlightUsernames = Prefs.getPref("highlightUsernames");
+		let hideCustomTitles = Prefs.getPref('hideCustomTitles');
+
+		//standard user colors
+		var modColor = Prefs.getPref("modColor");
+		var modBackground = Prefs.getPref("modBackground");
+		var modSubText = Prefs.getPref("modSubText");
+		var adminColor = Prefs.getPref("adminColor");
+		var adminBackground = Prefs.getPref("adminBackground");
+		var adminSubText = Prefs.getPref("adminSubText");
+		var opColor = Prefs.getPref("opColor");
+		var opBackground = Prefs.getPref("opBackground");
+		var opSubText = Prefs.getPref("opSubText");
+		var superIgnoreUsers = Prefs.getPref("superIgnore");
+		var cancerTreatment = Prefs.getPref("cancerTreatment");
+
+		var threadMarkedPostedIn = false;
+
+		// Loop through each post
+		for (i in postlist)
+		{
+			var post = postlist[i];
+
+			if (post.className.indexOf("ignored") > -1)
+			{
+				// Check if we need to super ignore
+				if (superIgnoreUsers)
+				{
+					// Temporarily reuse these variables since we'll be moving on shortly
+					profileLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'userid=')]");
+					if (profileLink)
+					{
+						posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+						if (posterId && DB.isUserIgnored(posterId))
+							post.className += ' salrPostIgnored';
+					}
+				}
+				// User is ignored by the system so skip doing anything else
+				continue;
+			}
+
+			if (post.id === "post") // handle adbot
+				continue;
+			curPostId = post.id.match(/post(\d+)/)[1];
+			profileLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
+			if (!profileLink)
+				continue;
+			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+			if (superIgnoreUsers && DB.isUserIgnored(posterId))
+			{
+				// They're ignored but not by the system
+				post.className += ' salrPostIgnored';
+			}
+
+			// Should work for all thread types nowadays. (05/21/2015)
+			userNameBox = PageUtils.selectSingleNode(doc, post, "TBODY//TR/TD//DL//DT[contains(@class,'author')]");
+
+			if (userNameBox === null)
+			{
+				PageUtils.logToConsole("SALR error: can't find a user name box for post " + curPostId + " in thread " + threadid);
+				continue;
+			}
+
+			// Standard template - should work for all thread types nowadays. (05/21/2015)
+			let titleBox = PageUtils.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+			// If that doesn't work, try old FYAD template
+			if (titleBox === null)
+				titleBox = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
+
+			if (titleBox)
+			{
+				if (DB.isAvatarHidden(posterId))
+				{
+					// We hate this person's avatar and we want to banish it to the depths of Hell
+					titleBox.style.display = "none";
+				}
+			}
+
+			// Check to see if there's a mod or admin star
+			posterImg = false;
+			posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
+			if (userNameBox.title.length > 0 && !inArchives)
+			{
+				posterImg = userNameBox.title;
+				if (posterImg === 'Administrator')
+				{
+					DB.addAdmin(posterId, posterName);
+				}
+				else if (posterImg === 'Moderator')
+				{
+					DB.addMod(posterId, posterName);
+				}
+			}
+
+			posterColor = false;
+			posterBG = false;
+			posterNote = false;
+			userPosterNote = false;
+
+			//apply this to every post
+			post.className += " salrPostBy" + posterId + " salrPostBy" + escape(posterName);
+			if (posterName === username)
+			{
+				post.className += " salrPostOfSelf";
+				if (threadMarkedPostedIn === false)
+				{
+					DB.iPostedHere(threadid);
+					threadMarkedPostedIn = true;
+				}
+			}
+
+
+			//apply custom user coloring
+			if (userNameBox.className.search(/\bop/) > -1)
+			{
+				posterColor = opColor;
+				posterBG = opBackground;
+				posterNote = opSubText;
+				post.className += " salrPostByOP";
+			}
+			if (DB.isMod(posterId))
+			{
+				if (posterImg === "Moderator" || posterImg === "Internet Knight" || inArchives)
+				{
+					posterColor = modColor;
+					posterBG = modBackground;
+					posterNote = modSubText;
+					post.className += " salrPostByMod";
+				}
+				else if (!inArchives)
+				{
+					DB.removeMod(posterId);
+				}
+			}
+			if (DB.isAdmin(posterId))
+			{
+				if (posterImg === "Administrator" || inArchives)
+				{
+					posterColor = adminColor;
+					posterBG = adminBackground;
+					posterNote = adminSubText;
+					post.className += " salrPostByAdmin";
+				}
+				else if (!inArchives)
+				{
+					DB.removeAdmin(posterId);
+				}
+			}
+			var dbUser = DB.isUserIdColored(posterId);
+			if (dbUser)
+			{
+				if (!dbUser.username || dbUser.username !== posterName)
+				{
+					DB.setUserName(posterId, posterName);
+				}
+				if (dbUser.color && dbUser.color != "0")
+				{
+					posterColor = dbUser.color;
+				}
+				if (dbUser.background && dbUser.background != "0")
+				{
+					posterBG = dbUser.background;
+				}
+			}
+
+			if (posterBG != "0")
+			{
+				ShowThreadHandler.colorPost(doc, posterBG, posterId);
+			}
+
+			// Check for quotes that need to be colored or superIgnored
+			if (Prefs.getPref('highlightQuotes') || superIgnoreUsers)
+			{
+				var userQuoted;
+				var anyQuotes = PageUtils.selectNodes(doc, post, "TBODY//TR/TD//DIV[contains(@class,'bbc-block')]");
+				for (let quote in anyQuotes)
+				{
+					userQuoted = anyQuotes[quote].textContent.match(/(.*) posted:/);
+					if (userQuoted)
+					{
+						userQuoted = userQuoted[1];
+						if (userQuoted != username) // self-quotes handled by forum JS now
+						{
+							let userQuotedDetails = DB.isUsernameColored(userQuoted);
+							let userQuotedId = DB.getUserId(userQuoted);
+							if (superIgnoreUsers && DB.isUserIgnored(userQuotedId))
+							{
+								// They're quoting someone ignored, lets remove the entire post
+								post.className += ' salrPostIgnored';
+							}
+							if (userQuotedDetails)
+							{
+								anyQuotes[quote].className += ' salrQuoteOf' + userQuotedDetails.userid;
+								ShowThreadHandler.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
+							}
+						}
+					}
+				}
+			}
+
+			userPosterNote = DB.getPosterNotes(posterId);
+			if (highlightUsernames && posterColor != false && posterColor != "0")
+			{
+				userNameBox.style.color = posterColor;
+			}
+			if (posterNote || userPosterNote)
+			{
+				let newNoteBox = doc.createElement("p");
+				newNoteBox.style.fontSize = "80%";
+				newNoteBox.style.margin = "0";
+				newNoteBox.style.padding = "0";
+				newNoteBox.innerHTML = posterNote ? posterNote : '';
+				newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
+				newNoteBox.style.color = userNameBox.style.color;
+				newNoteBox.style.fontWeight = "bold";
+				userNameBox.parentNode.insertBefore(newNoteBox, userNameBox.nextSibling);
+			}
+
+			postIdLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
+			if (!postIdLink)
+			{
+				postIdLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#post')]");
+			}
+			if (!postIdLink) continue;
+
+			let postid = postIdLink.href.match(/#post(\d+)/i)[1];
+			if (insertPostTargetLink)
+			{
+				slink = doc.createElement("a");
+				if (singlePost)
+				{
+					slink.href = "/showthread.php?goto=post&postid="+postid;
+					slink.title = "Back to Thread";
+					slink.textContent = "1";
+				}
+				else
+				{
+					slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+forumid;
+					slink.title = "Show Single Post";
+					slink.textContent = "1";
+				}
+				postIdLink.parentNode.insertBefore(slink, postIdLink);
+				postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
+			}
+
+			//grab this once up here to avoid repetition
+			if (useQuickQuote)
+			{
+				editbutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
+			}
+
+			if (useQuickQuote && !threadClosed)
+			{
+				quotebutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
+				if (quotebutton)
+				{
+					ShowThreadHandler.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+				}
+				if (editbutton)
+				{
+					ShowThreadHandler.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+				}
+			}
+
+			var userLinks = profileLink.parentNode.parentNode;
+
+			// Add a link to hide/unhide the user's avatar
+			if (!hideCustomTitles)
+			{
+				let avLink = doc.createElement("li");
+				avLink.setAttribute('style', '-moz-user-select: none;');
+				avLink.style.cssFloat = 'right';
+				avLink.style.marginLeft = '4px';
+				let avAnch = doc.createElement("a");
+				avAnch.href = "#";
+				avAnch.title = "Toggle displaying this poster's avatar.";
+				if (DB.isAvatarHidden(posterId))
+					avAnch.textContent = "Show Avatar";
+				else
+					avAnch.textContent = "Hide Avatar";
+
+				avAnch.addEventListener("click", ShowThreadHandler.clickToggleAvatar.bind(null, posterId, posterName, postid), false);
+				avLink.appendChild(avAnch);
+				userLinks.appendChild(doc.createTextNode(" "));
+				userLinks.appendChild(avLink);
+			}
+
+			// Add user coloring/note links
+			// Note: this is added after, but appears to the left thanks to CSS floats.
+			if (highlightUsernames)
+			{
+				var li = doc.createElement("li");
+				li.setAttribute('style', '-moz-user-select: none;');
+				li.style.cssFloat = 'right';
+				li.style.marginLeft = '4px';
+				var a = doc.createElement("a");
+				a.href = "#";
+				a.textContent = "Add Coloring/Note";
+				a.title = "Add coloring and/or a note for this poster.";
+				a.addEventListener("click", ShowThreadHandler.addHighlightedUser.bind(null,posterId,posterName), true);
+				li.appendChild(a);
+				userLinks.appendChild(doc.createTextNode(" "));
+				userLinks.appendChild(li);
+			}
+
+			// Add a space for the Rap Sheet link added afterwards by forum JS:
+			userLinks.appendChild(doc.createTextNode(" "));
+
+			postbody = PageUtils.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
+
+			if (cancerTreatment)
+			{
+				var cancerDiv = PageUtils.selectSingleNode(doc, postbody, "DIV[contains(@class,'cancerous')]");
+				if (cancerDiv)
+				{
+					//Apply our alternate style:
+					if (cancerTreatment == 1)
+					{
+						postbody.style.backgroundImage = 'url("chrome://salastread/skin/biohazard.png")';
+						postbody.style.backgroundRepeat = "repeat";
+					}
+					//Hide entirely:
+					else if (cancerTreatment == 2)
+						post.style.display = "none";
+				}
+			}
+			ShowThreadHandler.convertSpecialLinks(postbody, doc);
+			ShowThreadHandler.processImages(postbody, doc);
+		}
+
+		doc.__salastread_loading = true;
+		doc.addEventListener("load", ShowThreadHandler.pageFinishedLoading, true);
+	},
+
+	pageFinishedLoading: function(e)
+	{
+		// Only called for showthread pages
+		var doc = e.originalTarget.ownerDocument;
+		doc.removeEventListener("load", ShowThreadHandler.pageFinishedLoading, true);
+// Probably ought to check for this _before_ adding the event listener instead.
+		if (Prefs.getPref('reanchorThreadOnLoad'))
+		{
+			if (doc.location.href.match(/\#(.*)$/))
+			{
+				var post = doc.getElementById(doc.location.href.match(/\#(.*)$/)[1]);
+				if (post)
+				{
+					post.scrollIntoView(true);
+				}
+			}
+		}
+		doc.__salastread_loading = false;
+	},
+
+	// Event catcher for clicking the "Hide Avatar" or "Unhide Avatar" links
+	clickToggleAvatar: function(idToToggle, nameToToggle, curPostId, event)
+	{
+		event.stopPropagation();
+		event.preventDefault();
+		let clickedLink = event.originalTarget;
+		var doc = clickedLink.ownerDocument;
+		var alreadyHidden = DB.isAvatarHidden(idToToggle);
+		var posts = PageUtils.selectNodes(doc, doc, "//table[contains(@id,'post')]");
+		var post, profileLink, posterId, titleBox, toggleLink;
+
+		for (var n = 0; n < posts.length; n++)
+		{
+			post = posts[n];
+			let reachedSelf = false;
+			profileLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//ul[contains(@class,'profilelinks')]//a[contains(@href,'userid=')]");
+			if (!profileLink)
+				continue;
+			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
+			if (posterId == idToToggle)
+			{
+				// Standard template
+				titleBox = PageUtils.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
+				// If that doesn't work, try FYAD template
+				if (titleBox == null)
+					titleBox = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]//div[contains(@class,'title')]");
+
+				toggleLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[text() = 'Hide Avatar' or text() = 'Show Avatar']");
+				if (toggleLink === clickedLink)
+					reachedSelf = true;
+
+				if (alreadyHidden)
+				{
+					if (titleBox.style.visibility === "hidden")
+						titleBox.style.visibility = "visible";
+					else
+						titleBox.style.display = "block";
+					toggleLink.textContent = "Hide Avatar";
+				}
+				else
+				{
+					if (reachedSelf)
+						titleBox.style.display = "none";
+					else
+						titleBox.style.visibility = "hidden";
+					toggleLink.textContent = "Show Avatar";
+				}
+			}
+		}
+		DB.toggleAvatarHidden(idToToggle, nameToToggle);
+	},
+
+	// add a user to the highlighting/note section by clicking on a post link
+	addHighlightedUser: function(userid, username, e)
+	{
+		e.stopPropagation();
+		e.preventDefault();
+		PageUtils.runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
+	},
+
 	/**
 	 * Adds "Search Thread" box to document.
 	 * @param {Element}  doc        Document element.
@@ -351,17 +973,16 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 						image.style.maxWidth = maxWidth;
 					if (maxHeight)
 						image.style.maxHeight = maxHeight;
-					if (maxWidth || maxHeight)
-					{
-						image.addEventListener("click",
-							function()
-							{
-								if (maxWidth)
-									this.style.maxWidth = (this.style.maxWidth == maxWidth) ? "" : maxWidth;
-								if (maxHeight)
-									this.style.maxHeight = (this.style.maxHeight == maxHeight) ? "" : maxHeight;
-							}, false);
-					}
+					if (!maxWidth && !maxHeight)
+						continue;
+					image.addEventListener("click",
+						function()
+						{
+							if (maxWidth)
+								this.style.maxWidth = (this.style.maxWidth == maxWidth) ? "" : maxWidth;
+							if (maxHeight)
+								this.style.maxHeight = (this.style.maxHeight == maxHeight) ? "" : maxHeight;
+						}, false);
 				}
 			}
 			ShowThreadHandler.replaceWaffleImage(image);

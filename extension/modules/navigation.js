@@ -212,8 +212,9 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Helper function for addPagination()
-	 * @param {Element} doc    Document element to build thread buttons in.
-	 * @param {[type]} newPageNum [description]
+	 * @param  {Element} doc        Document element to build thread buttons in.
+	 * @param  {number}  newPageNum String to edit into URI.
+	 * @return {string}  Edited URI.
 	 */
 	editPageNumIntoURI: function(doc, newPageNum)
 	{
@@ -239,4 +240,138 @@ let Navigation = exports.Navigation =
 		// Has an anchor; not in showthread
 		return doc.location.pathname + doc.location.search + "&" + newPageNum + doc.location.hash;
 	},
+
+	// Keyboard navigation
+	quickPostJump: function(event)
+	{
+		let {Utils} = require("utils");
+		let win = Utils.getRecentWindow();
+
+		try {
+			var ctrlKey = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
+			if (ctrlKey)
+			{
+				// If any special keys were pressed, don't bother processing
+				return;
+			}
+			var targ = event.target;
+			var doc = targ.ownerDocument;
+			var pressed = event.which;
+			var postId, post, classChange, rescroll = false;
+
+			// This should probably be edited to get the # of posts on the current page
+			var maxPosts = Prefs.getPref('postsPerPage');
+			if (maxPosts === 0)
+				maxPosts = 40;
+
+			if (doc.__SALR_curFocus)
+			{
+				postId = doc.__SALR_curFocus;
+			}
+			else if (doc.location.href.match(/\#pti(\d+)$/))
+			{
+				postId = doc.location.href.match(/\#pti(\d+)$/)[1];
+			}
+			else if (doc.location.href.match(/\#(post\d+)$/))
+			{
+				postId = doc.location.href.match(/\#(post\d+)$/)[1];
+				postId = doc.getElementById(postId).getElementsByTagName('tr')[0].id;
+				postId = postId.match(/pti(\d+)$/)[1];
+			}
+			else
+			{
+				postId = '1';
+			}
+			let fakeEvent;
+			let forumid;
+			let threadid;
+			switch (String.fromCharCode(pressed).toLowerCase())
+			{
+				case Prefs.getPref('kb.reanchor'):
+				case Prefs.getPref('kb.reanchorAlt'):
+					doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+					post = doc.getElementById('pti' + postId);
+					rescroll = true;
+					break;
+				case Prefs.getPref('kb.nextPage'):
+				case Prefs.getPref('kb.nextPageAlt'):
+					// Goto next page
+					if (doc.__SALR_curPage < doc.__SALR_maxPage)
+					{
+						doc.location = Navigation.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage + 1));
+					}
+					break;
+				case Prefs.getPref('kb.nextPost'):
+				case Prefs.getPref('kb.nextPostAlt'):
+					// Goto next post
+					postId++;
+					if (postId <= maxPosts)
+					{
+						if (doc.getElementById('pti' + (postId - 1)))
+						{
+							classChange = doc.getElementById('pti' + (postId - 1)).parentNode.parentNode;
+							classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
+							doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+						}
+						post = doc.getElementById('pti' + postId);
+						rescroll = true;
+					}
+					break;
+				case Prefs.getPref('kb.prevPage'):
+				case Prefs.getPref('kb.prevPageAlt'):
+					// Goto previous page
+					if (doc.__SALR_curPage > 1)
+					{
+						doc.location = Navigation.editPageNumIntoURI(doc, "pagenumber=" + (doc.__SALR_curPage - 1));
+					}
+					break;
+				case Prefs.getPref('kb.prevPost'):
+				case Prefs.getPref('kb.prevPostAlt'):
+					// Goto previous post
+					postId--;
+					if (postId > 0)
+					{
+						if (doc.getElementById('pti' + (postId + 1)))
+						{
+							classChange = doc.getElementById('pti' + (postId + 1)).parentNode.parentNode;
+							classChange.className = classChange.className.replace(/(^|\s)focused($|\s)/, '');
+							doc.getElementById('pti' + postId).parentNode.parentNode.className += ' focused';
+						}
+						post = doc.getElementById('pti' + postId);
+						rescroll = true;
+					}
+					break;
+				case Prefs.getPref('kb.quickEdit'):
+					// Activate Quick Edit Post
+					fakeEvent = {};
+					forumid = PageUtils.getForumId(doc);
+					threadid = PageUtils.getThreadId(doc);
+					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
+					win.gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
+					break;
+				case Prefs.getPref('kb.quickReply'):
+					// Activate Quick Reply to Thread
+					fakeEvent = {};
+					forumid = PageUtils.getForumId(doc);
+					threadid = PageUtils.getThreadId(doc);
+					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
+					win.gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
+					break;
+				case Prefs.getPref('kb.quickQuote'):
+					// Activate Quick Quote Post
+					fakeEvent = {};
+					forumid = PageUtils.getForumId(doc);
+					threadid = PageUtils.getThreadId(doc);
+					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
+					win.gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
+					break;
+			}
+			if (rescroll)
+			{
+				post.scrollIntoView(true);
+				doc.__SALR_curFocus = postId;
+			}
+		} catch(e) {win.dump('error:'+e);}
+	},
+
 };

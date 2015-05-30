@@ -96,11 +96,151 @@ let PageUtils = exports.PageUtils =
 
 	getCleanPageTitle: function(doc)
 	{
-		if (doc.title == "The Something Awful Forums")
+		if (doc.title === "The Something Awful Forums")
 		{
 			return doc.title;
 		}
 		return doc.title.replace(/( \- )?The Something ?Awful Forums( \- )?/i, '');
+	},
+
+	grabForumList: function(doc)
+	{
+		var statsMenu = false;
+		var rowList = PageUtils.selectNodes(doc, doc, "//select[@name='forumid']/option");
+		if (!rowList || rowList.length === 0)
+		{
+			// Can't find the forum list so lets check the other location
+			rowList = PageUtils.selectNodes(doc, doc, "//select[@name='t_forumid']/option");
+			if (!rowList)
+			{
+				// Still couldn't find the forum list so let's stop now
+				return;
+			}
+			statsMenu = true;
+		}
+		if (rowList.length < 15)
+		{
+			// There are way more then 15 forums so this menu is missing some
+			return;
+		}
+
+		//let oDomParser = new DOMParser();
+		let oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
+             .createInstance(Components.interfaces.nsIDOMParser);
+		let forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
+		//var targetEl = forumsDoc.documentElement;
+
+		let forumsEl = forumsDoc.createElement("forums");
+		forumsDoc.documentElement.appendChild(forumsEl);
+		forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), forumsEl);
+
+		for (let i = 0; i < rowList.length; )
+		{
+			i = PageUtils._addForums(forumsDoc, rowList, i, forumsEl, 0, statsMenu);
+		}
+
+		let {DB} = require("db"); // Used only in grabForumList
+		let {Menus} = require("menus"); // Used only in grabForumList
+
+		DB.forumListXml = forumsDoc;
+		DB.gotForumList = true;
+		Menus.rebuildAllMenus();
+	},
+
+	_addForums: function(forumsDoc, rowList, index, parentEl, depth, statsMenu)
+	{
+		var thisEl = rowList[index];
+		var forumTitle = thisEl.firstChild.nodeValue;
+		var forumId = thisEl.getAttribute("value");
+
+		forumId = parseInt(forumId);
+		if (isNaN(forumId) || forumId < 0)
+		{
+			return index+1;
+		}
+
+		var dashes = '--', elDepth = 0;
+		if (statsMenu)
+		{
+			dashes = '---';
+		}
+		while (true)
+		{
+			if (forumTitle.indexOf(dashes) !== 0)
+			{
+				break;
+			}
+
+			forumTitle = forumTitle.substring(dashes.length);
+			elDepth++;
+		}
+		forumTitle = forumTitle.replace(/^\s+|\s+$/g, '');
+		forumTitle = forumTitle.replace('(no posting)', '');
+		if (elDepth < depth)
+		{
+			return index;
+		}
+		if (elDepth > depth)
+		{
+			// This can't fit in the tree
+			return index+1;
+		}
+
+		var fel;
+		if (depth === 0)
+		{
+			fel = forumsDoc.createElement("cat");
+		}
+		else
+		{
+			fel = forumsDoc.createElement("forum");
+		}
+
+		fel.setAttribute("id", forumId);
+		fel.setAttribute("name", forumTitle);
+		parentEl.appendChild(forumsDoc.createTextNode("\n"));
+		parentEl.appendChild(fel);
+
+		for (index++; index < rowList.length; )
+		{
+			var i = PageUtils._addForums(forumsDoc, rowList, index, fel, depth+1, statsMenu);
+
+			if (i == index)
+			{
+				return i;
+			}
+
+			index = i;
+		}
+		return index;
+	},
+
+	insertSALRConfigLink: function(doc)
+	{
+		var usercpnode = PageUtils.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'usercp.php')]");
+		if (usercpnode)
+		{
+			var containerLi = doc.createElement("LI");
+			var sep = doc.createTextNode(" - ");
+			var newlink = doc.createElement("A");
+			containerLi.appendChild(sep);
+			containerLi.appendChild(newlink);
+			newlink.appendChild( doc.createTextNode("Configure SALR") );
+			usercpnode.parentNode.parentNode.insertBefore(containerLi, usercpnode.parentNode.nextSibling);
+			newlink.href = "#";
+			newlink.addEventListener("click", function(e)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+				PageUtils.runConfig();
+			}, true);
+		}
+	},
+
+	runConfig: function(paneID, args)
+	{
+		let {Utils} = require("utils"); // used for runConfig
+		Utils.runConfig(paneID, args);
 	},
 
 	// Try to figure out the current forum we're in
@@ -199,7 +339,7 @@ let PageUtils = exports.PageUtils =
 		let filterlink = this.selectSingleNode(doc, doc, "//TD[contains(@class,'postdate')]//A[contains(@href,'threadid=')]");
 		if (filterlink)
 		{
-			var inlink = filterlink.href.match(/threadid=(\d+)/i);
+			let inlink = filterlink.href.match(/threadid=(\d+)/i);
 			if (inlink)
 			{
 				tid = PageUtils.validateId(inlink[1]);
@@ -212,7 +352,7 @@ let PageUtils = exports.PageUtils =
 		let replybutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'threadid=')]");
 		if (replybutton)
 		{
-			var inreplybutton = replybutton.href.match(/threadid=(\d+)/i);
+			let inreplybutton = replybutton.href.match(/threadid=(\d+)/i);
 			if (inreplybutton)
 			{
 				tid = PageUtils.validateId(inreplybutton[1]);
