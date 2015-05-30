@@ -346,10 +346,10 @@ let Menus = exports.Menus =
 	},
 
 	/**
-	 * Builds the pinned forums and starred threads elements for the SA/toolbar menus
-	 * @param {Window} win                 Window to build in
-	 * @param {string} menuLoc             Whether we're building in menubar or toolbar
-	 * @param {Array}  pinnedForumNumbers  Array of pinned forum numbers to build
+	 * Builds the pinned forums and starred threads elements for the SA/toolbar menus.
+	 * @param {Window} win                 Window to build in.
+	 * @param {string} menuLoc             Whether we're building in menubar or toolbar.
+	 * @param {Array}  pinnedForumNumbers  Array of pinned forum numbers to build.
 	 * @param {Array}  pinnedForumElements Array of pinned forum elements:
 	 *                                         Called from UI: XML <forum> elements
 	 *                                         Called from Prefs: strings
@@ -375,84 +375,76 @@ let Menus = exports.Menus =
 		while (abovePinned.nextSibling)
 			menupopup.removeChild(abovePinned.nextSibling);
 
-		if (pinnedForumNumbers.length > 0)
-			abovePinned.hidden = false;
-		else
-			abovePinned.hidden = true;
+		abovePinned.hidden = (pinnedForumNumbers.length === 0);
 
 		for (var j = 0; j < pinnedForumElements.length || j < pinnedForumNumbers.length; j++)
 		{
-			if (pinnedForumElements[j])
-			{
-				var thisforum = pinnedForumElements[j];
-				let forumname;
-				if (typeof thisforum === "string")
-					forumname = thisforum;
-				else
-					forumname = thisforum.getAttribute("name");
-				while (forumname.substring(0,1) === " ")
-				{
-					forumname = forumname.substring(1);
-				}
-				Menus.addMenuItemWithForumNum(document, menupopup, {
-					label: forumname,
-					forumnum: pinnedForumNumbers[j],
-					class: "lastread_menu_sub"
-				});
-			}
-			else if (pinnedForumNumbers[j] === "sep")
-			{
-				menupopup.appendChild(document.createElement("menuseparator"));
-			}
-			else if (typeof(pinnedForumNumbers[j]) === "string" && pinnedForumNumbers[j].substring(0, 4) === "URL[")
-			{
-				var umatch = pinnedForumNumbers[j].match(/^URL\[(.*?)\]\[(.*?)\]$/);
-				if (umatch)
-				{
-					Menus.addMenuItemWithURL(document, menupopup, {
-						label: Utils.UnescapeMenuURL(umatch[1]),
-						targeturl: Utils.UnescapeMenuURL(umatch[2]),
-						class: "lastread_menu_sub"
-					});
-				}
-			}
-			else if (pinnedForumNumbers[j] === "starred")
-			{
-				let salrMenu = Utils.createElementWithAttrs(document, 'menu', {
-					label: "Starred Threads",
-					image: "chrome://salastread/skin/star.png",
-					class: "menu-iconic lastread_menu_starred"
-				});
-
-				var subpopup = document.createElement("menupopup");
-				if (menuLoc === "menubar")
-					subpopup.id = "salr_starredthreadmenupopup";
-				else if (menuLoc === "toolbar")
-					subpopup.id = "salr_tb_starredthreadmenupopup";
-
-				salrMenu.appendChild(subpopup);
-				menupopup.appendChild(salrMenu);
-				subpopup.addEventListener("popupshowing", Menus.starredThreadMenuShowing, false);
-			}
+			Menus.addPinnedMenuItem(document, menupopup, pinnedForumNumbers[j], pinnedForumElements[j]);
 		}
 
 		if (Prefs.getPref('showMenuPinHelper'))
 		{
-			var ms = document.createElement("menuseparator");
-			ms.setAttribute("class", "salr_pinhelper_item");
-			menupopup.appendChild(ms);
+			Menus.addMenuPinHelper(document, menupopup);
+		}
+	},
 
-			let salrMenu = Utils.createElementWithAttrs(document, 'menu', {
-				label: "Learn how to pin forums to this menu...",
-				image: "chrome://salastread/skin/eng101-16x16.png",
-				class: "salr_pinhelper_item menuitem-iconic lastread_menu_sub"
+	/**
+	 * Adds a pinned forum menu item to a menu popup.
+	 * @param {Window}          document            Document to build in.
+	 * @param {string}          menupopup           Popup to append to.
+	 * @param {string}          pinnedForumNumber   Pinned forum numbers to add
+	 * @param {Element|string}  pinnedForumElement  Pinned forum element to add:
+	 *                                         Called from UI: XML <forum> element
+	 *                                         Called from Prefs: string
+	 */
+	addPinnedMenuItem: function(document, menupopup, pinnedForumNumber, pinnedForumElement)
+	{
+		if (pinnedForumElement)
+		{
+			var thisforum = pinnedForumElement;
+			let forumname = (typeof thisforum === "string") ? thisforum : thisforum.getAttribute("name");
+			while (forumname.substring(0,1) === " ")
+			{
+				forumname = forumname.substring(1);
+			}
+			Menus.addMenuItemWithForumNum(document, menupopup, {
+				label: forumname,
+				forumnum: pinnedForumNumber,
+				class: "lastread_menu_sub"
 			});
-			salrMenu.addEventListener("command", Menus.launchPinHelper, false);
+		}
+		else if (pinnedForumNumber === "sep")
+		{
+			menupopup.appendChild(document.createElement("menuseparator"));
+		}
+		else if (typeof(pinnedForumNumber) === "string" && pinnedForumNumber.substring(0, 4) === "URL[")
+		{
+			var umatch = pinnedForumNumber.match(/^URL\[(.*?)\]\[(.*?)\]$/);
+			if (!umatch)
+				return;
+			Menus.addMenuItemWithURL(document, menupopup, {
+				label: Utils.UnescapeMenuURL(umatch[1]),
+				targeturl: Utils.UnescapeMenuURL(umatch[2]),
+				class: "lastread_menu_sub"
+			});
+		}
+		else if (pinnedForumNumber === "starred")
+		{
+			let salrMenu = Utils.createElementWithAttrs(document, 'menu', {
+				label: "Starred Threads",
+				image: "chrome://salastread/skin/star.png",
+				class: "menu-iconic lastread_menu_starred"
+			});
 
-			// Until the user views the pin helper, each SA menu popup in each
-			//     window will check if it needs to remove the pin helper
-			menupopup.addEventListener("popupshowing", Menus.removeMenuPinHelper, false);
+			var subpopup = document.createElement("menupopup");
+			if (menupopup.id === "menupopup_SAforums")
+				subpopup.id = "salr_starredthreadmenupopup";
+			else if (menupopup.id === "salr-toolbar-popup")
+				subpopup.id = "salr_tb_starredthreadmenupopup";
+
+			salrMenu.appendChild(subpopup);
 			menupopup.appendChild(salrMenu);
+			subpopup.addEventListener("popupshowing", Menus.starredThreadMenuShowing, false);
 		}
 	},
 
@@ -481,16 +473,13 @@ let Menus = exports.Menus =
 		if (!menupopup)
 			return;
 
-		if (Prefs.getPref('useSAForumMenuBackground'))
-			menupopup.className = "lastread_menu";
-		else
-			menupopup.className = "";
+		menupopup.className = (Prefs.getPref('useSAForumMenuBackground')) ? "lastread_menu" : "";
 
 		while (menupopup.firstChild)
 		{
 			menupopup.removeChild(menupopup.firstChild);
 		}
-		let nested_menus = Prefs.getPref('nestSAForumMenu');
+
 		Menus.addMenuItemWithURL(document, menupopup, {
 			label: "Something Awful",
 			image: "chrome://salastread/skin/sa.png",
@@ -508,6 +497,7 @@ let Menus = exports.Menus =
 
 		var pinnedForumNumbers = [];
 		var pinnedForumElements = [];
+		let nested_menus = Prefs.getPref('nestSAForumMenu');
 		if (nested_menus && Prefs.getPref('menuPinnedForums'))
 			pinnedForumNumbers = Prefs.getPref('menuPinnedForums').split(",");
 
@@ -563,17 +553,11 @@ let Menus = exports.Menus =
 	// Moved from preferences. Need to redo and make more efficient
 	rebuildAllMenus: function()
 	{
-		// Get all browser windows
-		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]  
-					   .getService(Components.interfaces.nsIWindowMediator);  
-		var enumerator = wm.getEnumerator("navigator:browser");  
-		while(enumerator.hasMoreElements()) {  
-
-			var win = enumerator.getNext();
-			// Rebuild SA menus in all browser windows
-			Menus.buildForumMenu(win, 'menubar');
+		Utils.forEachOpenWindow(function(win) {
+			if (Prefs.getPref('showSAForumMenu'))
+				Menus.buildForumMenu(win, 'menubar');
 			Menus.buildForumMenu(win, 'toolbar');
-		}
+		});
 	},
 
 	/** Iterates through windows to set or remove menu grenade BG class */
@@ -719,9 +703,8 @@ let Menus = exports.Menus =
 		{
 			if (starred.hasOwnProperty(id))
 			{
-				let title = starred[id];
 				let menuel = doc.createElement("menuitem");
-					menuel.setAttribute("label", title);
+					menuel.setAttribute("label", starred[id]);
 					menuel.addEventListener("click", Menus.menuItemCommandGoToStarredThread.bind(Menus, id), false);
 					menuel.addEventListener("command", Menus.menuItemCommandGoToStarredThread.bind(Menus, id), false);
 				menupopup.appendChild(menuel);
@@ -735,6 +718,30 @@ let Menus = exports.Menus =
 				menuel.setAttribute("disabled", "true");
 			menupopup.appendChild(menuel);
 		}
+	},
+
+	/**
+	 * Adds Menu Pin helper to a popup.
+	 * @param {Element} doc       Document element to create in.
+	 * @param {Element} menupopup Popup to append pin helper to.
+	 */
+	addMenuPinHelper: function(doc, menupopup)
+	{
+		var ms = doc.createElement("menuseparator");
+		ms.setAttribute("class", "salr_pinhelper_item");
+		menupopup.appendChild(ms);
+
+		let salrMenu = Utils.createElementWithAttrs(doc, 'menu', {
+			label: "Learn how to pin forums to this menu...",
+			image: "chrome://salastread/skin/eng101-16x16.png",
+			class: "salr_pinhelper_item menuitem-iconic lastread_menu_sub"
+		});
+		salrMenu.addEventListener("command", Menus.launchPinHelper, false);
+
+		// Until the user views the pin helper, each SA menu popup in each
+		//     window will check if it needs to remove the pin helper
+		menupopup.addEventListener("popupshowing", Menus.removeMenuPinHelper, false);
+		menupopup.appendChild(salrMenu);
 	},
 
 	/**

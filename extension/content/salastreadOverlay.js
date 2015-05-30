@@ -3077,10 +3077,7 @@ var gSALR = {
 
 		gSALR.DB.forumListXml = forumsDoc;
 		gSALR.DB.gotForumList = true;
-		if (gSALR.Prefs.getPref('showSAForumMenu'))
-		{
-			gSALR.Menus.rebuildAllMenus();
-		}
+		gSALR.Menus.rebuildAllMenus();
 	},
 
 	_addForums: function(forumsDoc, rowList, index, parentEl, depth, statsMenu)
