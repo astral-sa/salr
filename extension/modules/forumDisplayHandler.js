@@ -14,6 +14,7 @@ let {ThreadListHandler} = require("threadListHandler");
 let {ShowThreadHandler} = require("showthreadHandler");
 let {Styles} = require("styles");
 let {AdvancedThreadFiltering} = require("advancedThreadFiltering");
+let {QuickQuoteHelper} = require("quickQuoteHelper");
 
 let ForumDisplayHandler = exports.ForumDisplayHandler =
 {
@@ -103,8 +104,7 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 		}
 		if (Prefs.getPref("gestureEnable"))
 		{
-			doc.body.addEventListener('mousedown', Gestures.pageMouseDown, false);
-			doc.body.addEventListener('mouseup', Gestures.pageMouseUp, false);
+			Gestures.addGestureListeners(doc);
 		}
 
 		// Turn on keyboard navigation
@@ -119,7 +119,7 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 			var postbutton = PageUtils.selectSingleNode(doc, doc, "//A[contains(@href,'action=newthread')]");
 			if (postbutton)
 			{
-				ShowThreadHandler.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, null);}, true);
+				QuickQuoteHelper.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, null), true);
 			}
 		}
 

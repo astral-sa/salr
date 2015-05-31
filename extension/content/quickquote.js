@@ -9,6 +9,7 @@ function require(module)
 let {Prefs} = require("prefs");
 let {DB} = require("db");
 let {PageUtils} = require("pageUtils");
+let {QuickQuoteHelper} = require("quickQuoteHelper");
 //
 // Note: quickquote sticks some extra vars into DB that aren't dealt with by DB.
 // This should be dealt with in the quick post overhaul.
@@ -43,7 +44,7 @@ function reattach()
 	document.getElementById("previewbtn").disabled = false;
 	document.getElementById("submit-swap").setAttribute("label","Submit");
 	document.getElementById("submit-normal").setAttribute("label","Submit");
-	switch(window.opener.gSALR.quickWindowParams.quicktype)
+	switch(QuickQuoteHelper.quickWindowParams.quicktype)
 	{
 		case "quote":
 		case "reply":
@@ -77,7 +78,7 @@ function recoverLastPost() {
 			document.getElementById("messagearea").value = DB.__quickreply__lastpost;
 		}
 	} else {
-		alert("There is no last post to recover.");
+		window.alert("There is no last post to recover.");
 	}
 }
 
@@ -163,7 +164,7 @@ function getEmoticonsCallback()
 			{
 				emoteGetter.abort();
 				DB.gettingemoticons = false;
-				alert("Failed to communicate with forums.somethingawful.com for emoticons");
+				window.alert("Failed to communicate with forums.somethingawful.com for emoticons");
 			}
 		}
 		else if (emoteGetter.readyState === 4)
@@ -174,7 +175,7 @@ function getEmoticonsCallback()
 			else
 			{
 				DB.gettingemoticons = false;
-				alert("Failed to communicate with forums.somethingawful.com for emoticons");
+				window.alert("Failed to communicate with forums.somethingawful.com for emoticons");
 			}
 		}
 	} catch(ex) {}
@@ -235,7 +236,7 @@ var sa_formkey =(DB.__cachedFormKey && DB.__cachedFormKey!=="") ? DB.__cachedFor
 
 function showDebugData(event) {
 	if(event.button === 2) {
-		alert("threadid = "+quickParams.threadid+"\nformkey = "+ sa_formkey);
+		window.alert("threadid = "+quickParams.threadid+"\nformkey = "+ sa_formkey);
 	}
 }
 
@@ -291,7 +292,7 @@ function postTextGrabCallback()
 	try {
 		if (pageGetter.readyState === 2) {
 			if (pageGetter.status !== 200) {
-				alert("Failed to communicate with forums.somethingawful.com");
+				window.alert("Failed to communicate with forums.somethingawful.com");
 				pageGetter.abort();
 			}
 		} else if (pageGetter.readyState === 4) {
@@ -299,7 +300,7 @@ function postTextGrabCallback()
 			if (respText)
 				finalizeTextGrab(respText);
 			else
-				alert("Failed to communicate with forums.somethingawful.com");
+				window.alert("Failed to communicate with forums.somethingawful.com");
 		}
 	} catch(ex) {}
 }
@@ -328,7 +329,7 @@ function finalizeTextGrab(restext)
 	// This can be caused by not accepting third-party cookies, but we add a load flag that should fix that.
 	if (tnode === null)
 	{
-		alert("SALR got a response it didn't expect. Please close the quick post window and try again.");
+		window.alert("SALR got a response it didn't expect. Please close the quick post window and try again.");
 		return;
 	}
 
@@ -439,7 +440,7 @@ function importData()
 		messagearea.value = quoteWaitString;
 
 		// Get initial quick window parameters (reference)
-		quickParams = window.opener.gSALR.quickWindowParams;
+		quickParams = QuickQuoteHelper.quickWindowParams;
 
 		//if we don't have a cached form key go get it
 		if (DB.__cachedFormKey)
@@ -458,13 +459,6 @@ function importData()
 			startPostTextGrab(true);
 		}
 		messagearea.focus();
-
-		if (typeof(opener.sbOverlay) !== typeof undefined || 
-			typeof(Components.classes["@mozilla.org/spellbound;1"]) !== typeof undefined)
-		{
-			hasSpellCheck = true;
-			document.getElementById("spellcheckbutton").style.display = "-moz-box";
-		}
 
 		if (Prefs.getPref('quickQuoteSubscribeDefault') || 
 			(quickParams.quicktype !== "newthread" && 
@@ -490,17 +484,17 @@ function importData()
 		}
 	}
 	catch(e) { 
-		alert(e); 
+		window.alert(e); 
 	}
 }
 
 function releaseVars() {
-	window.opener.gSALR.releaseQuickQuoteVars();
+	QuickQuoteHelper.releaseQuickQuoteVars();
 }
 
 function doSubmit(subtype) {
 	DB.__quickreply__lastpost = document.getElementById("messagearea").value;
-	window.opener.gSALR.quickQuoteSubmit(
+	QuickQuoteHelper.quickQuoteSubmit(
 		document.getElementById("messagearea").value,
 		document.getElementById("parseurl").checked,
 		document.getElementById("subscribe").checked,
@@ -511,34 +505,6 @@ function doSubmit(subtype) {
 		attachedFileName,
 		window.__salastread_form_cookie
 	);
-}
-
-function performSpellCheck() {
-	if(!hasSpellCheck) { alert("SpellBound is not installed."); return; }
-	try {
-		var ma = document.getElementById("messagearea");
-		//alert(ma.nodeName.toLowerCase());
-		var args = [];
-		args[0] = ma;
-		if(typeof(Components.classes["@mozilla.org/spellbound;1"]) !== typeof undefined) {
-			var scheck = ma.value;
-			args[0] = scheck;
-			var results = [];
-			window.openDialog("chrome://spellbound/content/SBSpellCheck.xul", "_blank", "chrome,close,titlebar,modal,resizable", false, true, true, args, results);
-			if(typeof(results[0]) !== typeof undefined) {
-				ma.value = results[0];
-			}
-		} else {
-			var savedmatext = ma.value;
-			window.openDialog("chrome://spellbound/content/EdSpellCheck.xul", "_blank", "chrome,close,titlebar,modal,resizable", false, true, true, args);
-			if(ma.value === undefined || typeof(ma.value) === typeof undefined) {
-				ma.value = savedmatext;
-			}
-		}
-		//opener.sbOverlay.openSpellCheck(document.getElementById("messagearea"));
-	} catch(e) {
-		alert(e);
-	}
 }
 
 function clearChildrenFrom(xid) {
@@ -565,7 +531,7 @@ function getEmoticons() {
 	}
 	catch(e)
 	{
-		alert(e);
+		window.alert(e);
 	}
 }
 

@@ -2,6 +2,11 @@ let {Prefs} = require("prefs");
 
 let Gestures = exports.Gestures =
 {
+	addGestureListeners: function(doc)
+	{
+		doc.body.addEventListener('mousedown', Gestures.pageMouseDown, false);
+		doc.body.addEventListener('mouseup', Gestures.pageMouseUp, false);
+	},
 
 	directionalNavigate: function(doc, dir)
 	{
@@ -83,6 +88,12 @@ let Gestures = exports.Gestures =
 	{
 		var targ = event.target;
 		var doc = targ.ownerDocument;
+		// Clean up event listener - need an eventual better way to do this
+		if (Prefs === null)
+		{
+			doc.body.removeEventListener('mouseup', arguments.callee, false);
+			return;
+		}
 		if (targ && targ.SALR_isGestureElement === true)
 		{
 			doc.body.addEventListener('contextmenu', Gestures.gestureContextMenu, false);
@@ -120,6 +131,12 @@ let Gestures = exports.Gestures =
 	pageMouseDown: function(event)
 	{
 		var doc = event.target.ownerDocument;
+		// Clean up event listener - need an eventual better way to do this
+		if (Prefs === null)
+		{
+			doc.body.removeEventListener('mousedown', arguments.callee, false);
+			return;
+		}
 
 		// Suppress gesture nav on embeds
 		if (event.target.nodeName.toLowerCase() === 'embed')

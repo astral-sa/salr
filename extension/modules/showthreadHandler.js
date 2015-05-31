@@ -13,6 +13,7 @@ let {VideoHandler} = require("videoHandler");
 let {Styles} = require("styles");
 let {Navigation} = require("navigation");
 let {Gestures} = require("gestures");
+let {QuickQuoteHelper} = require("quickQuoteHelper");
 
 let ShowThreadHandler = exports.ShowThreadHandler =
 {
@@ -129,8 +130,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		}
 		if (Prefs.getPref("gestureEnable"))
 		{
-			doc.body.addEventListener('mousedown', Gestures.pageMouseDown, false);
-			doc.body.addEventListener('mouseup', Gestures.pageMouseUp, false);
+			Gestures.addGestureListeners(doc);
 		}
 
 		// Grab threads/posts per page
@@ -162,7 +162,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			{
 				for (i in postbuttons)
 				{
-					ShowThreadHandler.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+					QuickQuoteHelper.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
 				}
 			}
 			if (!threadClosed)
@@ -172,7 +172,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				{
 					for (i in replybuttons)
 					{
-						ShowThreadHandler.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+						QuickQuoteHelper.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
 					}
 				}
 			}
@@ -477,11 +477,11 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				quotebutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
 				if (quotebutton)
 				{
-					ShowThreadHandler.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+					QuickQuoteHelper.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
 				}
 				if (editbutton)
 				{
-					ShowThreadHandler.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", function(event){win.gSALR.quickButtonClicked(event, forumid, threadid);}, true);
+					QuickQuoteHelper.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
 				}
 			}
 
@@ -1008,45 +1008,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				image.setAttribute('src', newSrc);
 			}
 		}
-	},
-
-	// Takes a button and turns it into a quick button
-	// @param: (html element) doc, (html element) button, (int) forumid
-	// @return: (html element) quick button
-	turnIntoQuickButton: function(doc, button, forumid)
-	{
-		var oldsrc = button.firstChild.src;
-		var oldalt = button.firstChild.alt;
-		//button.firstChild.style.width = "12px !important";
-		button.firstChild.style.width = "12px";
-		//button.firstChild.style.height = "20px !important";
-		button.firstChild.style.height = "20px";
-		button.firstChild.alt = "Normal " + oldalt;
-		button.firstChild.title = "Normal " + oldalt;
-		var quickbutton = doc.createElement("img");
-
-		if (PageUtils.inBYOB(forumid))
-		{
-			button.firstChild.src = "chrome://salastread/skin/quickbutton-byob.gif";
-		}
-		else if (PageUtils.inYOSPOS(forumid))
-		{
-			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif";
-			button.firstChild.style.paddingBottom = "0px";
-			quickbutton.style.backgroundImage = "none !important";
-		}
-		else
-		{
-			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif";
-		}
-		quickbutton.src = oldsrc;
-		quickbutton.alt = "Quick " + oldalt;
-		quickbutton.title = "Quick " + oldalt;
-		quickbutton.border = "0";
-		quickbutton.style.cursor = "pointer";
-
-		button.parentNode.insertBefore(quickbutton, button);
-		return quickbutton;
 	},
 
 	// Colors a post based on details passed to it

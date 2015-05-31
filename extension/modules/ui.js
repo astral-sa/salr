@@ -6,6 +6,8 @@ let {Notifications} = require("notifications");
 let {Menus} = require("menus");
 let {Utils} = require("utils");
 let {ToolbarButton} = require("toolbarButton");
+let {ContextMenu} = require("contextMenu");
+let {PageLoadHandler} = require("pageLoadHandler");
 
 var WindowListener =
 {
@@ -104,113 +106,22 @@ let UI = exports.UI =
 			ourAnchor.parentNode.removeChild(ourAnchor);
 	},
 
-	addContextMenu: function(window)
-	{
-		let contentAreaContextMenu = window.document.getElementById('contentAreaContextMenu');
-		if (contentAreaContextMenu)
-		{
-			let doc = window.document;
-			let menu = doc.createElement('menu');
-			let props = 
-			{
-				id: "salastread-context-menu",
-				label: "SA Last Read Options",
-				image: "chrome://salastread/skin/sa.png",
-				class: "menu-iconic salastread_context_menu",
-				position: "1",
-				hidden: true,
-			};
-			for (let p in props)
-			{
-				if (props.hasOwnProperty(p))
-					menu.setAttribute(p, props[p]);
-			}
-			contentAreaContextMenu.appendChild(menu);
-			let menuPopup = doc.createElement('menupopup');
-			menuPopup.setAttribute('id', 'salastread-context-menupopup');
-			menu.appendChild(menuPopup);
-			UI.addContextMenuItem(doc, menuPopup, {
-				id: 'salastread-context-ignorethread',
-				label: 'Ignore This Thread',
-				accesskey: 'i',
-				oncommand: 'window.gSALR.ignoreThread();'
-			});
-			UI.addContextMenuItem(doc, menuPopup, {
-				id: 'salastread-context-starthread',
-				label: 'Star This Thread',
-				accesskey: 's',
-				oncommand: 'window.gSALR.starThread();'
-			});
-			UI.addContextMenuItem(doc, menuPopup, {
-				id: 'salastread-context-unreadthread',
-				label: 'Mark This Thread Unread',
-				accesskey: 'u',
-				oncommand: 'window.gSALR.unreadThread();'
-			});
-			let menuSep = doc.createElement('menuseparator');
-			menuSep.setAttribute('id', 'salastread-context-menuseparator');
-			menuSep.setAttribute('position', '2');
-			menuSep.setAttribute('hidden', 'true');
-			contentAreaContextMenu.appendChild(menuSep);
-
-			// Add chrome listener for context menu events
-			// e10s note - uses shim
-			//contentAreaContextMenu.addEventListener('popupshowing',UI.contextMenuShowing,false);
-		}
-	},
-
-	/**
-	 * Adds a new context menu item to a context menu popup.
-	 * @param {Element} doc          Document element to create in.
-	 * @param {Element} contextPopup Popup to append to.
-	 * @param {Object}  attrs        Attributes to set on the new menu item.
-	 */
-	addContextMenuItem: function(doc, contextPopup, attrs)
-	{
-		if (!doc || !contextPopup || !attrs)
-			return;
-		let element = doc.createElement('menuitem');
-		for (let attrName in attrs)
-			if (attrs.hasOwnProperty(attrName))
-				element.setAttribute(attrName, attrs[attrName]);
-		element.setAttribute('hidden', 'true');
-		contextPopup.appendChild(element);
-	},
-
-	removeContextMenu: function(window)
-	{
-		let doc = window.document;
-		let menu = doc.getElementById("salastread-context-menu");
-		while (menu.firstChild)
-			menu.removeChild(menu.firstChild);
-		menu.parentNode.removeChild(menu);
-		let menuSep = doc.getElementById('salastread-context-menuseparator');
-		menuSep.parentNode.removeChild(menuSep);
-
-		// e10s note - related
-		//let contentAreaContextMenu = window.document.getElementById('contentAreaContextMenu');
-		//contentAreaContextMenu.removeEventListener('popupshowing',UI.contextMenuShowing,false);
-	},
-
 };
 UI.init();
 
 function loadIntoWindow(window) {
 	ToolbarButton.addToolbarButton(window);
-	UI.addContextMenu(window);
+	ContextMenu.addContextMenu(window);
 	UI.addPopupNotificationAnchor(window);
 
 	if (DB._starterr)
 		window.alert("DB._starterr =\n" + DB._starterr);
 
-	// Load in the old overlay script for now
-	window.gSALR = {};
-	Services.scriptloader.loadSubScript("chrome://salastread/content/salastreadOverlay.js", window);
 	if (Prefs.getPref("showSAForumMenu") && (window.document.getElementById("salr-menu") === null))
 		Menus.buildForumMenu(window, 'menubar');
 
-	window.addEventListener('DOMContentLoaded', window.gSALR.onDOMLoad, true);
-	window.addEventListener('beforeunload', window.gSALR.pageOnBeforeUnload, true);
+	window.addEventListener('DOMContentLoaded', PageLoadHandler.onDOMLoad, true);
+	window.addEventListener('beforeunload', PageLoadHandler.pageOnBeforeUnload, true);
 
 	// Do we need to show the changelog in this window?
 	if (DB.needToShowChangeLog === true)
@@ -220,21 +131,17 @@ function loadIntoWindow(window) {
 		// Delay a bit.
 		window.setTimeout(Notifications.showChangelogAlert, 500);
 	}
-
-	// Set interval for 'Time spent on forums'
-	window.gSALR.intervalId = window.setInterval(window.gSALR.timerTick, 1000);
 }
 
 function unloadFromWindow(window) {
-	window.removeEventListener('DOMContentLoaded', window.gSALR.onDOMLoad, true);
-	UI.removeContextMenu(window);
+	window.removeEventListener('DOMContentLoaded', PageLoadHandler.onDOMLoad, true);
+	ContextMenu.removeContextMenu(window);
 	UI.removePopupNotificationAnchor(window);
 
-	window.removeEventListener('beforeunload', window.gSALR.pageOnBeforeUnload, true);
-	window.clearInterval(window.gSALR.intervalId);
+	window.removeEventListener('beforeunload', PageLoadHandler.pageOnBeforeUnload, true);
+
 	Menus.removeForumMenu(window);
-	if (window.gSALR)
-		delete window.gSALR;
+
 	// Close any about:salr tabs that might be open
 	// e10s note: blanks the tab rather than closing it
 	let tabs = window.gBrowser.tabs;

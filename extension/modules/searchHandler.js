@@ -37,8 +37,7 @@ let SearchHandler = exports.SearchHandler =
 			doc.__SALR_curPage = curPage;
 			doc.__SALR_maxPage = numPages;
 
-			doc.body.addEventListener('mousedown', Gestures.pageMouseDown, false);
-			doc.body.addEventListener('mouseup', Gestures.pageMouseUp, false);
+			Gestures.addGestureListeners(doc);
 		}
 	},
 
@@ -73,8 +72,7 @@ let SearchHandler = exports.SearchHandler =
 			doc.__SALR_curPage = curPage;
 			doc.__SALR_maxPage = numPages;
 
-			doc.body.addEventListener('mousedown', Gestures.pageMouseDown, false);
-			doc.body.addEventListener('mouseup', Gestures.pageMouseUp, false);
+			Gestures.addGestureListeners(doc);
 		}
 	},
 

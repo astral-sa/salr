@@ -6,6 +6,7 @@
 
 let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
+let {QuickQuoteHelper} = require("quickQuoteHelper");
 
 let Navigation = exports.Navigation = 
 {
@@ -347,7 +348,7 @@ let Navigation = exports.Navigation =
 					forumid = PageUtils.getForumId(doc);
 					threadid = PageUtils.getThreadId(doc);
 					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
-					win.gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
+					QuickQuoteHelper.quickButtonClicked(forumid, threadid, fakeEvent);
 					break;
 				case Prefs.getPref('kb.quickReply'):
 					// Activate Quick Reply to Thread
@@ -355,7 +356,7 @@ let Navigation = exports.Navigation =
 					forumid = PageUtils.getForumId(doc);
 					threadid = PageUtils.getThreadId(doc);
 					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
-					win.gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
+					QuickQuoteHelper.quickButtonClicked(forumid, threadid, fakeEvent);
 					break;
 				case Prefs.getPref('kb.quickQuote'):
 					// Activate Quick Quote Post
@@ -363,7 +364,7 @@ let Navigation = exports.Navigation =
 					forumid = PageUtils.getForumId(doc);
 					threadid = PageUtils.getThreadId(doc);
 					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
-					win.gSALR.quickButtonClicked(fakeEvent, forumid, threadid);
+					QuickQuoteHelper.quickButtonClicked(forumid, threadid, fakeEvent);
 					break;
 			}
 			if (rescroll)

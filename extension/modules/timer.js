@@ -4,14 +4,18 @@
 
 */
 
+Cu.import("resource://gre/modules/Timer.jsm");
+
 let {Prefs} = require("prefs");
 
 let Timer = exports.Timer =
 {
+	timerPageCount: 0,
 	_TimerValue: 0,
 	_TimerValueSaveAt: 0,
 	_TimerValueLoaded: false,
 	_LastTimerPing: 0,
+	intervalId: null,
 
 	init: function()
 	{
@@ -22,6 +26,10 @@ let Timer = exports.Timer =
 		}
 		this._TimerValueSaveAt = this._TimerValue + 60;
 		this._TimerValueLoaded = true;
+
+		// Set interval for 'Time spent on forums'
+		Timer.intervalId = setInterval(Timer.timerTick, 1000);
+		onShutdown.add(function() { clearInterval(Timer.intervalId); });
 	},
 
 	PingTimer: function()
@@ -33,6 +41,14 @@ let Timer = exports.Timer =
 			if ( this._TimerValue >= this._TimerValueSaveAt ) {
 				this.SaveTimerValue();
 			}
+		}
+	},
+
+	timerTick: function()
+	{
+		if (Timer.timerPageCount > 0)
+		{
+			Timer.PingTimer();
 		}
 	},
 

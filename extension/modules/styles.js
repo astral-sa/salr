@@ -20,6 +20,22 @@ let Styles = exports.Styles =
 		// ...and remove it upon shutdown
 		onShutdown.add(function() { Styles.unloadStyles(); });
 	},
+
+	// This function should be removed if SALR ever allows more detailed color settings (backgrounds, font colors, etc)
+	// It's used by the context menu.
+	handleBodyClassing: function(doc)
+	{
+		var phmatch = doc.location.href.match( /\/([^\/]*)\.php/ );
+		if (phmatch)
+		{
+			var addclass = " somethingawfulforum_"+phmatch[1]+"_php";
+			var docbody = doc.body;
+			if (docbody)
+				docbody.className += addclass;
+
+		}
+	},
+
 	// Return a string that contains thread list CSS instructions for our settings
 	generateDynamicThreadListCSS: function(forumid)
 	{
