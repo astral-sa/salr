@@ -46,7 +46,13 @@ module.exports = function(grunt)
 			updatelink: {
 				path: 'build/',
 				pattern: '%SALR_UPDATELINK%',
-				replacement: 'https://github.com/astral-sa/salr/raw/master/salastread.xpi',
+				replacement: 'https://github.com/astral-sa/salr/releases/download/<%= pkg.version %>/salastread_v<%= pkg.version %>.xpi',
+				recursive: true
+			},
+			threadlink: {
+				path: 'build/',
+				pattern: '%SALR_THREADLINK%',
+				replacement: 'http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost',
 				recursive: true
 			}
 		},
@@ -80,19 +86,46 @@ module.exports = function(grunt)
 			options: {
 				prereleaseName: 'beta',
 				commit: true,
-				commitMessage: 'Release v%VERSION%',
+				commitMessage: 'Bump version to v%VERSION%',
 				commitFiles: ['package.json'],
 				createTag: true,
 				tagName: '%VERSION%',
-				tagMessage: 'Version %VERSION%',
+				tagMessage: 'SALR Version %VERSION%',
 				push: false,
+			}
+		},
+		'github-release': {
+			options: {
+				auth: grunt.file.readJSON('../gh-cred.json'),
+				repository: 'astral-sa/salr',
+			},
+			rel: {
+				options: {
+					release: {
+						name: 'v<%= pkg.version %>',
+						body: 'SALR version <%= pkg.version %>',
+						prerelease: false
+					}
+				},
+				'src': ['salastread_v*.xpi']
+			},
+			pre: {
+				options: {
+					release: {
+						name: 'v<%= pkg.version %>',
+						body: 'SALR development version <%= pkg.version %>',
+						prerelease: true
+					}
+				},
+				'src': ['salastread_v*.xpi']
 			}
 		}
 	});
 
-	grunt.registerTask('default', ['clean:main', 'copy:main', 'saveRevision', 'sed', 'compress', 'clean:src']);
-	grunt.registerTask('build', ['default']);
-	grunt.registerTask('push', ['build', 'copy:update']);
+	grunt.registerTask('default', ['build', 'clean:src']);
+	grunt.registerTask('build', ['clean:main', 'copy:main', 'saveRevision', 'sed', 'compress', 'copy:update']);
+	grunt.registerTask('rel', ['github-release:rel']);
+	grunt.registerTask('pre', ['github-release:pre']);
 
 	grunt.registerTask('saveRevision', function() {
 		grunt.event.once('git-describe', function (rev) {
