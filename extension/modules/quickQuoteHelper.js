@@ -141,7 +141,8 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	{
 		var quickbutton = evt.originalTarget;
 		var doc = evt.originalTarget.ownerDocument;
-		let window = doc.defaultView;
+		let {Utils} = require("utils");
+		let window = Utils.getRecentWindow();
 
 		var postid;
 		var quicktype = quickbutton.nextSibling.href.match(/action=(\w+)/i)[1];
