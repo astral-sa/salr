@@ -34,15 +34,15 @@ let PageLoadHandler = exports.PageLoadHandler = {
 		if(!doc.location)
 			return;
 
+		let simpleURI = false;
 		// nsSimpleURIs don't have a .host, so check this
 		try
 		{
 			doc.location.host;
-			var simpleURI = false;
 		}
 		catch (ex)
 		{
-			var simpleURI = true;
+			simpleURI = true;
 		}
 
 		// Bail if we need to
@@ -62,64 +62,30 @@ let PageLoadHandler = exports.PageLoadHandler = {
 			var pageName = doc.location.pathname.match(/^\/(\w+)\.php/i);
 			if (pageName)
 			{
-				switch(pageName[1])
+				/**
+				 * Object mapping (key).php -> handler
+				 * @type {Object}
+				 */
+				let handlers = {
+					index: PageLoadHandler.IndexHandler.handleIndex,
+					usercp: PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads,
+					bookmarkthreads: PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads,
+					account: PageLoadHandler.AccountHandler.handleAccount,
+					forumdisplay: PageLoadHandler.ForumDisplayHandler.handleForumDisplay,
+					showthread: PageLoadHandler.ShowThreadHandler.handleShowThread,
+					newreply: PageLoadHandler.QuickQuoteHelper.handleNewReply,
+					editpost: PageLoadHandler.QuickQuoteHelper.handleEditPost,
+					supportmail: PageLoadHandler.SupportHandler.handleSupport,
+					stats: PageLoadHandler.handleStats,
+					misc: PageLoadHandler.MiscHandler.handleMisc,
+					member: PageLoadHandler.ProfileViewHandler.handleProfileView,
+					search: PageLoadHandler.SearchHandler.handleOldSearch,
+					modqueue: PageLoadHandler.handleModQueue,
+					query: PageLoadHandler.SearchHandler.handleQuery
+				};
+				if (handlers.hasOwnProperty(pageName[1]))
 				{
-					case "index":
-						pageHandler = PageLoadHandler.IndexHandler.handleIndex;
-						break;
-
-					case "usercp":
-					case "bookmarkthreads":
-						pageHandler = PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads;
-						break;
-
-					case "account":
-						pageHandler = PageLoadHandler.AccountHandler.handleAccount;
-						break;
-
-					case "forumdisplay":
-						pageHandler = PageLoadHandler.ForumDisplayHandler.handleForumDisplay;
-						break;
-
-					case "showthread":
-						pageHandler = PageLoadHandler.ShowThreadHandler.handleShowThread;
-						break;
-
-					case "newreply":
-						pageHandler = PageLoadHandler.QuickQuoteHelper.handleNewReply;
-						break;
-
-					case "editpost":
-						pageHandler = PageLoadHandler.QuickQuoteHelper.handleEditPost;
-						break;
-
-					case "supportmail":
-						pageHandler = PageLoadHandler.SupportHandler.handleSupport;
-						break;
-
-					case "stats":
-						pageHandler = PageLoadHandler.handleStats;
-						break;
-
-					case "misc":
-						pageHandler = PageLoadHandler.MiscHandler.handleMisc;
-						break;
-						
-					case "member":
-						pageHandler = PageLoadHandler.ProfileViewHandler.handleProfileView;
-						break;
-
-					case "search":
-						pageHandler = PageLoadHandler.SearchHandler.handleOldSearch;
-						break;
-
-					case "modqueue":
-						pageHandler = PageLoadHandler.handleModQueue;
-						break;
-
-					case "query":
-						pageHandler = PageLoadHandler.SearchHandler.handleQuery;
-						break;
+					pageHandler = handlers[pageName[1]];
 				}
 			}
 			else
@@ -130,73 +96,67 @@ let PageLoadHandler = exports.PageLoadHandler = {
 			}
 
 			// Don't try to format the page if it's not supported
-			if (pageHandler)
+			if (!pageHandler)
+				return;
+
+			// Append custom CSS files to the head
+			if (PageLoadHandler.Prefs.getPref("gestureEnable"))
+				PageLoadHandler.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/gestureStyling.css");
+			if (PageLoadHandler.Prefs.getPref("enablePageNavigator") || PageLoadHandler.Prefs.getPref("enableForumNavigator"))
+				PageLoadHandler.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/pageNavigator.css");
+
+			// Insert a text link to open the options menu
+			if (PageLoadHandler.Prefs.getPref('showTextConfigLink'))
+				PageLoadHandler.PageUtils.insertSALRConfigLink(doc);
+
+			// Remove the page title prefix/postfix
+			if (PageLoadHandler.Prefs.getPref("removePageTitlePrefix"))
+				doc.title = PageLoadHandler.PageUtils.getCleanPageTitle(doc);
+
+			// Call the proper handler for this type of page
+			pageHandler(doc);
+
+			PageLoadHandler.Styles.handleBodyClassing(doc);
+
+			var screl;
+			var head = doc.getElementsByTagName('head')[0];
+			if (head)
 			{
-				// Append custom CSS files to the head
-				if (PageLoadHandler.Prefs.getPref("gestureEnable"))
-					PageLoadHandler.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/gestureStyling.css");
-				if (PageLoadHandler.Prefs.getPref("enablePageNavigator") || PageLoadHandler.Prefs.getPref("enableForumNavigator"))
-					PageLoadHandler.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/pageNavigator.css");
-
-				// Insert a text link to open the options menu
-				if (PageLoadHandler.Prefs.getPref('showTextConfigLink'))
-					PageLoadHandler.PageUtils.insertSALRConfigLink(doc);
-
-				// Remove the page title prefix/postfix
-				if (PageLoadHandler.Prefs.getPref("removePageTitlePrefix"))
-					doc.title = PageLoadHandler.PageUtils.getCleanPageTitle(doc);
-
-				// Call the proper handler for this type of page
-				pageHandler(doc);
-
-				PageLoadHandler.Styles.handleBodyClassing(doc);
-
-				var screl;
-				var head = doc.getElementsByTagName('head')[0];
-				if (head)
-				{
-					// XXX: The unload prevents FF 1.5 from using Quick Back Button.
-					//      SALR needs to work with it, but this works to prevent trouble in the meantime.
-					screl = doc.createElement("SCRIPT");
-					screl.setAttribute("language","javascript");
-					screl.setAttribute("src","chrome://salastread/content/pageunload.js");
-					head.appendChild(screl);
-				}
-
-				PageLoadHandler.Timer.incrementPageCount();
+				// XXX: The unload prevents FF 1.5 from using Quick Back Button.
+				//      SALR needs to work with it, but this works to prevent trouble in the meantime.
+				screl = doc.createElement("SCRIPT");
+				screl.setAttribute("language","javascript");
+				screl.setAttribute("src","chrome://salastread/content/pageunload.js");
+				head.appendChild(screl);
 			}
 
+			PageLoadHandler.Timer.incrementPageCount();
 			doc.__salastread_processed = true;
 		}
 		catch(ex)
 		{
-			if(!e.runSilent)
-			{
-				if (typeof(ex) == "object")
-				{
-					var errstr = "";
-					for ( var tn in ex )
-					{
-						errstr += tn + ": " + ex[tn] + "\n";
-					}
-
-					if (!PageLoadHandler.DB || !PageLoadHandler.Prefs.getPref('suppressErrors'))
-					{
-						//window.console.log("SALastRead application err: "+errstr);
-						PageLoadHandler.PageUtils.logToConsole("SALastRead application err: "+ex);
-						PageLoadHandler.PageUtils.logToConsole("SALastRead application err: "+ex);
-						PageLoadHandler.PageUtils.logToConsole("Filename: " + ex.fileName);
-						PageLoadHandler.PageUtils.logToConsole("Line: " + ex.lineNumber);
-					}
-				}
-			}
-			else
-			{
+			if (e.runSilent)
 				throw ex;
+
+			if (typeof(ex) !== "object")
+				return;
+
+			if (!PageLoadHandler.DB || !PageLoadHandler.Prefs.getPref('suppressErrors'))
+			{
+				let win = doc.defaultView;
+				win.alert("SALastRead application err: " + ex);
+				PageLoadHandler.PageUtils.logToConsole("SALastRead application err: "+ex);
+				PageLoadHandler.PageUtils.logToConsole("SALastRead application err: "+ex);
+				PageLoadHandler.PageUtils.logToConsole("Filename: " + ex.fileName);
+				PageLoadHandler.PageUtils.logToConsole("Line: " + ex.lineNumber);
 			}
 		}
 	},
 
+	/**
+	 * Decrements our timer and detaches Quick Quote if necessary.
+	 * @param {Event} e The unload event.
+	 */
 	pageOnBeforeUnload: function(e)
 	{
 		if (e.originalTarget.__salastread_processed)
