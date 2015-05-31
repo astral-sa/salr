@@ -11,54 +11,53 @@ let ContextMenu = exports.ContextMenu =
 {
 	addContextMenu: function(window)
 	{
-		let contentAreaContextMenu = window.document.getElementById('contentAreaContextMenu');
-		if (contentAreaContextMenu)
-		{
-			let doc = window.document;
-			let menu = doc.createElement('menu');
-			let props = 
-			{
-				id: "salastread-context-menu",
-				label: "SA Last Read Options",
-				image: "chrome://salastread/skin/sa.png",
-				class: "menu-iconic salastread_context_menu",
-				position: "1",
-				hidden: true,
-			};
-			for (let p in props)
-			{
-				if (props.hasOwnProperty(p))
-					menu.setAttribute(p, props[p]);
-			}
-			contentAreaContextMenu.appendChild(menu);
-			let menuPopup = doc.createElement('menupopup');
-			menuPopup.setAttribute('id', 'salastread-context-menupopup');
-			menu.appendChild(menuPopup);
-			ContextMenu.addContextMenuItem(doc, menuPopup, {
-				id: 'salastread-context-ignorethread',
-				label: 'Ignore This Thread',
-				accesskey: 'i'
-			}, ContextMenu.ignoreThread);
-			ContextMenu.addContextMenuItem(doc, menuPopup, {
-				id: 'salastread-context-starthread',
-				label: 'Star This Thread',
-				accesskey: 's'
-			}, ContextMenu.starThread);
-			ContextMenu.addContextMenuItem(doc, menuPopup, {
-				id: 'salastread-context-unreadthread',
-				label: 'Mark This Thread Unread',
-				accesskey: 'u'
-			}, ContextMenu.unreadThread);
-			let menuSep = doc.createElement('menuseparator');
-			menuSep.setAttribute('id', 'salastread-context-menuseparator');
-			menuSep.setAttribute('position', '2');
-			menuSep.setAttribute('hidden', 'true');
-			contentAreaContextMenu.appendChild(menuSep);
+		let doc = window.document;
+		let contentAreaContextMenu = doc.getElementById('contentAreaContextMenu');
+		if (!contentAreaContextMenu)
+			return;
 
-			// Add chrome listener for context menu events
-			// e10s note - uses shim
-			contentAreaContextMenu.addEventListener('popupshowing',ContextMenu.contextMenuShowing,false);
+		let menu = doc.createElement('menu');
+		let props = 
+		{
+			id: "salastread-context-menu",
+			label: "SA Last Read Options",
+			image: "chrome://salastread/skin/sa.png",
+			class: "menu-iconic salastread_context_menu",
+			position: "1",
+			hidden: true,
+		};
+		for (let p in props)
+		{
+			if (props.hasOwnProperty(p))
+				menu.setAttribute(p, props[p]);
 		}
+		contentAreaContextMenu.appendChild(menu);
+		let menuPopup = doc.createElement('menupopup');
+		menuPopup.setAttribute('id', 'salastread-context-menupopup');
+		menu.appendChild(menuPopup);
+		ContextMenu.addContextMenuItem(doc, menuPopup, {
+			id: 'salastread-context-ignorethread',
+			label: 'Ignore This Thread',
+			accesskey: 'i'
+		}, ContextMenu.ignoreThread);
+		ContextMenu.addContextMenuItem(doc, menuPopup, {
+			id: 'salastread-context-starthread',
+			label: 'Star This Thread',
+			accesskey: 's'
+		}, ContextMenu.starThread);
+		ContextMenu.addContextMenuItem(doc, menuPopup, {
+			id: 'salastread-context-unreadthread',
+			label: 'Mark This Thread Unread',
+			accesskey: 'u'
+		}, ContextMenu.unreadThread);
+		let menuSep = doc.createElement('menuseparator');
+		menuSep.setAttribute('id', 'salastread-context-menuseparator');
+		menuSep.setAttribute('position', '2');
+		menuSep.setAttribute('hidden', 'true');
+		contentAreaContextMenu.appendChild(menuSep);
+
+		// Add chrome listener for context menu events
+		contentAreaContextMenu.addEventListener('popupshowing', ContextMenu.contextMenuShowing, false);
 	},
 
 	/**
@@ -91,9 +90,8 @@ let ContextMenu = exports.ContextMenu =
 		let menuSep = doc.getElementById('salastread-context-menuseparator');
 		menuSep.parentNode.removeChild(menuSep);
 
-		// e10s note - related
 		let contentAreaContextMenu = window.document.getElementById('contentAreaContextMenu');
-		contentAreaContextMenu.removeEventListener('popupshowing',ContextMenu.contextMenuShowing,false);
+		contentAreaContextMenu.removeEventListener('popupshowing', ContextMenu.contextMenuShowing, false);
 	},
 
 	showContextMenuItems: function(document, showunread)
@@ -157,47 +155,75 @@ let ContextMenu = exports.ContextMenu =
 		}
 	},
 
+	/**
+	 * Decides whether or not to show the various SALR context menu items.
+	 * @param {Element} popup Context menu popup.
+	 */
 	contextVis: function(popup)
 	{
 		let document = popup.ownerDocument;
 		let window = document.defaultView;
-		var target = window.gContextMenu.target;
+		let target = window.gContextMenu.target;
 
-		var threadid = null;
+		let threadid = ContextMenu.getThreadIdFromElementOrAncestor(target);
+		if (!threadid)
+			return;
 
-		while (target)
+		let ignoreThread = document.getElementById("salastread-context-ignorethread");
+		ignoreThread.data = threadid;
+		ignoreThread.target = target;
+		ignoreThread.setAttribute('label','Ignore This Thread (' + threadid + ')');
+		let starThread = document.getElementById("salastread-context-starthread");
+		starThread.data = threadid;
+		starThread.target = target;
+		starThread.setAttribute('label',(DB.isThreadStarred(threadid) ? 'Unstar' : 'Star') + ' This Thread (' + threadid + ')');
+		let unreadThread = document.getElementById("salastread-context-unreadthread");
+		unreadThread.data = threadid;
+		unreadThread.target = target;
+		unreadThread.setAttribute('label','Mark This Thread Unread (' + threadid + ')');
+		let pageName = target.ownerDocument.location.pathname.match(/^\/(\w+)\.php/i);
+		if (!pageName)
+			return;
+
+		ContextMenu.showContextMenuItems(document, (pageName[1] === "showthread") ? true : false);
+	},
+
+	/**
+	 * Checks for a thread ID class in an element and its ancestors.
+	 * @param {Element} element Target element to check.
+	 * @return {boolean|string} Returns false if no thread ID, else thread ID as string.
+	 */
+	getThreadIdFromElementOrAncestor: function(element)
+	{
+		let threadid = false;
+		while (element)
 		{
-			if (target.className)
+			threadid = ContextMenu.getThreadIdFromClass(element);
+			if (!threadid)
 			{
-				var tidmatch = target.className.match(/salastread_thread_(\d+)/);
-				if (tidmatch)
-				{
-					threadid = tidmatch[1];
-					document.getElementById("salastread-context-ignorethread").data = threadid;
-					document.getElementById("salastread-context-ignorethread").target = target;
-					document.getElementById("salastread-context-ignorethread").setAttribute('label','Ignore This Thread (' + threadid + ')');
-					document.getElementById("salastread-context-starthread").data = threadid;
-					document.getElementById("salastread-context-starthread").target = target;
-					document.getElementById("salastread-context-starthread").setAttribute('label',(DB.isThreadStarred(threadid) ? 'Unstar' : 'Star') + ' This Thread (' + threadid + ')');
-					document.getElementById("salastread-context-unreadthread").data = threadid;
-					document.getElementById("salastread-context-unreadthread").target = target;
-					document.getElementById("salastread-context-unreadthread").setAttribute('label','Mark This Thread Unread (' + threadid + ')');
-					var pageName = target.ownerDocument.location.pathname.match(/^\/(\w+)\.php/i);
-					if (pageName)
-					{
-						switch(pageName[1])
-						{
-							case "showthread":
-								ContextMenu.showContextMenuItems(document, true);
-								break;
-							default:
-								ContextMenu.showContextMenuItems(document, false);
-						}
-					}
-				}
+				element = element.parentNode;
+				continue;
 			}
-			target = target.parentNode;
+			return threadid;
 		}
+		return false;
+	},
+
+	/**
+	 * Examines an element's class to determine if it has a thread ID.
+	 * @param {Element} element Target element to check.
+	 * @return {boolean|string} Returns false if no thread ID, else thread ID as string.
+	 */
+	getThreadIdFromClass: function(element)
+	{
+		if (!element.className)
+			return false;
+
+		let tidmatch = element.className.match(/salastread_thread_(\d+)/);
+		if (!tidmatch)
+			return false;
+
+		return tidmatch[1];
 	},
 
 	starThread: function(event)
