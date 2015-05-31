@@ -1201,23 +1201,3 @@
     </vbox>
   </stack>
 </page>
-
-
-<!-- not-necessarily-yet-implemented stuff:
-<?xml-stylesheet href="chrome://salastread/content/pref/pref.css" type="text/css"?>
-
-<prefwindow id="salastreadpref" 
-			title="SALR Preferences" 
-			type="prefwindow"
-			xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-			onload="SALR_Prefs_OnLoad(event.target);"
-			ondialogaccept="SALR_Prefs_Accept();"
-			ondialogcancel="SALR_Prefs_Close();"
-			onclose="SALR_Prefs_Close();">
-
-	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref.js"/>
-	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-about.js"/>
-	<script type="application/x-javascript;version=1.7" src="chrome://salastread/content/pref/pref-users.js"/>
-
-</prefwindow>
--->

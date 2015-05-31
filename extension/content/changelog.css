@@ -1,4 +1,4 @@
-* {
+body {
  font-family: "Tahoma", "Arial", "Helvetica", sans-serif;
 }
 
@@ -40,40 +40,40 @@ li {
 }
 */
 
-ul#vers {
+#vers {
  padding: 0px;
  margin: 0px;
  list-style-type: none;
 }
 
-ul#vers > li > div.rel:before {
+#vers > li > div.rel:before {
  content: "Stable Version ";
 }
 
-ul#vers > li > div.dev:before {
+#vers > li > div.dev:before {
  content: "Development Version ";
 }
 
-ul#vers > li > div {
+#vers > li > div {
  font-weight: bold;
  font-size: 110%;
  margin-bottom: 5px;
 }
 
-ul#vers > li > div.dev {
+#vers > li > div.dev {
  color: #e00;
 }
 
-ul#vers > li > div.rel {
+#vers > li > div.rel {
  color: #003366;
 }
 
-ul#vers > li {
+#vers > li {
  margin-bottom: 8px;
  font-size: 8.25pt;
 }
 
-ul#vers > li ul {
+#vers > li ul {
  padding-left: 15px;
  margin: 0px;
  list-style-type: disc;

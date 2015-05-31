@@ -7,10 +7,7 @@
 	padding: 2px 18px;
 }
 .sacode-quote blockquote {
-	margin-top: 8px;
-	margin-bottom: 18px;
-	margin-left: 0px;
-	margin-right: 0px;
+	margin: 8px 0 18px;
 	color: #444;
 	padding: 0px;
 }
