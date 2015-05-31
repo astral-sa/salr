@@ -4,8 +4,6 @@
 
 */
 
-Cu.import("resource://gre/modules/Timer.jsm");
-
 let {Prefs} = require("prefs");
 
 let Timer = exports.Timer =
@@ -15,7 +13,15 @@ let Timer = exports.Timer =
 	_TimerValueSaveAt: 0,
 	_TimerValueLoaded: false,
 	_LastTimerPing: 0,
-	intervalId: null,
+	ourTimer: null,
+
+	timerEvent:{
+		notify: function(timer)
+		{
+			if (timer === Timer.ourTimer)
+				Timer.PingTimer();
+		}
+	},
 
 	init: function()
 	{
@@ -27,9 +33,11 @@ let Timer = exports.Timer =
 		this._TimerValueSaveAt = this._TimerValue + 60;
 		this._TimerValueLoaded = true;
 
-		// Set interval for 'Time spent on forums'
-		Timer.intervalId = setInterval(Timer.timerTick, 1000);
-		onShutdown.add(function() { clearInterval(Timer.intervalId); });
+		// nsITimer implementation
+		Timer.ourTimer = Components.classes["@mozilla.org/timer;1"]
+			.createInstance(Components.interfaces.nsITimer);
+		Timer.ourTimer.initWithCallback(Timer.timerEvent, 1000, 1); // TYPE_REPEATING_SLACK
+		onShutdown.add(function() { Timer.ourTimer.cancel(); });
 	},
 
 	PingTimer: function()
