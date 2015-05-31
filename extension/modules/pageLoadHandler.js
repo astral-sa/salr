@@ -31,68 +31,48 @@ let PageLoadHandler = exports.PageLoadHandler = {
 	{
 		var doc = e.originalTarget; // document
 
-		if(!doc.location)
-			return;
-
-		let simpleURI = false;
-		// nsSimpleURIs don't have a .host, so check this
-		try
-		{
-			doc.location.host;
-		}
-		catch (ex)
-		{
-			simpleURI = true;
-		}
-
 		// Bail if we need to
-		if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) === -1 || PageLoadHandler.Prefs.getPref("disabled"))
-		{
+		if (!PageLoadHandler.isValidDocumentForHandling(doc))
 			return;
-		}
-		if (doc.__salastread_processed)
-		{
-			return;
-		}
 
 		// Find the proper page handler
 		try
 		{
 			var pageHandler;
 			var pageName = doc.location.pathname.match(/^\/(\w+)\.php/i);
-			if (pageName)
-			{
-				/**
-				 * Object mapping (key).php -> handler
-				 * @type {Object}
-				 */
-				let handlers = {
-					index: PageLoadHandler.IndexHandler.handleIndex,
-					usercp: PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads,
-					bookmarkthreads: PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads,
-					account: PageLoadHandler.AccountHandler.handleAccount,
-					forumdisplay: PageLoadHandler.ForumDisplayHandler.handleForumDisplay,
-					showthread: PageLoadHandler.ShowThreadHandler.handleShowThread,
-					newreply: PageLoadHandler.QuickQuoteHelper.handleNewReply,
-					editpost: PageLoadHandler.QuickQuoteHelper.handleEditPost,
-					supportmail: PageLoadHandler.SupportHandler.handleSupport,
-					stats: PageLoadHandler.handleStats,
-					misc: PageLoadHandler.MiscHandler.handleMisc,
-					member: PageLoadHandler.ProfileViewHandler.handleProfileView,
-					search: PageLoadHandler.SearchHandler.handleOldSearch,
-					modqueue: PageLoadHandler.handleModQueue,
-					query: PageLoadHandler.SearchHandler.handleQuery
-				};
-				if (handlers.hasOwnProperty(pageName[1]))
-				{
-					pageHandler = handlers[pageName[1]];
-				}
-			}
-			else
+			if (!pageName)
 			{
 				// Search results
 				if (doc.location.pathname === '/f/search/result')
 					pageHandler = PageLoadHandler.SearchHandler.handleSearch;
+				else
+					return;
+			}
+
+			/**
+			 * Object mapping (key).php -> handler
+			 * @type {Object}
+			 */
+			let handlers = {
+				index: PageLoadHandler.IndexHandler.handleIndex,
+				usercp: PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads,
+				bookmarkthreads: PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads,
+				account: PageLoadHandler.AccountHandler.handleAccount,
+				forumdisplay: PageLoadHandler.ForumDisplayHandler.handleForumDisplay,
+				showthread: PageLoadHandler.ShowThreadHandler.handleShowThread,
+				newreply: PageLoadHandler.QuickQuoteHelper.handleNewReply,
+				editpost: PageLoadHandler.QuickQuoteHelper.handleEditPost,
+				supportmail: PageLoadHandler.SupportHandler.handleSupport,
+				stats: PageLoadHandler.handleStats,
+				misc: PageLoadHandler.MiscHandler.handleMisc,
+				member: PageLoadHandler.ProfileViewHandler.handleProfileView,
+				search: PageLoadHandler.SearchHandler.handleOldSearch,
+				modqueue: PageLoadHandler.handleModQueue,
+				query: PageLoadHandler.SearchHandler.handleQuery
+			};
+			if (handlers.hasOwnProperty(pageName[1]))
+			{
+				pageHandler = handlers[pageName[1]];
 			}
 
 			// Don't try to format the page if it's not supported
@@ -118,6 +98,7 @@ let PageLoadHandler = exports.PageLoadHandler = {
 
 			PageLoadHandler.Styles.handleBodyClassing(doc);
 
+	// Is this necessary anymore?
 			var screl;
 			var head = doc.getElementsByTagName('head')[0];
 			if (head)
@@ -129,6 +110,7 @@ let PageLoadHandler = exports.PageLoadHandler = {
 				screl.setAttribute("src","chrome://salastread/content/pageunload.js");
 				head.appendChild(screl);
 			}
+	// 
 
 			PageLoadHandler.Timer.incrementPageCount();
 			doc.__salastread_processed = true;
@@ -151,6 +133,39 @@ let PageLoadHandler = exports.PageLoadHandler = {
 				PageLoadHandler.PageUtils.logToConsole("Line: " + ex.lineNumber);
 			}
 		}
+	},
+
+	/**
+	 * Helper function for DOM loads.
+	 * @param  {Element} doc Document element to examine.
+	 * @return {boolean} Whether we should handle the document.
+	 */
+	isValidDocumentForHandling: function(doc)
+	{
+		if(!doc.location)
+			return false;
+
+		let simpleURI = false;
+		// nsSimpleURIs don't have a .host, so check this
+		try
+		{
+			doc.location.host;
+		}
+		catch (ex)
+		{
+			simpleURI = true;
+		}
+
+		// Bail if we need to
+		if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) === -1 || PageLoadHandler.Prefs.getPref("disabled"))
+		{
+			return false;
+		}
+		if (doc.__salastread_processed)
+		{
+			return false;
+		}
+		return true;
 	},
 
 	/**
