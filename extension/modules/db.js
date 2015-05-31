@@ -335,7 +335,7 @@ let DB = exports.DB =
 			if (this.threadDataCache.hasOwnProperty(threadDataKey))
 			{
 				let threadData = this.threadDataCache[threadDataKey];
-				if (threadData.ignore === 1)
+				if (threadData.ignore)
 				{
 					threads[threadData.threadid] = threadData.title;
 				}
@@ -358,7 +358,7 @@ let DB = exports.DB =
 			if (this.threadDataCache.hasOwnProperty(threadDataKey))
 			{
 				let threadData = this.threadDataCache[threadDataKey];
-				if (threadData.star === 1)
+				if (threadData.star)
 				{
 					threads[threadData.threadid] = threadData.title;
 				}
@@ -405,14 +405,14 @@ let DB = exports.DB =
 			this.userDataCache[userid] = {};
 			this.userDataCache[userid].userid = userid;
 			this.userDataCache[userid].username = username;
-			this.userDataCache[userid].mod = statement.getInt32(2);
-			this.userDataCache[userid].admin = statement.getInt32(3);
+			this.userDataCache[userid].mod = Boolean(statement.getInt32(2));
+			this.userDataCache[userid].admin = Boolean(statement.getInt32(3));
 			this.userDataCache[userid].color = statement.getString(4);
 			this.userDataCache[userid].background = statement.getString(5);
 			this.userDataCache[userid].status = statement.getInt32(6);
 			this.userDataCache[userid].notes = statement.getString(7);
-			this.userDataCache[userid].ignored = statement.getInt32(8);
-			this.userDataCache[userid].hideavatar = statement.getInt32(9);
+			this.userDataCache[userid].ignored = Boolean(statement.getInt32(8));
+			this.userDataCache[userid].hideavatar = Boolean(statement.getInt32(9));
 			this.userIDCache[username] = userid;
 		}
 		statement.reset();
@@ -431,10 +431,10 @@ let DB = exports.DB =
 			this.threadDataCache[threadid] = {};
 			this.threadDataCache[threadid].threadid = threadid;
 			this.threadDataCache[threadid].title = statement.getString(1);
-			this.threadDataCache[threadid].posted = statement.getInt32(2);
-			this.threadDataCache[threadid].ignore = statement.getInt32(3);
-			this.threadDataCache[threadid].star = statement.getInt32(4);
-			this.threadDataCache[threadid].opview = statement.getInt32(5);
+			this.threadDataCache[threadid].posted = Boolean(statement.getInt32(2));
+			this.threadDataCache[threadid].ignore = Boolean(statement.getInt32(3));
+			this.threadDataCache[threadid].star = Boolean(statement.getInt32(4));
+			this.threadDataCache[threadid].opview = Boolean(statement.getInt32(5));
 		}
 		statement.reset();
 	},
@@ -497,7 +497,7 @@ let DB = exports.DB =
 	setUserName: function(userid, username)
 	{
 		this.userIDCache[username] = userid;
-		if (this.userDataCache[userid].username != username)
+		if (this.userDataCache[userid].username !== username)
 		{
 			this.userDataCache[userid].username = username;
 			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1 WHERE `userid` = ?2");
@@ -525,10 +525,10 @@ let DB = exports.DB =
 			this.threadDataCache[threadid] = {};
 			this.threadDataCache[threadid].threadid = threadid;
 			this.threadDataCache[threadid].title = '';
-			this.threadDataCache[threadid].posted = 0;
-			this.threadDataCache[threadid].ignore = 0;
-			this.threadDataCache[threadid].star = 0;
-			this.threadDataCache[threadid].opview = 0;
+			this.threadDataCache[threadid].posted = false;
+			this.threadDataCache[threadid].ignore = false;
+			this.threadDataCache[threadid].star = false;
+			this.threadDataCache[threadid].opview = false;
 			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `title`, `posted`, `ignore`, `star`, `opview`) VALUES (?1, null, 0, 0, 0, 0)");
 			statement.bindInt32Parameter(0, threadid);
 			statement.execute();
