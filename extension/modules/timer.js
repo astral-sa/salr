@@ -1,20 +1,51 @@
-/*
-
-	Timer functions
-
-*/
+/**
+ * @fileOverview Manages timer for time spent on SA.
+ */
 
 let {Prefs} = require("prefs");
 
 let Timer = exports.Timer =
 {
-	timerPageCount: 0,
+	/**
+	 * Number of currently-open SA pages.
+	 * @type {Number}
+	 */
+	_timerPageCount: 0,
+	/**
+	 * The current value for time spent on SA.
+	 * @type {Number}
+	 */
 	_TimerValue: 0,
+	/**
+	 * The timer value to next save time spent on SA.
+	 * @type {Number}
+	 */
 	_TimerValueSaveAt: 0,
+	/**
+	 * Exists to verify something hasn't gone horribly wrong before saving timer value.
+	 * @type {Bool}
+	 */
 	_TimerValueLoaded: false,
+	/**
+	 * Keeps track of the last value the timer was pinged. Probably unnecessary now.
+	 * @type {Number}
+	 */
 	_LastTimerPing: 0,
+	/**
+	 * Our instance of nsITimer.
+	 * @type {Object}
+	 */
 	ourTimer: null,
+	/**
+	 * Whether or not our timer is active.
+	 * @type {Bool}
+	 */
+	_timerActive: false,
 
+	/**
+	 * Callback function for timer ticks.
+	 * @type {Object}
+	 */
 	timerEvent:{
 		notify: function(timer)
 		{
@@ -23,6 +54,9 @@ let Timer = exports.Timer =
 		}
 	},
 
+	/**
+	 * Creates our timer instance.
+	 */
 	init: function()
 	{
 		// Get Initial Timer Value
@@ -36,27 +70,65 @@ let Timer = exports.Timer =
 		// nsITimer implementation
 		Timer.ourTimer = Components.classes["@mozilla.org/timer;1"]
 			.createInstance(Components.interfaces.nsITimer);
-		Timer.ourTimer.initWithCallback(Timer.timerEvent, 1000, 1); // TYPE_REPEATING_SLACK
-		onShutdown.add(function() { Timer.ourTimer.cancel(); });
+
+		onShutdown.add(function() {
+			if (Timer._timerActive)
+				Timer.ourTimer.cancel();
+		});
 	},
 
+	/**
+	 * Increments the count of open SA forum pages. Starts timer if needed.
+	 */
+	incrementPageCount: function()
+	{
+		Timer._timerPageCount++;
+		if (Timer._timerPageCount >= 1 && Timer._timerActive === false)
+			Timer.startTimer();
+	},
+
+	/**
+	 * Decrements the count of open SA forum pages. Stops timer if 0 pages.
+	 */
+	decrementPageCount: function()
+	{
+		if (Timer._timerPageCount <= 0)
+			return;
+		Timer._timerPageCount--;
+		if (Timer._timerPageCount === 0)
+			Timer.clearTimer();
+	},
+
+	/**
+	 * Instructs our timer to begin ticking. We run PingTimer every 30s.
+	 */
+	startTimer: function()
+	{
+		Timer._timerActive = true;
+		Timer.ourTimer.initWithCallback(Timer.timerEvent, 30000, 1); // TYPE_REPEATING_SLACK
+	},
+
+	/**
+	 * Instructs our timer to stop ticking.
+	 */
+	clearTimer: function()
+	{
+		Timer._timerActive = false;
+		Timer.ourTimer.cancel();
+	},
+
+	/**
+	 * Updates our timer value. Saves it every 60s.
+	 */
 	PingTimer: function()
 	{
 		var nowtime = (new Date()).getTime();
-		if ( this._LastTimerPing < nowtime-1000 ) {
-			this._TimerValue++;
+		if ( this._LastTimerPing < nowtime-30000 ) {
+			this._TimerValue += 30;
 			this._LastTimerPing = nowtime;
 			if ( this._TimerValue >= this._TimerValueSaveAt ) {
 				this.SaveTimerValue();
 			}
-		}
-	},
-
-	timerTick: function()
-	{
-		if (Timer.timerPageCount > 0)
-		{
-			Timer.PingTimer();
 		}
 	},
 

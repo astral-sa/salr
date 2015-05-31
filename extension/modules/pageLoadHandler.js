@@ -163,7 +163,7 @@ let PageLoadHandler = exports.PageLoadHandler = {
 					head.appendChild(screl);
 				}
 
-				PageLoadHandler.Timer.timerPageCount++;
+				PageLoadHandler.Timer.incrementPageCount();
 			}
 
 			doc.__salastread_processed = true;
@@ -201,7 +201,7 @@ let PageLoadHandler = exports.PageLoadHandler = {
 	{
 		if (e.originalTarget.__salastread_processed)
 		{
-			PageLoadHandler.Timer.timerPageCount--;
+			PageLoadHandler.Timer.decrementPageCount();
 			PageLoadHandler.Timer.SaveTimerValue();
 		}
 		if (PageLoadHandler.QuickQuoteHelper.quickWindowParams.doc && e.originalTarget == PageLoadHandler.QuickQuoteHelper.quickWindowParams.doc)
