@@ -65,6 +65,7 @@ let ToolbarButton = exports.ToolbarButton =
 			class: "toolbarbutton-1 chromeclass-toolbar-additional",
 			tooltiptext: "Something Awful Last Read",
 		});
+		button.style.listStyleImage = 'url("chrome://salastread/skin/sa-24.png")';
 		button.addEventListener("command", ToolbarButton.onTBCommand.bind(ToolbarButton), false);
 		button.addEventListener("contextmenu", ToolbarButton.onTBContextMenu.bind(ToolbarButton), false);
 		toolbox.palette.appendChild(button);
@@ -86,7 +87,7 @@ let ToolbarButton = exports.ToolbarButton =
 		}
 		window.addEventListener("aftercustomization", ToolbarButton.afterLegacyCustomize.bind(ToolbarButton), false);
 		onShutdown.add(function() {
-			window.removeEventListener("aftercustomization", ToolbarButton.afterLegacyCustomize, false);
+			window.removeEventListener("aftercustomization", ToolbarButton.afterLegacyCustomize.bind(ToolbarButton), false);
 		});
 
 		onShutdown.add(function() { ToolbarButton.removeToolbarButton(window); });
@@ -105,6 +106,8 @@ let ToolbarButton = exports.ToolbarButton =
 				nextItemId = nextItem && nextItem.id;
 			}
 		}
+		if (!toolbarId)
+			return;
 		Prefs.setPref("legacyToolbarId", toolbarId);
 		Prefs.setPref("legacyToolbarNextItemId", nextItemId);
 	},
