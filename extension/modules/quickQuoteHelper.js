@@ -38,64 +38,63 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 
 	handleNewReply: function(doc)
 	{
-		var threadlink = PageUtils.selectSingleNode(doc, doc.body, "DIV[contains(@id, 'container')]//div[@class='breadcrumbs']//A[contains(@href,'showthread.php')][contains(@href,'threadid=')]");
-		if (threadlink)
+		let threadlink = PageUtils.selectSingleNode(doc, doc.body, "DIV[contains(@id, 'container')]//div[@class='breadcrumbs']//A[contains(@href,'showthread.php')][contains(@href,'threadid=')]");
+		if (!threadlink)
 		{
-			var tlmatch = threadlink.href.match( /threadid=(\d+)/ );
-			if (tlmatch)
-			{
-				var threadid = tlmatch[1];
-				if (QuickQuoteHelper.needRegReplyFill)
-				{
-					var msgEl = PageUtils.selectSingleNode(doc, doc.body, "//TEXTAREA[@name='message']");
-					if (msgEl)
-					{
-						msgEl.value = QuickQuoteHelper.savedQuickReply;
-					}
-					QuickQuoteHelper.needRegReplyFill = false;
-				}
-				var postbtn = PageUtils.selectSingleNode(doc, doc.body, "//FORM[@name='vbform']//INPUT[@name='submit']");
-				if (postbtn)
-				{
-					postbtn.addEventListener("click", function() { DB.iPostedHere(threadid); }, true);
-					postbtn.style.backgroundColor = Prefs.getPref('postedInThreadRe');
-				}
-			}
+			QuickQuoteHelper.handleNewReplyForgeAlert(doc);
+			return;
 		}
-		else
+		var tlmatch = threadlink.href.match( /threadid=(\d+)/ );
+		if (!tlmatch)
+			return;
+		let threadid = tlmatch[1];
+		if (QuickQuoteHelper.needRegReplyFill)
 		{
-			if (QuickQuoteHelper.savedQuickReply!="")
+			let msgEl = PageUtils.selectSingleNode(doc, doc.body, "//TEXTAREA[@name='message']");
+			if (msgEl)
 			{
-				// TODO: Check if the stuff immediately below is broken.
-				var forgeCheck = PageUtils.selectSingleNode(doc, doc.body, "TABLE/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[2]/TD[1]/FONT[contains(text(),'have been forged')]");
-				if (forgeCheck)
-				{
-					DB.__cachedFormKey = "";
-					var reqMsg = doc.createElement("P");
-					reqMsg.style.fontFamily = "Verdana, Arial, Helvetica";
-					reqMsg.style.fontSize = "80%";
-					reqMsg.style.backgroundColor = "#fcfd99";
-					reqMsg.style.border = "1px solid black";
-					reqMsg.style.padding = "2px 2px 2px 2px";
-					reqMsg.appendChild(
-						doc.createTextNode("Message from SA Last Read: Quick Reply appears to have worked incorrectly. To open your reply in a regular forum reply page, click ")
-					);
-					var regReplyLink = doc.createElement("A");
-					// TODO: This likely will need to be changed to an addeventlistener
-					regReplyLink.onclick = function() { QuickQuoteHelper.needRegReplyFill = true; };
-					regReplyLink.href = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
-					QuickQuoteHelper.savedQuickReplyThreadId;
-					regReplyLink.textContent = "here.";
-					reqMsg.appendChild(regReplyLink);
-					forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
-				}
-				else
-				{
-					QuickQuoteHelper.savedQuickReply = "";
-					QuickQuoteHelper.savedQuickReplyThreadId = "";
-				}
+				msgEl.value = QuickQuoteHelper.savedQuickReply;
 			}
+			QuickQuoteHelper.needRegReplyFill = false;
 		}
+		let postbtn = PageUtils.selectSingleNode(doc, doc.body, "//FORM[@name='vbform']//INPUT[@name='submit']");
+		if (postbtn)
+		{
+			postbtn.addEventListener("click", function() { DB.iPostedHere(threadid); }, true);
+			postbtn.style.backgroundColor = Prefs.getPref('postedInThreadRe');
+		}
+	},
+
+	handleNewReplyForgeAlert: function(doc)
+	{
+		if (QuickQuoteHelper.savedQuickReply === "")
+			return;
+		// TODO: Check if the stuff immediately below is broken.
+		var forgeCheck = PageUtils.selectSingleNode(doc, doc.body, "TABLE/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[2]/TD[1]/FONT[contains(text(),'have been forged')]");
+		if (!forgeCheck)
+		{
+			QuickQuoteHelper.savedQuickReply = "";
+			QuickQuoteHelper.savedQuickReplyThreadId = "";
+			return;
+		}
+		DB.__cachedFormKey = "";
+		var reqMsg = doc.createElement("P");
+		reqMsg.style.fontFamily = "Verdana, Arial, Helvetica";
+		reqMsg.style.fontSize = "80%";
+		reqMsg.style.backgroundColor = "#fcfd99";
+		reqMsg.style.border = "1px solid black";
+		reqMsg.style.padding = "2px 2px 2px 2px";
+		reqMsg.appendChild(
+			doc.createTextNode("Message from SA Last Read: Quick Reply appears to have worked incorrectly. To open your reply in a regular forum reply page, click ")
+		);
+		var regReplyLink = doc.createElement("A");
+		// TODO: This likely will need to be changed to an addeventlistener
+		regReplyLink.onclick = function() { QuickQuoteHelper.needRegReplyFill = true; };
+		regReplyLink.href = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
+		QuickQuoteHelper.savedQuickReplyThreadId;
+		regReplyLink.textContent = "here.";
+		reqMsg.appendChild(regReplyLink);
+		forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
 	},
 
 	// Takes a button and turns it into a quick button
@@ -146,6 +145,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 
 		var postid;
 		var quicktype = quickbutton.nextSibling.href.match(/action=(\w+)/i)[1];
+
 		switch (quicktype)
 		{
 			case 'newreply':
@@ -168,136 +168,97 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 
 //alert("Clicked: quicktype: " + quicktype + " threadid " + threadid + " forumid " + forumid + " postid " + postid);
 
+		let newParams = {
+			quicktype: quicktype,
+			forumid: forumid,
+			threadid: threadid,
+			postid: postid,
+			doc: doc
+		};
+
 		// Do we already have a window?
 		if (DB.__quickquotewindowObject && !DB.__quickquotewindowObject.closed)
 		{
 			QuickQuoteHelper.quickquotewin = DB.__quickquotewindowObject;
 		}
 
-		if (QuickQuoteHelper.quickquotewin && !QuickQuoteHelper.quickquotewin.closed)
+		if (!QuickQuoteHelper.quickquotewin || QuickQuoteHelper.quickquotewin.closed)
 		{
-			try
+			QuickQuoteHelper.openNewQuickQuoteWindow(window, newParams);
+			DB.__quickquotewindowObject = QuickQuoteHelper.quickquotewin;
+			return;
+		}
+		try
+		{
+			// Clicked an edit button
+			if (newParams.quicktype === 'editpost')
 			{
-				// Clicked an edit button
-				if (quicktype == 'editpost')
+				// There is already a quick window open. Is it an edit window?
+				if (QuickQuoteHelper.quickWindowParams.quicktype === 'editpost')
 				{
-					// There is already a quick window open. Is it an edit window?
-					if (QuickQuoteHelper.quickWindowParams.quicktype == 'editpost')
+					// Is it the same post?
+					if (QuickQuoteHelper.quickWindowParams.postid && QuickQuoteHelper.quickWindowParams.postid == newParams.postid)
 					{
-						// Is it the same post?
-						if (QuickQuoteHelper.quickWindowParams.postid && QuickQuoteHelper.quickWindowParams.postid == postid)
-						{
-							// Attempt to reattach
-							if (QuickQuoteHelper.quickquotewin.isDetached)
-							{
-								QuickQuoteHelper.quickWindowParams.doc = doc;
-								QuickQuoteHelper.quickquotewin.reattach();
-							}
-						}
-						else
-						{
-							if (window.confirm("You already have a quick edit window open, but it was attached to a different post.\nDo you want to change which post you're editing?"))
-							{
-								QuickQuoteHelper.quickWindowParams.quicktype = quicktype;
-								QuickQuoteHelper.quickWindowParams.threadid = threadid;
-								QuickQuoteHelper.quickWindowParams.forumid = forumid;
-								QuickQuoteHelper.quickWindowParams.postid = postid;
-								QuickQuoteHelper.quickWindowParams.doc = doc;
-								QuickQuoteHelper.quickquotewin.reattach();
-								QuickQuoteHelper.quickquotewin.importData();
-							}
-						}
+						// Attempt to reattach
+						QuickQuoteHelper.reattachQuickQuoteWindow(doc);
 					}
 					else
 					{
-						if (window.confirm("You already have a quick window open. Press 'OK' to convert it to a quick edit window for this post, \nor press 'Cancel' to append this post to your quick window."))
+						if (window.confirm("You already have a quick edit window open, but it was attached to a different post.\nDo you want to change which post you're editing?"))
 						{
-							QuickQuoteHelper.quickWindowParams.quicktype = quicktype;
-							QuickQuoteHelper.quickWindowParams.threadid = threadid;
-							QuickQuoteHelper.quickWindowParams.forumid = forumid;
-							QuickQuoteHelper.quickWindowParams.postid = postid;
-							QuickQuoteHelper.quickWindowParams.doc = doc;
-							QuickQuoteHelper.quickquotewin.reattach();
-							QuickQuoteHelper.quickquotewin.importData();
-						}
-						else
-						{
-							if (QuickQuoteHelper.quickquotewin.isDetached)
-							{
-								QuickQuoteHelper.quickWindowParams.doc = doc;
-								QuickQuoteHelper.quickquotewin.reattach();
-							}
-							QuickQuoteHelper.quickquotewin.addQuoteFromPost(postid);
+							QuickQuoteHelper.convertQuickQuoteWindow(newParams);
 						}
 					}
 				}
-				// Clicked a 'quote' button
-				else if (quicktype == 'quote')
-				{
-					// Always add quotes when quote is clicked
-					if (QuickQuoteHelper.quickquotewin.isDetached)
-					{
-						QuickQuoteHelper.quickWindowParams.doc = doc;
-						QuickQuoteHelper.quickquotewin.reattach();
-					}
-					QuickQuoteHelper.quickquotewin.addQuoteFromPost(postid);
-				}
-				// Clicked a 'reply' button
-				else if (quicktype == 'reply')
-				{
-					// Check if we need to reattach, otherwise offer to convert
-					if (QuickQuoteHelper.quickWindowParams.quicktype && QuickQuoteHelper.quickWindowParams.quicktype == 'reply' && QuickQuoteHelper.quickWindowParams.threadid && QuickQuoteHelper.quickWindowParams.threadid == threadid)
-					{
-						if (QuickQuoteHelper.quickquotewin.isDetached)
-						{
-							QuickQuoteHelper.quickWindowParams.doc = doc;
-							QuickQuoteHelper.quickquotewin.reattach();
-						}
-					}
-					else
-					{
-						if (window.confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick reply window for this thread, or press 'Cancel' to leave it alone."))
-						{
-							QuickQuoteHelper.quickWindowParams.quicktype = quicktype;
-							QuickQuoteHelper.quickWindowParams.threadid = threadid;
-							QuickQuoteHelper.quickWindowParams.forumid = forumid;
-							QuickQuoteHelper.quickWindowParams.postid = postid;
-							QuickQuoteHelper.quickWindowParams.doc = doc;
-							QuickQuoteHelper.quickquotewin.reattach();
-							QuickQuoteHelper.quickquotewin.importData();
-						}				
-					}
-				}
-				// Clicked anything else
 				else
 				{
-					if (window.confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick " + quicktype + " window, or press 'Cancel' to leave it alone."))
+					if (window.confirm("You already have a quick window open. Press 'OK' to convert it to a quick edit window for this post, \nor press 'Cancel' to append this post to your quick window."))
 					{
-						QuickQuoteHelper.quickWindowParams.quicktype = quicktype;
-						QuickQuoteHelper.quickWindowParams.threadid = threadid;
-						QuickQuoteHelper.quickWindowParams.forumid = forumid;
-						QuickQuoteHelper.quickWindowParams.postid = postid;
-						QuickQuoteHelper.quickWindowParams.doc = doc;
-						QuickQuoteHelper.quickquotewin.reattach();
-						QuickQuoteHelper.quickquotewin.importData();
+						QuickQuoteHelper.convertQuickQuoteWindow(newParams);
+					}
+					else
+					{
+						QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
+						QuickQuoteHelper.quickquotewin.addQuoteFromPost(newParams.postid);
 					}
 				}
-				QuickQuoteHelper.quickquotewin.focus();
 			}
-			catch(ex)
+			// Clicked a 'quote' button
+			else if (newParams.quicktype === 'quote')
 			{
-				//alert("Error communicating with the quick window: " + ex);
-				QuickQuoteHelper.quickquotewin = window.openDialog("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, dialog=no, width=800, height=400");
+				// Always add quotes when quote is clicked
+				QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
+				QuickQuoteHelper.quickquotewin.addQuoteFromPost(newParams.postid);
 			}
+			// Clicked a 'reply' button
+			else if (newParams.quicktype === 'reply')
+			{
+				// Check if we need to reattach, otherwise offer to convert
+				if (QuickQuoteHelper.quickWindowParams.quicktype && QuickQuoteHelper.quickWindowParams.quicktype === 'reply' && QuickQuoteHelper.quickWindowParams.threadid && QuickQuoteHelper.quickWindowParams.threadid == newParams.threadid)
+				{
+					QuickQuoteHelper.reattachQuickQuoteWindow(doc);
+				}
+				else
+				{
+					if (window.confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick reply window for this thread, or press 'Cancel' to leave it alone."))
+					{
+						QuickQuoteHelper.convertQuickQuoteWindow(newParams);
+					}				
+				}
+			}
+			// Clicked anything else
+			else
+			{
+				if (window.confirm("You already have a quick window open. Press 'OK' to convert it \nto a quick " + newParams.quicktype + " window, or press 'Cancel' to leave it alone."))
+				{
+					QuickQuoteHelper.convertQuickQuoteWindow(newParams);
+				}
+			}
+			QuickQuoteHelper.quickquotewin.focus();
 		}
-		else
+		catch(ex)
 		{
-			// Set parameters
-			QuickQuoteHelper.quickWindowParams.quicktype = quicktype;
-			QuickQuoteHelper.quickWindowParams.threadid = threadid;
-			QuickQuoteHelper.quickWindowParams.forumid = forumid;
-			QuickQuoteHelper.quickWindowParams.postid = postid;
-			QuickQuoteHelper.quickWindowParams.doc = doc;
+			//alert("Error communicating with the quick window: " + ex);
 			QuickQuoteHelper.quickquotewin = window.openDialog("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, dialog=no, width=800, height=400");
 		}
 
@@ -306,6 +267,55 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			DB.__quickquotewindowObject = QuickQuoteHelper.quickquotewin;
 		}
 		return false;
+	},
+
+	/**
+	 * Opens a new quick quote window with specified paramters.
+	 * @param {Window} window    Window from which to open the dialog.
+	 * @param {Object} newParams New quick quote parameters.
+	 */
+	openNewQuickQuoteWindow: function(window, newParams)
+	{
+		QuickQuoteHelper.setQuickWindowParameters(newParams);
+		QuickQuoteHelper.quickquotewin = window.openDialog("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, dialog=no, width=800, height=400");
+	},
+
+	/**
+	 * Converts a quick quote window from an old set of parameters to a new set.
+	 *     Attaches to the new SA document and imports the new quick quote data.
+	 * @param {Object} newParams New quick quote parameters.
+	 */
+	convertQuickQuoteWindow: function(newParams)
+	{
+		QuickQuoteHelper.setQuickWindowParameters(newParams);
+		QuickQuoteHelper.quickquotewin.reattach();
+		QuickQuoteHelper.quickquotewin.importData();
+	},
+
+	/**
+	 * Sets quick window parameters to a new set of parameters.
+	 * @param {Object} newParams New quick quote parameters.
+	 */
+	setQuickWindowParameters: function(newParams)
+	{
+		QuickQuoteHelper.quickWindowParams.quicktype = newParams.quicktype;
+		QuickQuoteHelper.quickWindowParams.threadid = newParams.threadid;
+		QuickQuoteHelper.quickWindowParams.forumid = newParams.forumid;
+		QuickQuoteHelper.quickWindowParams.postid = newParams.postid;
+		QuickQuoteHelper.quickWindowParams.doc = newParams.doc;
+	},
+
+	/**
+	 * Reattaches a detached quick quote window to a new document without
+	 *     changing any other parameters.
+	 * @param {Element} doc Document to attach to.
+	 */
+	reattachQuickQuoteWindow: function(doc)
+	{
+		if (!QuickQuoteHelper.quickquotewin.isDetached)
+			return;
+		QuickQuoteHelper.quickWindowParams.doc = doc;
+		QuickQuoteHelper.quickquotewin.reattach();
 	},
 
 
