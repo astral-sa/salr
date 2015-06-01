@@ -13,8 +13,8 @@
 }
 
 #sfcontainer {
- left: 0px;
- top: 0px;
+ left: 0;
+ top: 0;
  width: 1px;
  height: 1px;
  max-width: 1px;

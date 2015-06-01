@@ -19,7 +19,7 @@ sacolorpickerwin {
 
 .colorpicker-button {
  -moz-appearance: none;
- min-width: 0px;
+ min-width: 0;
 }
 
 .colorpicker-button[disabled=true] > hbox {
