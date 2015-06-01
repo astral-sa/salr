@@ -211,7 +211,7 @@ let Menus = exports.Menus =
 		while (abovePinned.nextSibling)
 			menupopup.removeChild(abovePinned.nextSibling);
 
-		abovePinned.hidden = (pinnedForumNumbers.length === 0);
+		abovePinned.hidden = (pinnedForumNumbers.length === 0 || pinnedForumElements.length === 0);
 
 		for (var j = 0; j < pinnedForumElements.length || j < pinnedForumNumbers.length; j++)
 		{
@@ -542,7 +542,7 @@ let Menus = exports.Menus =
 		ms.setAttribute("class", "salr_pinhelper_item");
 		menupopup.appendChild(ms);
 
-		let salrMenu = Utils.createElementWithAttrs(doc, 'menu', {
+		let salrMenu = Utils.createElementWithAttrs(doc, 'menuitem', {
 			label: "Learn how to pin forums to this menu...",
 			image: "chrome://salastread/skin/eng101-16x16.png",
 			class: "salr_pinhelper_item menuitem-iconic lastread_menu_sub"
