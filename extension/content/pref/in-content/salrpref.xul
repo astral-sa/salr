@@ -393,7 +393,7 @@
 						<radio id="tinyvidsize" value="tiny" label="Tiny (480x300)" />
 						<radio id="smallvidsize" value="small" label="Small (560x345)" />
 						<radio id="mediumvidsize" value="medium" label="Medium (640x390)" />
-						<radio id="largevidsize" value="large" label="Large (853x510)" />
+						<radio id="largevidsize" value="large" label="Large (854x510)" />
 						<radio id="giganticvidsize" value="gigantic" label="Gigantic (1280x750)" />
 						<hbox align="center">
 						<vbox>

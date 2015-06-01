@@ -24,7 +24,7 @@ let VideoHandler = exports.VideoHandler =
 	{
 		let videoEmbedderBG = Prefs.getPref("videoEmbedderBG");
 
-		let ytTest = link.href.match(/^https?\:\/\/(?:(?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i);
+		let ytTest = link.href.match(/^https?\:\/\/(?:(?:www|m|[a-z]{2})\.)?(?:youtube\.com\/(?:#\/)?watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)/i);
 		if (ytTest && ytTest[1])
 		{
 			link.style.backgroundColor = videoEmbedderBG;
@@ -57,12 +57,12 @@ let VideoHandler = exports.VideoHandler =
 		e.preventDefault();
 		e.stopPropagation();
 
-		var link = e.currentTarget;
+		let link = e.currentTarget;
 
 		//if they click again hide the video
 		if (link.nextSibling)
 		{
-			var video = link.nextSibling.firstChild;
+			let video = link.nextSibling.firstChild;
 			if (video && video.className === 'salr_video')
 			{
 				link.parentNode.removeChild(link.nextSibling);
@@ -71,10 +71,10 @@ let VideoHandler = exports.VideoHandler =
 		}
 
 		// Figure out the video type
-		let videoIdSearch = link.href.match(/^https?\:\/\/((?:www|[a-z]{2})\.)?(?:youtube\.com\/watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:.*?t=(?:(\d*)h)?(?:(\d*)m)?(?:(\d*)s?)?)?/);
+		let videoIdSearch = link.href.match(/^https?\:\/\/((?:www|m|[a-z]{2})\.)?(?:youtube\.com\/(?:#\/)?watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:.*?t=(?:(\d*)h)?(?:(\d*)m)?(?:(\d*)s?)?)?/);
 		if (videoIdSearch)
 		{
-			let yt_subd = (videoIdSearch[1] == null ? "www." : videoIdSearch[1]);
+			let yt_subd = (videoIdSearch[1] == null || videoIdSearch[1] === 'm.') ? "www." : videoIdSearch[1];
 			// videoId = videoIdSearch[2];
 			let yt_starttime = (videoIdSearch[3] == null ? 0 : parseInt(videoIdSearch[3])) * 3600 + 
 				(videoIdSearch[4] == null ? 0 : parseInt(videoIdSearch[4])) * 60 + 
@@ -245,54 +245,33 @@ let VideoHandler = exports.VideoHandler =
 	 */
 	getVidSizeFromPrefs: function()
 	{
-		let vidSize = Prefs.getPref("videoEmbedSize");
-		let vidwidth;
-		let vidheight;
+		let prefSize = Prefs.getPref("videoEmbedSize");
+		let vidSizes = {
+			gigantic: [1280, 750],
+			large: [854, 510],
+			medium: [640, 390],
+			small: [560, 345],
+			tiny: [480, 300],
+			custom: [Prefs.getPref("videoEmbedCustomWidth"), Prefs.getPref("videoEmbedCustomHeight")]
+		};
 
-		switch(vidSize)
-		{
-			case "gigantic":
-				vidwidth = 1280;
-				vidheight = 750;
-				break;
-			case "large":
-				vidwidth = 854;
-				vidheight = 510;
-				break;
-			case "medium":
-				vidwidth = 640;
-				vidheight = 390;
-				break;
-			case "small":
-				vidwidth = 560;
-				vidheight = 345;
-				break;
-			case "tiny":
-				vidwidth = 480;
-				vidheight = 300;
-				break;
-			default: // vidsize is "custom"
-				vidwidth = Prefs.getPref("videoEmbedCustomWidth");
-				vidheight = Prefs.getPref("videoEmbedCustomHeight");
-				break;
-		}
-		return {width: vidwidth, height: vidheight};
+		return {width: vidSizes[prefSize][0], height: vidSizes[prefSize][1]};
 	},
 
 	// util functions for pending video titles
 	_clearPendingVidLinks: function(vId)
 	{
-		if (vId)
-		{
-			if (this._pendingVideoTitles.hasOwnProperty(vId))
-				delete this._pendingVideoTitles[vId];
-		}
-		else
-		{
-			for (var someVid in this._pendingVideoTitles)
-				if (this._pendingVideoTitles.hasOwnProperty(someVid))
-					delete this._pendingVideoTitles[someVid];
-		}
+		if (!vId)
+			return;
+		if (this._pendingVideoTitles.hasOwnProperty(vId))
+			delete this._pendingVideoTitles[vId];
+	},
+
+	_clearAllPendingVidLinks: function()
+	{
+		for (let someVid in this._pendingVideoTitles)
+			if (this._pendingVideoTitles.hasOwnProperty(someVid))
+				delete this._pendingVideoTitles[someVid];
 	},
 
 	_addPendingVidLink: function(vId, link)
@@ -346,22 +325,22 @@ let VideoHandler = exports.VideoHandler =
 			}.bind(this);
 			ytTitleGetter.onreadystatechange = function()
 			{
-				if (ytTitleGetter.readyState == 4)
+				if (ytTitleGetter.readyState === 4)
 				{
 					var newTitle = null;
-					if (ytTitleGetter.status == 400)
+					if (ytTitleGetter.status === 400)
 					{
 						newTitle = "(ERROR: Video does not exist; click to try to play anyway)";
 					}
-					else if (ytTitleGetter.status == 404)
+					else if (ytTitleGetter.status === 404)
 					{
 						newTitle = "(ERROR: Video unavailable; click to try to play anyway)";
 					}
-					else if (ytTitleGetter.status == 403)
+					else if (ytTitleGetter.status === 403)
 					{
 						newTitle = "(ERROR: Private or removed video; click to try to play anyway)";
 					}
-					else if (ytTitleGetter.status == 200)
+					else if (ytTitleGetter.status === 200)
 					{
 						var ytResponse = JSON.parse(ytTitleGetter.responseText);
 						if (ytResponse.items[0] && ytResponse.items[0].snippet.title)
