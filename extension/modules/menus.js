@@ -75,7 +75,7 @@ let Menus = exports.Menus =
 		{
 			let thisUtil = menuUtils[i];
 			//TODO: access keys
-			Menus.addMenuItemWithForumNum(doc, target, {
+			Menus.addMenuItem(doc, target, {
 				label: thisUtil.name,
 				forumnum: thisUtil.id
 			});
@@ -159,7 +159,7 @@ let Menus = exports.Menus =
 				}
 
 				//TODO: access keys
-				Menus.addMenuItemWithForumNum(doc, target, {
+				Menus.addMenuItem(doc, target, {
 					label: thisforum.getAttribute("name"),
 					forumnum: thisforum.getAttribute("id"),
 					class: (cssClass !== "") ? "lastread_menu_" + cssClass : ""
@@ -243,7 +243,7 @@ let Menus = exports.Menus =
 			{
 				forumname = forumname.substring(1);
 			}
-			Menus.addMenuItemWithForumNum(document, menupopup, {
+			Menus.addMenuItem(document, menupopup, {
 				label: forumname,
 				forumnum: pinnedForumNumber,
 				class: "lastread_menu_sub"
@@ -258,7 +258,7 @@ let Menus = exports.Menus =
 			var umatch = pinnedForumNumber.match(/^URL\[(.*?)\]\[(.*?)\]$/);
 			if (!umatch)
 				return;
-			Menus.addMenuItemWithURL(document, menupopup, {
+			Menus.addMenuItem(document, menupopup, {
 				label: Utils.UnescapeMenuURL(umatch[1]),
 				targeturl: Utils.UnescapeMenuURL(umatch[2]),
 				class: "lastread_menu_sub"
@@ -316,7 +316,7 @@ let Menus = exports.Menus =
 			menupopup.removeChild(menupopup.firstChild);
 		}
 
-		Menus.addMenuItemWithURL(document, menupopup, {
+		Menus.addMenuItem(document, menupopup, {
 			label: "Something Awful",
 			image: "chrome://salastread/skin/sa.png",
 			targeturl: "http://www.somethingawful.com",
@@ -355,34 +355,18 @@ let Menus = exports.Menus =
 	},
 
 	/**
-	 * Creates a menu item with forumnum and appends it to a menu popup.
+	 * Creates a menu item with forumnum or destination URL and appends it to a menu popup.
 	 * @param {Element} doc       Document element to create in.
 	 * @param {Element} menuPopup Popup to append to.
 	 * @param {Object}  attrs     Attributes to set on the new menu item.
 	 */
-	addMenuItemWithForumNum: function(doc, menuPopup, attrs)
+	addMenuItem: function(doc, menuPopup, attrs)
 	{
 		if (!doc || !menuPopup)
 			return;
 		let newMenuItem = Utils.createElementWithAttrs(doc, 'menuitem', attrs);
 		newMenuItem.addEventListener("click", Menus.menuItemCommand, false);
 		newMenuItem.addEventListener("command", Menus.menuItemCommand, false);
-		menuPopup.appendChild(newMenuItem);
-	},
-
-	/**
-	 * Creates a menu item with a destination URL and appends it to a menu popup.
-	 * @param {Element} doc       Document element to create in.
-	 * @param {Element} menuPopup Popup to append to.
-	 * @param {Object}  attrs     Attributes to set on the new menu item.
-	 */
-	addMenuItemWithURL: function(doc, menuPopup, attrs)
-	{
-		if (!doc || !menuPopup)
-			return;
-		let newMenuItem = Utils.createElementWithAttrs(doc, 'menuitem', attrs);
-		newMenuItem.addEventListener("click", Menus.menuItemCommandURL, false);
-		newMenuItem.addEventListener("command", Menus.menuItemCommandURL, false);
 		menuPopup.appendChild(newMenuItem);
 	},
 
@@ -412,8 +396,9 @@ let Menus = exports.Menus =
 	},
 
 	/**
-	 * Decides whether and how to open a forumid= link from
-	 *     an activated menu item.
+	 * Checks if the event target has a 'targeturl' attribute.
+	 *     If it does, opens that URL. If not, decides whether and how
+	 *     to open a forumid= link from an activated menu item.
 	 * @param {Event} event The activating event
 	 */
 	menuItemCommand: function(event)
@@ -422,13 +407,22 @@ let Menus = exports.Menus =
 		if (event.type === "click" && event.button === 0)
 			return;
 		let el = event.originalTarget;
-		// uncomment to use older search instead:
-/*
-		if (el.getAttribute("forumnum") == "search")
-			Menus.menuItemGoToURL(event,"http://forums.somethingawful.com/f/search",target);
+
+		let targeturl = el.getAttribute("targeturl");
+		if (targeturl)
+		{
+			Menus.menuItemGoToURL(event,targeturl);
+		}
 		else
-*/
-			Menus.menuItemGoToURL(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"));
+		{
+			// uncomment to use older search instead:
+	/*
+			if (el.getAttribute("forumnum") == "search")
+				Menus.menuItemGoToURL(event,"http://forums.somethingawful.com/f/search",target);
+			else
+	*/
+				Menus.menuItemGoToURL(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"));
+		}				
 		// Try to block Firefox's default right-click menu for this element, if applicable.
 		if (event.cancelable)
 			event.preventDefault();
@@ -467,25 +461,6 @@ let Menus = exports.Menus =
 		{
 			Cu.reportError("SALR error: Couldn't open thread id: " + threadid);
 		}
-	},
-
-	/**
-	 * Checks if the event target has a 'targeturl' attribute.
-	 *     If yes, goes to that URL.
-	 * @param {Event}         event The activating event
-	 */
-	menuItemCommandURL: function(event)
-	{
-		// Band-aid: Don't execute this function twice on a left click.
-		if (event.type === "click" && event.button === 0)
-			return;
-		let el = event.originalTarget;
-		let targeturl = el.getAttribute("targeturl");
-		if (targeturl)
-			Menus.menuItemGoToURL(event,targeturl);
-		// Try to block Firefox's default right-click menu for this element, if applicable.
-		if (event.cancelable)
-			event.preventDefault();
 	},
 
 	/**
