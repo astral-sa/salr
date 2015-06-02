@@ -4,7 +4,6 @@
 
 */
 
-// Called from old Overlay
 let {DB} = require("db");
 let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
@@ -39,7 +38,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 		var superIgnoreUsers = Prefs.getPref("superIgnore");
 
 		// This should eventually be redone and moved to the flags section.
-		if (typeof(flags.inUserCP) === undefined)
+		if (typeof(flags.inUserCP) === typeof undefined)
 			flags.inUserCP = false;
 
 		// We'll need lots of variables for this
@@ -153,24 +152,11 @@ let ThreadListHandler = exports.ThreadListHandler =
 			if (advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP)
 			{
 				// Check for ignored keywords
-				var keywordList = ignoredKeywords.split("|");
-				var threadBeGone = false;
-
-				for (var j in keywordList)
+				let threadBeGone = AdvancedThreadFiltering.isThreadTitleKeywordFiltered(threadTitle, ignoredKeywords);
+				if (threadBeGone && thread.style.visibility !== "hidden")
 				{
-					var keywords = keywordList[j];
-					if (!keywords || threadBeGone)
-					{
-						continue;
-					}
-					searchString = new RegExp(keywords, "gi");
-
-					if (threadTitle.search(searchString) > -1 && thread.style.visibility != "hidden")
-					{
-						PageUtils.toggleVisibility(thread,false);
-						AdvancedThreadFiltering.filteredThreadCount(doc,1);
-						threadBeGone = true;
-					}
+					PageUtils.toggleVisibility(thread, false);
+					AdvancedThreadFiltering.filteredThreadCount(doc, 1);
 				}
 			}
 
@@ -191,10 +177,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 			threadIconBox = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
 			if (flags && forumid && advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.firstChild.src.search(/posticons\/(.*)/i) > -1)
 			{
-				var iconnum = threadIconBox.firstChild.firstChild.src.match(/#(\d+)$/)[1];
-				var iconSearchString = "(^|\\s)" + iconnum + ",";
-				iconSearchString = new RegExp(iconSearchString , "gi");
-				if (ignoredPostIcons.search(iconSearchString) > -1 && thread.style.visibility != "hidden")
+				if (AdvancedThreadFiltering.isThreadIconFiltered(threadIconBox.firstChild.firstChild, ignoredPostIcons) && thread.style.visibility !== "hidden")
 				{
 					PageUtils.toggleVisibility(thread,false);
 					AdvancedThreadFiltering.filteredThreadCount(doc,1);
@@ -350,21 +333,21 @@ let ThreadListHandler = exports.ThreadListHandler =
 					userColoring = DB.isUserIdColored(threadOPId);
 					if (userColoring)
 					{
-						if (userColoring.color && userColoring.color != "0")
+						if (userColoring.color && userColoring.color !== "0")
 						{
 							posterColor = userColoring.color;
 						}
-						if (userColoring.background && userColoring.background != "0")
+						if (userColoring.background && userColoring.background !== "0")
 						{
 							posterBG = userColoring.background;
 						}
 					}
 
-					if (posterBG != false && posterBG != "0")
+					if (posterBG != false && posterBG !== "0")
 					{
 						threadAuthorBox.style.backgroundColor = posterBG;
 					}
-					if (posterColor != false && posterColor != "0")
+					if (posterColor != false && posterColor !== "0")
 					{
 						threadAuthorBox.getElementsByTagName("a")[0].style.color = posterColor;
 						if (!dontBoldNames)
@@ -407,21 +390,21 @@ let ThreadListHandler = exports.ThreadListHandler =
 					userColoring = DB.isUserIdColored(lastPostId);
 					if (userColoring)
 					{
-						if (userColoring.color && userColoring.color != "0")
+						if (userColoring.color && userColoring.color !== "0")
 						{
 							posterColor = userColoring.color;
 						}
-						if (userColoring.background && userColoring.background != "0")
+						if (userColoring.background && userColoring.background !== "0")
 						{
 							posterBG = userColoring.background;
 						}
 					}
 
-					if (posterBG != false && posterBG != "0")
+					if (posterBG != false && posterBG !== "0")
 					{
 						threadLastPostBox.style.backgroundColor = posterBG;
 					}
-					if (posterColor != false && posterColor != "0")
+					if (posterColor != false && posterColor !== "0")
 					{
 						threadLastPostBox.getElementsByTagName("a")[0].style.color = posterColor;
 					}
@@ -442,24 +425,28 @@ let ThreadListHandler = exports.ThreadListHandler =
 	},
 
 	// Event catcher for clicking on the Mark Unseen box from a thread list
-	clickMarkUnseen: function()
+	clickMarkUnseen: function clickMarkUnseen()
 	{
-		var doc = this.ownerDocument;
-		var thread = this.parentNode.parentNode.parentNode.parentNode;
-		if (thread)
+		// Clean up event listener if we've shut down.
+		if (PageUtils === null)
 		{
-			var threadRepliesBox = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
-			if (threadRepliesBox)
+			this.removeEventListener("click", clickMarkUnseen, false);
+			return;
+		}
+		let doc = this.ownerDocument;
+		let thread = this.parentNode.parentNode.parentNode.parentNode;
+		if (!thread)
+			return;
+		let threadRepliesBox = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class, 'replies')]");
+		if (!threadRepliesBox)
+			return;
+		// Remove the new replies count
+		if (!Prefs.getPref("disableNewReCount") && thread.className.search(/newposts/i) > -1)
+		{
+			while (threadRepliesBox.childNodes[1])
 			{
-				// Remove the new replies count
-				if (!Prefs.getPref("disableNewReCount") && thread.className.search(/newposts/i) > -1)
-				{
-					while (threadRepliesBox.childNodes[1])
-					{
-						// Delete everything but the original link
-						threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
-					}
-				}
+				// Delete everything but the original link
+				threadRepliesBox.removeChild(threadRepliesBox.childNodes[1]);
 			}
 		}
 	},
