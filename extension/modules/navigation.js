@@ -243,8 +243,13 @@ let Navigation = exports.Navigation =
 	},
 
 	// Keyboard navigation
-	quickPostJump: function(event)
+	quickPostJump: function quickPostJump(event)
 	{
+		if (!Navigation)
+		{
+			this.removeEventListener('keypress', quickPostJump, false);
+			return;
+		}
 		let {Utils} = require("utils");
 		let win = Utils.getRecentWindow();
 

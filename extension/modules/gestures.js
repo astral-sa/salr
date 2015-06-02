@@ -84,14 +84,14 @@ let Gestures = exports.Gestures =
 		}
 	},
 
-	pageMouseUp: function(event)
+	pageMouseUp: function pageMouseUp(event)
 	{
 		var targ = event.target;
 		var doc = targ.ownerDocument;
-		// Clean up event listener - need an eventual better way to do this
+		// Clean up event listener
 		if (Prefs === null)
 		{
-			doc.body.removeEventListener('mouseup', arguments.callee, false);
+			doc.body.removeEventListener('mouseup', pageMouseUp, false);
 			return;
 		}
 		if (targ && targ.SALR_isGestureElement === true)
@@ -128,13 +128,13 @@ let Gestures = exports.Gestures =
 		return false;
 	},
 
-	pageMouseDown: function(event)
+	pageMouseDown: function pageMouseDown(event)
 	{
 		var doc = event.target.ownerDocument;
-		// Clean up event listener - need an eventual better way to do this
+		// Clean up event listener
 		if (Prefs === null)
 		{
-			doc.body.removeEventListener('mousedown', arguments.callee, false);
+			doc.body.removeEventListener('mousedown', pageMouseDown, false);
 			return;
 		}
 

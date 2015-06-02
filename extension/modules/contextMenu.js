@@ -129,13 +129,13 @@ let ContextMenu = exports.ContextMenu =
 		document.getElementById("salastread-context-unreadthread").setAttribute('hidden', true);
 	},
 
-	contextMenuShowing: function(e)
+	contextMenuShowing: function contextMenuShowing(e)
 	{
 		let document = e.currentTarget.ownerDocument.defaultView.document;
-		// Clean up event listener - need an eventual better way to do this
+		// Clean up event listener
 		if (Prefs === null)
 		{
-			e.originalTarget.removeEventListener('popupshowing', arguments.callee, false);
+			e.originalTarget.removeEventListener('popupshowing', contextMenuShowing, false);
 			return;
 		}
 
