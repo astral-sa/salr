@@ -286,7 +286,7 @@ let Styles = exports.Styles =
 						'}\n' +
 						'#forum td.title div.lastseen a:after { content: "" !important;}' +
 						'#forum td.title div.lastseen a.count { min-width: 0px !important; }' +
-						'#forum td.title div.lastseen a.count b { display: none !important; }';
+						'#forum td.title div.lastseen a.count b { display: none !important; }\n';
 		}
 		else
 		{
@@ -300,6 +300,7 @@ let Styles = exports.Styles =
 		}
 		if (!Prefs.getPref('dontHighlightThreads'))
 		{
+// gray threads
 			CSSFile += '#forum tr.thread td.title, #forum tr.thread td.star, #forum tr.thread td.replies, #forum tr.thread td.rating, #forum tr.thread td.button_remove { background-color:' +
 						Prefs.getPref('unreadLight') +
 						'; }\n' +
@@ -308,7 +309,7 @@ let Styles = exports.Styles =
 						Prefs.getPref('unreadDark') +
 						'; }\n';
 
-//bookmarks need a special color if they're unread
+//bookmarks need a special entry if they're completely unread
 //blue aka "tan"
 			CSSFile += '#forum tr.thread.category0 td.title, #forum tr.thread.category0 td.star, #forum tr.thread.category0 td.replies, #forum tr.thread.category0 td.rating, #forum tr.thread.category0 td.button_remove { background-color:' +
 						Prefs.getPref('readWithNewLight') +
@@ -317,16 +318,16 @@ let Styles = exports.Styles =
 						'#forum tr.thread.category0 td.views, #forum tr.thread.category0 td.lastpost { background-color:' +
 						Prefs.getPref('readWithNewDark') +
 						'; }\n';
-//red for unread
+//red completely unread
 			CSSFile += '#forum tr.thread.category1 td.title, #forum tr.thread.category1 td.star, #forum tr.thread.category1 td.replies, #forum tr.thread.category1 td.rating, #forum tr.thread.category1 td.button_remove { background-color:#f2dcdc; }\n' +
 						'#forum tr.thread.category1 td.icon, #forum tr.thread.category1 td.icon2, #forum tr.thread.category1 td.author,' +
 						'#forum tr.thread.category1 td.views, #forum tr.thread.category1 td.lastpost { background-color:#e3cfcf; }\n';
-//yellow for unread
+//yellow completely unread
 			CSSFile += '#forum tr.thread.category2 td.title, #forum tr.thread.category2 td.star, #forum tr.thread.category2 td.replies, #forum tr.thread.category2 td.rating, #forum tr.thread.category2 td.button_remove { background-color:#f2f2dc; }\n' +
 						'#forum tr.thread.category2 td.icon, #forum tr.thread.category2 td.icon2, #forum tr.thread.category2 td.author,' +
 						'#forum tr.thread.category2 td.views, #forum tr.thread.category2 td.lastpost { background-color:#e2e2cd; }\n';
 
-
+// no new posts
 			CSSFile += '#forum tr.thread.seen td.title, #forum tr.thread.seen td.star, #forum tr.thread.seen td.replies, #forum tr.thread.seen td.rating, #forum tr.thread.seen td.button_remove { background-color:' +
 						Prefs.getPref('readLight') +
 						'; }\n' +
@@ -334,7 +335,7 @@ let Styles = exports.Styles =
 						'#forum tr.thread.seen td.views, #forum tr.thread.seen td.lastpost { background-color:' +
 						Prefs.getPref('readDark') +
 						'; }\n';
-	
+// generic new posts
 			CSSFile += '#forum tr.thread.seen.newposts td.title, #forum tr.thread.seen.newposts td.star, #forum tr.thread.seen.newposts td.replies, #forum tr.thread.seen.newposts td.rating, #forum tr.thread.seen.newposts td.button_remove { background-color:' +
 						Prefs.getPref('readWithNewLight') +
 						'; }\n' +
@@ -343,16 +344,16 @@ let Styles = exports.Styles =
 						Prefs.getPref('readWithNewDark') +
 						'; }\n';
 
-//red with new
+//red with new - so it doesn't get overwritten by generic new
 			CSSFile += '#forum tr.thread.category1.newposts td.title, #forum tr.thread.category1.newposts td.star, #forum tr.thread.category1.newposts td.replies, #forum tr.thread.category1.newposts td.rating, #forum tr.thread.category1.newposts td.button_remove { background-color:#f2dcdc; }\n' +
 						'#forum tr.thread.category1.newposts td.icon, #forum tr.thread.category1.newposts td.icon2, #forum tr.thread.category1.newposts td.author,' +
 						'#forum tr.thread.category1.newposts td.views, #forum tr.thread.category1.newposts td.lastpost { background-color:#e3cfcf; }\n';
-//yellow with new
+//yellow with new - so it doesn't get overwritten by generic new
 			CSSFile += '#forum tr.thread.category2.newposts td.title, #forum tr.thread.category2.newposts td.star, #forum tr.thread.category2.newposts td.replies, #forum tr.thread.category2.newposts td.rating, #forum tr.thread.category2.newposts td.button_remove { background-color:#f2f2dc; }\n' +
 						'#forum tr.thread.category2.newposts td.icon, #forum tr.thread.category2.newposts td.icon2, #forum tr.thread.category2.newposts td.author,' +
 						'#forum tr.thread.category2.newposts td.views, #forum tr.thread.category2.newposts td.lastpost { background-color:#e2e2cd; }\n';
 
-
+// I-replied col
 			CSSFile += '#forum tr.thread.seen.newposts td.replies.salrPostedIn, #forum tr.thread.category0 td.replies.salrPostedIn,' +
 						'#forum tr.thread.seen td.replies.salrPostedIn { background-color:' +
 						Prefs.getPref('postedInThreadRe') +
