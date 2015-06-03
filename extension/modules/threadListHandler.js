@@ -22,12 +22,16 @@ let ThreadListHandler = exports.ThreadListHandler =
 		var swapIconOrder = Prefs.getPref("swapIconOrder");
 		var showGoToLastIcon = Prefs.getPref("showGoToLastIcon");
 		var alwaysShowGoToLastIcon = Prefs.getPref("alwaysShowGoToLastIcon");
-		var modColor = Prefs.getPref("modColor");
-		var modBackground = Prefs.getPref("modBackground");
-		var adminColor = Prefs.getPref("adminColor");
-		var adminBackground = Prefs.getPref("adminBackground");
+
 		var highlightUsernames = Prefs.getPref("highlightUsernames");
-		var dontBoldNames = Prefs.getPref("dontBoldNames");
+		let userHighlightingPrefs = {
+			modColor: Prefs.getPref("modColor"),
+			modBackground: Prefs.getPref("modBackground"),
+			adminColor: Prefs.getPref("adminColor"),
+			adminBackground: Prefs.getPref("adminBackground"),
+			dontBoldNames: Prefs.getPref("dontBoldNames")
+		};
+
 		var showTWNP = Prefs.getPref('showThreadsWithNewPostsFirst');
 		var showTWNPCP = Prefs.getPref('showThreadsWithNewPostsFirstCP');
 		var showTWNPCPS = Prefs.getPref('showThreadsWithNewPostsFirstCPStickies');
@@ -44,7 +48,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 		// We'll need lots of variables for this
 		var threadIconBox, threadTitleBox, threadTitleLink, threadAuthorBox, threadRepliesBox, threadLastPostBox;
 		var threadTitle, threadId, threadOPId, threadRe;
-		var lastLink, searchString;
+		var lastLink;
 		//var starredthreads = DB.starList;
 		//var ignoredthreads = DB.ignoreList;
 		var forumTable = doc.getElementById('forum');
@@ -89,9 +93,8 @@ let ThreadListHandler = exports.ThreadListHandler =
 			}
 		}
 
-		for (var i in threadlist)
+		for (let thread of threadlist)
 		{
-			var thread = threadlist[i];
 			threadTitleBox = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class,'title')]");
 			if (!threadTitleBox)
 			{
@@ -212,7 +215,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 					if (iconMarkUnseen)
 					{
 						// Ask/Tell and maybe other forums forget this at times
-						if (thread.className.match(/(^|\s)seen(\s|$)/i) == null)
+						if (thread.className.match(/(^|\s)seen(\s|$)/i) === null)
 						{
 							thread.className += ' seen';
 						}
@@ -309,52 +312,12 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 			if (highlightUsernames)
 			{
-				var userColoring, lastPostId;
-				var posterColor, posterBG;
+				var lastPostId;
 
 				// First color the Author column
 				if (threadOPId)
 				{
-					posterColor = false;
-					posterBG = false;
-
-					if (DB.isMod(threadOPId))
-					{
-						posterColor = modColor;
-						posterBG =  modBackground;
-					}
-
-					if (DB.isAdmin(threadOPId))
-					{
-						posterColor = adminColor;
-						posterBG =  adminBackground;
-					}
-
-					userColoring = DB.isUserIdColored(threadOPId);
-					if (userColoring)
-					{
-						if (userColoring.color && userColoring.color !== "0")
-						{
-							posterColor = userColoring.color;
-						}
-						if (userColoring.background && userColoring.background !== "0")
-						{
-							posterBG = userColoring.background;
-						}
-					}
-
-					if (posterBG != false && posterBG !== "0")
-					{
-						threadAuthorBox.style.backgroundColor = posterBG;
-					}
-					if (posterColor != false && posterColor !== "0")
-					{
-						threadAuthorBox.getElementsByTagName("a")[0].style.color = posterColor;
-						if (!dontBoldNames)
-						{
-							threadAuthorBox.getElementsByTagName("a")[0].style.fontWeight = "bold";
-						}
-					}
+					ThreadListHandler.colorUsernameBox(threadOPId, threadAuthorBox, userHighlightingPrefs);
 				}
 
 				// Then color the Killed By column
@@ -372,42 +335,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 				if (lastPostId)
 				{
-					posterColor = false;
-					posterBG = false;
-
-					if (DB.isMod(lastPostId))
-					{
-						posterColor = modColor;
-						posterBG =  modBackground;
-					}
-
-					if (DB.isAdmin(lastPostId))
-					{
-						posterColor = adminColor;
-						posterBG =  adminBackground;
-					}
-
-					userColoring = DB.isUserIdColored(lastPostId);
-					if (userColoring)
-					{
-						if (userColoring.color && userColoring.color !== "0")
-						{
-							posterColor = userColoring.color;
-						}
-						if (userColoring.background && userColoring.background !== "0")
-						{
-							posterBG = userColoring.background;
-						}
-					}
-
-					if (posterBG != false && posterBG !== "0")
-					{
-						threadLastPostBox.style.backgroundColor = posterBG;
-					}
-					if (posterColor != false && posterColor !== "0")
-					{
-						threadLastPostBox.getElementsByTagName("a")[0].style.color = posterColor;
-					}
+					ThreadListHandler.colorUsernameBox(lastPostId, threadLastPostBox, userHighlightingPrefs);
 				}
 			}
 		}
@@ -421,6 +349,55 @@ let ThreadListHandler = exports.ThreadListHandler =
 			anchorTop.removeChild(anchorThreads);
 			if (flags.inUserCP)
 				anchorTop.removeChild(anchorUnseenThreads);
+		}
+	},
+
+	/**
+	 * Applies user highlighting settings to a specified user in a specified TD.
+	 * @param {number} userId     ID of user to color.
+	 * @param {Node}   userBox    Node snapshot of TD with user name to color.
+	 * @param {Object} colorPrefs Color settings from preferences.
+	 */
+	colorUsernameBox: function(userId, userBox, colorPrefs)
+	{
+		let posterColor = false;
+		let posterBG = false;
+
+		if (DB.isMod(userId))
+		{
+			posterColor = colorPrefs.modColor;
+			posterBG = colorPrefs.modBackground;
+		}
+		if (DB.isAdmin(userId))
+		{
+			posterColor = colorPrefs.adminColor;
+			posterBG = colorPrefs.adminBackground;
+		}
+
+		let userColoring = DB.isUserIdColored(userId);
+		if (userColoring)
+		{
+			if (userColoring.color && userColoring.color !== "0")
+			{
+				posterColor = userColoring.color;
+			}
+			if (userColoring.background && userColoring.background !== "0")
+			{
+				posterBG = userColoring.background;
+			}
+		}
+
+		if (posterBG !== false && posterBG !== "0")
+		{
+			userBox.style.backgroundColor = posterBG;
+		}
+		if (posterColor !== false && posterColor !== "0")
+		{
+			userBox.getElementsByTagName("a")[0].style.color = posterColor;
+			if (!colorPrefs.dontBoldNames)
+			{
+				userBox.getElementsByTagName("a")[0].style.fontWeight = "bold";
+			}
 		}
 	},
 
