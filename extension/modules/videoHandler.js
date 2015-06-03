@@ -52,12 +52,17 @@ let VideoHandler = exports.VideoHandler =
 	 * Handles an embeddable video link being clicked.
 	 * @param {Event} e The click event to handle.
 	 */
-	videoClickHandler: function(e)
+	videoClickHandler: function videoClickHandler(e)
 	{
+		let link = e.currentTarget;
+		// Clean up if SALR was unloaded.
+		if (!VideoHandler)
+		{
+			link.removeEventListener('click', videoClickHandler, false);
+			return;
+		}
 		e.preventDefault();
 		e.stopPropagation();
-
-		let link = e.currentTarget;
 
 		//if they click again hide the video
 		if (link.nextSibling)
@@ -70,6 +75,15 @@ let VideoHandler = exports.VideoHandler =
 			}
 		}
 
+		VideoHandler.embedVideo(link);
+	},
+
+	/**
+	 * Embeds a video below its supplied link.
+	 * @param {Node} link Node snapshot of target link to embed.
+	 */
+	embedVideo: function(link)
+	{
 		// Figure out the video type
 		let videoIdSearch = link.href.match(/^https?\:\/\/((?:www|m|[a-z]{2})\.)?(?:youtube\.com\/(?:#\/)?watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:.*?t=(?:(\d*)h)?(?:(\d*)m)?(?:(\d*)s?)?)?/);
 		if (videoIdSearch)
@@ -293,7 +307,7 @@ let VideoHandler = exports.VideoHandler =
 		.getService(Components.interfaces.nsIConsoleService); */
 
 		// Give up if it already has some kind of title or image
-		if (link.innerHTML && !link.innerHTML.match(/^http/))
+		if (link.innerHTML && !link.innerHTML.match(/^http/) && link.innerHTML.length > 1)
 			return;
 
 		// See if we need to make an API request at all
@@ -325,49 +339,47 @@ let VideoHandler = exports.VideoHandler =
 			}.bind(this);
 			ytTitleGetter.onreadystatechange = function()
 			{
-				if (ytTitleGetter.readyState === 4)
+				if (ytTitleGetter.readyState !== 4)
+					return;
+				var newTitle = null;
+				if (ytTitleGetter.status === 400)
 				{
-					var newTitle = null;
-					if (ytTitleGetter.status === 400)
+					newTitle = "(ERROR: Video does not exist; click to try to play anyway)";
+				}
+				else if (ytTitleGetter.status === 404)
+				{
+					newTitle = "(ERROR: Video unavailable; click to try to play anyway)";
+				}
+				else if (ytTitleGetter.status === 403)
+				{
+					newTitle = "(ERROR: Private or removed video; click to try to play anyway)";
+				}
+				else if (ytTitleGetter.status === 200)
+				{
+					var ytResponse = JSON.parse(ytTitleGetter.responseText);
+					if (ytResponse.items[0] && ytResponse.items[0].snippet.title)
+						newTitle = ytResponse.items[0].snippet.title;
+					else
+						newTitle = "(ERROR: Video unavailable or couldn't get title; click to try to play anyway)";
+				}
+				if (!newTitle)
+					return;
+				DB.videoTitleCache[vidId] = newTitle;
+				while (this._vidHasPendingLinks(vidId))
+				{
+					let popLink = this._pendingVideoTitles[vidId].pop();
+					try
 					{
-						newTitle = "(ERROR: Video does not exist; click to try to play anyway)";
+						popLink.textContent = newTitle;
+						popLink.style.fontWeight = "bold";
 					}
-					else if (ytTitleGetter.status === 404)
+					catch (e)
 					{
-						newTitle = "(ERROR: Video unavailable; click to try to play anyway)";
+						PageUtils.logToConsole("Pending youtube title error: " + e);
+						continue;
 					}
-					else if (ytTitleGetter.status === 403)
-					{
-						newTitle = "(ERROR: Private or removed video; click to try to play anyway)";
-					}
-					else if (ytTitleGetter.status === 200)
-					{
-						var ytResponse = JSON.parse(ytTitleGetter.responseText);
-						if (ytResponse.items[0] && ytResponse.items[0].snippet.title)
-							newTitle = ytResponse.items[0].snippet.title;
-						else
-							newTitle = "(ERROR: Video unavailable or couldn't get title; click to try to play anyway)";
-					}
-					if (newTitle)
-					{
-						DB.videoTitleCache[vidId] = newTitle;
-						while (this._vidHasPendingLinks(vidId))
-						{
-							let popLink = this._pendingVideoTitles[vidId].pop();
-							try
-							{
-								popLink.textContent = newTitle;
-								popLink.style.fontWeight = "bold";
-							}
-							catch (e)
-							{
-								PageUtils.logToConsole("Pending youtube title error: " + e);
-								continue;
-							}
-							if (this._vidHasPendingLinks(vidId) === false)
-								delete this._pendingVideoTitles[vidId];
-						}
-					}
+					if (this._vidHasPendingLinks(vidId) === false)
+						delete this._pendingVideoTitles[vidId];
 				}
 			}.bind(this);
 			ytTitleGetter.send(null);
