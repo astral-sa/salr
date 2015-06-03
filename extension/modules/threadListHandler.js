@@ -32,9 +32,12 @@ let ThreadListHandler = exports.ThreadListHandler =
 			dontBoldNames: Prefs.getPref("dontBoldNames")
 		};
 
-		var showTWNP = Prefs.getPref('showThreadsWithNewPostsFirst');
-		var showTWNPCP = Prefs.getPref('showThreadsWithNewPostsFirstCP');
-		var showTWNPCPS = Prefs.getPref('showThreadsWithNewPostsFirstCPStickies');
+		let threadSortingInfo = {
+			showTWNP: Prefs.getPref('showThreadsWithNewPostsFirst'),
+			showTWNPCP: Prefs.getPref('showThreadsWithNewPostsFirstCP'),
+			showTWNPCPS: Prefs.getPref('showThreadsWithNewPostsFirstCPStickies')
+		};
+
 		var postsPerPage = Prefs.getPref('postsPerPage');
 		var advancedThreadFiltering = Prefs.getPref("advancedThreadFiltering");
 		var ignoredPostIcons = Prefs.getPref("ignoredPostIcons");
@@ -63,35 +66,8 @@ let ThreadListHandler = exports.ThreadListHandler =
 		// Here be where we work on the thread rows
 		var threadlist = PageUtils.selectNodes(doc, forumTable, "tbody/tr");
 
-		// These are insertion points for thread sorting
-		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
-		{
-			var anchorTop = PageUtils.selectSingleNode(doc, forumTable, "tbody");
-
-			if (anchorTop)
-			{
-				var anchorAnnouncement = doc.createElement("tr");
-				anchorTop.insertBefore(anchorAnnouncement,threadlist[0]);
-				var anchorUnreadStickies = doc.createElement("tr");
-				anchorTop.insertBefore(anchorUnreadStickies,threadlist[0]);
-				var anchorReadStickies = doc.createElement("tr");
-				anchorTop.insertBefore(anchorReadStickies,threadlist[0]);
-				var anchorThreads = doc.createElement("tr");
-				anchorTop.insertBefore(anchorThreads,threadlist[0]);
-				if (flags.inUserCP)
-				{
-					var anchorUnseenThreads = doc.createElement("tr");
-					anchorTop.insertBefore(anchorUnseenThreads,threadlist[0]);
-				}
-			}
-			else
-			{
-				// Oh dear there are no threads to sort!
-				// Change these options for now so that it doesn't error later
-				showTWNP = false;
-				showTWNPCP = false;
-			}
-		}
+		// Set up insertion points for thread sorting if we need to
+		ThreadListHandler.threadSortingSetup(doc, threadlist[0], threadSortingInfo, flags.inUserCP);
 
 		for (let thread of threadlist)
 		{
@@ -104,10 +80,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 			var ttb_a0 = threadTitleBox.getElementsByTagName('a')[0];
 			if (ttb_a0 && ttb_a0.className.search(/announcement/i) > -1)
 			{
-				if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
-				{
-					anchorTop.insertBefore(thread,anchorAnnouncement);
-				}
+				ThreadListHandler.sortAnnouncement(thread, threadSortingInfo, flags.inUserCP);
 				// It's an announcement so skip the rest
 				continue;
 			}
@@ -117,7 +90,8 @@ let ThreadListHandler = exports.ThreadListHandler =
 			{
 				threadTitleLink = PageUtils.selectSingleNode(doc, threadTitleBox, "A[contains(@class, 'thread_title')]");
 			}
-			if (!threadTitleLink) continue;
+			if (!threadTitleLink)
+				continue;
 			threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1], 10);
 			threadTitle = threadTitleLink.textContent;
 			if (DB.isThreadIgnored(threadId))
@@ -195,7 +169,8 @@ let ThreadListHandler = exports.ThreadListHandler =
 				var iconJumpLastRead = PageUtils.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
 
 				// For thread sorting later
-				if (iconJumpLastRead && ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP)))
+				if (iconJumpLastRead && ((threadSortingInfo.showTWNP && !flags.inUserCP) || 
+					(threadSortingInfo.showTWNPCP && flags.inUserCP)))
 				{
 					thread.className += ' moveup';
 				}
@@ -276,34 +251,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 			}
 
 			// Sort the threads, new stickies, then stickies, then new threads, then threads
-			if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
-			{
-				var iAmASticky = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class, 'sticky')]");
-				var iHaveNewPosts = (thread.className.search(/moveup/i) > -1);
-
-				if (iAmASticky)
-				{
-					if (iHaveNewPosts)
-					{
-						if (flags.inUserCP && !showTWNPCPS)
-							anchorTop.insertBefore(thread,anchorThreads);
-						else
-							anchorTop.insertBefore(thread,anchorUnreadStickies);
-					}
-					else if (!flags.inUserCP)
-					{
-						anchorTop.insertBefore(thread,anchorReadStickies);
-					}
-				}
-				else if (iHaveNewPosts)
-				{
-					anchorTop.insertBefore(thread,anchorThreads);
-				}
-				else if (flags.inUserCP && thread.className.search(/seen/i) === -1)
-				{
-					anchorTop.insertBefore(thread,anchorUnseenThreads);
-				}
-			}
+			ThreadListHandler.sortThread(doc, thread, threadSortingInfo, flags.inUserCP);
 
 			if (DB.isThreadStarred(threadId))
 			{
@@ -340,15 +288,124 @@ let ThreadListHandler = exports.ThreadListHandler =
 			}
 		}
 
-		// Clean up insertion points for thread sorting
-		if ((showTWNP && !flags.inUserCP) || (showTWNPCP && flags.inUserCP))
+		// Clean up insertion points from thread sorting
+		ThreadListHandler.threadSortingCleanup(threadSortingInfo, flags.inUserCP);
+	},
+
+	/**
+	 * Checks if we need to sort threads.
+	 * @param {Object}  threadSortingInfo Various thread-sorting information.
+	 * @param {boolean} inUserCP          Whether we're in the user control panel.
+	 * @return {boolean} Whether we're sorting threads.
+	 */
+	areWeSortingThreads: function(threadSortingInfo, inUserCP)
+	{
+		return ((threadSortingInfo.showTWNP && !inUserCP) || 
+			(threadSortingInfo.showTWNPCP && inUserCP));
+	},
+
+	/**
+	 * Sets up thread sorting for a thread list page.
+	 * @param {Node}    doc               Node snapshot of document element.
+	 * @param {Element} firstThread       Place to insert our sort rows before.
+	 * @param {boolean} threadSortingInfo Various thread-sorting information.
+	 * @param {boolean} inUserCP          Whether we're in the user control panel.
+	 */
+	threadSortingSetup: function(doc, firstThread, threadSortingInfo, inUserCP)
+	{
+		if (!ThreadListHandler.areWeSortingThreads(threadSortingInfo, inUserCP))
+			return;
+		let forumTable = doc.getElementById('forum');
+		threadSortingInfo.anchorTop = PageUtils.selectSingleNode(doc, forumTable, "tbody");
+		if (!threadSortingInfo.anchorTop)
 		{
-			anchorTop.removeChild(anchorAnnouncement);
-			anchorTop.removeChild(anchorUnreadStickies);
-			anchorTop.removeChild(anchorReadStickies);
-			anchorTop.removeChild(anchorThreads);
-			if (flags.inUserCP)
-				anchorTop.removeChild(anchorUnseenThreads);
+			// Oh dear there are no threads to sort!
+			// Change these options for now so that it doesn't error later
+			threadSortingInfo.showTWNP = false;
+			threadSortingInfo.showTWNPCP = false;
+			return;
+		}
+
+		threadSortingInfo.anchorAnnouncement = doc.createElement("tr");
+		threadSortingInfo.anchorTop.insertBefore(threadSortingInfo.anchorAnnouncement, firstThread);
+		threadSortingInfo.anchorUnreadStickies = doc.createElement("tr");
+		threadSortingInfo.anchorTop.insertBefore(threadSortingInfo.anchorUnreadStickies, firstThread);
+		threadSortingInfo.anchorReadStickies = doc.createElement("tr");
+		threadSortingInfo.anchorTop.insertBefore(threadSortingInfo.anchorReadStickies, firstThread);
+		threadSortingInfo.anchorThreads = doc.createElement("tr");
+		threadSortingInfo.anchorTop.insertBefore(threadSortingInfo.anchorThreads, firstThread);
+		if (inUserCP)
+		{
+			threadSortingInfo.anchorUnseenThreads = doc.createElement("tr");
+			threadSortingInfo.anchorTop.insertBefore(threadSortingInfo.anchorUnseenThreads, firstThread);
+		}
+	},
+
+	/**
+	 * Cleans up a thread list page after thread sorting.
+	 * @param {boolean} threadSortingInfo Various thread-sorting information.
+	 * @param {boolean} inUserCP          Whether we're in the user control panel.
+	 */
+	threadSortingCleanup: function(threadSortingInfo, inUserCP)
+	{
+		if (!ThreadListHandler.areWeSortingThreads(threadSortingInfo, inUserCP))
+			return;
+		threadSortingInfo.anchorTop.removeChild(threadSortingInfo.anchorAnnouncement);
+		threadSortingInfo.anchorTop.removeChild(threadSortingInfo.anchorUnreadStickies);
+		threadSortingInfo.anchorTop.removeChild(threadSortingInfo.anchorReadStickies);
+		threadSortingInfo.anchorTop.removeChild(threadSortingInfo.anchorThreads);
+		if (inUserCP)
+			threadSortingInfo.anchorTop.removeChild(threadSortingInfo.anchorUnseenThreads);
+	},
+
+	/**
+	 * Sorts an announcement thread into its proper category.
+	 * @param {Element} thread            Announcement thread row to sort.
+	 * @param {boolean} threadSortingInfo Various thread-sorting information.
+	 * @param {boolean} inUserCP          Whether we're in the user control panel.
+	 */
+	sortAnnouncement: function(thread, threadSortingInfo, inUserCP)
+	{
+		if (!ThreadListHandler.areWeSortingThreads(threadSortingInfo, inUserCP))
+			return;
+		threadSortingInfo.anchorTop.insertBefore(thread, threadSortingInfo.anchorAnnouncement);
+	},
+
+	/**
+	 * Sorts a thread into its proper category.
+	 * @param {Node}    doc               Node snapshot of document element.
+	 * @param {Element} thread            Thread row to sort.
+	 * @param {boolean} threadSortingInfo Various thread-sorting information.
+	 * @param {boolean} inUserCP          Whether we're in the user control panel.
+	 */
+	sortThread: function(doc, thread, threadSortingInfo, inUserCP)
+	{
+		if (!ThreadListHandler.areWeSortingThreads(threadSortingInfo, inUserCP))
+			return;
+		let iAmASticky = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class, 'sticky')]");
+		let iHaveNewPosts = (thread.className.search(/moveup/i) > -1);
+
+		if (iAmASticky)
+		{
+			if (iHaveNewPosts)
+			{
+				if (inUserCP && !threadSortingInfo.showTWNPCPS)
+					threadSortingInfo.anchorTop.insertBefore(thread,threadSortingInfo.anchorThreads);
+				else
+					threadSortingInfo.anchorTop.insertBefore(thread,threadSortingInfo.anchorUnreadStickies);
+			}
+			else if (!inUserCP)
+			{
+				threadSortingInfo.anchorTop.insertBefore(thread,threadSortingInfo.anchorReadStickies);
+			}
+		}
+		else if (iHaveNewPosts)
+		{
+			threadSortingInfo.anchorTop.insertBefore(thread,threadSortingInfo.anchorThreads);
+		}
+		else if (inUserCP && thread.className.search(/seen/i) === -1)
+		{
+			threadSortingInfo.anchorTop.insertBefore(thread,threadSortingInfo.anchorUnseenThreads);
 		}
 	},
 
