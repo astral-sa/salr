@@ -234,7 +234,7 @@ let VideoHandler = exports.VideoHandler =
 		let gifvEmbed = doc.createElement("video");
 		gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
 		gifvEmbed.className = 'salr_video';
-		gifvEmbed.width = vidwidth;
+		gifvEmbed.style.maxWidth = vidwidth;
 		gifvEmbed.poster = link.href.replace(/\.gifv$/i,'h.jpg');
 		gifvEmbed.controls = true;
 		gifvEmbed.autoplay = true;

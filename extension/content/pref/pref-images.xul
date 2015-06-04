@@ -17,6 +17,7 @@
 		<preference id="maxHeightOfConvertedImages" name="extensions.salastread.maxHeightOfConvertedImages" type="int"/>
 
 		<preference id="thumbnailAllImages" 		name="extensions.salastread.thumbnailAllImages" 		type="bool"/>
+		<preference id="convertGifToVideo" 			name="extensions.salastread.convertGifToVideo" 		type="bool"/>
 	</preferences>
 
 	<groupbox>
@@ -71,6 +72,13 @@
 					</rows>
 				</grid>
 			</vbox>
+		</vbox>
+	</groupbox>
+
+	<groupbox>
+		<caption label="Gif-to-Video Conversion"/>
+		<vbox>
+			<checkbox preference="convertGifToVideo" label="Convert imgur gifs to inline video. (Experimental)" />
 		</vbox>
 	</groupbox>
 	</prefpane>

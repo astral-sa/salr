@@ -4,7 +4,6 @@
 
 */
 
-// Called from old Overlay
 let {DB} = require("db");
 let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
@@ -14,6 +13,7 @@ let {Styles} = require("styles");
 let {Navigation} = require("navigation");
 let {Gestures} = require("gestures");
 let {QuickQuoteHelper} = require("quickQuoteHelper");
+let {ImgurHandler} = require("imgurHandler");
 
 let ShowThreadHandler = exports.ShowThreadHandler =
 {
@@ -960,10 +960,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		}
 
 		var images = PageUtils.selectNodes(doc, postbody, ".//img");
-		for (var i in images)
+		for (let image of images)
 		{
-			var image = images[i];
-
 			// Scale all images in the post body to the user-specified size
 			if (thumbnailAllImages && image.className.search(/timg/i) === -1 && (image.parentNode === postbody || image.parentNode.nodeName.toLowerCase() === 'blockquote'))
 			{
@@ -985,6 +983,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 						}, false);
 				}
 			}
+			if (Prefs.getPref('convertGifToVideo'))
+				ImgurHandler.checkImgurGif(image);
 			ShowThreadHandler.replaceWaffleImage(image);
 		}
 	},

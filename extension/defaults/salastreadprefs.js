@@ -48,6 +48,7 @@ pref('extensions.salastread.cancerTreatment', 1);
 pref('extensions.salastread.showForumModsList', false);
 
 //IMAGE HANDLING
+pref('extensions.salastread.convertGifToVideo', false);
 
 //TEXT-TO-IMAGE OPTIONS
 pref('extensions.salastread.convertTextToImage', true);
