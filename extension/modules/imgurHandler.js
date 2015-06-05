@@ -1,8 +1,6 @@
-/*
-
-	Functions dealing with imgur
-
-*/
+/**
+ * @fileOverview Everything to do with imgur.
+ */
 
 let {DB} = require("db");
 let {PageUtils} = require("pageUtils");
@@ -16,7 +14,7 @@ let ImgurHandler = exports.ImgurHandler =
 	imgurGifCache: {},
 
 	/**
-	 * List of pending Gif links so we only make one request per image ID.
+	 * List of pending Gif images so we only make one request per image ID.
 	 * @type {Object}
 	 */
 	_pendingGifs: {},
@@ -35,7 +33,8 @@ let ImgurHandler = exports.ImgurHandler =
 		let cachedValidation = ImgurHandler.imgurGifCache[imgurGif[1]];
 		if (cachedValidation === true)
 		{
-			ImgurHandler.embedNewGifv(ImgurHandler.replaceGifWithLink(image));
+			ImgurHandler.replaceGifWithPlaceholder(image);
+			ImgurHandler.embedNewGifv(image);
 			return;
 		}
 		else if (cachedValidation === false)
@@ -43,62 +42,52 @@ let ImgurHandler = exports.ImgurHandler =
 			return;
 		}
 
-		let link = ImgurHandler.replaceGifWithLink(image);
-		if (ImgurHandler._gifHasPendingLinks(imgurGif[1]))
+		ImgurHandler.replaceGifWithPlaceholder(image);
+		if (ImgurHandler._gifHasPendingItems(imgurGif[1]))
 		{
-			ImgurHandler._addPendingGifLink(imgurGif[1], link);
+			ImgurHandler._addPendingGifItem(imgurGif[1], image);
 		}
 		else
 		{
-			ImgurHandler._addPendingGifLink(imgurGif[1], link);
+			ImgurHandler._addPendingGifItem(imgurGif[1], image);
 			let imgurApiTarg = "https://api.imgur.com/2/image/" + imgurGif[1] + ".json";
 			let imgurChecker = new XMLHttpRequest();
 			imgurChecker.open("GET", imgurApiTarg, true);
-			imgurChecker.onreadystatechange = ImgurHandler.imgurGifCallback.bind(imgurChecker, link, imgurGif[1]);
+			imgurChecker.onreadystatechange = ImgurHandler.imgurGifCallback.bind(imgurChecker, imgurGif[1]);
 			imgurChecker.ontimeout = function()
 			{
-				ImgurHandler._clearPendingGifLinks(imgurGif[1]);
+				ImgurHandler._clearPendingGifItems(imgurGif[1]);
 			};
 			imgurChecker.send(null);
 		}
 	},
 
 	/**
-	 * Replaces a gif with a [Loading...] link to that gif while we check
-	 *     to see if we can convert it to a gifv.
-	 * @param {Node} anImage Node snapshot of image element to check.
+	 * Replaces a gif with a placeholder image to halt its loading while
+	 *     we check to see if we can convert it to a gifv.
+	 * @param {Node} anImage Node snapshot of image element to replace.
 	 */
-	replaceGifWithLink: function(anImage)
+	replaceGifWithPlaceholder: function(anImage)
 	{
-		let doc = anImage.ownerDocument;
-		let newLink = doc.createElement("a");
-		newLink.href = anImage.src;
-		// Replace original image with placeholder to halt its loading
-		anImage.setAttribute('src', "chrome://salastread/skin/sa.png");
-		newLink.textContent = "[Loading...]";
-		anImage.parentNode.replaceChild(newLink, anImage);
-		return newLink;
+		anImage.dataset.oldSrc = anImage.src;
+		anImage.setAttribute('src', "chrome://salastread/skin/imageuploadicon.png");
 	},
 
 	/**
 	 * Restores a Gif if it turns out we can't convert it to Gifv.
-	 * @param {Element} link Gif link to re-convert.
+	 * @param {Node} anImage Node snapshot of gif image to restore.
 	 */
-	restoreGif: function(link)
+	restoreGif: function(anImage)
 	{
-		let doc = link.ownerDocument;
-		let newImg = doc.createElement("img");
-		newImg.src = link.href;
-		link.parentNode.replaceChild(newImg, link);
+		anImage.src = anImage.dataset.oldSrc;
 		// TODO - image scaling?
 	},
 
 	/**
 	 * Callback function for imgur gif check
-	 * @param {Element} link    Link to image being checked.
-	 * @param {string}  imgurId Image ID of imgur image being checked.
+	 * @param {string} imgurId Image ID of imgur image being checked.
 	 */
-	imgurGifCallback: function(link, imgurId)
+	imgurGifCallback: function(imgurId)
 	{
 		if (this.readyState !== 4)
 			return;
@@ -136,33 +125,33 @@ let ImgurHandler = exports.ImgurHandler =
 	resolvePendingGifs: function(imgurId, success)
 	{
 		ImgurHandler.imgurGifCache[imgurId] = success;
-		while (this._gifHasPendingLinks(imgurId))
+		while (this._gifHasPendingItems(imgurId))
 		{
-			let popLink = this._pendingGifs[imgurId].pop();
+			let popImage = this._pendingGifs[imgurId].pop();
 			try
 			{
 				if (success === true)
-					ImgurHandler.embedNewGifv(popLink, imgurId);
+					ImgurHandler.embedNewGifv(popImage, imgurId);
 				else
-					ImgurHandler.restoreGif(popLink);
+					ImgurHandler.restoreGif(popImage);
 			}
 			catch (e)
 			{
 				PageUtils.logToConsole("Pending gifv error: " + e);
 				continue;
 			}
-			if (this._gifHasPendingLinks(imgurId) === false)
+			if (this._gifHasPendingItems(imgurId) === false)
 				this._pendingGifs[imgurId] = null;
 		}
 	},
 
 	/**
-	 * Converts a link to a gifv embed.
-	 * @param {Element} link Element to replace with a gifv embed.
+	 * Converts an image to a gifv embed.
+	 * @param {Node} anImage Node snapshot of image element to replace with a gifv embed.
 	 */
-	embedNewGifv: function(link)
+	embedNewGifv: function(anImage)
 	{
-		let doc = link.ownerDocument;
+		let doc = anImage.ownerDocument;
 
 		let gifvEmbed = doc.createElement("video");
 		gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
@@ -170,66 +159,65 @@ let ImgurHandler = exports.ImgurHandler =
 		gifvEmbed.autoplay = true;
 		gifvEmbed.muted = true;
 		gifvEmbed.loop = true;
-		gifvEmbed.addEventListener('error', ImgurHandler.onGifvError.bind(null, link), true);
+		gifvEmbed.addEventListener('error', ImgurHandler.onGifvError.bind(null, anImage), true);
 		let gifvSource = doc.createElement("source");
-		gifvSource.src = link.href.replace(/\.gif$/i,'.mp4');
+		gifvSource.src = anImage.dataset.oldSrc.replace(/\.gif$/i,'.mp4');
 		gifvSource.type = 'video/mp4';
 		gifvEmbed.appendChild(gifvSource);
 		gifvSource = doc.createElement("source");
-		gifvSource.src = link.href.replace(/\.gif$/i,'.webm');
+		gifvSource.src = anImage.dataset.oldSrc.replace(/\.gif$/i,'.webm');
 		gifvSource.type ='video/webm';
 		gifvEmbed.appendChild(gifvSource);
 
-		link.parentNode.replaceChild(gifvEmbed, link);
+		anImage.parentNode.replaceChild(gifvEmbed, anImage);
 	},
 
 	/**
 	 * Error callback function for mp4/webm player.
-	 * @param {Element} link  Video element to re-convert to Gif.
-	 * @param {Event}   event The error event.
+	 * @param {Node}  anImage  Node snapshot of old gif to readd to DOM.
+	 * @param {Event} event    The error event.
 	 */
-	onGifvError: function(link, event)
+	onGifvError: function(anImage, event)
 	{
 		let video = event.target.parentNode;
-		video.removeEventListener('error', ImgurHandler.onGifvError.bind(null, link), true);
-		let doc = video.ownerDocument;
-		let imgurId = link.href.match(/^https?\:\/\/(?:www|i)\.imgur\.com\/(.*)\.gif$/i)[1];
+		video.removeEventListener('error', ImgurHandler.onGifvError.bind(null, anImage), true);
+		let imgurId = anImage.dataset.oldSrc.match(/^https?\:\/\/(?:www|i)\.imgur\.com\/(.*)\.gif$/i)[1];
 		ImgurHandler.imgurGifCache[imgurId] = false;
-		let newImg = doc.createElement("img");
-		newImg.src = link.href;
+
+		anImage.src = anImage.dataset.oldSrc;
 		try
 		{
-			video.parentNode.replaceChild(newImg, video);
+			video.parentNode.replaceChild(anImage, video);
 		}
 		catch(e) {}
 		// TODO - image scaling?
 	},
 
 	// util functions for pending gifs
-	_clearPendingGifLinks: function(imgurId)
+	_clearPendingGifItems: function(imgurId)
 	{
 		if (!imgurId)
 			return;
 		if (ImgurHandler._pendingGifs.hasOwnProperty(imgurId))
-			delete ImgurHandler._pendingGifs[imgurId];
+			ImgurHandler._pendingGifs[imgurId] = null;
 	},
 
-	_clearAllPendingGifLinks: function()
+	_clearAllPendingGifItems: function()
 	{
 		for (let someVid in ImgurHandler._pendingGifs)
 			if (ImgurHandler._pendingGifs.hasOwnProperty(someVid))
-				delete ImgurHandler._pendingGifs[someVid];
+				ImgurHandler._pendingGifs[someVid] = null;
 	},
 
-	_addPendingGifLink: function(imgurId, link)
+	_addPendingGifItem: function(imgurId, item)
 	{
-		if (ImgurHandler._gifHasPendingLinks(imgurId))
-			ImgurHandler._pendingGifs[imgurId].push(link);
+		if (ImgurHandler._gifHasPendingItems(imgurId))
+			ImgurHandler._pendingGifs[imgurId].push(item);
 		else
-			ImgurHandler._pendingGifs[imgurId] = [link];
+			ImgurHandler._pendingGifs[imgurId] = [item];
 	},
 
-	_gifHasPendingLinks: function (imgurId)
+	_gifHasPendingItems: function (imgurId)
 	{
 		return (ImgurHandler._pendingGifs[imgurId] && ImgurHandler._pendingGifs[imgurId].length > 0);
 	},
