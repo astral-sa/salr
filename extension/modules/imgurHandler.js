@@ -161,12 +161,12 @@ let ImgurHandler = exports.ImgurHandler =
 		gifvEmbed.loop = true;
 		gifvEmbed.addEventListener('error', ImgurHandler.onGifvError.bind(null, anImage), true);
 		let gifvSource = doc.createElement("source");
-		gifvSource.src = anImage.dataset.oldSrc.replace(/\.gif$/i,'.mp4');
-		gifvSource.type = 'video/mp4';
-		gifvEmbed.appendChild(gifvSource);
-		gifvSource = doc.createElement("source");
 		gifvSource.src = anImage.dataset.oldSrc.replace(/\.gif$/i,'.webm');
 		gifvSource.type ='video/webm';
+		gifvEmbed.appendChild(gifvSource);
+		gifvSource = doc.createElement("source");
+		gifvSource.src = anImage.dataset.oldSrc.replace(/\.gif$/i,'.mp4');
+		gifvSource.type = 'video/mp4';
 		gifvEmbed.appendChild(gifvSource);
 
 		anImage.parentNode.replaceChild(gifvEmbed, anImage);
