@@ -1,4 +1,5 @@
 let {Prefs} = require("prefs");
+let {PageUtils} = require("pageUtils");
 
 let Gestures = exports.Gestures =
 {
@@ -37,7 +38,7 @@ let Gestures = exports.Gestures =
 
 		if (dir === "top")
 		{
-			var threadForum = doc.__SALR_forumid;
+			var threadForum = PageUtils.getForumId(doc);
 
 			if ((curPage === 1 && !threadForum) || inNewSearch || inOldSearch)
 			{
@@ -55,7 +56,7 @@ let Gestures = exports.Gestures =
 		{
 			if (curPage > 1)
 			{
-				threadid = doc.__SALR_threadid;
+				threadid = PageUtils.getThreadId(doc);
 				if (threadid)
 					doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage - 1);
 				else if (inNewSearch)
@@ -71,7 +72,7 @@ let Gestures = exports.Gestures =
 			var maxPage = doc.__SALR_maxPage;
 			if (maxPage > curPage)
 			{
-				threadid = doc.__SALR_threadid;
+				threadid = PageUtils.getThreadId(doc);
 				if (threadid)
 					doc.location = urlbase + "/showthread.php?s=&threadid=" + threadid + userfilter + perpage + "&pagenumber=" + (curPage + 1);
 				else if (inNewSearch)

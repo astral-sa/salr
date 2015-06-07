@@ -30,10 +30,10 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	{
 		var submitbtn = PageUtils.selectNodes(doc, doc.body, "//INPUT[@type='submit'][@value='Save Changes']")[0];
 		var tarea = PageUtils.selectNodes(doc, doc.body, "//TEXTAREA[@name='message']")[0];
-		if (submitbtn && tarea) {
-			submitbtn.addEventListener("click", function() { QuickQuoteHelper.parsePLTagsInEdit(tarea); }, true);
-			submitbtn.style.backgroundColor = Prefs.getPref('postedInThreadRe');
-		}
+		if (!submitbtn || !tarea)
+			return;
+		submitbtn.addEventListener("click", function() { QuickQuoteHelper.parsePLTagsInEdit(tarea); }, true);
+		submitbtn.style.backgroundColor = Prefs.getPref('postedInThreadRe');
 	},
 
 	handleNewReply: function(doc)
@@ -69,7 +69,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	{
 		if (QuickQuoteHelper.savedQuickReply === "")
 			return;
-		// TODO: Check if the stuff immediately below is broken.
+		// TODO: Check if this function is broken.
 		var forgeCheck = PageUtils.selectSingleNode(doc, doc.body, "TABLE/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[2]/TD[1]/FONT[contains(text(),'have been forged')]");
 		if (!forgeCheck)
 		{
@@ -97,6 +97,36 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
 	},
 
+	/**
+	 * Converts post and reply buttons into quick buttons.
+	 * @param {Element} doc          Document in which to convert buttons.
+	 * @param {number}  forumid      Forum ID.
+	 * @param {number}  threadid     Thread ID.
+	 * @param {boolean} threadClosed Whether the thread is closed.
+	 */
+	makeQuickPostReplyButtons: function(doc, forumid, threadid, threadClosed)
+	{
+		let postbuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newthread')]");
+		if (postbuttons.length > 0)
+		{
+			for (let postbutton of postbuttons)
+			{
+				QuickQuoteHelper.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
+			}
+		}
+		if (!threadClosed)
+		{
+			let replybuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
+			if (replybuttons.length > 0)
+			{
+				for (let replybutton of replybuttons)
+				{
+					QuickQuoteHelper.turnIntoQuickButton(doc, replybutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
+				}
+			}
+		}
+	},
+
 	// Takes a button and turns it into a quick button
 	// @param: (html element) doc, (html element) button, (int) forumid
 	// @return: (html element) quick button
@@ -104,9 +134,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	{
 		var oldsrc = button.firstChild.src;
 		var oldalt = button.firstChild.alt;
-		//button.firstChild.style.width = "12px !important";
 		button.firstChild.style.width = "12px";
-		//button.firstChild.style.height = "20px !important";
 		button.firstChild.style.height = "20px";
 		button.firstChild.alt = "Normal " + oldalt;
 		button.firstChild.title = "Normal " + oldalt;
@@ -149,7 +177,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		switch (quicktype)
 		{
 			case 'newreply':
-				if (quickbutton.nextSibling.href.match(/threadid=(\d+)/i) != null)
+				if (quickbutton.nextSibling.href.match(/threadid=(\d+)/i))
 				{
 					quicktype = 'reply';
 					break;
@@ -200,7 +228,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 					if (QuickQuoteHelper.quickWindowParams.postid && QuickQuoteHelper.quickWindowParams.postid == newParams.postid)
 					{
 						// Attempt to reattach
-						QuickQuoteHelper.reattachQuickQuoteWindow(doc);
+						QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
 					}
 					else
 					{
@@ -236,7 +264,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 				// Check if we need to reattach, otherwise offer to convert
 				if (QuickQuoteHelper.quickWindowParams.quicktype && QuickQuoteHelper.quickWindowParams.quicktype === 'reply' && QuickQuoteHelper.quickWindowParams.threadid && QuickQuoteHelper.quickWindowParams.threadid == newParams.threadid)
 				{
-					QuickQuoteHelper.reattachQuickQuoteWindow(doc);
+					QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
 				}
 				else
 				{
@@ -352,7 +380,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			newform.enctype = "multipart/form-data";
 			PageUtils.addHiddenFormInput(doc,newform,"s","");
 
-			if (QuickQuoteHelper.quickWindowParams.quicktype == "newthread")
+			if (QuickQuoteHelper.quickWindowParams.quicktype === "newthread")
 			{
 				newform.action = "http://forums.somethingawful.com/newthread.php";
 				PageUtils.addHiddenFormInput(doc, newform,"action", "postthread");
@@ -360,13 +388,13 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 				PageUtils.addHiddenFormInput(doc, newform, "iconid", QuickQuoteHelper.quickquotewin.document.getElementById('posticonbutton').iconid);
 				PageUtils.addHiddenFormInput(doc, newform, "subject", QuickQuoteHelper.quickquotewin.document.getElementById('subject').value);
 			}
-			else if (QuickQuoteHelper.quickWindowParams.quicktype == "editpost")
+			else if (QuickQuoteHelper.quickWindowParams.quicktype === "editpost")
 			{
 				newform.action = "http://forums.somethingawful.com/editpost.php";
 				PageUtils.addHiddenFormInput(doc, newform,"action", "updatepost");
 				PageUtils.addHiddenFormInput(doc, newform, "postid", QuickQuoteHelper.quickWindowParams.postid);
 			}
-			else if (QuickQuoteHelper.quickWindowParams.quicktype == "quote" || QuickQuoteHelper.quickWindowParams.quicktype == "reply")
+			else if (QuickQuoteHelper.quickWindowParams.quicktype === "quote" || QuickQuoteHelper.quickWindowParams.quicktype === "reply")
 			{
 				PageUtils.addHiddenFormInput(doc, newform,"action", "postreply");
 				PageUtils.addHiddenFormInput(doc, newform,"threadid", QuickQuoteHelper.quickWindowParams.threadid);
@@ -380,19 +408,19 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			PageUtils.addHiddenFormInput(doc, newform,"MAX_FILE_SIZE", "2097152");
 			PageUtils.addHiddenFormInput(doc, newform,"formkey", formkey);
 
-			if (form_cookie != "")
+			if (form_cookie !== "")
 			{
 				PageUtils.addHiddenFormInput(doc, newform,"form_cookie", form_cookie);
 			}
-			if (attachfile != "")
+			if (attachfile !== "")
 			{
 				QuickQuoteHelper.quickQuoteAddFile(doc, newform,"attachment", attachfile);
 			}
 			newform.__submit = newform.submit;
 
-			if (QuickQuoteHelper.quickWindowParams.quicktype != "newthread")
+			if (QuickQuoteHelper.quickWindowParams.quicktype !== "newthread")
 			{
-				if (subtype=="submit")
+				if (subtype==="submit")
 				{
 					PageUtils.addHiddenFormInput(doc,newform,"submit","Submit Reply");
 					DB.iPostedHere(QuickQuoteHelper.quickWindowParams.threadid);
@@ -413,7 +441,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		}
 		catch(e)
 		{
-			alert("err: " + e);
+			Cu.warn("SALR Quick Window error: " + e);
 		}
 	},
 

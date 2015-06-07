@@ -1,8 +1,6 @@
-/*
-
-	Handler for inside threads.
-
-*/
+/**
+ * @fileOverview Handler for inside threads.
+ */
 
 let {DB} = require("db");
 let {Prefs} = require("prefs");
@@ -11,7 +9,6 @@ let {ImgurHandler} = require("imgurHandler");
 let {VideoHandler} = require("videoHandler");
 let {Styles} = require("styles");
 let {Navigation} = require("navigation");
-let {Gestures} = require("gestures");
 let {QuickQuoteHelper} = require("quickQuoteHelper");
 let {ImgurHandler} = require("imgurHandler");
 
@@ -20,207 +17,74 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	handleShowThread: function(doc)
 	{
 		var i; // Little variables that'll get reused
+
+		// If there is no thread div then abort since something's not right
 		if (doc.getElementById('thread') === null)
+			return;
+
+		let forumid = PageUtils.getForumId(doc);
+		let threadid = PageUtils.getThreadId(doc);
+		if (!forumid || !threadid)
+			return;
+
+		// Deprecated thread flags: inDump, inAskTell
+		let threadFlags = {
+			forumid: forumid,
+			threadid: threadid,
+			inFYAD: PageUtils.inFYAD(forumid),
+			inGasChamber: PageUtils.inGasChamber(forumid),
+			singlePost: (doc.location.search.search(/action=showpost/i) > -1),
+			inArchives: PageUtils.isThreadInArchives(doc),
+			useQuickQuote: Prefs.getPref('useQuickQuote'),
+			threadClosed: PageUtils.isThreadClosed(doc),
+		};
+
+		// Bail if we're in FYAD and FYAD support has been turned off
+		if (threadFlags.inFYAD && !Prefs.getPref("enableFYAD"))
 		{
-			// If there is no thread div then abort since something's not right
 			return;
 		}
 
-		try
-		{
-			var forumid = PageUtils.getForumId(doc);
-			var threadid = PageUtils.getThreadId(doc);
-
-			if (!forumid || !threadid)
-			{
-				// Feel free to elaborate on this later
-				throw false;
-			}
-		}
-		catch(e)
-		{
-			// Can't get the forum or thread id so abort for now
-			return;
-		}
-		let {Utils} = require("utils");
-		let win = Utils.getRecentWindow();
-
-		doc.__SALR_forumid = forumid;
-		doc.__SALR_threadid = threadid;
-
-		// The following forums have special needs that must be dealt with
-		var inFYAD = PageUtils.inFYAD(forumid);
-		//var inDump = PageUtils.inDump(forumid);
-		//var inAskTell = PageUtils.inAskTell(forumid);
-		var inGasChamber = PageUtils.inGasChamber(forumid);
-		/*
-			NOTE: As of 05/21/2015, archives can currently be detected by a
-			thread lacking a bookmark star and the thread rate box lacking
-			proper children. Before changing how this is determined,
-			make sure to test:
-				- Threads from live forums
-				- Threads from forums which lack a rate box
-				- Threads 'locked for archiving'
-				- Archived threads
-		*/
-		let threadRateBox = PageUtils.selectSingleNode(doc, doc, "//DIV[@class='threadrate']");
-		let bookmarkStar = PageUtils.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
-		let inArchives = (!bookmarkStar && !!threadRateBox && !threadRateBox.firstChild.nextSibling);
-
-		var singlePost = (doc.location.search.search(/action=showpost/i) > -1);
 		var username = unescape(Prefs.getPref('username'));
 
-		if (inFYAD && !Prefs.getPref("enableFYAD"))
-		{
-			// We're in FYAD and FYAD support has been turned off
-			return;
-		}
-
 		// Add our ShowThread CSS
-		PageUtils.insertDynamicCSS(doc, Styles.generateDynamicShowThreadCSS(forumid, threadid, singlePost));
+		PageUtils.insertDynamicCSS(doc, Styles.generateDynamicShowThreadCSS(forumid, threadid, threadFlags.singlePost));
 
 		doc.body.className += " salastread_forum" + forumid;
 		// used by the context menu to allow options for this thread
 		doc.body.className += " salastread_thread_" + threadid;
 
 		// Grab the thread title
-		/* Note: it will only actually happen if the thread's already in the cache.
-			Perhaps we can remove this call?
-		*/
+		// Note: Only updates if the thread's already in the cache.
 		DB.setThreadTitle(threadid, PageUtils.getCleanPageTitle(doc));
 
 		// Grab the go to dropdown
-		if (!DB.gotForumList && !singlePost)
+		if (!DB.gotForumList && !threadFlags.singlePost)
 		{
 			PageUtils.grabForumList(doc);
 		}
 
-		var pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-		if (pageList[0])
+		Navigation.setupThreadNavigation(doc, threadFlags.singlePost);
+
+		ShowThreadHandler.updatePostsPerPage(doc);
+
+		// Replace post/reply buttons if we need to.
+		if (threadFlags.useQuickQuote && !threadFlags.inGasChamber)
 		{
-			if (pageList.length >  1)
-			{
-				pageList = pageList[pageList.length-1];
-			}
-			else
-			{
-				pageList = pageList[0];
-			}
-			if (pageList.childNodes.length > 1 && pageList.lastChild && pageList.lastChild.textContent) // Are there pages
-			{
-				var numPages = pageList.lastChild.textContent.match(/(\d+)/);
-				var curPage = PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
-				numPages = parseInt(numPages[1], 10);
-				curPage = parseInt(curPage.textContent, 10);
-			}
-			else
-			{
-				numPages = 1;
-				curPage = 1;
-			}
+			QuickQuoteHelper.makeQuickPostReplyButtons(doc, forumid, threadid, threadFlags.threadClosed);
 		}
 
-		doc.__SALR_curPage = curPage;
-		doc.__SALR_maxPage = numPages;
-
-		// Insert the thread paginator
-		if (Prefs.getPref("enablePageNavigator") && !singlePost)
-		{
-			Navigation.addPagination(doc);
-		}
-		if (Prefs.getPref("gestureEnable"))
-		{
-			Gestures.addGestureListeners(doc);
-		}
-
-		// Grab threads/posts per page
-		var postsPerPageOld = Prefs.getPref("postsPerPage");
-		var perpage = PageUtils.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
-		if (perpage)
-		{
-			perpage = perpage.href.match(/perpage=(\d+)/i)[1];
-			if (postsPerPageOld != perpage)
-			{
-				Prefs.setPref("postsPerPage", parseInt(perpage));
-			}
-		}
-		else
-		{
-			perpage = 0;
-		}
-
-		// Check if the thread is closed
-		var threadClosed = true;
-		if (PageUtils.selectSingleNode(doc, doc, "//A[contains(@href,'action=newreply&threadid')]//IMG[contains(@src,'closed')]") == null)
-			threadClosed = false;
-
-		// Replace post button
-		if (Prefs.getPref("useQuickQuote") && !inGasChamber)
-		{
-			var postbuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newthread')]");
-			if (postbuttons.length > 0)
-			{
-				for (i in postbuttons)
-				{
-					QuickQuoteHelper.turnIntoQuickButton(doc, postbuttons[i], forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
-				}
-			}
-			if (!threadClosed)
-			{
-				var replybuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
-				if (replybuttons.length > 0)
-				{
-					for (i in replybuttons)
-					{
-						QuickQuoteHelper.turnIntoQuickButton(doc, replybuttons[i], forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
-					}
-				}
-			}
-		}
-
-		if (Prefs.getPref('quickPostJump'))
-		{
-			doc.addEventListener('keypress', Navigation.quickPostJump, false);
-		}
-
-		var searchThis = PageUtils.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
-		var placeHere = bookmarkStar;
-		if (searchThis && placeHere && placeHere.parentNode && placeHere.parentNode.nodeName.toLowerCase() === 'li')
-		{
-			placeHere = placeHere.parentNode;
-			if (Prefs.getPref("replyCountLinkinThreads"))
-			{
-				var replyCountLi = doc.createElement('li');
-				var replyCountLink = doc.createElement("A");
-				replyCountLi.appendChild(replyCountLink);
-				replyCountLink.href = "/misc.php?action=whoposted&threadid=" + threadid + "#fromthread";
-				replyCountLink.target = "_blank";
-				replyCountLink.textContent = "Who posted?";
-				replyCountLink.style.fontSize = "10px";
-				replyCountLink.style.cssFloat = "left";
-				replyCountLink.style.marginLeft = "8px";
-				replyCountLink.style.color = "#FFFFFF";
-				// Plug it in right after the "Search thread:" form
-				placeHere.parentNode.insertBefore(replyCountLi,placeHere.nextSibling);
-				placeHere.parentNode.insertBefore(doc.createTextNode(" "),placeHere.nextSibling);
-			}
-			// SA's "Search thread" box is disabled; add our own
-			if (!Prefs.getPref("hideThreadSearchBox") && searchThis.firstChild.nodeName === '#text')
-			{
-				ShowThreadHandler.addThreadSearchBox(doc, forumid, threadid, placeHere, 'query');
-			}
-		}
+		ShowThreadHandler.addWhoPostedAndSearchBox(doc, forumid, threadid);
 
 		// get the posts to iterate through
 		var postlist = PageUtils.selectNodes(doc, doc, "//table[contains(@id,'post')]");
 
-		var curPostId, postIdLink, resetLink, profileLink, posterId, postbody;
-		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, slink, quotebutton, editbutton;
+		var curPostId, postIdLink, profileLink, posterId, postbody;
+		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, quotebutton, editbutton;
 		var userPosterNote;
 
 		// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
-		var useQuickQuote = Prefs.getPref('useQuickQuote');
-		var insertPostTargetLink = Prefs.getPref("insertPostTargetLink") && !inArchives;
+		threadFlags.insertPostTargetLink = Prefs.getPref("insertPostTargetLink") && !threadFlags.inArchives;
 		var highlightUsernames = Prefs.getPref("highlightUsernames");
 		let hideCustomTitles = Prefs.getPref('hideCustomTitles');
 
@@ -302,7 +166,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			// Check to see if there's a mod or admin star
 			posterImg = false;
 			posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
-			if (userNameBox.title.length > 0 && !inArchives)
+			if (userNameBox.title.length > 0 && !threadFlags.inArchives)
 			{
 				posterImg = userNameBox.title;
 				if (posterImg === 'Administrator')
@@ -332,7 +196,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				}
 			}
 
-
 			//apply custom user coloring
 			if (userNameBox.className.search(/\bop/) > -1)
 			{
@@ -343,28 +206,28 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			}
 			if (DB.isMod(posterId))
 			{
-				if (posterImg === "Moderator" || posterImg === "Internet Knight" || inArchives)
+				if (posterImg === "Moderator" || posterImg === "Internet Knight" || threadFlags.inArchives)
 				{
 					posterColor = modColor;
 					posterBG = modBackground;
 					posterNote = modSubText;
 					post.className += " salrPostByMod";
 				}
-				else if (!inArchives)
+				else if (!threadFlags.inArchives)
 				{
 					DB.removeMod(posterId);
 				}
 			}
 			if (DB.isAdmin(posterId))
 			{
-				if (posterImg === "Administrator" || inArchives)
+				if (posterImg === "Administrator" || threadFlags.inArchives)
 				{
 					posterColor = adminColor;
 					posterBG = adminBackground;
 					posterNote = adminSubText;
 					post.className += " salrPostByAdmin";
 				}
-				else if (!inArchives)
+				else if (!threadFlags.inArchives)
 				{
 					DB.removeAdmin(posterId);
 				}
@@ -376,17 +239,17 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				{
 					DB.setUserName(posterId, posterName);
 				}
-				if (dbUser.color && dbUser.color != "0")
+				if (dbUser.color && dbUser.color !== "0")
 				{
 					posterColor = dbUser.color;
 				}
-				if (dbUser.background && dbUser.background != "0")
+				if (dbUser.background && dbUser.background !== "0")
 				{
 					posterBG = dbUser.background;
 				}
 			}
 
-			if (posterBG != "0")
+			if (posterBG !== "0")
 			{
 				ShowThreadHandler.colorPost(doc, posterBG, posterId);
 			}
@@ -394,35 +257,11 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			// Check for quotes that need to be colored or superIgnored
 			if (Prefs.getPref('highlightQuotes') || superIgnoreUsers)
 			{
-				var userQuoted;
-				var anyQuotes = PageUtils.selectNodes(doc, post, "TBODY//TR/TD//DIV[contains(@class,'bbc-block')]");
-				for (let quote in anyQuotes)
-				{
-					userQuoted = anyQuotes[quote].textContent.match(/(.*) posted:/);
-					if (userQuoted)
-					{
-						userQuoted = userQuoted[1];
-						if (userQuoted != username) // self-quotes handled by forum JS now
-						{
-							let userQuotedDetails = DB.isUsernameColored(userQuoted);
-							let userQuotedId = DB.getUserId(userQuoted);
-							if (superIgnoreUsers && DB.isUserIgnored(userQuotedId))
-							{
-								// They're quoting someone ignored, lets remove the entire post
-								post.className += ' salrPostIgnored';
-							}
-							if (userQuotedDetails)
-							{
-								anyQuotes[quote].className += ' salrQuoteOf' + userQuotedDetails.userid;
-								ShowThreadHandler.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
-							}
-						}
-					}
-				}
+				ShowThreadHandler.processQuotes(doc, post, username, superIgnoreUsers);
 			}
 
 			userPosterNote = DB.getPosterNotes(posterId);
-			if (highlightUsernames && posterColor != false && posterColor != "0")
+			if (highlightUsernames && posterColor !== false && posterColor !== "0")
 			{
 				userNameBox.style.color = posterColor;
 			}
@@ -444,35 +283,23 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			{
 				postIdLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postlinks')]//a[contains(@href,'#post')]");
 			}
-			if (!postIdLink) continue;
+			if (!postIdLink)
+				continue;
 
+// Is this duplicating getting curPostId?
 			let postid = postIdLink.href.match(/#post(\d+)/i)[1];
-			if (insertPostTargetLink)
+			if (threadFlags.insertPostTargetLink)
 			{
-				slink = doc.createElement("a");
-				if (singlePost)
-				{
-					slink.href = "/showthread.php?goto=post&postid="+postid;
-					slink.title = "Back to Thread";
-					slink.textContent = "1";
-				}
-				else
-				{
-					slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+forumid;
-					slink.title = "Show Single Post";
-					slink.textContent = "1";
-				}
-				postIdLink.parentNode.insertBefore(slink, postIdLink);
-				postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
+				ShowThreadHandler.insertSinglePostLink(doc, threadFlags, postIdLink, postid, forumid);
 			}
 
 			//grab this once up here to avoid repetition
-			if (useQuickQuote)
+			if (threadFlags.useQuickQuote)
 			{
 				editbutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
 			}
 
-			if (useQuickQuote && !threadClosed)
+			if (threadFlags.useQuickQuote && !threadFlags.threadClosed)
 			{
 				quotebutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
 				if (quotebutton)
@@ -537,13 +364,13 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				if (cancerDiv)
 				{
 					//Apply our alternate style:
-					if (cancerTreatment == 1)
+					if (cancerTreatment === 1)
 					{
 						postbody.style.backgroundImage = 'url("chrome://salastread/skin/biohazard.png")';
 						postbody.style.backgroundRepeat = "repeat";
 					}
 					//Hide entirely:
-					else if (cancerTreatment == 2)
+					else if (cancerTreatment === 2)
 						post.style.display = "none";
 				}
 			}
@@ -573,6 +400,84 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			}
 		}
 		doc.__salastread_loading = false;
+	},
+
+	/**
+	 * Updates "postsPerPage" preference based on value seen in thread.
+	 * @param {Element} doc Document element to identify posts per page value in.
+	 */
+	updatePostsPerPage: function(doc)
+	{
+		// Grab threads/posts per page
+		let postsPerPageOld = Prefs.getPref("postsPerPage");
+		let perpage = PageUtils.selectSingleNode(doc, doc, "//DIV[contains(@class,'pages')]//A[contains(@href,'perpage=')]");
+		if (!perpage)
+			return;
+		perpage = parseInt(perpage.href.match(/perpage=(\d+)/i)[1], 10);
+		if (postsPerPageOld !== perpage)
+		{
+			Prefs.setPref("postsPerPage", perpage);
+		}
+	},
+
+	/**
+	 * Process quotes in a post to determine if we need to color or ignore them.
+	 * @param {Element} doc              Document element to process quotes for a post in.
+	 * @param {Node}    post             Node snapshot of post to check.
+	 * @param {string}  username         Logged-in user's username.
+	 * @param {boolean} superIgnoreUsers Whether super ignore is active.
+	 */
+	processQuotes: function(doc, post, username, superIgnoreUsers)
+	{
+		let userQuoted;
+		let anyQuotes = PageUtils.selectNodes(doc, post, "TBODY//TR/TD//DIV[contains(@class,'bbc-block')]");
+		for (let quote of anyQuotes)
+		{
+			userQuoted = quote.textContent.match(/(.*) posted:/);
+			if (!userQuoted)
+				continue;
+			userQuoted = userQuoted[1];
+			if (userQuoted === username) // self-quotes handled by forum JS now
+				continue;
+			let userQuotedDetails = DB.isUsernameColored(userQuoted);
+			let userQuotedId = DB.getUserId(userQuoted);
+			if (superIgnoreUsers && DB.isUserIgnored(userQuotedId))
+			{
+				// They're quoting someone ignored, lets remove the entire post
+				post.className += ' salrPostIgnored';
+			}
+			if (userQuotedDetails)
+			{
+				quote.className += ' salrQuoteOf' + userQuotedDetails.userid;
+				ShowThreadHandler.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
+			}
+		}
+	},
+
+	/**
+	 * Inserts "1" link to single post view of the current post.
+	 * @param {Element} doc         Document element to insert "1" link for a post in.
+	 * @param {Object}  threadFlags Various thread-related information.
+	 * @param {Node}    postIdLink  Node snapshot of link to current post.
+	 * @param {string}  postid      The post ID.
+	 */
+	insertSinglePostLink: function(doc, threadFlags, postIdLink, postid)
+	{
+		let slink = doc.createElement("a");
+		if (threadFlags.singlePost)
+		{
+			slink.href = "/showthread.php?goto=post&postid="+postid;
+			slink.title = "Back to Thread";
+			slink.textContent = "1";
+		}
+		else
+		{
+			slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+threadFlags.forumid;
+			slink.title = "Show Single Post";
+			slink.textContent = "1";
+		}
+		postIdLink.parentNode.insertBefore(slink, postIdLink);
+		postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
 	},
 
 	// Event catcher for clicking the "Hide Avatar" or "Unhide Avatar" links
@@ -633,6 +538,42 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		e.stopPropagation();
 		e.preventDefault();
 		PageUtils.runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
+	},
+
+	/**
+	 * Adds 'Who posted?' and search box to thread table header.
+	 * @param {Element} doc      Document element to check in.
+	 * @param {number}  forumid  Forum ID.
+	 * @param {number}  threadid Thread ID.
+	 */
+	addWhoPostedAndSearchBox: function(doc, forumid, threadid)
+	{
+		var searchThis = PageUtils.selectSingleNode(doc, doc, "//FORM[contains(@class,'threadsearch')]");
+		var placeHere = PageUtils.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
+		if (!searchThis || !placeHere || !placeHere.parentNode || placeHere.parentNode.nodeName.toLowerCase() !== 'li')
+			return;
+		placeHere = placeHere.parentNode;
+		if (Prefs.getPref("replyCountLinkinThreads"))
+		{
+			var replyCountLi = doc.createElement('li');
+			var replyCountLink = doc.createElement("A");
+			replyCountLi.appendChild(replyCountLink);
+			replyCountLink.href = "/misc.php?action=whoposted&threadid=" + threadid + "#fromthread";
+			replyCountLink.target = "_blank";
+			replyCountLink.textContent = "Who posted?";
+			replyCountLink.style.fontSize = "10px";
+			replyCountLink.style.cssFloat = "left";
+			replyCountLink.style.marginLeft = "8px";
+			replyCountLink.style.color = "#FFFFFF";
+			// Plug it in right after the "Search thread:" form
+			placeHere.parentNode.insertBefore(replyCountLi,placeHere.nextSibling);
+			placeHere.parentNode.insertBefore(doc.createTextNode(" "),placeHere.nextSibling);
+		}
+		// SA's "Search thread" box is disabled; add our own
+		if (!Prefs.getPref("hideThreadSearchBox") && searchThis.firstChild.nodeName === '#text')
+		{
+			ShowThreadHandler.addThreadSearchBox(doc, forumid, threadid, placeHere, 'query');
+		}
 	},
 
 	/**

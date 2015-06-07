@@ -386,7 +386,39 @@ let PageUtils = exports.PageUtils =
 		return id;	
 	},
 
-	// Unused
+	/**
+	 * Checks if a thread is closed.
+	 * @param {Element} doc Document element to check in.
+	 * @return {boolean} Whether the thread is closed.
+	 */
+	isThreadClosed: function(doc)
+	{
+		if (PageUtils.selectSingleNode(doc, doc, "//A[contains(@href,'action=newreply&threadid')]//IMG[contains(@src,'closed')]") === null)
+			return false;
+		else
+			return true;
+	},
+
+	/**
+	 * Checks if a thread is in the archives.
+	 *		NOTE: As of 05/21/2015, archives can currently be detected by a
+	 *		thread lacking a bookmark star and the thread rate box lacking
+	 *		proper children. Before changing how this is determined,
+	 *		make sure to test:
+	 *			- Threads from live forums
+	 *			- Threads from forums which lack a rate box
+	 *			- Threads 'locked for archiving'
+	 *			- Archived threads
+	 * @param {Element} doc Document element to check in.
+	 */
+	isThreadInArchives: function(doc)
+	{
+		let threadRateBox = PageUtils.selectSingleNode(doc, doc, "//DIV[@class='threadrate']");
+		let bookmarkStar = PageUtils.selectSingleNode(doc, doc, "//img[contains(@class,'thread_bookmark')]");
+		return (!bookmarkStar && !!threadRateBox && !threadRateBox.firstChild.nextSibling);
+	},
+
+	// Deprecated
 	inArchives: function(doc)
 	{
 		return false;

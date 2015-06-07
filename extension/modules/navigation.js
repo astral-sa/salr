@@ -7,9 +7,60 @@
 let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
 let {QuickQuoteHelper} = require("quickQuoteHelper");
+let {Gestures} = require("gestures");
 
 let Navigation = exports.Navigation = 
 {
+	/**
+	 * Sets up navigation for a thread.
+	 * @param {Element} doc        Document element of thread to set up navigation for.
+	 * @param {boolean} singlePost Whether we're in single post view.
+	 */
+	setupThreadNavigation: function(doc, singlePost)
+	{
+		let pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+		if (pageList[0])
+		{
+			if (pageList.length >  1)
+			{
+				pageList = pageList[pageList.length-1];
+			}
+			else
+			{
+				pageList = pageList[0];
+			}
+			if (pageList.childNodes.length > 1 && pageList.lastChild && pageList.lastChild.textContent) // Are there pages
+			{
+				var numPages = pageList.lastChild.textContent.match(/(\d+)/);
+				var curPage = PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
+				numPages = parseInt(numPages[1], 10);
+				curPage = parseInt(curPage.textContent, 10);
+			}
+			else
+			{
+				numPages = 1;
+				curPage = 1;
+			}
+		}
+
+		doc.__SALR_curPage = curPage;
+		doc.__SALR_maxPage = numPages;
+
+		// Insert the thread paginator
+		if (Prefs.getPref("enablePageNavigator") && !singlePost)
+		{
+			Navigation.addPagination(doc);
+		}
+		if (Prefs.getPref("gestureEnable"))
+		{
+			Gestures.addGestureListeners(doc);
+		}
+		if (Prefs.getPref('quickPostJump'))
+		{
+			doc.addEventListener('keypress', Navigation.quickPostJump, false);
+		}
+	},
+
 	/**
 	 * Adds the quick page jump paginator to a document.
 	 * @param {Element} doc Document element to add paginator to.
