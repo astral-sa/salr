@@ -529,6 +529,7 @@
 	hidden="true">
 	<caption label="Gif-to-Video Conversion"/>
 	<vbox>
+		<label value="Warning: these options can increase Firefox's CPU usage considerably in GIF-heavy threads!" />
 		<checkbox preference="convertGifToVideo" label="Convert imgur gifs to inline video. (Experimental)" />
 	</vbox>
 </groupbox>
