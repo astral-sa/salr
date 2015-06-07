@@ -4,7 +4,6 @@
 
 let {DB} = require("db");
 let {Prefs} = require("prefs");
-//let {Notifications} = require("notifications");
 let {PageUtils} = require("pageUtils");
 
 let QuickQuoteHelper = exports.QuickQuoteHelper = 
@@ -114,16 +113,14 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 				QuickQuoteHelper.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
 			}
 		}
-		if (!threadClosed)
+		if (threadClosed)
+			return;
+		let replybuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
+		if (replybuttons.length === 0)
+			return;
+		for (let replybutton of replybuttons)
 		{
-			let replybuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
-			if (replybuttons.length > 0)
-			{
-				for (let replybutton of replybuttons)
-				{
-					QuickQuoteHelper.turnIntoQuickButton(doc, replybutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
-				}
-			}
+			QuickQuoteHelper.turnIntoQuickButton(doc, replybutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
 		}
 	},
 
@@ -164,45 +161,26 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		return quickbutton;
 	},
 
+	/**
+	 * Event handler for clicking a quick button.
+	 * @param {number} forumid  ID of current forum.
+	 * @param {number} threadid ID of current thread.
+	 * @param {Event}  evt      The click event.
+	 */
 	quickButtonClicked: function(forumid, threadid, evt)
 	{
 		var quickbutton = evt.originalTarget;
-		var doc = evt.originalTarget.ownerDocument;
 		let {Utils} = require("utils");
 		let window = Utils.getRecentWindow();
 
-		var postid;
-		var quicktype = quickbutton.nextSibling.href.match(/action=(\w+)/i)[1];
-
-		switch (quicktype)
-		{
-			case 'newreply':
-				if (quickbutton.nextSibling.href.match(/threadid=(\d+)/i))
-				{
-					quicktype = 'reply';
-					break;
-				}
-				else
-				{
-					quicktype = 'quote';
-				}
-				/* falls through */
-			case 'editpost':
-				postid = quickbutton.nextSibling.href.match(/postid=(\d+)/i)[1];
-				break;
-			case 'newthread':
-				break;
-		}
-
-//alert("Clicked: quicktype: " + quicktype + " threadid " + threadid + " forumid " + forumid + " postid " + postid);
-
 		let newParams = {
-			quicktype: quicktype,
 			forumid: forumid,
 			threadid: threadid,
-			postid: postid,
-			doc: doc
+			doc: evt.originalTarget.ownerDocument
 		};
+		QuickQuoteHelper.setNewParamsFromLink(quickbutton.nextSibling.href, newParams);
+
+//window.alert("Clicked: quicktype: " + newParams.quicktype + " threadid " + newParams.threadid + " forumid " + newParams.forumid + " postid " + newParams.postid);
 
 		// Do we already have a window?
 		if (DB.__quickquotewindowObject && !DB.__quickquotewindowObject.closed)
@@ -225,7 +203,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 				if (QuickQuoteHelper.quickWindowParams.quicktype === 'editpost')
 				{
 					// Is it the same post?
-					if (QuickQuoteHelper.quickWindowParams.postid && QuickQuoteHelper.quickWindowParams.postid == newParams.postid)
+					if (QuickQuoteHelper.quickWindowParams.postid && QuickQuoteHelper.quickWindowParams.postid === newParams.postid)
 					{
 						// Attempt to reattach
 						QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
@@ -262,7 +240,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			else if (newParams.quicktype === 'reply')
 			{
 				// Check if we need to reattach, otherwise offer to convert
-				if (QuickQuoteHelper.quickWindowParams.quicktype && QuickQuoteHelper.quickWindowParams.quicktype === 'reply' && QuickQuoteHelper.quickWindowParams.threadid && QuickQuoteHelper.quickWindowParams.threadid == newParams.threadid)
+				if (QuickQuoteHelper.quickWindowParams.quicktype && QuickQuoteHelper.quickWindowParams.quicktype === 'reply' && QuickQuoteHelper.quickWindowParams.threadid && QuickQuoteHelper.quickWindowParams.threadid === newParams.threadid)
 				{
 					QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
 				}
@@ -295,6 +273,32 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			DB.__quickquotewindowObject = QuickQuoteHelper.quickquotewin;
 		}
 		return false;
+	},
+
+	/**
+	 * Determines type of quick button clicked + sets postid param if needed.
+	 * @param {string} link      Link from normal version of button.
+	 * @param {Object} newParams Parameters for handling the clicked button.
+	 */
+	setNewParamsFromLink: function(link, newParams)
+	{
+		newParams.quicktype = link.match(/action=(\w+)/i)[1];
+		if (newParams.quicktype === 'newthread')
+			return;
+		if (newParams.quicktype === 'newreply')
+		{
+			if (link.match(/threadid=(\d+)/i))
+			{
+				newParams.quicktype = 'reply';
+				return;
+			}
+			else
+			{
+				newParams.quicktype = 'quote';
+			}
+		}
+		// 'editpost' and 'quote' need a post ID:
+		newParams.postid = link.match(/postid=(\d+)/i)[1];
 	},
 
 	/**
