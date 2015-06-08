@@ -1,8 +1,6 @@
-/*
-
-	Functions dealing with navigation (gesture + paginator)
-
-*/
+/**
+ * @fileOverview Functions dealing with navigation (excluding gestures).
+ */
 
 let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
@@ -18,35 +16,11 @@ let Navigation = exports.Navigation =
 	 */
 	setupThreadNavigation: function(doc, singlePost)
 	{
-		let pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-		if (pageList[0])
-		{
-			if (pageList.length >  1)
-			{
-				pageList = pageList[pageList.length-1];
-			}
-			else
-			{
-				pageList = pageList[0];
-			}
-			if (pageList.childNodes.length > 1 && pageList.lastChild && pageList.lastChild.textContent) // Are there pages
-			{
-				var numPages = pageList.lastChild.textContent.match(/(\d+)/);
-				var curPage = PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
-				numPages = parseInt(numPages[1], 10);
-				curPage = parseInt(curPage.textContent, 10);
-			}
-			else
-			{
-				numPages = 1;
-				curPage = 1;
-			}
-		}
+// Need to de-duplicate this call:
+		let pages = Navigation.getPagesForDoc(doc);
+		doc.__SALR_curPage = pages.current;
+		doc.__SALR_maxPage = pages.total;
 
-		doc.__SALR_curPage = curPage;
-		doc.__SALR_maxPage = numPages;
-
-		// Insert the thread paginator
 		if (Prefs.getPref("enablePageNavigator") && !singlePost)
 		{
 			Navigation.addPagination(doc);
@@ -129,6 +103,9 @@ let Navigation = exports.Navigation =
 	{
 		let pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
 		pageList = pageList[pageList.length-1];
+		// Handle no page list
+		if (!pageList)
+			return {'total': 1, 'current': 1};
 		// Check if there's only one page
 		if (pageList.childNodes.length <= 1)
 			return {'total': 1, 'current': 1};
@@ -264,7 +241,7 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Helper function for addPagination()
-	 * @param  {Element} doc        Document element to build thread buttons in.
+	 * @param  {Element} doc        Document element to edit URI of.
 	 * @param  {number}  newPageNum String to edit into URI.
 	 * @return {string}  Edited URI.
 	 */
@@ -293,7 +270,10 @@ let Navigation = exports.Navigation =
 		return doc.location.pathname + doc.location.search + "&" + newPageNum + doc.location.hash;
 	},
 
-	// Keyboard navigation
+	/**
+	 * Event handler for keyboard navigation presses.
+	 * @param {Event} event Key event to check.
+	 */
 	quickPostJump: function quickPostJump(event)
 	{
 		if (!Navigation)
@@ -311,37 +291,17 @@ let Navigation = exports.Navigation =
 				// If any special keys were pressed, don't bother processing
 				return;
 			}
-			var targ = event.target;
-			var doc = targ.ownerDocument;
+			var doc = event.target.ownerDocument;
 			var pressed = event.which;
-			var postId, post, classChange, rescroll = false;
+			var post, classChange, rescroll = false;
 
 			// This should probably be edited to get the # of posts on the current page
 			var maxPosts = Prefs.getPref('postsPerPage');
 			if (maxPosts === 0)
 				maxPosts = 40;
 
-			if (doc.__SALR_curFocus)
-			{
-				postId = doc.__SALR_curFocus;
-			}
-			else if (doc.location.href.match(/\#pti(\d+)$/))
-			{
-				postId = doc.location.href.match(/\#pti(\d+)$/)[1];
-			}
-			else if (doc.location.href.match(/\#(post\d+)$/))
-			{
-				postId = doc.location.href.match(/\#(post\d+)$/)[1];
-				postId = doc.getElementById(postId).getElementsByTagName('tr')[0].id;
-				postId = postId.match(/pti(\d+)$/)[1];
-			}
-			else
-			{
-				postId = '1';
-			}
-			let fakeEvent;
-			let forumid;
-			let threadid;
+			let postId = Navigation.kbNavGetFocusedPostId(doc);
+
 			switch (String.fromCharCode(pressed).toLowerCase())
 			{
 				case Prefs.getPref('kb.reanchor'):
@@ -400,27 +360,15 @@ let Navigation = exports.Navigation =
 					break;
 				case Prefs.getPref('kb.quickEdit'):
 					// Activate Quick Edit Post
-					fakeEvent = {};
-					forumid = PageUtils.getForumId(doc);
-					threadid = PageUtils.getThreadId(doc);
-					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]');
-					QuickQuoteHelper.quickButtonClicked(forumid, threadid, fakeEvent);
+					Navigation.kbNavQuickClick(doc, PageUtils.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Edit"]'));
 					break;
 				case Prefs.getPref('kb.quickReply'):
 					// Activate Quick Reply to Thread
-					fakeEvent = {};
-					forumid = PageUtils.getForumId(doc);
-					threadid = PageUtils.getThreadId(doc);
-					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]');
-					QuickQuoteHelper.quickButtonClicked(forumid, threadid, fakeEvent);
+					Navigation.kbNavQuickClick(doc, PageUtils.selectSingleNode(doc, doc, '//UL[contains(@class,"postbuttons")]//IMG[@title="Quick Reply"]'));
 					break;
 				case Prefs.getPref('kb.quickQuote'):
 					// Activate Quick Quote Post
-					fakeEvent = {};
-					forumid = PageUtils.getForumId(doc);
-					threadid = PageUtils.getThreadId(doc);
-					fakeEvent.originalTarget = PageUtils.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]');
-					QuickQuoteHelper.quickButtonClicked(forumid, threadid, fakeEvent);
+					Navigation.kbNavQuickClick(doc, PageUtils.selectSingleNode(doc, doc.getElementById('pti' + postId).parentNode, 'TR/TD/UL/LI/IMG[@title="Quick Quote"]'));
 					break;
 			}
 			if (rescroll)
@@ -429,6 +377,45 @@ let Navigation = exports.Navigation =
 				doc.__SALR_curFocus = postId;
 			}
 		} catch(e) {win.dump('error:'+e);}
+	},
+
+	/**
+	 * Gets the post ID of the focused post.
+	 * @param {Element} doc Document element to look in.
+	 * @return {string} ID of focused post.
+	 */
+	kbNavGetFocusedPostId: function(doc)
+	{
+		if (doc.__SALR_curFocus)
+			return doc.__SALR_curFocus;
+
+		if (doc.location.href.match(/\#pti(\d+)$/))
+			return doc.location.href.match(/\#pti(\d+)$/)[1];
+
+		if (doc.location.href.match(/\#(post\d+)$/))
+		{
+			let postId = doc.location.href.match(/\#(post\d+)$/)[1];
+			postId = doc.getElementById(postId).getElementsByTagName('tr')[0].id;
+			return postId.match(/pti(\d+)$/)[1];
+		}
+
+		return '1';
+	},
+
+	/**
+	 * Fakes a click event on a quick button from keyboard navigation.
+	 * @param {Element} doc    Document element to 'click' in.
+	 * @param {Node}    target Node snapshot of quick button element to target.
+	 */
+	kbNavQuickClick: function(doc, target)
+	{
+		if (target === null)
+			return;
+		let fakeEvent = {};
+		let forumid = PageUtils.getForumId(doc);
+		let threadid = PageUtils.getThreadId(doc);
+		fakeEvent.originalTarget = target;
+		QuickQuoteHelper.quickButtonClicked(forumid, threadid, fakeEvent);
 	},
 
 };
