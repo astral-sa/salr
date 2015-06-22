@@ -468,14 +468,13 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		{
 			slink.href = "/showthread.php?goto=post&postid="+postid;
 			slink.title = "Back to Thread";
-			slink.textContent = "1";
 		}
 		else
 		{
 			slink.href = "/showthread.php?action=showpost&postid="+postid+"&forumid="+threadFlags.forumid;
 			slink.title = "Show Single Post";
-			slink.textContent = "1";
 		}
+		slink.textContent = "1";
 		postIdLink.parentNode.insertBefore(slink, postIdLink);
 		postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
 	},

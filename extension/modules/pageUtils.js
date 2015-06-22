@@ -275,7 +275,7 @@ let PageUtils = exports.PageUtils =
 		}
 
 		// Look in the link for the post button
-		let postbutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
+		let postbutton = PageUtils.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'forumid=')]");
 		if (postbutton)
 		{
 			let inpostbutton = postbutton.href.match(/forumid=(\d+)/i);
@@ -334,7 +334,7 @@ let PageUtils = exports.PageUtils =
 		}
 
 		// Look in the ? Link in the first post
-		let filterlink = this.selectSingleNode(doc, doc, "//TD[contains(@class,'postdate')]//A[contains(@href,'threadid=')]");
+		let filterlink = PageUtils.selectSingleNode(doc, doc, "//TD[contains(@class,'postdate')]//A[contains(@href,'threadid=')]");
 		if (filterlink)
 		{
 			let inlink = filterlink.href.match(/threadid=(\d+)/i);
@@ -347,7 +347,7 @@ let PageUtils = exports.PageUtils =
 		}
 
 		// Look in the link for the reply button
-		let replybutton = this.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'threadid=')]");
+		let replybutton = PageUtils.selectSingleNode(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'threadid=')]");
 		if (replybutton)
 		{
 			let inreplybutton = replybutton.href.match(/threadid=(\d+)/i);

@@ -42,11 +42,10 @@ let PageLoadHandler = exports.PageLoadHandler = {
 			var pageName = doc.location.pathname.match(/^\/(\w+)\.php/i);
 			if (!pageName)
 			{
-				// Search results
-				if (doc.location.pathname === '/f/search/result')
-					pageHandler = PageLoadHandler.SearchHandler.handleSearch;
-				else
+				// Search results are the only non-.php page we handle
+				if (doc.location.pathname !== '/f/search/result')
 					return;
+				pageHandler = PageLoadHandler.SearchHandler.handleSearch;
 			}
 
 			/**
@@ -169,7 +168,7 @@ let PageLoadHandler = exports.PageLoadHandler = {
 	},
 
 	/**
-	 * Decrements our timer and detaches Quick Quote if necessary.
+	 * Decrements our timer page count and detaches Quick Quote if necessary.
 	 * @param {Event} e The unload event.
 	 */
 	pageOnBeforeUnload: function(e)
@@ -201,11 +200,13 @@ let PageLoadHandler = exports.PageLoadHandler = {
 
 	handleStats: function(doc)
 	{
+		/* We don't use this function anymore since it would insert a bunch of unused forums.
 		if (doc.getElementsByName('t_forumid'))
 		{
 			// The forum list is here so let's update it
-			//PageLoadHandler.grabForumList(doc);
+			PageLoadHandler.grabForumList(doc);
 		}
+		*/
 	},
 
 	handleModQueue: function(doc)
