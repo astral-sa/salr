@@ -388,7 +388,7 @@
 			<vbox>
 				<groupbox id="threadYTSizeGroup"
 					data-category="paneThreads">
-					<caption label="YouTube Player Size" />
+					<caption label="Embedded Player Size" />
 					<radiogroup id="radio_videoEmbedSize" preference="videoEmbedSize">
 						<radio id="tinyvidsize" value="tiny" label="Tiny (480x300)" />
 						<radio id="smallvidsize" value="small" label="Small (560x345)" />

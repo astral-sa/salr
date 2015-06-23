@@ -204,14 +204,14 @@ let VideoHandler = exports.VideoHandler =
 		let p = doc.createElement("p");
 
 		let vidSize = VideoHandler.getVidSizeFromPrefs();
-		let vidwidth = vidSize.width; // Height handled by browser
 
 		let webmEmbed = doc.createElement("video");
 		webmEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
 		webmEmbed.src = link.href;
 		webmEmbed.setAttribute('type','video/webm');
 		webmEmbed.className = 'salr_video';
-		webmEmbed.width = vidwidth;
+		webmEmbed.style.maxWidth = vidSize.width;
+		webmEmbed.style.maxHeight = vidSize.width;
 		webmEmbed.controls = true;
 
 		p.appendChild(webmEmbed);
@@ -229,12 +229,12 @@ let VideoHandler = exports.VideoHandler =
 		let p = doc.createElement("p");
 
 		let vidSize = VideoHandler.getVidSizeFromPrefs();
-		let vidwidth = vidSize.width; // Height handled by browser
 
 		let gifvEmbed = doc.createElement("video");
 		gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
 		gifvEmbed.className = 'salr_video';
-		gifvEmbed.style.maxWidth = vidwidth;
+		gifvEmbed.style.maxWidth = vidSize.width;
+		gifvEmbed.style.maxHeight = vidSize.width;
 		gifvEmbed.poster = link.href.replace(/\.gifv$/i,'h.jpg');
 		gifvEmbed.controls = true;
 		gifvEmbed.autoplay = true;
