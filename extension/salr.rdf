@@ -11,8 +11,8 @@
 						<targetApplication>
 							<r:Description>
 								<id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
-								<minVersion>13.0.*</minVersion>
-								<maxVersion>40.0.*</maxVersion>
+								<minVersion>13.0</minVersion>
+								<maxVersion>42.*</maxVersion>
 								<updateLink>%SALR_UPDATELINK%</updateLink>
 							</r:Description>
 						</targetApplication>
@@ -21,8 +21,8 @@
 						<targetApplication>
 							<r:Description>
 								<id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</id>
-								<minVersion>2.1</minVersion>
-								<maxVersion>2.37</maxVersion>
+								<minVersion>2.10</minVersion>
+								<maxVersion>2.39</maxVersion>
 								<updateLink>%SALR_UPDATELINK%</updateLink>
 							</r:Description>
 						</targetApplication>
