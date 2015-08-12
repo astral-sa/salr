@@ -226,7 +226,7 @@ var gSALRMenusPane = {
 	nestedMenusToggled: function()
 	{
 		// Queue up a menu rebuild
-		window.setTimeout(Menus.rebuildAllMenus, 100);
+		window.setTimeout(function() { Menus.rebuildAllMenus(); }, 100);
 		this._SAMenuChanged = false;
 
 		// Handle enabling/disabling pref UI elements

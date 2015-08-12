@@ -129,7 +129,7 @@ function loadIntoWindow(window) {
 		DB.needToShowChangeLog = false;
 		//openDialog("chrome://salastread/content/newfeatures/newfeatures.xul", "SALR_newfeatures", "chrome,centerscreen,dialog=no");
 		// Delay a bit.
-		window.setTimeout(Notifications.showChangelogAlert, 500);
+		window.setTimeout(function() { Notifications.showChangelogAlert(); }, 500);
 	}
 }
 

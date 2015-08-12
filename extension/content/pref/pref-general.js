@@ -10,7 +10,7 @@ function generalPane_testNotify()
 	{
 		if (document.getElementById('salastreadpref').instantApply || window.confirm("This method requires the pref window to close.\n Have you saved all your preference changes?"))
 		{
-			window.opener.setTimeout(Notifications.showChangelogAlert, 250);
+			window.opener.setTimeout(function() { Notifications.showChangelogAlert(); }, 250);
 			window.close();
 		}
 	}
