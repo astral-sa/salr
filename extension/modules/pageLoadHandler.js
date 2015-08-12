@@ -97,20 +97,6 @@ let PageLoadHandler = exports.PageLoadHandler = {
 
 			PageLoadHandler.Styles.handleBodyClassing(doc);
 
-	// Is this necessary anymore?
-			var screl;
-			var head = doc.getElementsByTagName('head')[0];
-			if (head)
-			{
-				// XXX: The unload prevents FF 1.5 from using Quick Back Button.
-				//      SALR needs to work with it, but this works to prevent trouble in the meantime.
-				screl = doc.createElement("SCRIPT");
-				screl.setAttribute("language","javascript");
-				screl.setAttribute("src","chrome://salastread/content/pageunload.js");
-				head.appendChild(screl);
-			}
-	// 
-
 			PageLoadHandler.Timer.incrementPageCount();
 			doc.__salastread_processed = true;
 		}
