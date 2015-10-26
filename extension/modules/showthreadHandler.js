@@ -10,7 +10,6 @@ let {VideoHandler} = require("videoHandler");
 let {Styles} = require("styles");
 let {Navigation} = require("navigation");
 let {QuickQuoteHelper} = require("quickQuoteHelper");
-let {ImgurHandler} = require("imgurHandler");
 
 let ShowThreadHandler = exports.ShowThreadHandler =
 {
