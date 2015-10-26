@@ -22,6 +22,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 		var swapIconOrder = Prefs.getPref("swapIconOrder");
 		var showGoToLastIcon = Prefs.getPref("showGoToLastIcon");
 		var alwaysShowGoToLastIcon = Prefs.getPref("alwaysShowGoToLastIcon");
+		let goToLastInBlank = Prefs.getPref("goToLastInBlank");
 
 		var highlightUsernames = Prefs.getPref("highlightUsernames");
 		let userHighlightingPrefs = {
@@ -167,6 +168,14 @@ let ThreadListHandler = exports.ThreadListHandler =
 				// Thread is read so let's work our magic
 				var iconMarkUnseen = PageUtils.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'x')]");
 				var iconJumpLastRead = PageUtils.selectSingleNode(doc, divLastSeen, "a[contains(@class, 'count')]");
+
+				// Experimental: open in new window/tab with preference
+				// TODO: options to do so only in ucp and/or forums +
+				// option for open-in-background similar to middleclicking
+				if (goToLastInBlank && iconJumpLastRead)
+				{
+					iconJumpLastRead.setAttribute('target', '_blank');
+				}
 
 				// For thread sorting later
 				if (iconJumpLastRead && ((threadSortingInfo.showTWNP && !flags.inUserCP) || 

@@ -12,6 +12,7 @@ pref('extensions.salastread.replyCountLinkinThreads', true);
 pref('extensions.salastread.sortReplyList', true);
 pref('extensions.salastread.ignoreAppTabs', false);
 pref('extensions.salastread.allowThreadListLastPostNameWrapping', false);
+pref('extensions.salastread.goToLastInBlank', false);
 
 //VIDEO EMBEDDER
 pref('extensions.salastread.enableVideoEmbedder', true);
