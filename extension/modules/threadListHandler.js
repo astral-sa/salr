@@ -221,7 +221,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 					threadRe.textContent = "(" + threadRe.textContent + ")";
 					if (newPostCountUseOneLine)
 					{
-						threadRepliesBox.textContent += "&nbsp;";
+						threadRepliesBox.innerHTML += "&nbsp;";
 					}
 					else
 					{
