@@ -38,7 +38,6 @@
 	<groupbox>
 		<caption label="Image-to-Text Conversion"/>
 		<vbox>
-			<label value="Warning: these options can increase Firefox's CPU usage considerably in GIF-heavy threads!" />
 			<checkbox preference="unconvertReadImages" label="Convert all inline images in read posts into links" />
 		</vbox>
 	</groupbox>
@@ -79,6 +78,7 @@
 	<groupbox>
 		<caption label="Gif-to-Video Conversion"/>
 		<vbox>
+			<label value="Warning: these options can increase Firefox's CPU usage considerably in GIF-heavy threads!" />
 			<checkbox preference="convertGifToVideo" label="Convert imgur gifs to inline video. (Experimental)" />
 		</vbox>
 	</groupbox>
