@@ -9,8 +9,8 @@
 		<em:homepageURL>http://forums.somethingawful.com/showthread.php?threadid=2571027&amp;goto=lastpost</em:homepageURL>
 		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
 		<em:aboutURL>chrome://salastread/content/about.xul</em:aboutURL>
-		<em:optionsType>2</em:optionsType>
-		<em:optionsURL>chrome://salastread/content/pref/dummyoptions.xul</em:optionsURL>
+		<em:optionsType>3</em:optionsType>
+		<em:optionsURL>chrome://salastread/content/pref/in-content/salrpref.xul</em:optionsURL>
 		<em:updateURL>https://github.com/astral-sa/salr/raw/master/salr.rdf</em:updateURL>
 
 		<!-- Supported Applications -->
