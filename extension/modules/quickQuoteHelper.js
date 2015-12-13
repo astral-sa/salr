@@ -21,6 +21,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	},
 
 	needRegReplyFill: false,
+	needCleanupCheck: false,
 	quickQuoteSubmitting: false,
 	savedQuickReply: "",
 	savedQuickReplyThreadId: "",
@@ -302,12 +303,34 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	},
 
 	/**
+	 * Cleans up quick quote window on addon shutdown.
+	 */
+	cleanupCheck: function()
+	{
+		// Bail if no open window
+		if (QuickQuoteHelper.quickquotewin === null)
+			return;
+
+		// Bail if detached (can't submit preview)
+		if (QuickQuoteHelper.quickquotewin.isDetached)
+			return;
+
+		// Submit as preview
+		QuickQuoteHelper.quickquotewin.doSubmit('preview');
+	},
+
+	/**
 	 * Opens a new quick quote window with specified paramters.
 	 * @param {Window} window    Window from which to open the dialog.
 	 * @param {Object} newParams New quick quote parameters.
 	 */
 	openNewQuickQuoteWindow: function(window, newParams)
 	{
+		if (QuickQuoteHelper.needCleanupCheck === false)
+		{
+			QuickQuoteHelper.needCleanupCheck = true;
+			onShutdown.add(function() { QuickQuoteHelper.cleanupCheck(); });
+		}
 		QuickQuoteHelper.setQuickWindowParameters(newParams);
 		QuickQuoteHelper.quickquotewin = window.openDialog("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, dialog=no, width=800, height=400");
 	},
