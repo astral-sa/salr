@@ -311,9 +311,12 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		if (QuickQuoteHelper.quickquotewin === null)
 			return;
 
-		// Bail if detached (can't submit preview)
+		// Close if detached (can't submit preview)
 		if (QuickQuoteHelper.quickquotewin.isDetached)
+		{
+			QuickQuoteHelper.quickquotewin.close();
 			return;
+		}
 
 		// Submit as preview
 		QuickQuoteHelper.quickquotewin.doSubmit('preview');
