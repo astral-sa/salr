@@ -19,6 +19,13 @@ let Gestures = exports.Gestures =
 		let inOldSearch = (doc.location.pathname === '/f/search/result');
 		let inNewSearch = (doc.location.pathname === '/query.php');
 		var searchid = doc.location.href.match(/qid=[0-9]+/);
+		// Post histories don't have qid in the URL immediately:
+		if (inNewSearch && searchid === null)
+		{
+			let searchNode = PageUtils.selectSingleNode(doc, doc, "//UL[@class='pages']/LI[@class='page_number']/A");
+			if (searchNode)
+				searchid = searchNode.href.match(/qid=[0-9]+/);
+		}
 
 		if (!posticon)
 			posticon = "&posticon=0";
