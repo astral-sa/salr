@@ -109,6 +109,12 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 			if (post.className.indexOf("ignored") > -1)
 			{
+				// Need to pass a forumid to enable SALR features in the linked post
+				let ignoredPostLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postbody')]/a");
+				if (ignoredPostLink)
+				{
+					ignoredPostLink.href = ignoredPostLink.href.replace(/#/, '&forumid=' + forumid + '#');
+				}
 				// Check if we need to super ignore
 				if (superIgnoreUsers)
 				{
