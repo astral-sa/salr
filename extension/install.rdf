@@ -10,7 +10,7 @@
 		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
 		<em:aboutURL>chrome://salastread/content/about.xul</em:aboutURL>
 		<em:optionsType>3</em:optionsType>
-		<em:optionsURL>chrome://salastread/content/pref/in-content/salrpref.xul</em:optionsURL>
+		<em:optionsURL>about:salr</em:optionsURL>
 		<em:updateURL>https://github.com/astral-sa/salr/raw/master/salr.rdf</em:updateURL>
 
 		<!-- Supported Applications -->

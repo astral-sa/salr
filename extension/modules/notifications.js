@@ -34,7 +34,7 @@ let Notifications = exports.Notifications =
 		let anchorId = "salr-notification-icon";
 		let notification = rWin.PopupNotifications.show(rWin.gBrowser.selectedBrowser,
 			"salr-update-popup", /* popup ID */
-			"SALR extension updated!",
+			"SALR extension updated!\r\nIf an SA forum page acts strangely, reload it!",
 			anchorId, /* anchor ID */
 			{
 				label: "View changelog",
@@ -77,8 +77,8 @@ let Notifications = exports.Notifications =
 		let alertsService = Components.classes["@mozilla.org/alerts-service;1"].
                       getService(Components.interfaces.nsIAlertsService);
 		try {
-		  alertsService.showAlertNotification("chrome://salastread/skin/sa-24.png", 
-									  "SALR extension updated!", "Click here for the changelog.", 
+		  alertsService.showAlertNotification("chrome://salastread/skin/sa-64.png", 
+									  "SALR extension updated!", "If an SA forum page acts strangely, reload it!\r\nClick here for the changelog.", 
 									  true, "", Notifications.ASChangelogListener, "");
 		} catch (e) {
 			// This can fail on Mac OS X
@@ -102,7 +102,7 @@ let Notifications = exports.Notifications =
 		let alertsService = Components.classes["@mozilla.org/alerts-service;1"].
                       getService(Components.interfaces.nsIAlertsService);
 		try {
-		  alertsService.showAlertNotification("chrome://salastread/skin/sa-24.png", 
+		  alertsService.showAlertNotification("chrome://salastread/skin/sa-64.png", 
 									  alertTitle, alertText);
 		} catch (e) {
 			// This can fail on Mac OS X
