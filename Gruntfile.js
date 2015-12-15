@@ -46,7 +46,7 @@ module.exports = function(grunt)
 			updatelink: {
 				path: 'build/',
 				pattern: '%SALR_UPDATELINK%',
-				replacement: 'https://github.com/astral-sa/salr/releases/download/<%= pkg.version %>/salastread_v<%= pkg.version %>.xpi',
+				replacement: 'https://github.com/astral-sa/salr/releases/download/<%= pkg.version %>/salastread_v<%= pkg.version %>_signed.xpi',
 				recursive: true
 			},
 			threadlink: {
@@ -91,7 +91,8 @@ module.exports = function(grunt)
 				createTag: true,
 				tagName: '%VERSION%',
 				tagMessage: 'SALR Version %VERSION%',
-				push: false,
+				push: true,
+				pushTo: 'origin',
 			}
 		},
 		'github-release': {
@@ -107,7 +108,7 @@ module.exports = function(grunt)
 						prerelease: false
 					}
 				},
-				'src': ['salastread_v*.xpi']
+				'src': ['salastread_v*_signed.xpi']
 			},
 			pre: {
 				options: {
@@ -117,7 +118,7 @@ module.exports = function(grunt)
 						prerelease: true
 					}
 				},
-				'src': ['salastread_v*.xpi']
+				'src': ['salastread_v*_signed.xpi']
 			}
 		}
 	});
