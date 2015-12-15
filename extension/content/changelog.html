@@ -14,9 +14,10 @@
   </ul>
  </li>
 -->
-<li><div class="dev">3.0 pre-release</div>
+<li><div class="rel">3.0.0</div>
 	<ul class="notes">
 		<li><b>SALR is now restartless!</b></li>
+			<ul><li>Quick Quote windows will now submit a forum post preview if one is open when SALR is disabled or updated.</li></ul>
 		<li><b>Preferences for SALR are now in-content (tab-based)!</b></li>
 		<li><b>Re-enabled update notifications.</b> There are two styles of update notification; you may change your preference for this in the General pane.</li>
 		<li>Changed "Search Forums" SA menu item and in-thread search boxes to use the new forum search.</li>
@@ -31,9 +32,8 @@
 		<li>Fixed "Default" buttons not working in General preference pane.</li>
 		<li>Fixed icon not displaying in Add-ons manager if SALR is disabled.</li>
 		<li>Fixed "Time you've spent on the forums" counter not detecting closed tabs properly.</li>
-			<ul><li>(If you want to have an accurate count, reset preference "extensions.salastread.timeSpentOnForums" in about:config.)</li>
-			<li>Additionally, the timer is now far more efficient.</li></ul>
-		<li>Renamed UI for "Hide 'Search Thread' box" preference to "Add 'Search Thread' box".</li>
+			<ul><li>(If you want to have a more accurate count, reset preference "extensions.salastread.timeSpentOnForums" in about:config.)</li>
+		<li>Reworked UI for "Hide 'Search Thread' box" preference to "Add 'Search Thread' box".</li>
 		<li>"Show threads with new posts first in the bookmark list" now promotes fully unread threads over fully read threads.</li>
 		<li>SALR no longer adds "Hide/Show Avatar" buttons in threads if "hide all custom titles" preference is active.</li>
 		<li>The page list select box in SALR's forum/thread navigator should now be more readable on Windows platforms and better-sized on Linux.</li>
@@ -56,10 +56,8 @@
 		<li>Fixed user highlighting colors not applying in "Who posted?" links when they were supposed to.</li>
 		<li>Fixed toggling nested menus causing SA menu to appear even if SA menu was disabled.</li>
 		<li>Added support to the video embedder for m.youtube.com links.</li>
-		<li>Added experimental option to convert imgur gifs to embedded video.</li>
-		<li>Quick Quote windows will now submit a forum post preview if SALR is disabled or updated.</li>
-		<li>Fixed gesture navigation in new search results via post history searches.</li>
-		<li>More notes to come.</li>
+		<li>Added experimental option to convert imgur gifs to embedded video (default off).</li>
+		<li>Fixed SALR features not working in single post links to ignored posts.</li>
 	</ul>
 </li>
 
