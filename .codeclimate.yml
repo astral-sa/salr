@@ -1,11 +1,23 @@
-languages:
-  Ruby: false
-  JavaScript: true
-  PHP: false
-  Python: false
+engines:
+  csslint:
+    enabled: true
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - javascript
+      - php
+  eslint:
+    enabled: true
+  fixme:
+    enabled: true
+ratings:
+  paths:
+  - "**.css"
+  - "**.js"
 exclude_paths:
-- "extension/content/newfeatures/*"
-- "extension/defaults/*"
-- "extension/content/pref/in-content/preferences.js"
-- "extension/content/xbbcode.js"
-- "extension/modules/prefs.js"
+- extension/content/newfeatures/*
+- extension/defaults/*
+- extension/content/pref/in-content/preferences.js
+- extension/content/xbbcode.js
+- extension/modules/prefs.js
