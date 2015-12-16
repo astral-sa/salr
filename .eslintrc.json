@@ -1,0 +1,25 @@
+{
+    "extends": "eslint:recommended",
+    "rules": {
+        "eqeqeq": [1, "smart"],
+        "no-unused-vars": [1, {"vars": "all", "args": "after-used"}],
+        "no-use-before-define": [2, "nofunc"],
+        "no-eval": 2,
+        /* style rules */
+        "comma-dangle": [0, "always-multiline"],
+        "no-mixed-spaces-and-tabs": [2, "smart-tabs"],
+        "no-regex-spaces": 1,
+        "indent": 0,
+        "quotes": 0,
+        "linebreak-style": 0,
+        "semi": [2, "always"]
+    },
+    "env": {
+        "es6": true,
+        "browser": true,
+        "commonjs": true
+    },
+    "globals": {
+        "Components": true, "Cu": true, "Ci": true, "Cc": true, "Cr": true, "Services": true, "onShutdown": true, "XPCOMUtils": true
+    }
+}
