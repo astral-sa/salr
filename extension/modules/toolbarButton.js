@@ -81,7 +81,7 @@ let ToolbarButton = exports.ToolbarButton =
 		if (toolbar)
 		{
 			let nextItem = doc.getElementById(nextItemId);
-		 	toolbar.insertItem("salr-toolbarbutton", nextItem &&
+			toolbar.insertItem("salr-toolbarbutton", nextItem &&
 				 nextItem.parentNode.id == toolbarId &&
 				 nextItem);
 		}
