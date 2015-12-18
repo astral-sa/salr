@@ -15,7 +15,7 @@ let Gestures = exports.Gestures =
 		var curPage = doc.__SALR_curPage;
 		var perpage = "&perpage=" + Prefs.getPref("postsPerPage");
 		var forumid = doc.location.href.match(/forumid=[0-9]+/);
-		var posticon = doc.location.href.match(/posticon=[0-9]+/);
+		var posticon = doc.location.href.match(/&posticon=[0-9]+/);
 		let inOldSearch = (doc.location.pathname === '/f/search/result');
 		let inNewSearch = (doc.location.pathname === '/query.php');
 		var searchid = doc.location.href.match(/qid=[0-9]+/);
@@ -45,18 +45,22 @@ let Gestures = exports.Gestures =
 
 		if (dir === "top")
 		{
-			var threadForum = PageUtils.getForumId(doc);
-
-			if ((curPage === 1 && !threadForum) || inNewSearch || inOldSearch)
+			let inThread = (doc.location.pathname === '/showthread.php');
+			if ((curPage === 1 && !inThread) || inNewSearch || inOldSearch)
 			{
 				doc.location = urlbase + "/index.php";
 			}
 			else
 			{
-				if (threadForum)
-					doc.location = urlbase + "/forumdisplay.php?s=&forumid=" + threadForum;
+				if (inThread)
+				{
+					let fIdNum = PageUtils.getForumId(doc);
+					doc.location = urlbase + "/forumdisplay.php?s=&forumid=" + fIdNum;
+				}
 				else
+				{
 					doc.location = urlbase + "/forumdisplay.php?s=&" + forumid + posticon;
+				}
 			}
 		}
 		else if (dir === "left")
