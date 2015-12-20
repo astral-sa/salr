@@ -56,14 +56,6 @@ module.exports = function(grunt)
 				recursive: true
 			}
 		},
-		jshint: {
-			js: {
-				options: {
-					jshintrc: '.jshintrc'
-				},
-				src: ['extension/content/**/*.js','extension/modules/*.js']
-			}
-		},
 		"git-describe": {
 			"options": {
 				template: '{%=tag%}.{%=since%}'
