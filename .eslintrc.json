@@ -7,7 +7,8 @@
         "no-eval": 2,
         /* style rules */
         "comma-dangle": [0, "always-multiline"],
-        "no-mixed-spaces-and-tabs": [2, "smart-tabs"],
+        "no-empty": 1,
+        "no-mixed-spaces-and-tabs": [1, "smart-tabs"],
         "no-regex-spaces": 1,
         "indent": 0,
         "quotes": 0,
