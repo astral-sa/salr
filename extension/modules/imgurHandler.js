@@ -189,7 +189,9 @@ let ImgurHandler = exports.ImgurHandler =
 		{
 			video.parentNode.replaceChild(anImage, video);
 		}
-		catch(e) {}
+		catch(e) {
+			// Do nothing
+		}
 		// TODO - image scaling?
 	},
 

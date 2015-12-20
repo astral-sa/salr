@@ -29,7 +29,7 @@ let AccountHandler = exports.AccountHandler =
 				var loginMsg = PageUtils.selectSingleNode(doc, div, "DIV[contains(./text(),'GLUE')]");
 				if (loginMsg)
 				{
-					var name = loginMsg.firstChild.textContent.match(/GLUE GLUEEEEE GLUUUUUUEEE, (.*)!  GLUUUEEE/);
+					var name = loginMsg.firstChild.textContent.match(/GLUE GLUEEEEE GLUUUUUUEEE, (.*)! {2}GLUUUEEE/);
 					// Note that there are 2 spaces after the !, the extra space doesn't show up on the page but it's in the raw HTML
 					if (name)
 					{

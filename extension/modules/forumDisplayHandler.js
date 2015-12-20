@@ -11,7 +11,6 @@ let {PageUtils} = require("pageUtils");
 let {Navigation} = require("navigation");
 let {Gestures} = require("gestures");
 let {ThreadListHandler} = require("threadListHandler");
-let {ShowThreadHandler} = require("showthreadHandler");
 let {Styles} = require("styles");
 let {AdvancedThreadFiltering} = require("advancedThreadFiltering");
 let {QuickQuoteHelper} = require("quickQuoteHelper");
@@ -52,9 +51,6 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 			// We're in FYAD and FYAD support has been turned off
 			return;
 		}
-
-		let {Utils} = require("utils"); // shim for unmoved quick quote things
-		let win = Utils.getRecentWindow();
 
 		// Add our thread list CSS for FYAD/BYOB
 		PageUtils.insertDynamicCSS(doc, Styles.generateDynamicThreadListCSS(forumid));

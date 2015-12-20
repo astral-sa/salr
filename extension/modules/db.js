@@ -17,7 +17,7 @@ function ReadFile(fn)
 	} catch (e) {
 		throw e + "\n" + fn;
 	}
-	if (file.exists() == false) {
+	if (file.exists() === false) {
 		return "";
 	}
 	var is = Components.classes["@mozilla.org/network/file-input-stream;1"]
@@ -35,7 +35,7 @@ function SaveFile(fn, fdata)
 	var file = Components.classes["@mozilla.org/file/local;1"]
 				.createInstance(Components.interfaces.nsILocalFile);
 	file.initWithPath(fn);
-	if ( file.exists() == false ) {
+	if (file.exists() === false) {
 		try {
 			file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 420);
 		} catch (ex) {
@@ -234,6 +234,7 @@ let DB = exports.DB =
 		}
 	},
 
+	// Deprecated
 	// If the build value is 6 digits (a date), then it's a development build
 	// @param: nothing
 	// @return: (boolean) true if development build, false otherwise
@@ -245,7 +246,7 @@ let DB = exports.DB =
 		if (vm)
 		{
 			var build = vm[3];
-			isDev = (build.length == 6);
+			isDev = (build.length === 6);
 		}
 		return isDev;
 	},
@@ -290,7 +291,7 @@ let DB = exports.DB =
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
 		file.initWithPath(fn);
-		if (file.exists() == false)
+		if (file.exists() === false)
 		{
 			try
 			{
@@ -380,15 +381,21 @@ let DB = exports.DB =
 		try
 		{
 			this.populateUserDataCache();
-		} catch (e) { }
+		} catch (e) {
+			// Do nothing for now
+		}
 		try
 		{
 			this.populateThreadDataCache();
-		} catch (e) { }
+		} catch (e) {
+			// Do nothing for now
+		}
 		try
 		{
 			this.populateIconDataCache();
-		} catch (e) { }
+		} catch (e) {
+			// Do nothing for now
+		}
 	},
 
 	// Fills the user data cache from the database

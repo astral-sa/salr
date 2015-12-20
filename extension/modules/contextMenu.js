@@ -151,7 +151,9 @@ let ContextMenu = exports.ContextMenu =
 						ContextMenu.contextVis(e.target);
 				}
 			}
-			catch (ex) {}
+			catch (ex) {
+				// Do nothing
+			}
 		}
 	},
 
@@ -287,7 +289,9 @@ let ContextMenu = exports.ContextMenu =
 				target.parentNode.removeChild(target);
 			}
 		}
-		catch(e) { } // Prevent exception if user closes the tab
+		catch(e) {
+			// Prevent exception if user closes the tab
+		}
 	},
 
 	unreadThread: function(event)
@@ -325,7 +329,9 @@ let ContextMenu = exports.ContextMenu =
 					bag.setPropertyAsBool("allowTabModal", true);
 					prompt.alert.apply(null, ["SALR Alert", result]);
 				}
-				catch(e) { }
+				catch(e) {
+					// Do nothing
+				}
 			}
 		};
 		xhr.send(xhrparams);
