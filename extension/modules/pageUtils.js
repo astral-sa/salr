@@ -162,13 +162,8 @@ let PageUtils = exports.PageUtils =
 		var dashes = (statsMenu) ? '---' : '--';
 		var elDepth = 0;
 
-		while (true)
+		while (forumTitle.indexOf(dashes) === 0)
 		{
-			if (forumTitle.indexOf(dashes) !== 0)
-			{
-				break;
-			}
-
 			forumTitle = forumTitle.substring(dashes.length);
 			elDepth++;
 		}
