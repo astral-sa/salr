@@ -18,13 +18,13 @@ var prefTypeMap = (function()
     return map;
 })();
 
-function getIntPref(branch, pref) { branch.getIntPref(pref); }
-function setIntPref(branch, pref, newValue) { branch.setIntPref(pref, newValue); }
+function getIntPref(branch, pref) { return branch.getIntPref(pref); }
+function setIntPref(branch, pref, newValue) { return branch.setIntPref(pref, newValue); }
 
-function getBoolPref(branch, pref) { branch.getBoolPref(pref); }
-function setBoolPref(branch, pref, newValue) { branch.setBoolPref(pref, newValue); }
+function getBoolPref(branch, pref) { return branch.getBoolPref(pref); }
+function setBoolPref(branch, pref, newValue) { return branch.setBoolPref(pref, newValue); }
 
-function getCharPref(branch, pref) { branch.getComplexValue(pref, Ci.nsISupportsString).data; }
+function getCharPref(branch, pref) { return branch.getComplexValue(pref, Ci.nsISupportsString).data; }
 function setCharPref(branch, pref, newValue)
 {
 	let str = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
@@ -32,8 +32,8 @@ function setCharPref(branch, pref, newValue)
 	branch.setComplexValue(pref, Ci.nsISupportsString, str);
 }
 
-function getJSONPref(branch, pref) { JSON.parse(getCharPref(branch, pref)); }
-function setJSONPref(branch, pref, newValue) { setCharPref(branch, pref, JSON.stringify(newValue)); }
+function getJSONPref(branch, pref) { return JSON.parse(getCharPref(branch, pref)); }
+function setJSONPref(branch, pref, newValue) { return setCharPref(branch, pref, JSON.stringify(newValue)); }
 
 function init()
 {
