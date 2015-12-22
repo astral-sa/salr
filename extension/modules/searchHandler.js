@@ -47,16 +47,18 @@ let SearchHandler = exports.SearchHandler =
 		if (Prefs.getPref("gestureEnable"))
 		{
 			var pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pager')]");
+			var numPages;
+			var curPage;
 			if (pageList)
 			{
 				if (pageList.length >= 1)
 					pageList = pageList[pageList.length-1];
 				else
 					return;
-				var numPages = pageList.textContent.match(/\((\d+)\)/);
+				numPages = pageList.textContent.match(/\((\d+)\)/);
 				if (!numPages)
 					return;
-				var curPage = PageUtils.selectSingleNode(doc, doc, "//a[contains(@class,'current')]");
+				curPage = PageUtils.selectSingleNode(doc, doc, "//a[contains(@class,'current')]");
 				if (pageList.childNodes.length > 1) // Are there pages
 				{
 					numPages = parseInt(numPages[1], 10);

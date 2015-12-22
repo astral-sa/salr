@@ -63,6 +63,8 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 		}
 
 		var pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+		var numPages;
+		var curPage;
 		if (pageList)
 		{
 			if (pageList.length > 1)
@@ -75,8 +77,8 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 			}
 			if (pageList.childNodes.length > 1) // Are there pages
 			{
-				var numPages = pageList.lastChild.textContent.match(/(\d+)/);
-				var curPage = PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
+				numPages = pageList.lastChild.textContent.match(/(\d+)/);
+				curPage = PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
 				// Suppress a page-load error - possibly unnecessary with revised logic
 				if (!numPages)
 					return;
