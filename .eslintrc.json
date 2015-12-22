@@ -1,8 +1,9 @@
 {
     "extends": "eslint:recommended",
     "rules": {
+		"complexity": [1,12],
         "eqeqeq": [1, "smart"],
-        "no-unused-vars": [1, {"vars": "all", "args": "after-used"}],
+        "no-unused-vars": [1, {"vars": "all", "args": "none", "varsIgnorePattern": "Handler"}],
         "no-use-before-define": [2, "nofunc"],
         "no-eval": 2,
         /* style rules */
@@ -21,6 +22,6 @@
         "commonjs": true
     },
     "globals": {
-        "Components": true, "Cu": true, "Ci": true, "Cc": true, "Cr": true, "Services": true, "onShutdown": true, "XPCOMUtils": true
+        "Components": false, "Cu": true, "Ci": true, "Cc": true, "Cr": true, "Services": true, "onShutdown": true, "XPCOMUtils": true, "gBrowser": false
     }
 }
