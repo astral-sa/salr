@@ -8,6 +8,7 @@
 let {DB} = require("db");
 let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
+let {Utils} = require("utils");
 
 let Styles = exports.Styles =
 {
@@ -19,21 +20,8 @@ let Styles = exports.Styles =
 		Styles.updateStyles();
 		// ...and remove it upon shutdown
 		onShutdown.add(function() { Styles.unloadStyles(); });
-	},
-
-	// This function should be removed if SALR ever allows more detailed color settings (backgrounds, font colors, etc)
-	// It's used by the context menu.
-	handleBodyClassing: function(doc)
-	{
-		var phmatch = doc.location.href.match( /\/([^\/]*)\.php/ );
-		if (phmatch)
-		{
-			var addclass = " somethingawfulforum_"+phmatch[1]+"_php";
-			var docbody = doc.body;
-			if (docbody)
-				docbody.className += addclass;
-
-		}
+		Utils.addFrameMessageListener("salastread:GenDTLCSS", genDTLCSSWrapper);
+		Utils.addFrameMessageListener("salastread:GenDSTCSS", genDSTCSSWrapper);
 	},
 
 	// Return a string that contains thread list CSS instructions for our settings
@@ -495,4 +483,15 @@ let Styles = exports.Styles =
 	},
 
 };
+
+function genDTLCSSWrapper(forumid)
+{
+	return Styles.generateDynamicThreadListCSS(forumid);
+}
+
+function genDSTCSSWrapper({forumid, threadid, singlePost})
+{
+	return Styles.generateDynamicShowThreadCSS(forumid, threadid, singlePost);
+}
+
 Styles.init();

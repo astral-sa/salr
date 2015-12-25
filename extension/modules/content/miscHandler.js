@@ -2,8 +2,8 @@
  * @fileOverview Handles Misc -> "Who Posted" page
  */
 
-let {Prefs} = require("prefs");
-let {DB} = require("db");
+let {Prefs} = require("content/prefsHelper");
+let {DB} = require("content/dbHelper");
 let {PageUtils} = require("pageUtils");
 
 let MiscHandler = exports.MiscHandler = 

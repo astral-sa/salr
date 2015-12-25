@@ -1,31 +1,29 @@
 /**
  * @fileOverview Handles content page load/unload events.
- *                   Note: File in transition - some old overlay relics still present.
  */
 
-Components.utils.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/Services.jsm");
+
+let {PageUtils} = require("pageUtils");
+let {Prefs} = require("content/prefsHelper");
+let {Styles} = require("content/stylesHelper");
+// Used for optimization for page unload checking to detach quick windows:
+let {QuickQuoteHelper} = require("content/quickQuoteHelper");
 
 let PageLoadHandler = exports.PageLoadHandler = {
-	// relics;
-	Prefs: require("prefs").Prefs,
-	PageUtils: require("pageUtils").PageUtils,
-	Styles: require("styles").Styles,
-	Timer: require("timer").Timer,
-
-	ShowThreadHandler: require("showthreadHandler").ShowThreadHandler,
-	MiscHandler: require("miscHandler").MiscHandler,
-	ProfileViewHandler: require("profileViewHandler").ProfileViewHandler,
-	SupportHandler: require("supportHandler").SupportHandler,
-	ForumDisplayHandler: require("forumDisplayHandler").ForumDisplayHandler,
-	BookmarkedThreadsHandler: require("bookmarkedThreadsHandler").BookmarkedThreadsHandler,
-	SearchHandler: require("searchHandler").SearchHandler,
-	IndexHandler: require("indexHandler").IndexHandler,
-	AccountHandler: require("accountHandler").AccountHandler,
-	QuickQuoteHelper: require("quickQuoteHelper").QuickQuoteHelper,
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Core Funtions & Events /////////////////////////////////////////////////////////////////////////////////////////////
 
+
+	init: function()
+	{
+		addEventListener("DOMContentLoaded", PageLoadHandler.onDOMLoad, true);
+		addEventListener('beforeunload', PageLoadHandler.pageOnBeforeUnload, true);
+		onShutdown.add(function(){
+			removeEventListener("DOMContentLoaded", PageLoadHandler.onDOMLoad, true);
+			removeEventListener('beforeunload', PageLoadHandler.pageOnBeforeUnload, true);
+		});
+	},
 
 	onDOMLoad: function(e)
 	{
@@ -53,21 +51,21 @@ let PageLoadHandler = exports.PageLoadHandler = {
 			 * @type {Object}
 			 */
 			let handlers = {
-				index: PageLoadHandler.IndexHandler.handleIndex,
-				usercp: PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads,
-				bookmarkthreads: PageLoadHandler.BookmarkedThreadsHandler.handleBookmarkedThreads,
-				account: PageLoadHandler.AccountHandler.handleAccount,
-				forumdisplay: PageLoadHandler.ForumDisplayHandler.handleForumDisplay,
-				showthread: PageLoadHandler.ShowThreadHandler.handleShowThread,
-				newreply: PageLoadHandler.QuickQuoteHelper.handleNewReply,
-				editpost: PageLoadHandler.QuickQuoteHelper.handleEditPost,
-				supportmail: PageLoadHandler.SupportHandler.handleSupport,
+				index: PageLoadHandler.handleIndex,
+				showthread: PageLoadHandler.handleShowThread,
+				usercp: PageLoadHandler.handleBookmarkedThreads,
+				bookmarkthreads: PageLoadHandler.handleBookmarkedThreads,
+				forumdisplay: PageLoadHandler.handleForumDisplay,
+				newreply: PageLoadHandler.handleNewReply,
+				editpost: PageLoadHandler.handleEditPost,
+				misc: PageLoadHandler.handleMisc,
+				query: PageLoadHandler.handleQuery,
+				search: PageLoadHandler.handleOldSearch,
+				member: PageLoadHandler.handleProfileView,
+				account: PageLoadHandler.handleAccount,
+				supportmail: PageLoadHandler.handleSupport,
 				stats: PageLoadHandler.handleStats,
-				misc: PageLoadHandler.MiscHandler.handleMisc,
-				member: PageLoadHandler.ProfileViewHandler.handleProfileView,
-				search: PageLoadHandler.SearchHandler.handleOldSearch,
 				modqueue: PageLoadHandler.handleModQueue,
-				query: PageLoadHandler.SearchHandler.handleQuery
 			};
 			if (handlers.hasOwnProperty(pageName[1]))
 			{
@@ -79,25 +77,32 @@ let PageLoadHandler = exports.PageLoadHandler = {
 				return;
 
 			// Append custom CSS files to the head
-			if (PageLoadHandler.Prefs.getPref("gestureEnable"))
-				PageLoadHandler.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/gestureStyling.css");
-			if (PageLoadHandler.Prefs.getPref("enablePageNavigator") || PageLoadHandler.Prefs.getPref("enableForumNavigator"))
-				PageLoadHandler.PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/pageNavigator.css");
+			if (Prefs.getPref("gestureEnable"))
+				PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/gestureStyling.css");
+			if (Prefs.getPref("enablePageNavigator") || Prefs.getPref("enableForumNavigator"))
+				PageUtils.insertCSSAsLink(doc, "chrome://salastread/content/css/pageNavigator.css");
 
 			// Insert a text link to open the options menu
-			if (PageLoadHandler.Prefs.getPref('showTextConfigLink'))
-				PageLoadHandler.PageUtils.insertSALRConfigLink(doc);
+			if (Prefs.getPref('showTextConfigLink'))
+				PageUtils.insertSALRConfigLink(doc);
 
 			// Remove the page title prefix/postfix
-			if (PageLoadHandler.Prefs.getPref("removePageTitlePrefix"))
-				doc.title = PageLoadHandler.PageUtils.getCleanPageTitle(doc);
+			if (Prefs.getPref("removePageTitlePrefix"))
+				doc.title = PageUtils.getCleanPageTitle(doc);
 
 			// Call the proper handler for this type of page
 			pageHandler(doc);
 
-			PageLoadHandler.Styles.handleBodyClassing(doc);
+			Styles.handleBodyClassing(doc);
 
-			PageLoadHandler.Timer.incrementPageCount();
+			sendAsyncMessage("salastread:TimerCountInc");
+
+			// Set up listener for prompt from Chrome
+			addMessageListener("salastread:PromptInTab", PageUtils.promptInTab);
+			onShutdown.add(() => {
+				removeMessageListener("salastread:PromptInTab", PageUtils.promptInTab);
+			});
+
 			doc.__salastread_processed = true;
 		}
 		catch(ex)
@@ -108,14 +113,13 @@ let PageLoadHandler = exports.PageLoadHandler = {
 			if (typeof(ex) !== "object")
 				return;
 
-			if (!PageLoadHandler.DB || !PageLoadHandler.Prefs.getPref('suppressErrors'))
+			if (!Prefs.getPref('suppressErrors'))
 			{
 				let win = doc.defaultView;
 				win.alert("SALastRead application err: " + ex);
-				PageLoadHandler.PageUtils.logToConsole("SALastRead application err: "+ex);
-				PageLoadHandler.PageUtils.logToConsole("SALastRead application err: "+ex);
-				PageLoadHandler.PageUtils.logToConsole("Filename: " + ex.fileName);
-				PageLoadHandler.PageUtils.logToConsole("Line: " + ex.lineNumber);
+				PageUtils.logToConsole("SALastRead application err: "+ex);
+				PageUtils.logToConsole("Filename: " + ex.fileName);
+				PageUtils.logToConsole("Line: " + ex.lineNumber);
 			}
 		}
 	},
@@ -142,7 +146,7 @@ let PageLoadHandler = exports.PageLoadHandler = {
 		}
 
 		// Bail if we need to
-		if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) === -1 || PageLoadHandler.Prefs.getPref("disabled"))
+		if (simpleURI || doc.location.host.search(/^(forum|archive)s?\.somethingawful\.com$/i) === -1 || Prefs.getPref("disabled"))
 		{
 			return false;
 		}
@@ -160,39 +164,100 @@ let PageLoadHandler = exports.PageLoadHandler = {
 	pageOnBeforeUnload: function(e)
 	{
 		if (e.originalTarget.__salastread_processed)
-		{
-			PageLoadHandler.Timer.decrementPageCount();
-			PageLoadHandler.Timer.SaveTimerValue();
-		}
-		if (PageLoadHandler.QuickQuoteHelper.quickWindowParams.doc && e.originalTarget == PageLoadHandler.QuickQuoteHelper.quickWindowParams.doc)
-		{
-			if (PageLoadHandler.QuickQuoteHelper.quickQuoteSubmitting)
-			{
-				return true;
-			}
+			sendAsyncMessage("salastread:TimerCountDec");
 
-			if (PageLoadHandler.QuickQuoteHelper.quickquotewin && !PageLoadHandler.QuickQuoteHelper.quickquotewin.closed)
-			{
-				PageLoadHandler.QuickQuoteHelper.quickquotewin.detachFromDocument();
-			}
-			return true;
+		// Check if this page was still attached to a Quick Quote window, but
+		// make sure we only send a CPOW if the tab was previously attached.
+		if (QuickQuoteHelper.pageWasAttached === true)
+		{
+			sendAsyncMessage("salastread:QuickQuoteCheckUnload", null, {doc: e.originalTarget});
+			QuickQuoteHelper.pageWasAttached = false;
 		}
 	},
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Page Handlers ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// (stubs)
 
+	handleIndex: function(doc)
+	{
+		let {IndexHandler} = require("content/indexHandler");
+		return IndexHandler.handleIndex(doc);
+	},
+
+	handleBookmarkedThreads: function(doc)
+	{
+		let {BookmarkedThreadsHandler} = require("content/bookmarkedThreadsHandler");
+		return BookmarkedThreadsHandler.handleBookmarkedThreads(doc);
+	},
+
+	handleForumDisplay: function(doc)
+	{
+		let {ForumDisplayHandler} = require("content/forumDisplayHandler");
+		return ForumDisplayHandler.handleForumDisplay(doc);
+	},
+
+	handleShowThread: function(doc)
+	{
+		let {ShowThreadHandler} = require("content/showthreadHandler");
+		return ShowThreadHandler.handleShowThread(doc);	
+	},
+
+	handleNewReply: function(doc)
+	{
+		let {QuickQuoteHelper} = require("content/quickQuoteHelper");
+		return QuickQuoteHelper.handleNewReply(doc);	
+	},
+
+	handleEditPost: function(doc)
+	{
+		let {QuickQuoteHelper} = require("content/quickQuoteHelper");
+		return QuickQuoteHelper.handleEditPost(doc);	
+	},
+
+	handleMisc: function(doc)
+	{
+		let {MiscHandler} = require("content/miscHandler");
+		return MiscHandler.handleMisc(doc);	
+	},
+
+	handleQuery: function(doc)
+	{
+		let {SearchHandler} = require("content/searchHandler");
+		return SearchHandler.handleQuery(doc);
+	},
+
+	handleOldSearch: function(doc)
+	{
+		let {SearchHandler} = require("content/searchHandler");
+		return SearchHandler.handleOldSearch(doc);
+	},
+
+	handleProfileView: function(doc)
+	{
+		let {ProfileViewHandler} = require("content/profileViewHandler");
+		return ProfileViewHandler.handleProfileView(doc);
+	},
+
+	handleAccount: function(doc)
+	{
+		let {AccountHandler} = require("content/accountHandler");
+		return AccountHandler.handleAccount(doc);
+	},
+
+	handleSupport: function(doc)
+	{
+		let {SupportHandler} = require("content/supportHandler");
+		return SupportHandler.handleSupport(doc);
+	},
+
+
+	// stubs:
+
+	// We don't use this function to get the forum list anymore
+	// since it would insert a bunch of unused forums.
 	handleStats: function(doc)
 	{
-		/* We don't use this function anymore since it would insert a bunch of unused forums.
-		if (doc.getElementsByName('t_forumid'))
-		{
-			// The forum list is here so let's update it
-			PageLoadHandler.grabForumList(doc);
-		}
-		*/
 	},
 
 	handleModQueue: function(doc)
@@ -201,3 +266,5 @@ let PageLoadHandler = exports.PageLoadHandler = {
 
 
 };
+
+PageLoadHandler.init();

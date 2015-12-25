@@ -4,6 +4,8 @@ Cu.import("resource://gre/modules/Services.jsm");
 registerAboutSALR();
 require("db");
 require("ui");
+require("timer");
+require("quickQuoteInterface");
 
 function AboutSALR() { }
 AboutSALR.prototype = {

@@ -9,6 +9,11 @@ let {Utils} = require("utils");
 
 let Menus = exports.Menus = 
 {
+	init: function()
+	{
+		Utils.addFrameMessageListener("salastread:RebuildAllMenus", Menus.rebuildAllMenus);
+	},
+
 	/**
 	 * Creates the 'SA' menu itself and its popup
 	 * @param {Window} window to create in
@@ -581,3 +586,5 @@ let Menus = exports.Menus =
 	},
 
 };
+
+Menus.init();

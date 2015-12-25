@@ -4,9 +4,9 @@
 
 */
 
-let {Prefs} = require("prefs");
+let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
-let {ThreadListHandler} = require("threadListHandler");
+let {ThreadListHandler} = require("content/threadListHandler");
 
 let BookmarkedThreadsHandler = exports.BookmarkedThreadsHandler =
 {

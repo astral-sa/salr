@@ -2,17 +2,10 @@
  * @fileOverview Everything to do with imgur.
  */
 
-let {DB} = require("db");
 let {PageUtils} = require("pageUtils");
 
 let ImgurHandler = exports.ImgurHandler =
 {
-	/**
-	 * Cache of valid gif IDs we can convert to gifv.
-	 * @type {Object}
-	 */
-	imgurGifCache: {},
-
 	/**
 	 * List of pending Gif images so we only make one request per image ID.
 	 * @type {Object}
@@ -30,7 +23,7 @@ let ImgurHandler = exports.ImgurHandler =
 		let imgurGif = image.src.match(/^https?\:\/\/(?:www|i)\.imgur\.com\/(.*)\.gif$/i);
 		if (!imgurGif)
 			return;
-		let cachedValidation = ImgurHandler.imgurGifCache[imgurGif[1]];
+		let cachedValidation = sendSyncMessage("salastread:GetImgurGifInfo", imgurGif[1]);
 		if (cachedValidation === true)
 		{
 			ImgurHandler.replaceGifWithPlaceholder(image);
@@ -51,7 +44,7 @@ let ImgurHandler = exports.ImgurHandler =
 		{
 			ImgurHandler._addPendingGifItem(imgurGif[1], image);
 			let imgurApiTarg = "https://api.imgur.com/2/image/" + imgurGif[1] + ".json";
-			let imgurChecker = new XMLHttpRequest();
+			let imgurChecker = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 			imgurChecker.open("GET", imgurApiTarg, true);
 			imgurChecker.onreadystatechange = ImgurHandler.imgurGifCallback.bind(imgurChecker, imgurGif[1]);
 			imgurChecker.ontimeout = function()
@@ -124,7 +117,7 @@ let ImgurHandler = exports.ImgurHandler =
 	 */
 	resolvePendingGifs: function(imgurId, success)
 	{
-		ImgurHandler.imgurGifCache[imgurId] = success;
+		sendAsyncMessage("salastread:SetImgurGifInfo", {imgurId, success});
 		while (this._gifHasPendingItems(imgurId))
 		{
 			let popImage = this._pendingGifs[imgurId].pop();
@@ -182,7 +175,8 @@ let ImgurHandler = exports.ImgurHandler =
 		let video = event.target.parentNode;
 		video.removeEventListener('error', ImgurHandler.onGifvError.bind(null, anImage), true);
 		let imgurId = anImage.dataset.oldSrc.match(/^https?\:\/\/(?:www|i)\.imgur\.com\/(.*)\.gif$/i)[1];
-		ImgurHandler.imgurGifCache[imgurId] = false;
+		let success = false;
+		sendAsyncMessage("salastread:SetImgurGifInfo", {imgurId, success});
 
 		anImage.src = anImage.dataset.oldSrc;
 		try
@@ -251,7 +245,7 @@ let ImgurHandler = exports.ImgurHandler =
 			return;
 		}
 
-		let cachedValidation = DB.imgurWorkaroundCache[imgurImageInLink[1]];
+		let cachedValidation = sendSyncMessage("salastread:GetImgurWorkaroundInfo", imgurImageInLink[1]);
 		switch (cachedValidation)
 		{
 			case true:
@@ -266,9 +260,8 @@ let ImgurHandler = exports.ImgurHandler =
 				link.parentNode.replaceChild(newImg, link);
 				break;
 			default:
-				let XMLHttpRequest = Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
 				let imgurApiTarg = "https://api.imgur.com/2/image/" + imgurImageInLink[1] + ".json";
-				let imgurChecker = new XMLHttpRequest();
+				let imgurChecker = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 				//let linktoCheck = link;
 				//let newImgtoCheck = newImg;
 				imgurChecker.open("GET", imgurApiTarg, true);
@@ -290,14 +283,14 @@ let ImgurHandler = exports.ImgurHandler =
 	{
 		if (imgurChecker.readyState === 4)
 		{
-			DB.imgurWorkaroundCache[imgurId] = true;
+			sendAsyncMessage("salastread:SetImgurWorkaroundTrue", imgurId);
 			if (imgurChecker.status === 404)
 			{
 				let oldImgSrc = linktoCheck.firstChild.src;
 				newImgtoCheck.src = oldImgSrc;
 				newImgtoCheck.title = "Forum bug-created link removed by SALR";
 				newImgtoCheck.style.border = "none";
-				DB.imgurWorkaroundCache[imgurId] = false;
+				sendAsyncMessage("salastread:SetImgurWorkaroundFalse", imgurId);
 			}
 			linktoCheck.textContent = '';
 			linktoCheck.parentNode.replaceChild(newImgtoCheck, linktoCheck);

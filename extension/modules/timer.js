@@ -3,6 +3,7 @@
  */
 
 let {Prefs} = require("prefs");
+let {Utils} = require("utils");
 
 let Timer = exports.Timer =
 {
@@ -71,6 +72,10 @@ let Timer = exports.Timer =
 		Timer.ourTimer = Components.classes["@mozilla.org/timer;1"]
 			.createInstance(Components.interfaces.nsITimer);
 
+		// Add listeners for loads/unloads
+		Utils.addFrameMessageListener("salastread:TimerCountInc", () => { Timer.incrementPageCount(); });
+		Utils.addFrameMessageListener("salastread:TimerCountDec", () => { Timer.decrementPageCount(); });
+
 		onShutdown.add(function() {
 			if (Timer._timerActive)
 				Timer.ourTimer.cancel();
@@ -89,6 +94,7 @@ let Timer = exports.Timer =
 
 	/**
 	 * Decrements the count of open SA forum pages. Stops timer if 0 pages.
+	 *     Ensures timer value is saved.
 	 */
 	decrementPageCount: function()
 	{
@@ -97,6 +103,7 @@ let Timer = exports.Timer =
 		Timer._timerPageCount--;
 		if (Timer._timerPageCount === 0)
 			Timer.clearTimer();
+		Timer.SaveTimerValue();
 	},
 
 	/**

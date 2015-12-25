@@ -6,6 +6,7 @@
 		<em:version>%SALR_VERSION%</em:version>
 		<em:type>2</em:type>
 		<em:bootstrap>true</em:bootstrap>
+		<em:multiprocessCompatible>true</em:multiprocessCompatible>
 		<em:homepageURL>http://forums.somethingawful.com/showthread.php?threadid=2571027&amp;goto=lastpost</em:homepageURL>
 		<em:iconURL>chrome://salastread/skin/salastread-small.png</em:iconURL>
 		<em:aboutURL>chrome://salastread/content/about.xul</em:aboutURL>

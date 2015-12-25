@@ -1,11 +1,8 @@
-/*
+/**
+ * @fileoverview Everything to do with embedding video links.
+ */
 
-	Everything to do with videos
-
-*/
-
-let {Prefs} = require("prefs");
-let {DB} = require("db");
+let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
 
 let VideoHandler = exports.VideoHandler =
@@ -305,15 +302,12 @@ let VideoHandler = exports.VideoHandler =
 
 	getYTVideoTitle: function(link, vidId)
 	{
-/*	var dConsole = Components.classes["@mozilla.org/consoleservice;1"]
-		.getService(Components.interfaces.nsIConsoleService); */
-
 		// Give up if it already has some kind of title or image
 		if (link.innerHTML && !link.innerHTML.match(/^http/) && link.innerHTML.length > 1)
 			return;
 
 		// See if we need to make an API request at all
-		var cachedTitle = DB.videoTitleCache[vidId];
+		let cachedTitle = sendSyncMessage("salastread:GetVideoTitleCacheInfo", vidId);
 		if (cachedTitle != null)
 		{
 			link.textContent = cachedTitle;
@@ -328,11 +322,9 @@ let VideoHandler = exports.VideoHandler =
 		{
 			// Add to pending list
 			this._addPendingVidLink(vidId, link);
-			// Get the title using YouTube's v3 API
-			var XMLHttpRequest = Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
-			// Protect our secrets from lazy spiders
+			// Get the title using YouTube's v3 API; protect our secrets from lazy spiders
 			var ytApiTarg = "https://www.googleapis.com/youtube/v3/videos?id=" + vidId + atob("JmtleT1BSXphU3lBTWJKVW1NMlhaSG9telpLaXRNS2FFd2Z3blpOekZESUk=") + "&fields=items(snippet(title))&part=snippet";
-			var ytTitleGetter = new XMLHttpRequest();
+			var ytTitleGetter = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 			ytTitleGetter.open("GET", ytApiTarg, true);
 			ytTitleGetter.setRequestHeader('Origin', "http://forums.somethingawful.com");
 			ytTitleGetter.ontimeout = function()
@@ -366,7 +358,7 @@ let VideoHandler = exports.VideoHandler =
 				}
 				if (!newTitle)
 					return;
-				DB.videoTitleCache[vidId] = newTitle;
+				sendAsyncMessage("salastread:SetVideoTitleCacheInfo", {vidId, newTitle});
 				while (this._vidHasPendingLinks(vidId))
 				{
 					let popLink = this._pendingVideoTitles[vidId].pop();

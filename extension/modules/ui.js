@@ -7,7 +7,7 @@ let {Menus} = require("menus");
 let {Utils} = require("utils");
 let {ToolbarButton} = require("toolbarButton");
 let {ContextMenu} = require("contextMenu");
-let {PageLoadHandler} = require("pageLoadHandler");
+let {Styles} = require("styles");
 
 var WindowListener =
 {
@@ -27,29 +27,6 @@ var WindowListener =
 	onWindowTitleChange: function(xulWindow, newTitle) { }
 };
 
-Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-let SALRConfigObserver =
-{
-	observe: function(subject, topic, data)
-	{
-		if (topic === "addon-options-displayed")
-		{
-			let {addonID} = require("info");
-			if (data === addonID)
-			{
-				// Workaround - don't let add-ons manager open details from options
-				let doc = subject;
-				let win = doc.defaultView;
-				if (win.location.href === "about:addons")
-					win.history.back();
-				// Open the config
-				Utils.runConfig();
-			}
-		}
-	},
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupportsWeakReference, Ci.nsIObserver])
-};
-
 let UI = exports.UI =
 {
 	init: function()
@@ -63,8 +40,26 @@ let UI = exports.UI =
 			let styleSheetURI = Services.io.newURI(globalStyleSheets[i], null, null);
 			styleSheetService.loadAndRegisterSheet(styleSheetURI, styleSheetService.AUTHOR_SHEET);
 		}
+
+		// Set up frame script
+		let info = require("info");
+		let globalMM = Cc["@mozilla.org/globalmessagemanager;1"].getService(Ci.nsIMessageListenerManager);
+		Utils.addFrameMessageListener("salastread:GetInfo", () => info);
+		let frameScript = info.addonRoot + "modules/content/frameScript.js?" + Math.random();
+		globalMM.loadFrameScript(frameScript, true);
+
+		// Add config listeners
+		Utils.addFrameMessageListener("salastread:RunConfig", Utils.runConfig);
+		Utils.addFrameMessageListener("salastread:RunConfigAddUser", function({userid, username}) {
+			Utils.runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
+		});
+
 		onShutdown.add(function()
 			{
+				// Unload frame scripts
+				globalMM.broadcastAsyncMessage("salastread:Shutdown", frameScript);
+				globalMM.removeDelayedFrameScript(frameScript);
+
 				// Unload stylesheets
 				let styleSheetService = Components.classes["@mozilla.org/content/style-sheet-service;1"]
 										.getService(Components.interfaces.nsIStyleSheetService);
@@ -80,10 +75,6 @@ let UI = exports.UI =
 		// Load UI elements
 		forEachOpenWindow(loadIntoWindow);
 		Services.wm.addListener(WindowListener);
-
-		// Add observer for opening SALR Config from Addons page
-		Services.obs.addObserver(SALRConfigObserver, "addon-options-displayed", true);
-		onShutdown.add(function() { Services.obs.removeObserver(SALRConfigObserver, "addon-options-displayed"); });
 	},
 
 	addPopupNotificationAnchor: function(window)
@@ -120,8 +111,8 @@ function loadIntoWindow(window) {
 	if (Prefs.getPref("showSAForumMenu") && (window.document.getElementById("salr-menu") === null))
 		Menus.buildForumMenu(window, 'menubar');
 
-	window.addEventListener('DOMContentLoaded', PageLoadHandler.onDOMLoad, true);
-	window.addEventListener('beforeunload', PageLoadHandler.pageOnBeforeUnload, true);
+	//window.addEventListener('DOMContentLoaded', PageLoadHandler.onDOMLoad, true);
+	//window.addEventListener('beforeunload', PageLoadHandler.pageOnBeforeUnload, true);
 
 	// Do we need to show the changelog in this window?
 	if (DB.needToShowChangeLog === true)
@@ -134,11 +125,11 @@ function loadIntoWindow(window) {
 }
 
 function unloadFromWindow(window) {
-	window.removeEventListener('DOMContentLoaded', PageLoadHandler.onDOMLoad, true);
+	//window.removeEventListener('DOMContentLoaded', PageLoadHandler.onDOMLoad, true);
 	ContextMenu.removeContextMenu(window);
 	UI.removePopupNotificationAnchor(window);
 
-	window.removeEventListener('beforeunload', PageLoadHandler.pageOnBeforeUnload, true);
+	//window.removeEventListener('beforeunload', PageLoadHandler.pageOnBeforeUnload, true);
 
 	Menus.removeForumMenu(window);
 

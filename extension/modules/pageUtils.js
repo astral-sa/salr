@@ -9,8 +9,8 @@ let PageUtils = exports.PageUtils =
 	// Output some text to the browser console
 	logToConsole: function(someText)
 	{
-		let dConsole = Components.classes["@mozilla.org/consoleservice;1"]
-					.getService(Components.interfaces.nsIConsoleService);
+		let dConsole = Cc["@mozilla.org/consoleservice;1"]
+					.getService(Ci.nsIConsoleService);
 		dConsole.logStringMessage(someText);
 		/* Doesn't work on e10s
 		try
@@ -25,6 +25,19 @@ let PageUtils = exports.PageUtils =
 			dConsole.logStringMessage(someText);			
 		}
 		*/
+	},
+
+	/**
+	 * Handle a message from Chrome to make a tab-modal prompt.
+	 */
+	promptInTab: function(message)
+	{
+		let msg = message.data.msg;
+		let factory = Cc["@mozilla.org/prompter;1"].getService(Ci.nsIPromptFactory);
+		let prompt = factory.getPrompt(content, Ci.nsIPrompt);
+		let bag = prompt.QueryInterface(Ci.nsIWritablePropertyBag2);
+		bag.setPropertyAsBool("allowTabModal", true);
+		prompt.alert.apply(null, ["SALR Alert", msg]);
 	},
 
 	// Adds a hidden form input to a form. Used by showthreadHandler and Quick Quote
@@ -103,111 +116,6 @@ let PageUtils = exports.PageUtils =
 		return doc.title.replace(/( \- )?The Something ?Awful Forums( \- )?/i, '');
 	},
 
-	grabForumList: function(doc)
-	{
-		var statsMenu = false;
-		var rowList = PageUtils.selectNodes(doc, doc, "//select[@name='forumid']/option");
-		if (!rowList || rowList.length === 0)
-		{
-			// Can't find the forum list so lets check the other location
-			rowList = PageUtils.selectNodes(doc, doc, "//select[@name='t_forumid']/option");
-			if (!rowList)
-			{
-				// Still couldn't find the forum list so let's stop now
-				return;
-			}
-			statsMenu = true;
-		}
-		if (rowList.length < 15)
-		{
-			// There are way more then 15 forums so this menu is missing some
-			return;
-		}
-
-		//let oDomParser = new DOMParser();
-		let oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
-             .createInstance(Components.interfaces.nsIDOMParser);
-		let forumsDoc = oDomParser.parseFromString("<?xml version=\"1.0\"?>\n<forumlist></forumlist>", "text/xml");
-		//var targetEl = forumsDoc.documentElement;
-
-		let forumsEl = forumsDoc.createElement("forums");
-		forumsDoc.documentElement.appendChild(forumsEl);
-		forumsDoc.documentElement.insertBefore(forumsDoc.createTextNode("\n"), forumsEl);
-
-		for (let i = 0; i < rowList.length; )
-		{
-			i = PageUtils._addForums(forumsDoc, rowList, i, forumsEl, 0, statsMenu);
-		}
-
-		let {DB} = require("db"); // Used only in grabForumList
-		let {Menus} = require("menus"); // Used only in grabForumList
-
-		DB.forumListXml = forumsDoc;
-		DB.gotForumList = true;
-		Menus.rebuildAllMenus();
-	},
-
-	_addForums: function(forumsDoc, rowList, index, parentEl, depth, statsMenu)
-	{
-		var thisEl = rowList[index];
-		var forumTitle = thisEl.firstChild.nodeValue;
-		var forumId = thisEl.getAttribute("value");
-
-		forumId = parseInt(forumId);
-		if (isNaN(forumId) || forumId < 0)
-		{
-			return index+1;
-		}
-
-		var dashes = (statsMenu) ? '---' : '--';
-		var elDepth = 0;
-
-		while (forumTitle.indexOf(dashes) === 0)
-		{
-			forumTitle = forumTitle.substring(dashes.length);
-			elDepth++;
-		}
-		forumTitle = forumTitle.replace(/^\s+|\s+$/g, '');
-		forumTitle = forumTitle.replace('(no posting)', '');
-		if (elDepth < depth)
-		{
-			return index;
-		}
-		if (elDepth > depth)
-		{
-			// This can't fit in the tree
-			return index+1;
-		}
-
-		var fel;
-		if (depth === 0)
-		{
-			fel = forumsDoc.createElement("cat");
-		}
-		else
-		{
-			fel = forumsDoc.createElement("forum");
-		}
-
-		fel.setAttribute("id", forumId);
-		fel.setAttribute("name", forumTitle);
-		parentEl.appendChild(forumsDoc.createTextNode("\n"));
-		parentEl.appendChild(fel);
-
-		for (index++; index < rowList.length; )
-		{
-			var i = PageUtils._addForums(forumsDoc, rowList, index, fel, depth+1, statsMenu);
-
-			if (i == index)
-			{
-				return i;
-			}
-
-			index = i;
-		}
-		return index;
-	},
-
 	insertSALRConfigLink: function(doc)
 	{
 		var usercpnode = PageUtils.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'usercp.php')]");
@@ -225,15 +133,9 @@ let PageUtils = exports.PageUtils =
 			{
 				e.stopPropagation();
 				e.preventDefault();
-				PageUtils.runConfig();
+				sendAsyncMessage("salastread:RunConfig");
 			}, true);
 		}
-	},
-
-	runConfig: function(paneID, args)
-	{
-		let {Utils} = require("utils"); // used for runConfig
-		Utils.runConfig(paneID, args);
 	},
 
 	// Try to figure out the current forum we're in
@@ -379,6 +281,28 @@ let PageUtils = exports.PageUtils =
 			id = false;
 		}
 		return id;	
+	},
+
+	/**
+	 * Attempts to determine the number of pages in a document.
+	 * @param  {Element} doc Document element to check.
+	 * @return {Object} Object containing total number of pages and current page.
+	 */
+	getPagesForDoc: function(doc)
+	{
+		let pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
+		pageList = pageList[pageList.length-1];
+		// Handle no page list
+		if (!pageList)
+			return {'total': 1, 'current': 1};
+		// Check if there's only one page
+		if (pageList.childNodes.length <= 1)
+			return {'total': 1, 'current': 1};
+		if (!pageList.lastChild || !pageList.lastChild.innerHTML)
+			return {'total': 1, 'current': 1};
+		let numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+		let curPage = PageUtils.selectSingleNode(doc, pageList, ".//OPTION[@selected='selected']");
+		return {'total': parseInt(numPages[1], 10), 'current': parseInt(curPage.innerHTML, 10)};
 	},
 
 	/**

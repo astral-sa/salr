@@ -4,10 +4,10 @@
 
 */
 
-let {DB} = require("db");
-let {Prefs} = require("prefs");
+let {DB} = require("content/dbHelper");
+let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
-let {AdvancedThreadFiltering} = require("advancedThreadFiltering");
+let {AdvancedThreadFiltering} = require("content/advancedThreadFiltering");
 
 let ThreadListHandler = exports.ThreadListHandler =
 {

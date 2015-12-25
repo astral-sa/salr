@@ -4,9 +4,9 @@
 
 */
 
-let {Prefs} = require("prefs");
+let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
-let {Gestures} = require("gestures");
+let {Gestures} = require("content/gestures");
 
 let SearchHandler = exports.SearchHandler =
 {
@@ -34,10 +34,8 @@ let SearchHandler = exports.SearchHandler =
 				numPages = curPage;
 			}
 
-			doc.__SALR_curPage = curPage;
-			doc.__SALR_maxPage = numPages;
-
-			Gestures.addGestureListeners(doc);
+			let pages = {'total': numPages, 'current': curPage};
+			Gestures.addGestureListeners(doc, pages);
 		}
 	},
 
@@ -71,10 +69,8 @@ let SearchHandler = exports.SearchHandler =
 				}
 			}
 
-			doc.__SALR_curPage = curPage;
-			doc.__SALR_maxPage = numPages;
-
-			Gestures.addGestureListeners(doc);
+			let pages = {'total': numPages, 'current': curPage};
+			Gestures.addGestureListeners(doc, pages);
 		}
 	},
 

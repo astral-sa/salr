@@ -237,12 +237,15 @@ var gSALRUsersPane = {
 
 		for (var i in items)
 		{
-			var userid = items[i].getAttribute("value");
-			DB.setPosterColor(userid, "0");
-			DB.setPosterBackground(userid, "0");
-			DB.setPosterNotes(userid, "");
+			if (items.hasOwnProperty(i))
+			{
+				var userid = items[i].getAttribute("value");
+				DB.setPosterColor(userid, "0");
+				DB.setPosterBackground(userid, "0");
+				DB.setPosterNotes(userid, "");
 
-			listbox.removeItemAt(listbox.getIndexOfItem(items[i]));
+				listbox.removeItemAt(listbox.getIndexOfItem(items[i]));
+			}
 		}
 	},
 

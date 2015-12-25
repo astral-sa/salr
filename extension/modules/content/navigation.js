@@ -2,10 +2,10 @@
  * @fileOverview Functions dealing with navigation (excluding gestures).
  */
 
-let {Prefs} = require("prefs");
+let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
-let {QuickQuoteHelper} = require("quickQuoteHelper");
-let {Gestures} = require("gestures");
+let {QuickQuoteHelper} = require("content/quickQuoteHelper");
+let {Gestures} = require("content/gestures");
 
 let Navigation = exports.Navigation = 
 {
@@ -16,18 +16,17 @@ let Navigation = exports.Navigation =
 	 */
 	setupThreadNavigation: function(doc, singlePost)
 	{
-// Need to de-duplicate this call:
-		let pages = Navigation.getPagesForDoc(doc);
+		let pages = PageUtils.getPagesForDoc(doc);
 		doc.__SALR_curPage = pages.current;
 		doc.__SALR_maxPage = pages.total;
 
 		if (Prefs.getPref("enablePageNavigator") && !singlePost)
 		{
-			Navigation.addPagination(doc);
+			Navigation.addPagination(doc, pages);
 		}
 		if (Prefs.getPref("gestureEnable"))
 		{
-			Gestures.addGestureListeners(doc);
+			Gestures.addGestureListeners(doc, pages);
 		}
 		if (Prefs.getPref('quickPostJump'))
 		{
@@ -39,9 +38,8 @@ let Navigation = exports.Navigation =
 	 * Adds the quick page jump paginator to a document.
 	 * @param {Element} doc Document element to add paginator to.
 	 */
-	addPagination: function(doc)
+	addPagination: function(doc, pages)
 	{
-		let pages = Navigation.getPagesForDoc(doc);
 		if (pages.total === 1)
 			return;
 
@@ -92,28 +90,6 @@ let Navigation = exports.Navigation =
 		}
 
 		doc.body.appendChild(navDiv);
-	},
-
-	/**
-	 * Attempts to determine the number of pages in a document.
-	 * @param  {Element} doc Document element to check.
-	 * @return {Object} Object containing total number of pages and current page.
-	 */
-	getPagesForDoc: function(doc)
-	{
-		let pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-		pageList = pageList[pageList.length-1];
-		// Handle no page list
-		if (!pageList)
-			return {'total': 1, 'current': 1};
-		// Check if there's only one page
-		if (pageList.childNodes.length <= 1)
-			return {'total': 1, 'current': 1};
-		if (!pageList.lastChild || !pageList.lastChild.innerHTML)
-			return {'total': 1, 'current': 1};
-		let numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
-		let curPage = PageUtils.selectSingleNode(doc, pageList, ".//OPTION[@selected='selected']");
-		return {'total': parseInt(numPages[1], 10), 'current': parseInt(curPage.innerHTML, 10)};
 	},
 
 	/**
@@ -281,8 +257,6 @@ let Navigation = exports.Navigation =
 			this.removeEventListener('keypress', quickPostJump, false);
 			return;
 		}
-		let {Utils} = require("utils");
-		let win = Utils.getRecentWindow();
 
 		try {
 			var ctrlKey = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
@@ -376,7 +350,7 @@ let Navigation = exports.Navigation =
 				post.scrollIntoView(true);
 				doc.__SALR_curFocus = postId;
 			}
-		} catch(e) {win.dump('error:'+e);}
+		} catch(e) {dump('error:'+e);}
 	},
 
 	/**

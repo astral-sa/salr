@@ -9,7 +9,7 @@ function require(module)
 let {Prefs} = require("prefs");
 let {DB} = require("db");
 let {PageUtils} = require("pageUtils");
-let {QuickQuoteHelper} = require("quickQuoteHelper");
+let {QuickQuoteHelper} = require("quickQuoteInterface");
 //
 // Note: quickquote sticks some extra vars into DB that aren't dealt with by DB.
 // This should be dealt with in the quick post overhaul.

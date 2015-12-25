@@ -6,7 +6,7 @@
 
 Cu.import("resource://gre/modules/Services.jsm");
 let {Prefs} = require("prefs");
-//let {Utils} = require("utils");
+let {Utils} = require("utils");
 
 function ReadFile(fn)
 {
@@ -55,21 +55,21 @@ let DB = exports.DB =
 	init: function()
 	{
 		// Load relevant databases
-		this.ProfileInit();
+		DB.ProfileInit();
 
 		// Check if we need some SQL patches
-		if (this.LastRunVersion != this.SALRversion && this.LastRunVersion !== "0.0.0")
+		if (DB.LastRunVersion != DB.SALRversion && DB.LastRunVersion !== "0.0.0")
 		{
-			//this.needToShowChangeLog = !this.IsDevelopmentRelease;
-			this.needToShowChangeLog = true;
+			//DB.needToShowChangeLog = !DB.IsDevelopmentRelease;
+			DB.needToShowChangeLog = true;
 			// 3.0+ patches:
 			// Services.vc.compare("str1", "str2")
 
 			// Check for pre-3.0 SQL patches
-			let hasBuildNum = this.LastRunVersion.match(/^1\.99\.(\d+)/);
+			let hasBuildNum = DB.LastRunVersion.match(/^1\.99\.(\d+)/);
 			if (hasBuildNum && hasBuildNum[1])
 			{
-				this.checkForSQLPatches(parseInt(hasBuildNum[1], 10));
+				DB.checkForSQLPatches(parseInt(hasBuildNum[1], 10));
 			}
 		}
 
@@ -77,6 +77,7 @@ let DB = exports.DB =
 		DB.populateDataCaches();
 
 		DB.LastRunVersion = DB.SALRversion;
+		DB.initChildListeners();
 	},
 
 	_profileInitialized: false,
@@ -84,21 +85,21 @@ let DB = exports.DB =
 	_flfn: null,
 	ProfileInit: function()
 	{
-		if (this._profileInitialized) {
+		if (DB._profileInitialized) {
 			return;
 		}
-		this._profileInitialized = true;
+		DB._profileInitialized = true;
 
 		try
 		{
-			DB._dbfn = this.getFilePath(Prefs.getPref('databaseStoragePath'));
-			DB._flfn = this.getFilePath(Prefs.getPref('forumListStoragePath'));
+			DB._dbfn = DB.getFilePath(Prefs.getPref('databaseStoragePath'));
+			DB._flfn = DB.getFilePath(Prefs.getPref('forumListStoragePath'));
 //Utils.logToConsole("SALR Initializing Profile:\ndb: " + DB._dbfn + "\nfl: " + DB._flfn);
 
 			DB.LoadForumListXML();
 
 		} catch (e) {
-			this._starterr = e + "\nLine: " + e.lineNumber;
+			DB._starterr = e + "\nLine: " + e.lineNumber;
 		}
 	},
 
@@ -122,30 +123,40 @@ let DB = exports.DB =
 
 	gettingForumList: false, // Will use this to defer
 	gotForumList: false,
+
+	/**
+	 * Function to access gotForumList
+	 * @return {boolean} gotForumList
+	 */
+	doWeHaveForumList: function()
+	{
+		return DB.gotForumList;
+	},
+
 	_forumListXml: null,
 	_xmlDoc: null,
 
 	get xmlDoc()
 	{
-		if (this._xmlDoc != null)
+		if (DB._xmlDoc != null)
 		{
-			return this._xmlDoc;
+			return DB._xmlDoc;
 		}
 
 		return;
 		// Does not return anything (undefined) if _xmlDoc is null
 	},
-	set xmlDoc(value) { this._xmlDoc = value; },
+	set xmlDoc(value) { DB._xmlDoc = value; },
 
-	get forumListXml() { return this._forumListXml; },
+	get forumListXml() { return DB._forumListXml; },
 	set forumListXml(value) {
 		if (value != null)
 		{
-			this._forumListXml = value;
+			DB._forumListXml = value;
 			let oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
 							.createInstance(Components.interfaces.nsIDOMSerializer);
-			let xmlstr = oXmlSer.serializeToString(this._forumListXml);
-			SaveFile(this._flfn, xmlstr);
+			let xmlstr = oXmlSer.serializeToString(DB._forumListXml);
+			SaveFile(DB._flfn, xmlstr);
 		}
 	},
 
@@ -154,7 +165,7 @@ let DB = exports.DB =
 		let oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
 							.createInstance(Components.interfaces.nsIDOMParser);
 		try {
-			this.xmlDoc = oDomParser.parseFromString(xmlstr, "text/xml");
+			DB.xmlDoc = oDomParser.parseFromString(xmlstr, "text/xml");
 		} catch (e) {
 			throw e + "\n" + xmlstr;
 		}
@@ -163,32 +174,32 @@ let DB = exports.DB =
 	LoadForumListXML: function()
 	{
 		try {
-			let pxml = ReadFile(this._flfn);
+			let pxml = ReadFile(DB._flfn);
 			if (typeof(pxml) != "undefined")
 			{
 				if (pxml) {
 					let oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
 										.createInstance(Components.interfaces.nsIDOMParser);
 					try {
-						this._forumListXml = oDomParser.parseFromString(pxml, "text/xml");
+						DB._forumListXml = oDomParser.parseFromString(pxml, "text/xml");
 					} catch (e) {
-						this._forumListXml = null;
+						DB._forumListXml = null;
 					}
 				} else 	{
-					this._forumListXml = null;
+					DB._forumListXml = null;
 				}
 			} else {
-				this._forumListXml = null;
+				DB._forumListXml = null;
 			}
 		} catch(e) {
-			this._forumListXml = null;
+			DB._forumListXml = null;
 		}
 	},
 
 	InitializeEmptySALRXML: function(merge)
 	{
-		if (!merge || this.xmlDoc==null) {
-			this.SetXML("<?xml version=\"1.0\"?>\n<salastread>\n</salastread>");
+		if (!merge || DB.xmlDoc==null) {
+			DB.SetXML("<?xml version=\"1.0\"?>\n<salastread>\n</salastread>");
 		}
 	},
 
@@ -267,7 +278,7 @@ let DB = exports.DB =
 		return build;
 	},
 
-	get storedbFileName() { return this._dbfn; },
+	get storedbFileName() { return DB._dbfn; },
 
 	mDBConn: null,
 	userDataCache: Array(),
@@ -276,18 +287,23 @@ let DB = exports.DB =
 	iconDataCache: Array(),
 	videoTitleCache: Array(),
 	imgurWorkaroundCache: Array(),
+	/**
+	 * Cache of valid gif IDs we can convert to gifv.
+	 * @type {Object}
+	 */
+	imgurGifCache: {},
 
 	// Return a connection to the database
 	// Create database if it doesn't exist yet
 	// TODO: Error handling, Improving(?) file handling
 	get database()
 	{
-		if (this.mDBConn != null)
+		if (DB.mDBConn != null)
 		{
-			return this.mDBConn;
+			return DB.mDBConn;
 		}
 		// the connection hasn't been created yet so we'll connect
-		var fn = this.storedbFileName;
+		var fn = DB.storedbFileName;
 		var file = Components.classes["@mozilla.org/file/local;1"]
 			.createInstance(Components.interfaces.nsILocalFile);
 		file.initWithPath(fn);
@@ -304,38 +320,38 @@ let DB = exports.DB =
 		}
 		var storageService = Components.classes["@mozilla.org/storage/service;1"]
 			.getService(Components.interfaces.mozIStorageService);
-		this.mDBConn = storageService.openDatabase(file);
-		if (!this.mDBConn.tableExists("threaddata"))
+		DB.mDBConn = storageService.openDatabase(file);
+		if (!DB.mDBConn.tableExists("threaddata"))
 		{
-			this.mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, opview BOOLEAN)");
-			this.prepopulateDB("threaddata");
+			DB.mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, opview BOOLEAN)");
+			DB.prepopulateDB("threaddata");
 		}
-		if (!this.mDBConn.tableExists("userdata"))
+		if (!DB.mDBConn.tableExists("userdata"))
 		{
-			this.mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT, ignored BOOLEAN, hideavatar BOOLEAN)");
-			this.prepopulateDB("userdata");
+			DB.mDBConn.executeSimpleSQL("CREATE TABLE `userdata` (userid INTEGER PRIMARY KEY, username VARCHAR(50), mod BOOLEAN, admin BOOLEAN, color VARCHAR(8), background VARCHAR(8), status VARCHAR(8), notes TEXT, ignored BOOLEAN, hideavatar BOOLEAN)");
+			DB.prepopulateDB("userdata");
 		}
-		if (!this.mDBConn.tableExists("posticons"))
+		if (!DB.mDBConn.tableExists("posticons"))
 		{
-			this.mDBConn.executeSimpleSQL("CREATE TABLE `posticons` (iconnumber INTEGER PRIMARY KEY, filename VARCHAR(50))");
-			this.prepopulateDB("posticons");
+			DB.mDBConn.executeSimpleSQL("CREATE TABLE `posticons` (iconnumber INTEGER PRIMARY KEY, filename VARCHAR(50))");
+			DB.prepopulateDB("posticons");
 		}
-		return this.mDBConn;
+		return DB.mDBConn;
 	},
 
 	// Returns an array of the ignored threads with the thread id as the key and the thread title as the value
 	get ignoreList()
 	{
-		if (this.threadDataCache.length === 0)
+		if (DB.threadDataCache.length === 0)
 		{
-			this.populateThreadDataCache();
+			DB.populateThreadDataCache();
 		}
 		let threads = [];
-		for (let threadDataKey in this.threadDataCache)
+		for (let threadDataKey in DB.threadDataCache)
 		{
-			if (this.threadDataCache.hasOwnProperty(threadDataKey))
+			if (DB.threadDataCache.hasOwnProperty(threadDataKey))
 			{
-				let threadData = this.threadDataCache[threadDataKey];
+				let threadData = DB.threadDataCache[threadDataKey];
 				if (threadData.ignore)
 				{
 					threads[threadData.threadid] = threadData.title;
@@ -349,16 +365,16 @@ let DB = exports.DB =
 	// and the thread title as the value
 	get starList()
 	{
-		if (this.threadDataCache.length === 0)
+		if (DB.threadDataCache.length === 0)
 		{
-			this.populateThreadDataCache();
+			DB.populateThreadDataCache();
 		}
 		var threads = [];
-		for (let threadDataKey in this.threadDataCache)
+		for (let threadDataKey in DB.threadDataCache)
 		{
-			if (this.threadDataCache.hasOwnProperty(threadDataKey))
+			if (DB.threadDataCache.hasOwnProperty(threadDataKey))
 			{
-				let threadData = this.threadDataCache[threadDataKey];
+				let threadData = DB.threadDataCache[threadDataKey];
 				if (threadData.star)
 				{
 					threads[threadData.threadid] = threadData.title;
@@ -372,7 +388,7 @@ let DB = exports.DB =
 	// Returns an associative array of thread icons with the filename as the key and the icon num as the value
 	get iconList()
 	{
-		return this.iconDataCache;
+		return DB.iconDataCache;
 	},
 
 	// Calls everything needed to fill the data caches
@@ -380,19 +396,19 @@ let DB = exports.DB =
 	{
 		try
 		{
-			this.populateUserDataCache();
+			DB.populateUserDataCache();
 		} catch (e) {
 			// Do nothing for now
 		}
 		try
 		{
-			this.populateThreadDataCache();
+			DB.populateThreadDataCache();
 		} catch (e) {
 			// Do nothing for now
 		}
 		try
 		{
-			this.populateIconDataCache();
+			DB.populateIconDataCache();
 		} catch (e) {
 			// Do nothing for now
 		}
@@ -403,24 +419,24 @@ let DB = exports.DB =
 	// @return: nothing
 	populateUserDataCache: function()
 	{
-		var statement = this.database.createStatement("SELECT `userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar` FROM `userdata`");
+		var statement = DB.database.createStatement("SELECT `userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar` FROM `userdata`");
 		var userid, username;
 		while (statement.executeStep())
 		{
 			userid = statement.getInt32(0);
 			username = statement.getString(1);
-			this.userDataCache[userid] = {};
-			this.userDataCache[userid].userid = userid;
-			this.userDataCache[userid].username = username;
-			this.userDataCache[userid].mod = Boolean(statement.getInt32(2));
-			this.userDataCache[userid].admin = Boolean(statement.getInt32(3));
-			this.userDataCache[userid].color = statement.getString(4);
-			this.userDataCache[userid].background = statement.getString(5);
-			this.userDataCache[userid].status = statement.getInt32(6);
-			this.userDataCache[userid].notes = statement.getString(7);
-			this.userDataCache[userid].ignored = Boolean(statement.getInt32(8));
-			this.userDataCache[userid].hideavatar = Boolean(statement.getInt32(9));
-			this.userIDCache[username] = userid;
+			DB.userDataCache[userid] = {};
+			DB.userDataCache[userid].userid = userid;
+			DB.userDataCache[userid].username = username;
+			DB.userDataCache[userid].mod = Boolean(statement.getInt32(2));
+			DB.userDataCache[userid].admin = Boolean(statement.getInt32(3));
+			DB.userDataCache[userid].color = statement.getString(4);
+			DB.userDataCache[userid].background = statement.getString(5);
+			DB.userDataCache[userid].status = statement.getInt32(6);
+			DB.userDataCache[userid].notes = statement.getString(7);
+			DB.userDataCache[userid].ignored = Boolean(statement.getInt32(8));
+			DB.userDataCache[userid].hideavatar = Boolean(statement.getInt32(9));
+			DB.userIDCache[username] = userid;
 		}
 		statement.reset();
 	},
@@ -430,18 +446,18 @@ let DB = exports.DB =
 	// @return: nothing
 	populateThreadDataCache: function()
 	{
-		var statement = this.database.createStatement("SELECT `id`, `title`, `posted`, `ignore`, `star`, `opview` FROM `threaddata`");
+		var statement = DB.database.createStatement("SELECT `id`, `title`, `posted`, `ignore`, `star`, `opview` FROM `threaddata`");
 		var threadid;
 		while (statement.executeStep())
 		{
 			threadid = statement.getInt32(0);
-			this.threadDataCache[threadid] = {};
-			this.threadDataCache[threadid].threadid = threadid;
-			this.threadDataCache[threadid].title = statement.getString(1);
-			this.threadDataCache[threadid].posted = Boolean(statement.getInt32(2));
-			this.threadDataCache[threadid].ignore = Boolean(statement.getInt32(3));
-			this.threadDataCache[threadid].star = Boolean(statement.getInt32(4));
-			this.threadDataCache[threadid].opview = Boolean(statement.getInt32(5));
+			DB.threadDataCache[threadid] = {};
+			DB.threadDataCache[threadid].threadid = threadid;
+			DB.threadDataCache[threadid].title = statement.getString(1);
+			DB.threadDataCache[threadid].posted = Boolean(statement.getInt32(2));
+			DB.threadDataCache[threadid].ignore = Boolean(statement.getInt32(3));
+			DB.threadDataCache[threadid].star = Boolean(statement.getInt32(4));
+			DB.threadDataCache[threadid].opview = Boolean(statement.getInt32(5));
 		}
 		statement.reset();
 	},
@@ -451,14 +467,14 @@ let DB = exports.DB =
 	// @return: nothing
 	populateIconDataCache: function()
 	{
-		var statement = this.database.createStatement("SELECT `iconnumber`, `filename` FROM `posticons`");
+		var statement = DB.database.createStatement("SELECT `iconnumber`, `filename` FROM `posticons`");
 		var iconnumber, filename;
 		while (statement.executeStep())
 		{
 			iconnumber = statement.getInt32(0);
 			filename = statement.getString(1);
-			this.iconDataCache[iconnumber] = filename;
-			this.iconDataCache[filename] = iconnumber;
+			DB.iconDataCache[iconnumber] = filename;
+			DB.iconDataCache[filename] = iconnumber;
 		}
 		statement.reset();
 	},
@@ -470,9 +486,9 @@ let DB = exports.DB =
 	getUserName: function(userid)
 	{
 		var username;
-		if (this.userDataCache[userid] != undefined)
+		if (DB.userDataCache[userid] != undefined)
 		{
-			username = this.userDataCache[userid].username;
+			username = DB.userDataCache[userid].username;
 		}
 		else
 		{
@@ -487,9 +503,9 @@ let DB = exports.DB =
 	getUserId: function(username)
 	{
 		var userid;
-		if (this.userIDCache[username] != undefined)
+		if (DB.userIDCache[username] != undefined)
 		{
-			userid = this.userIDCache[username];
+			userid = DB.userIDCache[username];
 		}
 		else
 		{
@@ -503,11 +519,11 @@ let DB = exports.DB =
 	// @return: nothing
 	setUserName: function(userid, username)
 	{
-		this.userIDCache[username] = userid;
-		if (this.userDataCache[userid].username !== username)
+		DB.userIDCache[username] = userid;
+		if (DB.userDataCache[userid].username !== username)
 		{
-			this.userDataCache[userid].username = username;
-			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1 WHERE `userid` = ?2");
+			DB.userDataCache[userid].username = username;
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `username` = ?1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0, username);
 			statement.bindInt32Parameter(1, userid);
 			statement.execute();
@@ -519,7 +535,7 @@ let DB = exports.DB =
 	// @return: (bool) if thread is in DB
 	threadExists: function(threadid)
 	{
-		return (this.threadDataCache[threadid] != undefined);
+		return (DB.threadDataCache[threadid] != undefined);
 	},
 
 	// Adds a thread to the DB and cache
@@ -527,16 +543,16 @@ let DB = exports.DB =
 	// @return: nothing
 	addThread: function(threadid)
 	{
-		if (!this.threadExists(threadid))
+		if (!DB.threadExists(threadid))
 		{
-			this.threadDataCache[threadid] = {};
-			this.threadDataCache[threadid].threadid = threadid;
-			this.threadDataCache[threadid].title = '';
-			this.threadDataCache[threadid].posted = false;
-			this.threadDataCache[threadid].ignore = false;
-			this.threadDataCache[threadid].star = false;
-			this.threadDataCache[threadid].opview = false;
-			var statement = this.database.createStatement("INSERT INTO `threaddata` (`id`, `title`, `posted`, `ignore`, `star`, `opview`) VALUES (?1, null, 0, 0, 0, 0)");
+			DB.threadDataCache[threadid] = {};
+			DB.threadDataCache[threadid].threadid = threadid;
+			DB.threadDataCache[threadid].title = '';
+			DB.threadDataCache[threadid].posted = false;
+			DB.threadDataCache[threadid].ignore = false;
+			DB.threadDataCache[threadid].star = false;
+			DB.threadDataCache[threadid].opview = false;
+			var statement = DB.database.createStatement("INSERT INTO `threaddata` (`id`, `title`, `posted`, `ignore`, `star`, `opview`) VALUES (?1, null, 0, 0, 0, 0)");
 			statement.bindInt32Parameter(0, threadid);
 			statement.execute();
 		}
@@ -547,7 +563,7 @@ let DB = exports.DB =
 	// @return: (bool) if user is in DB
 	userExists: function(userid)
 	{
-		return (this.userDataCache[userid] != undefined);
+		return (DB.userDataCache[userid] != undefined);
 	},
 
 	// Adds a user to the DB and cache
@@ -555,32 +571,32 @@ let DB = exports.DB =
 	// @return: nothing
 	addUser: function(userid, username)
 	{
-		if (!this.userExists(userid))
+		if (!DB.userExists(userid))
 		{
 			if (username == undefined)
 			{
 				username = null;
 			}
-			this.userDataCache[userid] = {};
-			this.userDataCache[userid].userid = userid;
-			this.userDataCache[userid].username = username;
-			this.userDataCache[userid].mod = false;
-			this.userDataCache[userid].admin = false;
-			this.userDataCache[userid].color = 0;
-			this.userDataCache[userid].background = 0;
-			this.userDataCache[userid].status = 0;
-			this.userDataCache[userid].notes = null;
-			this.userDataCache[userid].ignored = false;
-			this.userDataCache[userid].hideavatar = false;
+			DB.userDataCache[userid] = {};
+			DB.userDataCache[userid].userid = userid;
+			DB.userDataCache[userid].username = username;
+			DB.userDataCache[userid].mod = false;
+			DB.userDataCache[userid].admin = false;
+			DB.userDataCache[userid].color = 0;
+			DB.userDataCache[userid].background = 0;
+			DB.userDataCache[userid].status = 0;
+			DB.userDataCache[userid].notes = null;
+			DB.userDataCache[userid].ignored = false;
+			DB.userDataCache[userid].hideavatar = false;
 			//This is already below (and done more safely)
-			//this.userIDCache[username] = userid;
-			var statement = this.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 0, 0, 0, 0, null, 0, 0)");
+			//DB.userIDCache[username] = userid;
+			var statement = DB.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 0, 0, 0, 0, null, 0, 0)");
 			statement.bindInt32Parameter(0, userid);
 			statement.bindStringParameter(1, username);
 			statement.execute();
 			if (username != null)
 			{
-				this.userIDCache[username] = userid;
+				DB.userIDCache[username] = userid;
 			}
 		}
 	},
@@ -590,28 +606,28 @@ let DB = exports.DB =
 	// @return: nothing
 	addMod: function(userid, username)
 	{
-		if (this.isMod(userid))
+		if (DB.isMod(userid))
 		{
 			// We already know it's a mod
 			// ...but we might have to update the username to reflect a name change.
-			if (this.userDataCache[userid].username != username)
+			if (DB.userDataCache[userid].username != username)
 			{
-				this.setUserName(userid, username);
+				DB.setUserName(userid, username);
 			}
 			return;
 		}
-		if (this.userExists(userid))
+		if (DB.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1, `mod` = 1 WHERE `userid` = ?2");
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `username` = ?1, `mod` = 1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0,username);
 			statement.bindInt32Parameter(1,userid);
 			statement.execute();
-			this.userDataCache[userid].mod = true;
+			DB.userDataCache[userid].mod = true;
 		}
 		else
 		{
-			this.addUser(userid, username);
-			this.addMod(userid, username);
+			DB.addUser(userid, username);
+			DB.addMod(userid, username);
 		}
 	},
 
@@ -620,10 +636,10 @@ let DB = exports.DB =
 	// @return: nothing
 	removeMod: function(userid)
 	{
-		if (this.isMod(userid))
+		if (DB.isMod(userid))
 		{
-			this.userDataCache[userid].mod = false;
-			var statement = this.database.createStatement("UPDATE `userdata` SET `mod` = 0 WHERE `userid` = ?1");
+			DB.userDataCache[userid].mod = false;
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `mod` = 0 WHERE `userid` = ?1");
 			statement.bindInt32Parameter(0, userid);
 			statement.executeStep();
 			statement.reset();
@@ -635,28 +651,28 @@ let DB = exports.DB =
 	// @return: nothing
 	addAdmin: function(userid, username)
 	{
-		if (this.isAdmin(userid))
+		if (DB.isAdmin(userid))
 		{
 			// We already know it's an admin
 			// ...but we might have to update the username to reflect a name change.
-			if (this.userDataCache[userid].username != username)
+			if (DB.userDataCache[userid].username != username)
 			{
-				this.setUserName(userid, username);
+				DB.setUserName(userid, username);
 			}
 			return;
 		}
-		if (this.userExists(userid))
+		if (DB.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1, `admin` = 1 WHERE `userid` = ?2");
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `username` = ?1, `admin` = 1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0,username);
 			statement.bindInt32Parameter(1,userid);
 			statement.execute();
-			this.userDataCache[userid].admin = true;
+			DB.userDataCache[userid].admin = true;
 		}
 		else
 		{
-			this.addUser(userid, username);
-			this.addAdmin(userid, username);
+			DB.addUser(userid, username);
+			DB.addAdmin(userid, username);
 		}
 	},
 
@@ -665,10 +681,10 @@ let DB = exports.DB =
 	// @return: nothing
 	removeAdmin: function(userid)
 	{
-		if (this.isAdmin(userid))
+		if (DB.isAdmin(userid))
 		{
-			this.userDataCache[userid].admin = false;
-			var statement = this.database.createStatement("UPDATE `userdata` SET `admin` = 0 WHERE `userid` = ?1");
+			DB.userDataCache[userid].admin = false;
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `admin` = 0 WHERE `userid` = ?1");
 			statement.bindInt32Parameter(0, userid);
 			statement.executeStep();
 			statement.reset();
@@ -678,28 +694,28 @@ let DB = exports.DB =
 	// Super ignore a user
 	addSuperIgnored: function (userid, username)
 	{
-		if (this.userExists(userid))
+		if (DB.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `username` = ?1, `ignored` = 1 WHERE `userid` = ?2");
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `username` = ?1, `ignored` = 1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0,username);
 			statement.bindInt32Parameter(1,userid);
 			statement.execute();
-			this.userDataCache[userid].ignored = true;
+			DB.userDataCache[userid].ignored = true;
 		}
 		else
 		{
-			this.addUser(userid, username);
-			this.addSuperIgnored(userid, username);
+			DB.addUser(userid, username);
+			DB.addSuperIgnored(userid, username);
 		}
 	},
 
 	// Un-super ignore a user
 	removeSuperIgnored: function(userid)
 	{
-		if (this.isUserIgnored(userid))
+		if (DB.isUserIgnored(userid))
 		{
-			this.userDataCache[userid].ignored = false;
-			var statement = this.database.createStatement("UPDATE `userdata` SET `ignored` = 0 WHERE `userid` = ?1");
+			DB.userDataCache[userid].ignored = false;
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `ignored` = 0 WHERE `userid` = ?1");
 			statement.bindInt32Parameter(0, userid);
 			statement.executeStep();
 			statement.reset();
@@ -711,17 +727,17 @@ let DB = exports.DB =
 	// @return: nothing
 	toggleAvatarHidden: function(userid, username)
 	{
-		if (this.userExists(userid))
+		if (DB.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `hideavatar` = not(`hideavatar`) WHERE `userid` = ?1");
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `hideavatar` = not(`hideavatar`) WHERE `userid` = ?1");
 			statement.bindInt32Parameter(0, userid);
 			statement.execute();
-			this.userDataCache[userid].hideavatar = !this.userDataCache[userid].hideavatar;
+			DB.userDataCache[userid].hideavatar = !DB.userDataCache[userid].hideavatar;
 		}
 		else
 		{
-			this.addUser(userid, username);
-			this.toggleAvatarHidden(userid, username);
+			DB.addUser(userid, username);
+			DB.toggleAvatarHidden(userid, username);
 		}
 	},
 
@@ -730,7 +746,7 @@ let DB = exports.DB =
 	// @return: (boolean) Mod or not
 	isMod: function(userid)
 	{
-		return (this.userExists(userid) && this.userDataCache[userid].mod);
+		return (DB.userExists(userid) && DB.userDataCache[userid].mod);
 	},
 
 	// Checks if a user id is flagged as an admin
@@ -738,7 +754,7 @@ let DB = exports.DB =
 	// @return: (boolean) Admin or not
 	isAdmin: function(userid)
 	{
-		return (this.userExists(userid) && this.userDataCache[userid].admin);
+		return (DB.userExists(userid) && DB.userDataCache[userid].admin);
 	},
 
 	// Checks if a user id is flagged to be ignored
@@ -746,7 +762,7 @@ let DB = exports.DB =
 	// @return: (boolean) Ignored or not
 	isUserIgnored: function(userid)
 	{
-		return (this.userExists(userid) && this.userDataCache[userid].ignored);
+		return (DB.userExists(userid) && DB.userDataCache[userid].ignored);
 	},
 
 	// Checks if a user id is flagged to have their avatar hidden
@@ -754,7 +770,7 @@ let DB = exports.DB =
 	// @return: (boolean) Hidden or not
 	isAvatarHidden: function(userid)
 	{
-		return (this.userExists(userid) && this.userDataCache[userid].hideavatar);
+		return (DB.userExists(userid) && DB.userDataCache[userid].hideavatar);
 	},
 	
 	// checks to see if the userid has any custom coloring defined
@@ -763,13 +779,13 @@ let DB = exports.DB =
 	isUserIdColored: function(userid)
 	{
 		var user = false;
-		if (this.userExists(userid))
+		if (DB.userExists(userid))
 		{
 			user = {};
 			user.userid = userid;
-			user.username = this.userDataCache[userid].username;
-			user.color = this.userDataCache[userid].color;
-			user.background = this.userDataCache[userid].background;
+			user.username = DB.userDataCache[userid].username;
+			user.color = DB.userDataCache[userid].color;
+			user.background = DB.userDataCache[userid].background;
 		}
 		return user;
 	},
@@ -779,8 +795,8 @@ let DB = exports.DB =
 	// @returns: (object) Object contained userid and username
 	isUsernameColored: function(username)
 	{
-		var userid = this.getUserId(username);
-		return this.isUserIdColored(userid);
+		var userid = DB.getUserId(username);
+		return DB.isUserIdColored(userid);
 	},
 
 	// Fetches all users that have custom colors or a note defined
@@ -789,11 +805,11 @@ let DB = exports.DB =
 	getCustomizedPosters: function()
 	{
 		var users = [];
-		for (let userDataKey in this.userDataCache)
+		for (let userDataKey in DB.userDataCache)
 		{
-			if (this.userDataCache.hasOwnProperty(userDataKey))
+			if (DB.userDataCache.hasOwnProperty(userDataKey))
 			{
-				let userData = this.userDataCache[userDataKey];
+				let userData = DB.userDataCache[userDataKey];
 				if (userData.color !== '0' || userData.background !== '0' || (userData.notes !== '' && userData.notes !== null))
 				{
 					var user = {};
@@ -811,7 +827,7 @@ let DB = exports.DB =
 	// @returns: (string) Hex Colorcode to color user, or (bool) false if not found
 	getPosterColor: function(userid)
 	{
-		return (this.userExists(userid) && this.userDataCache[userid].color);
+		return (DB.userExists(userid) && DB.userDataCache[userid].color);
 	},
 
 	// Sets the foreground color for a user
@@ -819,21 +835,21 @@ let DB = exports.DB =
 	// @returns: nothing
 	setPosterColor: function(userid, color)
 	{
-		if (this.userExists(userid))
+		if (DB.userExists(userid))
 		{
-			if (this.userDataCache[userid].color != color)
+			if (DB.userDataCache[userid].color != color)
 			{
-				var statement = this.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
+				var statement = DB.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
 				statement.bindStringParameter(0, color);
 				statement.bindInt32Parameter(1, userid);
 				statement.execute();
-				this.userDataCache[userid].color = color;
+				DB.userDataCache[userid].color = color;
 			}
 		}
 		else
 		{
-			this.addUser(userid);
-			this.setPosterColor(userid, color);
+			DB.addUser(userid);
+			DB.setPosterColor(userid, color);
 		}
 	},
 
@@ -842,7 +858,7 @@ let DB = exports.DB =
 	// @returns: (string) Hex Colorcode to color user, or (bool) false if not found
 	getPosterBackground: function(userid)
 	{
-		return (this.userExists(userid) && this.userDataCache[userid].background);
+		return (DB.userExists(userid) && DB.userDataCache[userid].background);
 	},
 
 	// Sets the background color for a user
@@ -850,21 +866,21 @@ let DB = exports.DB =
 	// @returns: nothing
 	setPosterBackground: function(userid, color)
 	{
-		if (this.userExists(userid))
+		if (DB.userExists(userid))
 		{
-			if (this.userDataCache[userid].background != color)
+			if (DB.userDataCache[userid].background != color)
 			{
-				var statement = this.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
+				var statement = DB.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
 				statement.bindStringParameter(0, color);
 				statement.bindInt32Parameter(1, userid);
 				statement.execute();
-				this.userDataCache[userid].background = color;
+				DB.userDataCache[userid].background = color;
 			}
 		}
 		else
 		{
-			this.addUser(userid);
-			this.setPosterBackground(userid, color);
+			DB.addUser(userid);
+			DB.setPosterBackground(userid, color);
 		}
 	},
 
@@ -873,7 +889,7 @@ let DB = exports.DB =
 	// @returns: (string) Notes about the user, or (bool) false if not found
 	getPosterNotes: function(userid)
 	{
-		return (this.userExists(userid) && this.userDataCache[userid].notes);
+		return (DB.userExists(userid) && DB.userDataCache[userid].notes);
 	},
 
 	// Sets the notes for that user in the database
@@ -881,19 +897,19 @@ let DB = exports.DB =
 	// @return: nothing
 	setPosterNotes: function(userid, note)
 	{
-		if (this.userExists(userid))
+		if (DB.userExists(userid))
 		{
-			var statement = this.database.createStatement("UPDATE `userdata` SET `notes` = ?1 WHERE `userid` = ?2");
+			var statement = DB.database.createStatement("UPDATE `userdata` SET `notes` = ?1 WHERE `userid` = ?2");
 			statement.bindStringParameter(0, note);
 			statement.bindInt32Parameter(1, userid);
 			statement.execute();
 			statement.reset();
-			this.userDataCache[userid].notes = note;
+			DB.userDataCache[userid].notes = note;
 		}
 		else
 		{
-			this.addUser(userid);
-			this.setPosterNotes(userid, note);
+			DB.addUser(userid);
+			DB.setPosterNotes(userid, note);
 		}
 	},
 
@@ -903,9 +919,9 @@ let DB = exports.DB =
 	getThreadTitle: function(threadid)
 	{
 		var title = false;
-		if (this.threadExists(threadid))
+		if (DB.threadExists(threadid))
 		{
-			title = this.threadDataCache[threadid].title;
+			title = DB.threadDataCache[threadid].title;
 		}
 		return title;
 	},
@@ -916,10 +932,10 @@ let DB = exports.DB =
 	setThreadTitle: function(threadid, title)
 	{
 		var result = false;
-		if (this.threadExists(threadid) && this.threadDataCache[threadid].title != title)
+		if (DB.threadExists(threadid) && DB.threadDataCache[threadid].title != title)
 		{
-			this.threadDataCache[threadid].title = title;
-			var statement = this.database.createStatement("UPDATE `threaddata` SET `title` = ?1 WHERE `id` = ?2");
+			DB.threadDataCache[threadid].title = title;
+			var statement = DB.database.createStatement("UPDATE `threaddata` SET `title` = ?1 WHERE `id` = ?2");
 			statement.bindStringParameter(0,title);
 			statement.bindInt32Parameter(1,threadid);
 			result = statement.executeStep();
@@ -933,7 +949,7 @@ let DB = exports.DB =
 	// @return: (bool) If user posted in thread or not
 	didIPostHere: function(threadid)
 	{
-		return (this.threadExists(threadid) && this.threadDataCache[threadid].posted);
+		return (DB.threadExists(threadid) && DB.threadDataCache[threadid].posted);
 	},
 
 	// Flag a thread as being posted in
@@ -941,22 +957,22 @@ let DB = exports.DB =
 	// @return: nothing
 	iPostedHere: function(threadid)
 	{
-		if (this.didIPostHere(threadid))
+		if (DB.didIPostHere(threadid))
 		{
 			// We already know we've posted here
 			return;
 		}
-		if (this.threadExists(threadid))
+		if (DB.threadExists(threadid))
 		{
-			var statement = this.database.createStatement("UPDATE `threaddata` SET `posted` = 1 WHERE `id` = ?1");
+			var statement = DB.database.createStatement("UPDATE `threaddata` SET `posted` = 1 WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadid);
 			statement.execute();
-			this.threadDataCache[threadid].posted = true;
+			DB.threadDataCache[threadid].posted = true;
 		}
 		else
 		{
-			this.addThread(threadid);
-			this.iPostedHere(threadid);
+			DB.addThread(threadid);
+			DB.iPostedHere(threadid);
 		}
 	},
 
@@ -965,7 +981,7 @@ let DB = exports.DB =
 	// @return: (bool) thread's star status
 	isThreadStarred: function(threadid)
 	{
-		return (this.threadExists(threadid) && this.threadDataCache[threadid].star);
+		return (DB.threadExists(threadid) && DB.threadDataCache[threadid].star);
 	},
 
 	// Check to see if the thread is ignored
@@ -973,27 +989,27 @@ let DB = exports.DB =
 	// @return: (bool) thread's ignore status
 	isThreadIgnored: function(threadid)
 	{
-		return (this.threadExists(threadid) && this.threadDataCache[threadid].ignore);
+		return (DB.threadExists(threadid) && DB.threadDataCache[threadid].ignore);
 	},
 
 	isThreadOPView: function(threadid)
 	{
-		return (this.threadExists(threadid) && this.threadDataCache[threadid].opview);
+		return (DB.threadExists(threadid) && DB.threadDataCache[threadid].opview);
 	},
 
 	toggleThreadOPView: function(threadid)
 	{
-		if (this.threadExists(threadid))
+		if (DB.threadExists(threadid))
 		{
-			var statement = this.database.createStatement("UPDATE `threaddata` SET `opview` = not(`opview`) WHERE `id` = ?1");
+			var statement = DB.database.createStatement("UPDATE `threaddata` SET `opview` = not(`opview`) WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadid);
 			statement.execute();
-			this.threadDataCache[threadid].opview = !this.threadDataCache[threadid].opview;
+			DB.threadDataCache[threadid].opview = !DB.threadDataCache[threadid].opview;
 		}
 		else
 		{
-			this.addThread(threadid);
-			this.toggleThreadOPView(threadid);
+			DB.addThread(threadid);
+			DB.toggleThreadOPView(threadid);
 		}
 	},
 
@@ -1002,17 +1018,17 @@ let DB = exports.DB =
 	// @return: nothing
 	toggleThreadStar: function(threadid)
 	{
-		if (this.threadExists(threadid))
+		if (DB.threadExists(threadid))
 		{
-			var statement = this.database.createStatement("UPDATE `threaddata` SET `star` = not(`star`) WHERE `id` = ?1");
+			var statement = DB.database.createStatement("UPDATE `threaddata` SET `star` = not(`star`) WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadid);
 			statement.execute();
-			this.threadDataCache[threadid].star = !this.threadDataCache[threadid].star;
+			DB.threadDataCache[threadid].star = !DB.threadDataCache[threadid].star;
 		}
 		else
 		{
-			this.addThread(threadid);
-			this.toggleThreadStar(threadid);
+			DB.addThread(threadid);
+			DB.toggleThreadStar(threadid);
 		}
 	},
 
@@ -1021,17 +1037,17 @@ let DB = exports.DB =
 	// @return: nothing
 	toggleThreadIgnore: function(threadid)
 	{
-		if (this.threadExists(threadid))
+		if (DB.threadExists(threadid))
 		{
-			var statement = this.database.createStatement("UPDATE `threaddata` SET `ignore` = not(`ignore`) WHERE `id` = ?1");
+			var statement = DB.database.createStatement("UPDATE `threaddata` SET `ignore` = not(`ignore`) WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadid);
 			statement.execute();
-			this.threadDataCache[threadid].ignore = !this.threadDataCache[threadid].ignore;
+			DB.threadDataCache[threadid].ignore = !DB.threadDataCache[threadid].ignore;
 		}
 		else
 		{
-			this.addThread(threadid);
-			this.toggleThreadIgnore(threadid);
+			DB.addThread(threadid);
+			DB.toggleThreadIgnore(threadid);
 		}
 	},
 
@@ -1042,10 +1058,10 @@ let DB = exports.DB =
 	removeThread: function(threadId)
 	{
 		var result = false;
-		if (this.threadExists(threadId))
+		if (DB.threadExists(threadId))
 		{
-			this.threadDataCache.splice(threadId, 1);
-			var statement = this.database.createStatement("DELETE FROM `threaddata` WHERE `id` = ?1");
+			DB.threadDataCache.splice(threadId, 1);
+			var statement = DB.database.createStatement("DELETE FROM `threaddata` WHERE `id` = ?1");
 			statement.bindInt32Parameter(0,threadId);
 			result = statement.executeStep();
 			statement.reset();
@@ -1058,11 +1074,11 @@ let DB = exports.DB =
 		switch (dbtable)
 		{
 			case "userdata":
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('53580', 'astral', 0, 0, '#003366', 0, 0, 'SALR Developer', 0, 0)");
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('81482', 'duz', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('33775', 'Tivac', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
-				this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('20065', 'biznatchio', 0, 0, '#4400bb', 0, 0, 'SALR Creator', 0, 0)");
+				DB.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('53580', 'astral', 0, 0, '#003366', 0, 0, 'SALR Developer', 0, 0)");
+				DB.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('81482', 'duz', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
+				DB.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('33775', 'Tivac', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
+				DB.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
+				DB.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('20065', 'biznatchio', 0, 0, '#4400bb', 0, 0, 'SALR Creator', 0, 0)");
 				break;
 		}
 	},
@@ -1080,13 +1096,13 @@ let DB = exports.DB =
 		if (build < 70414)
 		{
 			// Userdata schema changed, let's test to make sure it needs to be changed, just incase
-			statement = this.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
+			statement = DB.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
 			statement.executeStep();
 			if (statement.getColumnName(4) != 'color')
 			{
 				statement.reset();
-				this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `color` VARCHAR(8)");
-				this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `background` VARCHAR(8)");
+				DB.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `color` VARCHAR(8)");
+				DB.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `background` VARCHAR(8)");
 			}
 			else
 			{
@@ -1096,27 +1112,27 @@ let DB = exports.DB =
 		if (build < 70418)
 		{
 			// Not setting a default value makes things harder so let's fix that
-			statement = this.database.executeSimpleSQL("UPDATE `threaddata` SET `star` = 0 WHERE `star` IS NULL");
-			statement = this.database.executeSimpleSQL("UPDATE `threaddata` SET `ignore` = 0 WHERE `ignore` IS NULL");
-			statement = this.database.executeSimpleSQL("UPDATE `threaddata` SET `posted` = 0 WHERE `posted` IS NULL");
-			statement = this.database.executeSimpleSQL("UPDATE `userdata` SET `color` = 0 WHERE `color` IS NULL");
-			statement = this.database.executeSimpleSQL("UPDATE `userdata` SET `background` = 0 WHERE `background` IS NULL");
+			statement = DB.database.executeSimpleSQL("UPDATE `threaddata` SET `star` = 0 WHERE `star` IS NULL");
+			statement = DB.database.executeSimpleSQL("UPDATE `threaddata` SET `ignore` = 0 WHERE `ignore` IS NULL");
+			statement = DB.database.executeSimpleSQL("UPDATE `threaddata` SET `posted` = 0 WHERE `posted` IS NULL");
+			statement = DB.database.executeSimpleSQL("UPDATE `userdata` SET `color` = 0 WHERE `color` IS NULL");
+			statement = DB.database.executeSimpleSQL("UPDATE `userdata` SET `background` = 0 WHERE `background` IS NULL");
 		}
 		if (build < 80122)
 		{
-			this.database.executeSimpleSQL("DELETE FROM `posticons`");
+			DB.database.executeSimpleSQL("DELETE FROM `posticons`");
 		}
 		if (build < 80509)
 		{
 			try
 			{
-				statement = this.database.createStatement("SELECT * FROM `userdata` WHERE `ignored` = 0");
+				statement = DB.database.createStatement("SELECT * FROM `userdata` WHERE `ignored` = 0");
 				statement.executeStep();
 			}
 			catch(e)
 			{
-				this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
-				this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
+				DB.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
+				DB.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
 			}
 			finally
 			{
@@ -1126,7 +1142,7 @@ let DB = exports.DB =
 		if (build < 80620)
 		{
 			// Userdata schema changed in a previous version and doesn't look like everyone got it
-			statement = this.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
+			statement = DB.database.createStatement("SELECT * FROM `userdata` WHERE 1=1");
 			statement.executeStep();
 			try
 			{
@@ -1138,7 +1154,7 @@ let DB = exports.DB =
 				if (column8 != 'ignored')
 				{
 					statement.reset();
-					this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
+					DB.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `ignored` BOOLEAN DEFAULT 0");
 				}
 			}
 			try
@@ -1151,7 +1167,7 @@ let DB = exports.DB =
 				if (column9 != 'hideavatar')
 				{
 					statement.reset();
-					this.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
+					DB.database.executeSimpleSQL("ALTER TABLE `userdata` ADD `hideavatar` BOOLEAN DEFAULT 0");
 				}
 			}
 			statement.reset();
@@ -1160,7 +1176,7 @@ let DB = exports.DB =
 		if (build < 150505)
 		{
 			// Check if we already did this:
-			statement = this.database.createStatement("SELECT * FROM `threaddata` WHERE 1=1 LIMIT 1");
+			statement = DB.database.createStatement("SELECT * FROM `threaddata` WHERE 1=1 LIMIT 1");
 			statement.executeStep();
 			if (statement.getColumnName(5) != 'opview')
 			{
@@ -1168,19 +1184,19 @@ let DB = exports.DB =
 				{
 					statement.reset();
 					// Clear out old data and change `options` to `opview`
-					this.database.beginTransactionAs(this.database.TRANSACTION_IMMEDIATE);
-					this.database.executeSimpleSQL("CREATE TABLE `threaddata_clean` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, opview BOOLEAN)");
-					this.database.executeSimpleSQL("INSERT INTO `threaddata_clean` SELECT `id`, `title`, `posted`, `ignore`, `star`, 0 FROM `threaddata` WHERE NOT (`posted`==0 AND `ignore`==0 AND `star`==0)");
-					this.database.executeSimpleSQL("DROP TABLE `threaddata`");
-					this.database.executeSimpleSQL("ALTER TABLE `threaddata_clean` RENAME TO `threaddata`");
-					this.database.commitTransaction();
+					DB.database.beginTransactionAs(DB.database.TRANSACTION_IMMEDIATE);
+					DB.database.executeSimpleSQL("CREATE TABLE `threaddata_clean` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, opview BOOLEAN)");
+					DB.database.executeSimpleSQL("INSERT INTO `threaddata_clean` SELECT `id`, `title`, `posted`, `ignore`, `star`, 0 FROM `threaddata` WHERE NOT (`posted`==0 AND `ignore`==0 AND `star`==0)");
+					DB.database.executeSimpleSQL("DROP TABLE `threaddata`");
+					DB.database.executeSimpleSQL("ALTER TABLE `threaddata_clean` RENAME TO `threaddata`");
+					DB.database.commitTransaction();
 					// Keep DB tiny
-					this.database.executeSimpleSQL("PRAGMA page_size = 1024");
-					this.database.executeSimpleSQL("VACUUM");
+					DB.database.executeSimpleSQL("PRAGMA page_size = 1024");
+					DB.database.executeSimpleSQL("VACUUM");
 				}
 				catch(e)
 				{
-					this.database.rollbackTransaction();
+					DB.database.rollbackTransaction();
 				}
 			}
 		}
@@ -1191,13 +1207,96 @@ let DB = exports.DB =
 		if (build < 70531)
 		{
 			// Toss in coloring for biznatchio, Tivac and duz to see if it breaks anything
-			this.prepopulateDB("userdata");
+			DB.prepopulateDB("userdata");
 		}
 		if (build < 71128 && build > 70531)
 		{
-			this.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
+			DB.database.executeSimpleSQL("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES ('35205', 'RedKazan', 0, 0, '#4400bb', 0, 0, 'SALR 2.0 Developer', 0, 0)");
 		}
+	},
+
+	initChildListeners: function()
+	{
+		Utils.addFrameMessageListener("salastread:ForumListUpdate", forumListUpdate);
+		Utils.addFrameMessageListener("salastread:SetThreadTitle", setThreadTitleWrapper);
+		Utils.addFrameMessageListener("salastread:DoWeHaveForumList", DB.doWeHaveForumList);
+		Utils.addFrameMessageListener("salastread:GetUserId", DB.getUserId);
+		Utils.addFrameMessageListener("salastread:SetUserName", setUserNameWrapper);
+		Utils.addFrameMessageListener("salastread:ToggleAvatarHidden", toggleAvatarHiddenWrapper);
+		Utils.addFrameMessageListener("salastread:IsUserIgnored", DB.isUserIgnored);
+		Utils.addFrameMessageListener("salastread:IsAvatarHidden", DB.isAvatarHidden);
+		Utils.addFrameMessageListener("salastread:IsUserIdColored", DB.isUserIdColored);
+		Utils.addFrameMessageListener("salastread:IsUsernameColored", DB.isUsernameColored);
+		Utils.addFrameMessageListener("salastread:IsMod", DB.isMod);
+		Utils.addFrameMessageListener("salastread:IsAdmin", DB.isAdmin);
+		Utils.addFrameMessageListener("salastread:AddMod", addModWrapper);
+		Utils.addFrameMessageListener("salastread:AddAdmin", addAdminWrapper);
+		Utils.addFrameMessageListener("salastread:RemoveMod", DB.removeMod);
+		Utils.addFrameMessageListener("salastread:RemoveAdmin", DB.removeAdmin);
+		Utils.addFrameMessageListener("salastread:GetPosterNotes", DB.getPosterNotes);
+		Utils.addFrameMessageListener("salastread:DidIPostHere", DB.didIPostHere);
+		Utils.addFrameMessageListener("salastread:IPostedHere", DB.iPostedHere);
+		Utils.addFrameMessageListener("salastread:IsThreadIgnored", DB.isThreadIgnored);
+		Utils.addFrameMessageListener("salastread:IsThreadStarred", DB.isThreadStarred);
+		// Temporary wrappers to request transaction for forumdisplay
+		// will be removed upon conversion to SQLite.jsm
+		Utils.addFrameMessageListener("salastread:RequestTransactionState", () => DB.database.transactionInProgress);
+		Utils.addFrameMessageListener("salastread:BeginTransaction", () => DB.database.beginTransactionAs(DB.database.TRANSACTION_DEFERRED));
+		Utils.addFrameMessageListener("salastread:CommitTransaction", () => DB.database.commitTransaction());
+		// YT Title Listeners
+		Utils.addFrameMessageListener("salastread:GetVideoTitleCacheInfo", (vidId) => DB.videoTitleCache[vidId]);
+		Utils.addFrameMessageListener("salastread:SetVideoTitleCacheInfo", ({vidId, newTitle}) => {
+			DB.videoTitleCache[vidId] = newTitle;
+		});
+		// Imgur Workaround Listeners
+		Utils.addFrameMessageListener("salastread:GetImgurWorkaroundInfo", (imgurId) => DB.imgurWorkaroundCache[imgurId]);
+		Utils.addFrameMessageListener("salastread:SetImgurWorkaroundTrue", (imgurId) => {
+			DB.imgurWorkaroundCache[imgurId] = true;
+		});
+		Utils.addFrameMessageListener("salastread:SetImgurWorkaroundFalse", (imgurId) => {
+			DB.imgurWorkaroundCache[imgurId] = false;
+		});
+		// gif conversion listeners
+		Utils.addFrameMessageListener("salastread:GetImgurGifInfo", (imgurId) => DB.imgurGifCache[imgurId]);
+		Utils.addFrameMessageListener("salastread:SetImgurGifInfo", ({imgurId, success}) => {
+			DB.imgurGifCache[imgurId] = success;
+		});
 	},
 
 };
 DB.init();
+
+function forumListUpdate(xmlstr)
+{
+	let oDomParser = Cc["@mozilla.org/xmlextras/domparser;1"]
+						.createInstance(Ci.nsIDOMParser);
+	let forumsDoc = oDomParser.parseFromString(xmlstr, "text/xml");
+
+	DB.forumListXml = forumsDoc;
+	DB.gotForumList = true;
+}
+
+function setThreadTitleWrapper({threadid, title})
+{
+	return DB.setThreadTitle(threadid, title);
+}
+
+function setUserNameWrapper({userid, username})
+{
+	return DB.setUserName(userid, username);
+}
+
+function toggleAvatarHiddenWrapper({userid, username})
+{
+	return DB.toggleAvatarHidden(userid, username);
+}
+
+function addModWrapper({userid, username})
+{
+	return DB.addMod(userid, username);
+}
+
+function addAdminWrapper({userid, username})
+{
+	return DB.addAdmin(userid, username);
+}

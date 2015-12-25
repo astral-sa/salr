@@ -22,6 +22,7 @@
         "commonjs": true
     },
     "globals": {
-        "Components": false, "Cu": true, "Ci": true, "Cc": true, "Cr": true, "Services": true, "onShutdown": true, "XPCOMUtils": true, "gBrowser": false
+        "Components": false, "Cu": true, "Ci": true, "Cc": true, "Cr": true, "Services": true, "onShutdown": true, "XPCOMUtils": true, "gBrowser": false,
+		"content": false, "addMessageListener": false, "removeMessageListener": false, "sendSyncMessage": true, "sendAsyncMessage": true, "dump": false
     }
 }

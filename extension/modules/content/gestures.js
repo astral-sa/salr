@@ -1,10 +1,12 @@
-let {Prefs} = require("prefs");
+let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
 
 let Gestures = exports.Gestures =
 {
-	addGestureListeners: function(doc)
+	addGestureListeners: function(doc, pages)
 	{
+		doc.__SALR_curPage = pages.current;
+		doc.__SALR_maxPage = pages.total;
 		doc.body.addEventListener('mousedown', Gestures.pageMouseDown, false);
 		doc.body.addEventListener('mouseup', Gestures.pageMouseUp, false);
 	},

@@ -131,7 +131,8 @@ let ContextMenu = exports.ContextMenu =
 
 	contextMenuShowing: function contextMenuShowing(e)
 	{
-		let document = e.currentTarget.ownerDocument.defaultView.document;
+		let window = e.currentTarget.ownerDocument.defaultView;
+		let document = window.document;
 		// Clean up event listener
 		if (Prefs === null)
 		{
@@ -144,8 +145,7 @@ let ContextMenu = exports.ContextMenu =
 			ContextMenu.hideContextMenuItems(e);
 			try
 			{
-				var doc = document.getElementById("content").mCurrentBrowser.contentDocument;
-				if (doc.__salastread_processed === true)
+				if (ContextMenu.onSAPage(window.gContextMenuContentData.docLocation))
 				{
 					if (Prefs.getPref("enableContextMenu"))
 						ContextMenu.contextVis(e.target);
@@ -158,11 +158,20 @@ let ContextMenu = exports.ContextMenu =
 	},
 
 	/**
+	 * Make sure we're on an SA page before examining elements for context.
+	 */
+	onSAPage: function(aLocation)
+	{
+		return (aLocation.search(/^https?\:\/\/(?:forum|archive)s?\.somethingawful\.com/i) !== -1);
+	},
+
+	/**
 	 * Decides whether or not to show the various SALR context menu items.
 	 * @param {Element} popup Context menu popup.
 	 */
 	contextVis: function(popup)
 	{
+		// e10s - CPOW
 		let document = popup.ownerDocument;
 		let window = document.defaultView;
 		let target = window.gContextMenu.target;
@@ -270,7 +279,7 @@ let ContextMenu = exports.ContextMenu =
 
 		try
 		{
-			// e10s note: this will change if we're in a frame script
+			// e10s note: window-modal, need to convert
 			let factory = Components.classes["@mozilla.org/prompter;1"]
 								.getService(Components.interfaces.nsIPromptFactory);
 			let prompt = factory.getPrompt(window.gBrowser.contentWindow, Components.interfaces.nsIPrompt);
@@ -321,13 +330,8 @@ let ContextMenu = exports.ContextMenu =
 					result = "SALR:\n Something went wrong marking thread #" + threadid + "\n as unread! Please try again.";
 				try
 				{
-					// e10s note: this will change if we're in a frame script
-					let factory = Components.classes["@mozilla.org/prompter;1"]
-										.getService(Components.interfaces.nsIPromptFactory);
-					let prompt = factory.getPrompt(window.gBrowser.contentWindow, Components.interfaces.nsIPrompt);
-					let bag = prompt.QueryInterface(Components.interfaces.nsIWritablePropertyBag2);
-					bag.setPropertyAsBool("allowTabModal", true);
-					prompt.alert.apply(null, ["SALR Alert", result]);
+					let browserMM = window.gBrowser.selectedBrowser.messageManager;
+					browserMM.sendAsyncMessage("salastread:PromptInTab", {msg: result});
 				}
 				catch(e) {
 					// Do nothing

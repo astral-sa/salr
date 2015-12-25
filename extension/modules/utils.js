@@ -10,8 +10,8 @@ let Utils = exports.Utils =
 {
 	logToConsole: function(someText)
 	{
-		let dConsole = Components.classes["@mozilla.org/consoleservice;1"]
-						.getService(Components.interfaces.nsIConsoleService);
+		let dConsole = Cc["@mozilla.org/consoleservice;1"]
+						.getService(Ci.nsIConsoleService);
 			dConsole.logStringMessage(someText);
 		/* Doesn't work on e10s
 		try
@@ -26,6 +26,46 @@ let Utils = exports.Utils =
 			dConsole.logStringMessage(someText);			
 		}
 		*/
+	},
+
+	/**
+	 * Adds a message handler that will respond to sync+async messages.
+	 * @param {string}   topic  name of the message to listen to
+	 * @param {Function} handler  handler to be called with the message data.
+	 *                            Its return value will be sent back.
+	 */
+	addFrameMessageListener: function(topic, handler)
+	{
+		let globalMM = Cc["@mozilla.org/globalmessagemanager;1"].getService(Ci.nsIMessageListenerManager);
+		let wrapper = (message) => {
+			let {callbackID, data} = message.data;
+			let response = undefined;
+			try
+			{
+				response = handler(data);
+			}
+			catch (e)
+			{
+				Cu.reportError(e);
+			}
+
+			if (callbackID)
+			{
+				//let target = message.target.QueryInterface(Ci.nsIMessageSender);
+				let target = message.target.messageManager;
+				if (target)
+				{
+					target.sendAsyncMessage("salastread:Response", {
+						callbackID,
+						response
+					});
+				}
+			}
+			else
+				return response;
+		};
+		globalMM.addMessageListener(topic, wrapper);
+		onShutdown.add(() => globalMM.removeMessageListener(topic, wrapper));
 	},
 
 	runConfig: function(paneID, args)
@@ -94,13 +134,13 @@ let Utils = exports.Utils =
 	{
 		var windows = Services.wm.getEnumerator("navigator:browser");
 		while (windows.hasMoreElements())
-			todo(windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow));
+			todo(windows.getNext().QueryInterface(Ci.nsIDOMWindow));
 	},
 
 	getRecentWindow: function()
 	{
-		let wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-		                   .getService(Components.interfaces.nsIWindowMediator);
+		let wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+		                   .getService(Ci.nsIWindowMediator);
 		let mainWindow = wm.getMostRecentWindow("navigator:browser");
 		return mainWindow;
 	},

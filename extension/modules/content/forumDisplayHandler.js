@@ -1,19 +1,20 @@
 /*
 
-	Handler for thread lists (forum + usercp/bookmarks).
+	Handler for forum thread lists.
 
 */
 
 // Called from old Overlay
-let {DB} = require("db");
-let {Prefs} = require("prefs");
+let {DB} = require("content/dbHelper");
+let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
-let {Navigation} = require("navigation");
-let {Gestures} = require("gestures");
-let {ThreadListHandler} = require("threadListHandler");
-let {Styles} = require("styles");
-let {AdvancedThreadFiltering} = require("advancedThreadFiltering");
-let {QuickQuoteHelper} = require("quickQuoteHelper");
+let {MenuHelper} = require("content/menuHelper");
+let {Navigation} = require("content/navigation");
+let {Gestures} = require("content/gestures");
+let {ThreadListHandler} = require("content/threadListHandler");
+let {Styles} = require("content/stylesHelper");
+let {AdvancedThreadFiltering} = require("content/advancedThreadFiltering");
+let {QuickQuoteHelper} = require("content/quickQuoteHelper");
 
 let ForumDisplayHandler = exports.ForumDisplayHandler =
 {
@@ -41,10 +42,10 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 			return;
 		}
 
-		if (!DB.gotForumList)
+		if (!DB.doWeHaveForumList())
 		{
 			// Replace this function if/when JSON is added to the forums
-			PageUtils.grabForumList(doc);
+			MenuHelper.grabForumList(doc);
 		}
 
 		if (flags.inFYAD && !Prefs.getPref("enableFYAD")) {
@@ -57,9 +58,9 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 
 		// Start a transaction to try and reduce the likelihood of database corruption
 		var ourTransaction = false;
-		if (DB.database.transactionInProgress) {
+		if (DB.requestTransactionState()) {
 			ourTransaction = true;
-			DB.database.beginTransactionAs(DB.database.TRANSACTION_DEFERRED);
+			DB.beginTransaction();
 		}
 
 		var pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
@@ -95,14 +96,15 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 		doc.__SALR_curPage = curPage;
 		doc.__SALR_maxPage = numPages;
 
+		let pages = {'total': numPages, 'current': curPage};
 		// Insert the forums paginator
 		if (Prefs.getPref("enableForumNavigator"))
 		{
-			Navigation.addPagination(doc);
+			Navigation.addPagination(doc, pages);
 		}
 		if (Prefs.getPref("gestureEnable"))
 		{
-			Gestures.addGestureListeners(doc);
+			Gestures.addGestureListeners(doc, pages);
 		}
 
 		// Turn on keyboard navigation
@@ -222,7 +224,7 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 		if (ourTransaction)
 		{
 			// Finish off the transaction
-			DB.database.commitTransaction();
+			DB.commitTransaction();
 		}
 	},
 

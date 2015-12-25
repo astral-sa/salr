@@ -2,14 +2,15 @@
  * @fileOverview Handler for inside threads.
  */
 
-let {DB} = require("db");
-let {Prefs} = require("prefs");
+let {DB} = require("content/dbHelper");
+let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
-let {ImgurHandler} = require("imgurHandler");
-let {VideoHandler} = require("videoHandler");
-let {Styles} = require("styles");
-let {Navigation} = require("navigation");
-let {QuickQuoteHelper} = require("quickQuoteHelper");
+let {MenuHelper} = require("content/menuHelper");
+let {ImgurHandler} = require("content/imgurHandler");
+let {VideoHandler} = require("content/videoHandler");
+let {Styles} = require("content/stylesHelper");
+let {Navigation} = require("content/navigation");
+let {QuickQuoteHelper} = require("content/quickQuoteHelper");
 
 let ShowThreadHandler = exports.ShowThreadHandler =
 {
@@ -58,9 +59,9 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		DB.setThreadTitle(threadid, PageUtils.getCleanPageTitle(doc));
 
 		// Grab the go to dropdown
-		if (!DB.gotForumList && !threadFlags.singlePost)
+		if (!DB.doWeHaveForumList() && !threadFlags.singlePost)
 		{
-			PageUtils.grabForumList(doc);
+			MenuHelper.grabForumList(doc);
 		}
 
 		Navigation.setupThreadNavigation(doc, threadFlags.singlePost);
@@ -541,7 +542,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	{
 		e.stopPropagation();
 		e.preventDefault();
-		PageUtils.runConfig('users', { "action" : "addUser", "userid" : userid, "username" : username });
+		sendAsyncMessage("salastread:RunConfigAddUser", {userid, username});
 	},
 
 	/**

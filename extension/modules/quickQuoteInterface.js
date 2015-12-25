@@ -1,13 +1,34 @@
 /**
- * @fileOverview Page-related functions that support quick quote.
+ * @fileOverview Interface functions that support quick quote.
  */
 
 let {DB} = require("db");
-let {Prefs} = require("prefs");
 let {PageUtils} = require("pageUtils");
+let {Utils} = require("utils");
 
 let QuickQuoteHelper = exports.QuickQuoteHelper = 
 {
+	/**
+	 * Set up listeners for quick buttons and reply page handler.
+	 */
+	init: function()
+	{
+		let globalMM = Cc["@mozilla.org/globalmessagemanager;1"].getService(Ci.nsIMessageListenerManager);
+		globalMM.addMessageListener("salastread:QuickButtonClicked", QuickQuoteHelper.quickButtonClicked);
+		onShutdown.add(() => globalMM.removeMessageListener("salastread:QuickButtonClicked", QuickQuoteHelper.quickButtonClicked));
+		globalMM.addMessageListener("salastread:QuickQuoteCheckUnload", QuickQuoteHelper.checkUnload);
+		onShutdown.add(() => globalMM.removeMessageListener("salastread:QuickQuoteCheckUnload", QuickQuoteHelper.checkUnload));
+		Utils.addFrameMessageListener("salastread:QuickQuoteGetSavedQuickReply", () => QuickQuoteHelper.savedQuickReply);
+		Utils.addFrameMessageListener("salastread:QuickQuoteGetSavedQuickReplyThreadID", () => QuickQuoteHelper.savedQuickReplyThreadId);
+		Utils.addFrameMessageListener("salastread:QuickQuoteClearSavedQuickReply", () => {
+			QuickQuoteHelper.savedQuickReply = "";
+			QuickQuoteHelper.savedQuickReplyThreadId = "";
+		});
+		Utils.addFrameMessageListener("salastread:QuickQuoteClearCachedFormKey", () => {
+			DB.__cachedFormKey = "";
+		});
+	},
+
 	// Quick Quote things
 
 	quickquotewin: null,
@@ -20,168 +41,24 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		doc: null,
 	},
 
-	needRegReplyFill: false,
 	needCleanupCheck: false,
 	quickQuoteSubmitting: false,
 	savedQuickReply: "",
 	savedQuickReplyThreadId: "",
 
-	handleEditPost: function(doc)
-	{
-		var submitbtn = PageUtils.selectNodes(doc, doc.body, "//INPUT[@type='submit'][@value='Save Changes']")[0];
-		var tarea = PageUtils.selectNodes(doc, doc.body, "//TEXTAREA[@name='message']")[0];
-		if (!submitbtn || !tarea)
-			return;
-		submitbtn.addEventListener("click", function() { QuickQuoteHelper.parsePLTagsInEdit(tarea); }, true);
-		submitbtn.style.backgroundColor = Prefs.getPref('postedInThreadRe');
-	},
-
-	handleNewReply: function(doc)
-	{
-		let threadlink = PageUtils.selectSingleNode(doc, doc.body, "DIV[contains(@id, 'container')]//div[@class='breadcrumbs']//A[contains(@href,'showthread.php')][contains(@href,'threadid=')]");
-		if (!threadlink)
-		{
-			QuickQuoteHelper.handleNewReplyForgeAlert(doc);
-			return;
-		}
-		var tlmatch = threadlink.href.match( /threadid=(\d+)/ );
-		if (!tlmatch)
-			return;
-		let threadid = tlmatch[1];
-		if (QuickQuoteHelper.needRegReplyFill)
-		{
-			let msgEl = PageUtils.selectSingleNode(doc, doc.body, "//TEXTAREA[@name='message']");
-			if (msgEl)
-			{
-				msgEl.value = QuickQuoteHelper.savedQuickReply;
-			}
-			QuickQuoteHelper.needRegReplyFill = false;
-		}
-		let postbtn = PageUtils.selectSingleNode(doc, doc.body, "//FORM[@name='vbform']//INPUT[@name='submit']");
-		if (postbtn)
-		{
-			postbtn.addEventListener("click", function() { DB.iPostedHere(threadid); }, true);
-			postbtn.style.backgroundColor = Prefs.getPref('postedInThreadRe');
-		}
-	},
-
-	handleNewReplyForgeAlert: function(doc)
-	{
-		if (QuickQuoteHelper.savedQuickReply === "")
-			return;
-		// TODO: Check if this function is broken.
-		var forgeCheck = PageUtils.selectSingleNode(doc, doc.body, "TABLE/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[1]/TD[1]/TABLE[1]/TBODY[1]/TR[2]/TD[1]/FONT[contains(text(),'have been forged')]");
-		if (!forgeCheck)
-		{
-			QuickQuoteHelper.savedQuickReply = "";
-			QuickQuoteHelper.savedQuickReplyThreadId = "";
-			return;
-		}
-		DB.__cachedFormKey = "";
-		var reqMsg = doc.createElement("P");
-		reqMsg.style.fontFamily = "Verdana, Arial, Helvetica";
-		reqMsg.style.fontSize = "80%";
-		reqMsg.style.backgroundColor = "#fcfd99";
-		reqMsg.style.border = "1px solid black";
-		reqMsg.style.padding = "2px 2px 2px 2px";
-		reqMsg.appendChild(
-			doc.createTextNode("Message from SA Last Read: Quick Reply appears to have worked incorrectly. To open your reply in a regular forum reply page, click ")
-		);
-		var regReplyLink = doc.createElement("A");
-		// TODO: This likely will need to be changed to an addeventlistener
-		regReplyLink.onclick = function() { QuickQuoteHelper.needRegReplyFill = true; };
-		regReplyLink.href = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
-		QuickQuoteHelper.savedQuickReplyThreadId;
-		regReplyLink.textContent = "here.";
-		reqMsg.appendChild(regReplyLink);
-		forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
-	},
-
 	/**
-	 * Converts post and reply buttons into quick buttons.
-	 * @param {Element} doc          Document in which to convert buttons.
-	 * @param {number}  forumid      Forum ID.
-	 * @param {number}  threadid     Thread ID.
-	 * @param {boolean} threadClosed Whether the thread is closed.
+	 * Message handler for clicking a quick button.
+	 * @param {Object} message Message from frame script containing newParams
+	 *                             and doc CPOW.
 	 */
-	makeQuickPostReplyButtons: function(doc, forumid, threadid, threadClosed)
+	quickButtonClicked: function(message)
 	{
-		let postbuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newthread')]");
-		if (postbuttons.length > 0)
-		{
-			for (let postbutton of postbuttons)
-			{
-				QuickQuoteHelper.turnIntoQuickButton(doc, postbutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
-			}
-		}
-		if (threadClosed)
-			return;
-		let replybuttons = PageUtils.selectNodes(doc, doc, "//UL[contains(@class,'postbuttons')]//A[contains(@href,'action=newreply&threadid')]");
-		if (replybuttons.length === 0)
-			return;
-		for (let replybutton of replybuttons)
-		{
-			QuickQuoteHelper.turnIntoQuickButton(doc, replybutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
-		}
-	},
+		let newParams = message.data.data;
+		// e10s - CPOW
+		newParams.doc = message.objects.doc;
 
-	// Takes a button and turns it into a quick button
-	// @param: (html element) doc, (html element) button, (int) forumid
-	// @return: (html element) quick button
-	turnIntoQuickButton: function(doc, button, forumid)
-	{
-		var oldsrc = button.firstChild.src;
-		var oldalt = button.firstChild.alt;
-		button.firstChild.style.width = "12px";
-		button.firstChild.style.height = "20px";
-		button.firstChild.alt = "Normal " + oldalt;
-		button.firstChild.title = "Normal " + oldalt;
-		var quickbutton = doc.createElement("img");
-
-		if (PageUtils.inBYOB(forumid))
-		{
-			button.firstChild.src = "chrome://salastread/skin/quickbutton-byob.gif";
-		}
-		else if (PageUtils.inYOSPOS(forumid))
-		{
-			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif";
-			button.firstChild.style.paddingBottom = "0px";
-			quickbutton.style.backgroundImage = "none !important";
-		}
-		else
-		{
-			button.firstChild.src = "chrome://salastread/skin/quickbutton.gif";
-		}
-		quickbutton.src = oldsrc;
-		quickbutton.alt = "Quick " + oldalt;
-		quickbutton.title = "Quick " + oldalt;
-		quickbutton.border = "0";
-		quickbutton.style.cursor = "pointer";
-
-		button.parentNode.insertBefore(quickbutton, button);
-		return quickbutton;
-	},
-
-	/**
-	 * Event handler for clicking a quick button.
-	 * @param {number} forumid  ID of current forum.
-	 * @param {number} threadid ID of current thread.
-	 * @param {Event}  evt      The click event.
-	 */
-	quickButtonClicked: function(forumid, threadid, evt)
-	{
-		var quickbutton = evt.originalTarget;
-		let {Utils} = require("utils");
 		let window = Utils.getRecentWindow();
-
-		let newParams = {
-			forumid: forumid,
-			threadid: threadid,
-			doc: evt.originalTarget.ownerDocument
-		};
-		QuickQuoteHelper.setNewParamsFromLink(quickbutton.nextSibling.href, newParams);
-
-//window.alert("Clicked: quicktype: " + newParams.quicktype + " threadid " + newParams.threadid + " forumid " + newParams.forumid + " postid " + newParams.postid);
+//window.alert("Received: quicktype: " + newParams.quicktype + " threadid " + newParams.threadid + " forumid " + newParams.forumid + " postid " + newParams.postid);
 
 		// Do we already have a window?
 		if (DB.__quickquotewindowObject && !DB.__quickquotewindowObject.closed)
@@ -277,29 +154,24 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	},
 
 	/**
-	 * Determines type of quick button clicked + sets postid param if needed.
-	 * @param {string} link      Link from normal version of button.
-	 * @param {Object} newParams Parameters for handling the clicked button.
+	 * Message handler for checking if a page was attached before it unloads.
+	 *     This is used to detach the quick quote window, if necessary.
+	 * @param {Object} message Message from frame script containing doc CPOW.
 	 */
-	setNewParamsFromLink: function(link, newParams)
+	checkUnload: function(message)
 	{
-		newParams.quicktype = link.match(/action=(\w+)/i)[1];
-		if (newParams.quicktype === 'newthread')
-			return;
-		if (newParams.quicktype === 'newreply')
+		let doc = message.objects.doc;
+		if (QuickQuoteHelper.quickWindowParams.doc && doc === QuickQuoteHelper.quickWindowParams.doc)
 		{
-			if (link.match(/threadid=(\d+)/i))
-			{
-				newParams.quicktype = 'reply';
-				return;
-			}
-			else
-			{
-				newParams.quicktype = 'quote';
-			}
+			// Bail if we're just submitting.
+			if (QuickQuoteHelper.quickQuoteSubmitting)
+				return true;
+
+			// The attached page was closed - detach!
+			if (QuickQuoteHelper.quickquotewin && !QuickQuoteHelper.quickquotewin.closed)
+				QuickQuoteHelper.quickquotewin.detachFromDocument();
+			return true;
 		}
-		// 'editpost' and 'quote' need a post ID:
-		newParams.postid = link.match(/postid=(\d+)/i)[1];
 	},
 
 	/**
@@ -387,12 +259,6 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=http://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
 	},
 
-	parsePLTagsInEdit: function(tarea)
-	{
-	   var xtxt = tarea.value;
-	   tarea.value = QuickQuoteHelper.convertPLTag(xtxt);
-	},
-
 	quickQuoteSubmit: function(message, parseurl, subscribe, disablesmilies, signature, subtype, formkey, attachfile, form_cookie)
 	{
 		try
@@ -469,9 +335,11 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			newform.__submit();
 			QuickQuoteHelper.quickquotewin.close();
 		}
-		catch(e)
+		catch(ex)
 		{
-			Cu.warn("SALR Quick Window error: " + e);
+			PageUtils.logToConsole("SALR Quick Window error: " + ex);
+			PageUtils.logToConsole("Filename: " + ex.fileName);
+			PageUtils.logToConsole("Line: " + ex.lineNumber);
 		}
 	},
 
@@ -496,3 +364,5 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	},
 
 };
+
+QuickQuoteHelper.init();

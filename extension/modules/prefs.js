@@ -6,6 +6,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
 let {addonRoot, addonName} = require("info");
+let {Utils} = require("utils");
 let branchName = "extensions." + addonName + ".";
 let branch = Services.prefs.getBranch(branchName);
 
@@ -35,6 +36,50 @@ function setCharPref(branch, pref, newValue)
 function getJSONPref(branch, pref) { return JSON.parse(getCharPref(branch, pref)); }
 function setJSONPref(branch, pref, newValue) { return setCharPref(branch, pref, JSON.stringify(newValue)); }
 
+// Expose functions to get&set preferences
+let Prefs = exports.Prefs =
+{
+	setPref: function(prefName, prefValue)
+	{
+		let type = prefTypeMap[branch.getPrefType(prefName)];
+		let result;
+		if (type)
+			result = branch["set" + type](prefName, prefValue);
+		else
+			result = null;
+		return result;
+	},
+	getPref: function(prefName)
+	{
+		let type = prefTypeMap[branch.getPrefType(prefName)];
+		return type ? branch["get" + type](prefName) : null;
+	},
+	resetPref: function(prefName)
+	{
+		if (branch.prefHasUserValue(prefName))
+			branch.clearUserPref(prefName);
+	},
+	forceSave: function()
+	{
+		Services.prefs.savePrefFile(null);
+	}
+};
+
+function setPrefWrapper({prefName, prefValue})
+{
+	return Prefs.setPref(prefName, prefValue);
+}
+
+function getPrefWrapper(prefName)
+{
+	return Prefs.getPref(prefName);
+}
+
+function resetPrefWrapper(prefName)
+{
+	return Prefs.resetPref(prefName);
+}
+
 function init()
 {
 	// Load default preferences and set up properties for them
@@ -62,35 +107,9 @@ function init()
 		}
 	};
 	Services.scriptloader.loadSubScript(addonRoot + "defaults/salastreadprefs.js", scope);
+	Utils.addFrameMessageListener("salastread:SetPref", setPrefWrapper);
+	Utils.addFrameMessageListener("salastread:GetPref", getPrefWrapper);
+	Utils.addFrameMessageListener("salastread:ResetPref", resetPrefWrapper);
 }
-
-// Expose functions to get&set preferences
-let Prefs = exports.Prefs =
-{
-	setPref: function(prefName, prefValue)
-	{
-		let type = prefTypeMap[branch.getPrefType(prefName)];
-		let result;
-		if (type)
-			result = branch["set" + type](prefName, prefValue);
-		else
-			result = null;
-		return result;
-	},
-	getPref: function(prefName)
-	{
-		let type = prefTypeMap[branch.getPrefType(prefName)];
-    	return type ? branch["get" + type](prefName) : null;
-	},
-	resetPref: function(prefName)
-	{
-		if (branch.prefHasUserValue(prefName))
-			branch.clearUserPref(prefName);
-	},
-	forceSave: function()
-	{
-		Services.prefs.savePrefFile(null);
-	}
-};
 
 init();
