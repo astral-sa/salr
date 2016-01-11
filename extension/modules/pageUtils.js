@@ -79,7 +79,7 @@ let PageUtils = exports.PageUtils =
 	{
 		var stylesheet = doc.createElement("style");
 		stylesheet.type = "text/css";
-		stylesheet.innerHTML = css;
+		stylesheet.textContent = css;
 		doc.getElementsByTagName("head")[0].appendChild(stylesheet);
 	},
 
