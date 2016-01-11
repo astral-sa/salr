@@ -81,7 +81,7 @@ let DB = exports.DB =
 
 	getPosterNotes: function(userid)
 	{
-		sendAsyncMessage("salastread:GetPosterNotes", userid);
+		return sendSyncMessage("salastread:GetPosterNotes", userid);
 	},
 
 	didIPostHere: function(threadid)
