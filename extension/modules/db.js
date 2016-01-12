@@ -7,6 +7,7 @@
 Cu.import("resource://gre/modules/Services.jsm");
 let {Prefs} = require("prefs");
 let {Utils} = require("utils");
+const {OS} = Cu.import("resource://gre/modules/osfile.jsm", {});
 
 function ReadFile(fn)
 {
@@ -28,25 +29,6 @@ function ReadFile(fn)
 				.createInstance(Components.interfaces.nsIScriptableInputStream);
 	sis.init(is);
 	return sis.read( sis.available() );
-}
-
-function SaveFile(fn, fdata)
-{
-	var file = Components.classes["@mozilla.org/file/local;1"]
-				.createInstance(Components.interfaces.nsILocalFile);
-	file.initWithPath(fn);
-	if (file.exists() === false) {
-		try {
-			file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 420);
-		} catch (ex) {
-			throw "file.create error ("+ex.name+") on "+fn;
-		}
-	}
-	var outputStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
-						.createInstance(Components.interfaces.nsIFileOutputStream);
-	outputStream.init(file, 0x04 | 0x08 | 0x20, 420, 0);
-	var result = outputStream.write( fdata, fdata.length );
-	outputStream.close();
 }
 
 let DB = exports.DB =
@@ -153,10 +135,11 @@ let DB = exports.DB =
 		if (value != null)
 		{
 			DB._forumListXml = value;
+			// Serialize the XML document and save it to disk.
 			let oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
 							.createInstance(Components.interfaces.nsIDOMSerializer);
 			let xmlstr = oXmlSer.serializeToString(DB._forumListXml);
-			SaveFile(DB._flfn, xmlstr);
+			let promise = OS.File.writeAtomic(DB._flfn, xmlstr, { encoding: "utf-8", tmpPath: DB._flfn + ".tmp"});
 		}
 	},
 
