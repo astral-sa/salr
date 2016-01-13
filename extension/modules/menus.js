@@ -61,13 +61,12 @@ let Menus = exports.Menus =
 	 * @param   {Node}    target              Menupopup to build forum menu entries in
 	 * @param   {Array}   pinnedForumNumbers  Array of pinned forum numbers from user preferences
 	 * @param   {Array}   pinnedForumElements Empty array to fill with pinned forum elements
+	 * @return {Promise} A promise that will resolve when the forum menu building is done.
 	 * @private
 	 */
 	_populateForumMenuFrom: function(nested_menus, target, pinnedForumNumbers, pinnedForumElements)
 	{
 		let doc = target.ownerDocument;
-		let forumsDoc = DB.forumListXml;
-		let forumListXmlSrc = forumsDoc ? forumsDoc.documentElement : null;
 		// First, add Utils menu items
 		let menuUtils = [
 			{name:"Private Messages",id:"pm"},
@@ -90,23 +89,36 @@ let Menus = exports.Menus =
 		// Next, see if we can add any forums - look for <forums> element in our XML
 		// If we find it, pass that element to "populateForumMenuForumsFrom"
 		var forums, foundforums = false;
-		if (forumListXmlSrc) {
-			for (var i = 0; i < forumListXmlSrc.childNodes.length; i++) {
-				if (forumListXmlSrc.childNodes[i].nodeName === "forums")
-					forums = forumListXmlSrc.childNodes[i];
-			}
-			if (forums)
-				foundforums = Menus._populateForumMenuForumsFrom(nested_menus, target, forums, pinnedForumNumbers, pinnedForumElements,0);
-		}
-		// If we don't find it, create an instructional placeholder menu item
-		if (!foundforums)
-		{
-			let menuel = doc.createElement("menuitem");
-			menuel.setAttribute("label", "Visit a forum to reload list");
-			menuel.setAttribute("forumnum", "home");
 
+		let myPromise = DB.GetForumListXMLDoc();
+		myPromise = myPromise.then((forumsDoc) =>
+		{
+			let forumListXmlSrc = forumsDoc ? forumsDoc.documentElement : null;
+			if (forumListXmlSrc) {
+				for (var i = 0; i < forumListXmlSrc.childNodes.length; i++) {
+					if (forumListXmlSrc.childNodes[i].nodeName === "forums")
+						forums = forumListXmlSrc.childNodes[i];
+				}
+				if (forums)
+					foundforums = Menus._populateForumMenuForumsFrom(nested_menus, target, forums, pinnedForumNumbers, pinnedForumElements,0);
+			}
+			if (!foundforums)
+			{
+				Utils.logToConsole("SALR Menu: Error loading forum list XML - No forums found in XML document.");
+				return Promise.reject();
+			}
+		}, (error) =>
+		{
+			// Spit out an error message for troubleshooting.
+			Utils.logToConsole("SALR Menu: Error loading forum list XML - " + error);
+			// If we don't find any forums, create an instructional placeholder menu item
+			let menuel = doc.createElement("menuitem");
+			menuel.setAttribute("label", "Visit a forum or thread to reload list");
+			menuel.setAttribute("forumnum", "home");
 			target.appendChild(menuel);
-		}
+			throw error;
+		});
+		return myPromise;
 	},
 
 	/**
@@ -342,19 +354,25 @@ let Menus = exports.Menus =
 		if (nested_menus && Prefs.getPref('menuPinnedForums'))
 			pinnedForumNumbers = Prefs.getPref('menuPinnedForums').split(",");
 
-		Menus._populateForumMenuFrom(nested_menus,menupopup,pinnedForumNumbers,pinnedForumElements);
-
-		let abovePinned = document.createElement("menuseparator");
-		abovePinned.className = 'salr_sepabovepinned';
-		abovePinned.hidden = true;
-		menupopup.appendChild(abovePinned);
-
-		// We only add pinned forums + any starred threads if nestSAForumMenu is true
-		if (nested_menus && (pinnedForumElements.length > 0 || pinnedForumNumbers.length > 0))
+		let myPromise = Menus._populateForumMenuFrom(nested_menus,menupopup,pinnedForumNumbers,pinnedForumElements);
+		myPromise.then((success) =>
 		{
-			Menus.buildPinnedForumMenuItems(win, menuLoc, pinnedForumNumbers, pinnedForumElements);
-		}
-		// Menu is ready now; show it.
+			let abovePinned = document.createElement("menuseparator");
+			abovePinned.className = 'salr_sepabovepinned';
+			abovePinned.hidden = true;
+			menupopup.appendChild(abovePinned);
+
+			// We only add pinned forums + any starred threads if nestSAForumMenu is true
+			if (nested_menus && (pinnedForumElements.length > 0 || pinnedForumNumbers.length > 0))
+			{
+				Menus.buildPinnedForumMenuItems(win, menuLoc, pinnedForumNumbers, pinnedForumElements);
+			}
+		}, (error) =>
+		{
+			Utils.logToConsole("SALR Menu: Error building pinned items due to error loading forum list XML");
+		});
+
+		// Menu is more or less ready now; show it.
 		if (menuLoc === "menubar")
 			document.getElementById("salr-menu").style.display = "-moz-box";
 	},

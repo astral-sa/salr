@@ -9,28 +9,6 @@ let {Prefs} = require("prefs");
 let {Utils} = require("utils");
 const {OS} = Cu.import("resource://gre/modules/osfile.jsm", {});
 
-function ReadFile(fn)
-{
-	var file = Components.classes["@mozilla.org/file/local;1"]
-				.createInstance(Components.interfaces.nsILocalFile);
-	try {
-		file.initWithPath(fn);
-	} catch (e) {
-		throw e + "\n" + fn;
-	}
-	if (file.exists() === false) {
-		return "";
-	}
-	var is = Components.classes["@mozilla.org/network/file-input-stream;1"]
-				.createInstance(Components.interfaces.nsIFileInputStream);
-	// TODO: Do we really need read and write flags for ReadFile?
-	is.init(file, 0x01, 0x04, null);
-	var sis = Components.classes["@mozilla.org/scriptableinputstream;1"]
-				.createInstance(Components.interfaces.nsIScriptableInputStream);
-	sis.init(is);
-	return sis.read( sis.available() );
-}
-
 let DB = exports.DB =
 {
 	needToShowChangeLog: false,
@@ -78,7 +56,7 @@ let DB = exports.DB =
 			DB._flfn = DB.getFilePath(Prefs.getPref('forumListStoragePath'));
 //Utils.logToConsole("SALR Initializing Profile:\ndb: " + DB._dbfn + "\nfl: " + DB._flfn);
 
-			DB.LoadForumListXML();
+			DB.initForumListXML();
 
 		} catch (e) {
 			DB._starterr = e + "\nLine: " + e.lineNumber;
@@ -103,87 +81,114 @@ let DB = exports.DB =
 			return fileName;
 	},
 
-	gettingForumList: false, // Will use this to defer
+	/**
+	 * Currently unused.
+	 * TODO: implement this variable to prevent multiple pages from
+	 *           attempting to process the forum list at the same time.
+	 */
+	gettingForumList: false,
+
+	/**
+	 * Whether we have already fetched the forum list this session.
+	 * @type {boolean}
+	 */
 	gotForumList: false,
 
 	/**
-	 * Function to access gotForumList
-	 * @return {boolean} gotForumList
+	 * DOM document tree with forum list information created from
+	 * parsing the XML forum list.
 	 */
-	doWeHaveForumList: function()
-	{
-		return DB.gotForumList;
-	},
+	_forumListXMLDoc: null,
 
-	_forumListXml: null,
-	_xmlDoc: null,
+	/**
+	 * Promise that resolves when any forum list XML is read from the disk.
+	 * @type {Promise}
+	 */
+	_forumListPromise: null,
 
-	get xmlDoc()
-	{
-		if (DB._xmlDoc != null)
-		{
-			return DB._xmlDoc;
-		}
-
-		return;
-		// Does not return anything (undefined) if _xmlDoc is null
-	},
-	set xmlDoc(value) { DB._xmlDoc = value; },
-
-	get forumListXml() { return DB._forumListXml; },
+	/**
+	 * Getter used by menu preferences pane only. New code should
+	 * use GetForumListXMLDoc instead.
+	 */
+	get forumListXml() { return DB._forumListXMLDoc; },
 	set forumListXml(value) {
 		if (value != null)
 		{
-			DB._forumListXml = value;
+			DB._forumListXMLDoc = value;
 			// Serialize the XML document and save it to disk.
 			let oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
 							.createInstance(Components.interfaces.nsIDOMSerializer);
-			let xmlstr = oXmlSer.serializeToString(DB._forumListXml);
+			let xmlstr = oXmlSer.serializeToString(DB._forumListXMLDoc);
 			let promise = OS.File.writeAtomic(DB._flfn, xmlstr, { encoding: "utf-8", tmpPath: DB._flfn + ".tmp"});
+			promise.catch(
+				(error) =>
+				{
+					Utils.logToConsole("SALR DB: Error writing XML file - " + error);
+				}
+			);
 		}
 	},
 
-	SetXML: function(xmlstr)
+	/**
+	 * Promisified access to forum list XML for Menus
+	 * @return {Promise} Resolves with the forum list XML Document.
+	 */
+	GetForumListXMLDoc: function()
 	{
-		let oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
-							.createInstance(Components.interfaces.nsIDOMParser);
-		try {
-			DB.xmlDoc = oDomParser.parseFromString(xmlstr, "text/xml");
-		} catch (e) {
-			throw e + "\n" + xmlstr;
-		}
+		// Return immediately if we already have it
+		if (DB._forumListXMLDoc !== null)
+			return Promise.resolve(DB._forumListXMLDoc);
+
+		// We should have a promise from initializing already
+		if (DB._forumListPromise)
+			return DB._forumListPromise;
+
+		// If we're here, something has gone very wrong
+		return Promise.reject("No promises.");
 	},
 
-	LoadForumListXML: function()
+	/**
+	 * Loads the forum list XML file if it exists.
+	 */
+	initForumListXML: function()
 	{
-		try {
-			let pxml = ReadFile(DB._flfn);
-			if (typeof(pxml) != "undefined")
-			{
-				if (pxml) {
+		DB._forumListPromise = OS.File.read(DB._flfn, { encoding: "utf-8" }).then(
+			(pxml) => {
+				if (pxml)
+				{
+					// File exists and is not empty
 					let oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
 										.createInstance(Components.interfaces.nsIDOMParser);
 					try {
-						DB._forumListXml = oDomParser.parseFromString(pxml, "text/xml");
-					} catch (e) {
-						DB._forumListXml = null;
+						DB._forumListXMLDoc = oDomParser.parseFromString(pxml, "text/xml");
+						if (DB._forumListXMLDoc.documentElement.nodeName === "parsererror")
+						{
+							DB._forumListXMLDoc = null;
+							return Promise.reject("Error parsing XML document.");
+						}
+						else
+						{
+							// All is well!
+							return DB._forumListXMLDoc;
+						}
+					} catch (ex) {
+						DB._forumListXMLDoc = null;
+						return Promise.reject("Exception parsing XML document: " + ex);
 					}
-				} else 	{
-					DB._forumListXml = null;
 				}
-			} else {
-				DB._forumListXml = null;
+				else
+				{
+					// File exists, but is empty
+					DB._forumListXMLDoc = null;
+					return Promise.reject("Empty file.");
+				}
+			},
+			(error) => {
+				// File does not exist
+				DB._forumListXMLDoc = null;
+				throw error;
 			}
-		} catch(e) {
-			DB._forumListXml = null;
-		}
-	},
-
-	InitializeEmptySALRXML: function(merge)
-	{
-		if (!merge || DB.xmlDoc==null) {
-			DB.SetXML("<?xml version=\"1.0\"?>\n<salastread>\n</salastread>");
-		}
+		);
 	},
 
 	get SALRversion() { return Prefs.getPref("currentVersion"); },
@@ -1202,7 +1207,7 @@ let DB = exports.DB =
 	{
 		Utils.addFrameMessageListener("salastread:ForumListUpdate", forumListUpdate);
 		Utils.addFrameMessageListener("salastread:SetThreadTitle", setThreadTitleWrapper);
-		Utils.addFrameMessageListener("salastread:DoWeHaveForumList", DB.doWeHaveForumList);
+		Utils.addFrameMessageListener("salastread:DoWeHaveForumList", () => DB.gotForumList);
 		Utils.addFrameMessageListener("salastread:GetUserId", DB.getUserId);
 		Utils.addFrameMessageListener("salastread:SetUserName", setUserNameWrapper);
 		Utils.addFrameMessageListener("salastread:ToggleAvatarHidden", toggleAvatarHiddenWrapper);
