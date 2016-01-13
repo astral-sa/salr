@@ -37,8 +37,7 @@ let VideoHandler = exports.VideoHandler =
 			link.addEventListener('click', VideoHandler.videoClickHandler, false);
 		}
 		else if ((link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1) ||
-		 link.href.match(/^https?\:\/\/(?:.)+\.(webm|gifv)$/i) ||
-		 link.href.match(/^https?\:\/\/i\.imgur\.com\/(?:.)+\.gifv$/i))
+		 link.href.match(/^https?\:\/\/(?:.)+\.(webm)$/i))
 		{
 			link.style.backgroundColor = videoEmbedderBG;
 			link.addEventListener('click', VideoHandler.videoClickHandler, false);
@@ -92,14 +91,6 @@ let VideoHandler = exports.VideoHandler =
 				(videoIdSearch[5] == null ? 0 : parseInt(videoIdSearch[5]));
 			let yt_start = yt_starttime === 0 ? '' : 'start=' + yt_starttime;
 			VideoHandler.embedYTVideo(link, yt_subd, videoIdSearch[2], yt_start);
-			return;
-		}
-
-		let matchGifv = (link.href.match(/^https?\:\/\/i\.imgur\.com\/(.)+\.gifv$/i));
-		if (matchGifv && matchGifv[1])
-		{
-			// gifv ID: matchGifv[1]
-			VideoHandler.embedGifv(link);
 			return;
 		}
 
@@ -213,42 +204,6 @@ let VideoHandler = exports.VideoHandler =
 		webmEmbed.controls = true;
 
 		p.appendChild(webmEmbed);
-		link.parentNode.insertBefore(p, link.nextSibling);
-	},
-
-	/**
-	 * Embeds a gifv video (looping webm or mp4).
-	 * @param {Node} link Node snapshot of target link to embed.
-	 */
-	embedGifv: function(link)
-	{
-		// Special code for imgur gifv - looping webm/mp4
-		let doc = link.ownerDocument;
-		let p = doc.createElement("p");
-
-		let vidSize = VideoHandler.getVidSizeFromPrefs();
-		let maxSize = vidSize.width.toString(10) + "px";
-
-		let gifvEmbed = doc.createElement("video");
-		gifvEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
-		gifvEmbed.className = 'salr_video';
-		gifvEmbed.style.maxWidth = maxSize;
-		gifvEmbed.style.maxHeight = maxSize;
-		gifvEmbed.poster = link.href.replace(/\.gifv$/i,'h.jpg');
-		gifvEmbed.controls = true;
-		gifvEmbed.autoplay = true;
-		gifvEmbed.muted = true;
-		gifvEmbed.loop = true;
-		let gifvSource = doc.createElement("source");
-		gifvSource.src = link.href.replace(/\.gifv$/i,'.mp4');
-		gifvSource.type = 'video/mp4';
-		gifvEmbed.appendChild(gifvSource);
-		gifvSource = doc.createElement("source");
-		gifvSource.src = link.href.replace(/\.gifv$/i,'.webm');
-		gifvSource.type ='video/webm';
-		gifvEmbed.appendChild(gifvSource);
-
-		p.appendChild(gifvEmbed);
 		link.parentNode.insertBefore(p, link.nextSibling);
 	},
 
