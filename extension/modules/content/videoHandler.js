@@ -36,8 +36,7 @@ let VideoHandler = exports.VideoHandler =
 				this.getYTVideoTitle(link, ytTest[1]);
 			link.addEventListener('click', VideoHandler.videoClickHandler, false);
 		}
-		else if ((link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1) ||
-		 link.href.match(/^https?\:\/\/(?:.)+\.(webm)$/i))
+		else if (link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1)
 		{
 			link.style.backgroundColor = videoEmbedderBG;
 			link.addEventListener('click', VideoHandler.videoClickHandler, false);
@@ -179,31 +178,6 @@ let VideoHandler = exports.VideoHandler =
 		embed.setAttribute('allowfullscreen', "true");
 
 		p.appendChild(embed);
-		link.parentNode.insertBefore(p, link.nextSibling);
-	},
-
-	/**
-	 * Embeds a WebM video.
-	 * @param {Node} link Node snapshot of target link to embed.
-	 */
-	embedWebM: function(link)
-	{
-		let doc = link.ownerDocument;
-		let p = doc.createElement("p");
-
-		let vidSize = VideoHandler.getVidSizeFromPrefs();
-		let maxSize = vidSize.width.toString(10) + "px";
-
-		let webmEmbed = doc.createElement("video");
-		webmEmbed.textContent = "ERROR! Something went wrong or your browser just can't play this video.";
-		webmEmbed.src = link.href;
-		webmEmbed.setAttribute('type','video/webm');
-		webmEmbed.className = 'salr_video';
-		webmEmbed.style.maxWidth = maxSize;
-		webmEmbed.style.maxHeight = maxSize;
-		webmEmbed.controls = true;
-
-		p.appendChild(webmEmbed);
 		link.parentNode.insertBefore(p, link.nextSibling);
 	},
 
