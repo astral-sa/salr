@@ -319,6 +319,16 @@ let PageUtils = exports.PageUtils =
 	},
 
 	/**
+	 * Checks if we're in a thread.
+	 * @param {string} pathname The pathname to check.
+	 * @return {boolean} Whether we're in a thread.
+	 */
+	areWeInAThread: function(pathname)
+	{
+		return(pathname.search(/^\/showthread.php/i) === 0);
+	},
+
+	/**
 	 * Checks if a thread is in the archives.
 	 *		NOTE: As of 05/21/2015, archives can currently be detected by a
 	 *		thread lacking a bookmark star and the thread rate box lacking

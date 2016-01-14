@@ -148,8 +148,6 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 			// So right click star/ignore works
 			thread.className += " salastread_thread_" + threadId;
-			// So ignore/star can get a title immediately
-			thread.__salastread_threadtitle = threadTitle;
 
 			// Is this icon ignored?
 			threadIconBox = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");

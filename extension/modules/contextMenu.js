@@ -4,8 +4,6 @@
 
 let {DB} = require("db");
 let {Prefs} = require("prefs");
-//let {Notifications} = require("notifications");
-let {PageUtils} = require("pageUtils");
 
 let ContextMenu = exports.ContextMenu = 
 {
@@ -182,7 +180,6 @@ let ContextMenu = exports.ContextMenu =
 
 		let ignoreThread = document.getElementById("salastread-context-ignorethread");
 		ignoreThread.data = threadid;
-		ignoreThread.target = target;
 		ignoreThread.setAttribute('label','Ignore This Thread (' + threadid + ')');
 		let starThread = document.getElementById("salastread-context-starthread");
 		starThread.data = threadid;
@@ -190,7 +187,6 @@ let ContextMenu = exports.ContextMenu =
 		starThread.setAttribute('label',(DB.isThreadStarred(threadid) ? 'Unstar' : 'Star') + ' This Thread (' + threadid + ')');
 		let unreadThread = document.getElementById("salastread-context-unreadthread");
 		unreadThread.data = threadid;
-		unreadThread.target = target;
 		unreadThread.setAttribute('label','Mark This Thread Unread (' + threadid + ')');
 		let pageName = target.ownerDocument.location.pathname.match(/^\/(\w+)\.php/i);
 		if (!pageName)
@@ -239,78 +235,44 @@ let ContextMenu = exports.ContextMenu =
 
 	starThread: function(event)
 	{
-		let document = event.target.ownerDocument.defaultView.document;
+		let document = event.target.ownerDocument;
+		let window = document.defaultView;
+
 		var threadid = document.getElementById("salastread-context-starthread").data;
-		var target = document.getElementById("salastread-context-starthread").target;
 		if (!threadid)
 			return;
-		var threadTitle;
-		 // Snag the title we saved earlier
-		if (target.ownerDocument.location.href.search(/showthread.php/i) === -1)
-		{
-			threadTitle = target.__salastread_threadtitle;
-		}
-		else
-			threadTitle = PageUtils.getCleanPageTitle(target.ownerDocument);
 
-		var starStatus = DB.isThreadStarred(threadid);
+		let starStatus = DB.isThreadStarred(threadid);
 		DB.toggleThreadStar(threadid);
-
 		if (starStatus === false) // we just starred it
-			DB.setThreadTitle(threadid, threadTitle);
+		{
+			let browserMM = window.gBrowser.selectedBrowser.messageManager;
+			browserMM.sendAsyncMessage("salastread:ContextMenuStarThread", {threadId: threadid});
+		}
 	},
 
 	ignoreThread: function(event)
 	{
-		let window = event.target.ownerDocument.defaultView;
-		let document = window.document;
+		let document = event.target.ownerDocument;
+		let window = document.defaultView;
+
 		let threadid = document.getElementById("salastread-context-ignorethread").data;
-		let target = document.getElementById("salastread-context-ignorethread").target;
 		if (!threadid)
 			return;
-		let threadTitle;
-		 // Snag the title we saved earlier
-		if (target.ownerDocument.location.href.search(/showthread.php/i) === -1)
-		{
-			threadTitle = target.__salastread_threadtitle;
-		}
-		else
-			threadTitle = PageUtils.getCleanPageTitle(target.ownerDocument);
 
-		try
-		{
-			// e10s note: window-modal, need to convert
-			let factory = Components.classes["@mozilla.org/prompter;1"]
-								.getService(Components.interfaces.nsIPromptFactory);
-			let prompt = factory.getPrompt(window.gBrowser.contentWindow, Components.interfaces.nsIPrompt);
-			let bag = prompt.QueryInterface(Components.interfaces.nsIWritablePropertyBag2);
-			bag.setPropertyAsBool("allowTabModal", true);
-			let result = prompt.confirm.apply(null, ["SALR", "Are you sure you want to ignore thread #"+threadid+"?"]);
-			if (!result)
-				return;
-			let ignoreStatus = DB.isThreadIgnored(threadid);
-			if (ignoreStatus === true)
-				return;
-			DB.toggleThreadIgnore(threadid);
-			DB.setThreadTitle(threadid, threadTitle);
-			if (target.ownerDocument.location.href.search(/showthread.php/i) === -1)
-			{
-				target.parentNode.removeChild(target);
-			}
-		}
-		catch(e) {
-			// Prevent exception if user closes the tab
-		}
+		let browserMM = window.gBrowser.selectedBrowser.messageManager;
+		browserMM.sendAsyncMessage("salastread:ContextMenuIgnoreThread", {threadId: threadid, ignoreStatus: DB.isThreadIgnored(threadid)});
 	},
 
 	unreadThread: function(event)
 	{
-		let window = event.target.ownerDocument.defaultView;
-		let document = window.document;
+		let document = event.target.ownerDocument;
+		let window = document.defaultView;
+
 		let threadid = document.getElementById("salastread-context-unreadthread").data;
-		//let target = document.getElementById("salastread-context-unreadthread").target;
 		if (!threadid)
 			return;
+
 		let xhr = new XMLHttpRequest();
 		let xhrparams = "json=1&action=resetseen&threadid="+threadid;
 		xhr.open("POST", "http://forums.somethingawful.com/showthread.php", true);

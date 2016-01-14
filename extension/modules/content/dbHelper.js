@@ -104,6 +104,16 @@ let DB = exports.DB =
 		return sendSyncMessage("salastread:IsThreadStarred", threadid);
 	},
 
+	toggleThreadIgnore: function(threadid)
+	{
+		sendAsyncMessage("salastread:ToggleThreadIgnore", threadid);
+	},
+
+	toggleThreadStar: function(threadid)
+	{
+		sendAsyncMessage("salastread:ToggleThreadStar", threadid);
+	},
+
 	// Temporary wrappers to request transaction for forumdisplay
 	// will be removed upon conversion to SQLite.jsm
 	requestTransactionState: function()
@@ -162,6 +172,6 @@ let DB = exports.DB =
 		isThreadIgnored: function(threadid)
 	isThreadOPView: function(threadid)
 	toggleThreadOPView: function(threadid)
-	toggleThreadStar: function(threadid)
-	toggleThreadIgnore: function(threadid)
+		toggleThreadStar: function(threadid)
+		toggleThreadIgnore: function(threadid)
 */

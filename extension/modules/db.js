@@ -1226,6 +1226,8 @@ let DB = exports.DB =
 		Utils.addFrameMessageListener("salastread:IPostedHere", DB.iPostedHere);
 		Utils.addFrameMessageListener("salastread:IsThreadIgnored", DB.isThreadIgnored);
 		Utils.addFrameMessageListener("salastread:IsThreadStarred", DB.isThreadStarred);
+		Utils.addFrameMessageListener("salastread:ToggleThreadIgnore", DB.toggleThreadIgnore);
+		Utils.addFrameMessageListener("salastread:ToggleThreadStar", DB.toggleThreadStar);
 		// Temporary wrappers to request transaction for forumdisplay
 		// will be removed upon conversion to SQLite.jsm
 		Utils.addFrameMessageListener("salastread:RequestTransactionState", () => DB.database.transactionInProgress);

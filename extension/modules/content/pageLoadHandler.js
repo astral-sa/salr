@@ -97,12 +97,6 @@ let PageLoadHandler = exports.PageLoadHandler = {
 
 			sendAsyncMessage("salastread:TimerCountInc");
 
-			// Set up listener for prompt from Chrome
-			addMessageListener("salastread:PromptInTab", PageUtils.promptInTab);
-			onShutdown.add(() => {
-				removeMessageListener("salastread:PromptInTab", PageUtils.promptInTab);
-			});
-
 			doc.__salastread_processed = true;
 		}
 		catch(ex)
