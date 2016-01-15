@@ -12,19 +12,6 @@ let PageUtils = exports.PageUtils =
 		let dConsole = Cc["@mozilla.org/consoleservice;1"]
 					.getService(Ci.nsIConsoleService);
 		dConsole.logStringMessage(someText);
-		/* Doesn't work on e10s
-		try
-		{
-			let {console} = Cu.import("resource://gre/modules/devtools/Console.jsm");
-			console.log(someText);
-		}
-		catch (e)
-		{
-			let dConsole = Components.classes["@mozilla.org/consoleservice;1"]
-						.getService(Components.interfaces.nsIConsoleService);
-			dConsole.logStringMessage(someText);			
-		}
-		*/
 	},
 
 	/**
