@@ -598,7 +598,7 @@ let Menus = exports.Menus =
 	{
 		Prefs.setPref('showMenuPinHelper', false);
 		let win = event.target.ownerDocument.defaultView;
-		Utils.runConfig("menu");
+		Utils.runConfig("menus");
 		win.alert("You may return to the menu settings at any time by choosing \"Configure SALastRead...\" from the SA menu, by "+
 	         "clicking the \"Configure SALR\" link in the header of any forum page, or through SALR's \"Options\" button on the Add-ons page.");
 	},
