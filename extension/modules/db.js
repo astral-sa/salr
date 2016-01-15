@@ -104,26 +104,38 @@ let DB = exports.DB =
 	 * Promise that resolves when any forum list XML is read from the disk.
 	 * @type {Promise}
 	 */
-	_forumListPromise: null,
+	_forumListXMLPromise: null,
 
 	/**
-	 * Getter used by menu preferences pane only. New code should
+	 * Getter only used by menu preferences pane. New code should
 	 * use GetForumListXMLDoc instead.
 	 */
 	get forumListXml() { return DB._forumListXMLDoc; },
+	/**
+	 * Setter only used by message handler for forum list XML updates from content.
+	 * @param {string} value Serialized XML forum list data to parse and set.
+	 */
 	set forumListXml(value) {
-		if (value != null)
+		if (value)
 		{
-			DB._forumListXMLDoc = value;
-			// Serialize the XML document and save it to disk.
-			let oXmlSer = Components.classes["@mozilla.org/xmlextras/xmlserializer;1"]
-							.createInstance(Components.interfaces.nsIDOMSerializer);
-			let xmlstr = oXmlSer.serializeToString(DB._forumListXMLDoc);
-			let promise = OS.File.writeAtomic(DB._flfn, xmlstr, { encoding: "utf-8", tmpPath: DB._flfn + ".tmp"});
-			promise.catch(
+			let settingPromise = DB.parseForumListXML(value);
+			DB._forumListXMLPromise = settingPromise;
+			settingPromise.then(
+				(success) =>
+				{
+					DB.gotForumList = true;
+					// Save serialized XML document to disk.
+					let promise = OS.File.writeAtomic(DB._flfn, value, { encoding: "utf-8", tmpPath: DB._flfn + ".tmp"});
+					promise.catch(
+						(fileerror) =>
+						{
+							Utils.logToConsole("SALR DB: Error writing XML file - " + fileerror);
+						}
+					);
+				},
 				(error) =>
 				{
-					Utils.logToConsole("SALR DB: Error writing XML file - " + error);
+					Utils.logToConsole("SALR DB: Didn't try to save forum list XML - " + error);
 				}
 			);
 		}
@@ -139,42 +151,25 @@ let DB = exports.DB =
 		if (DB._forumListXMLDoc !== null)
 			return Promise.resolve(DB._forumListXMLDoc);
 
-		// We should have a promise from initializing already
-		if (DB._forumListPromise)
-			return DB._forumListPromise;
+		// We should have a promise from initializing or from content message
+		if (DB._forumListXMLPromise)
+			return DB._forumListXMLPromise;
 
 		// If we're here, something has gone very wrong
 		return Promise.reject("No promises.");
 	},
 
 	/**
-	 * Loads the forum list XML file if it exists.
+	 * Loads the forum list XML file if it exists, puts directly into _forumListXMLDoc
 	 */
 	initForumListXML: function()
 	{
-		DB._forumListPromise = OS.File.read(DB._flfn, { encoding: "utf-8" }).then(
+		DB._forumListXMLPromise = OS.File.read(DB._flfn, { encoding: "utf-8" }).then(
 			(pxml) => {
 				if (pxml)
 				{
 					// File exists and is not empty
-					let oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
-										.createInstance(Components.interfaces.nsIDOMParser);
-					try {
-						DB._forumListXMLDoc = oDomParser.parseFromString(pxml, "text/xml");
-						if (DB._forumListXMLDoc.documentElement.nodeName === "parsererror")
-						{
-							DB._forumListXMLDoc = null;
-							return Promise.reject("Error parsing XML document.");
-						}
-						else
-						{
-							// All is well!
-							return DB._forumListXMLDoc;
-						}
-					} catch (ex) {
-						DB._forumListXMLDoc = null;
-						return Promise.reject("Exception parsing XML document: " + ex);
-					}
+					return DB.parseForumListXML(pxml);
 				}
 				else
 				{
@@ -189,6 +184,33 @@ let DB = exports.DB =
 				throw error;
 			}
 		);
+	},
+
+	/**
+	 * Promisified parsing of forum list XML
+	 * @param {string} forumListXML Serialized XML forum list data to parse and set.
+	 * @return {Promise} Resolves with the parsed forum list XML Document.
+	 */
+	parseForumListXML: function(forumListXML)
+	{
+		let oDomParser = Components.classes["@mozilla.org/xmlextras/domparser;1"]
+							.createInstance(Components.interfaces.nsIDOMParser);
+		try {
+			DB._forumListXMLDoc = oDomParser.parseFromString(forumListXML, "text/xml");
+			if (DB._forumListXMLDoc.documentElement.nodeName === "parsererror")
+			{
+				DB._forumListXMLDoc = null;
+				return Promise.reject("Error parsing XML document.");
+			}
+			else
+			{
+				// All is well!
+				return Promise.resolve(DB._forumListXMLDoc);
+			}
+		} catch (ex) {
+			DB._forumListXMLDoc = null;
+			return Promise.reject("Exception parsing XML document: " + ex);
+		}
 	},
 
 	get SALRversion() { return Prefs.getPref("currentVersion"); },
@@ -1205,7 +1227,14 @@ let DB = exports.DB =
 
 	initChildListeners: function()
 	{
-		Utils.addFrameMessageListener("salastread:ForumListUpdate", forumListUpdate);
+		/**
+		 * Message handler for forum list XML updates from content.
+		 * @param {string} xmlstr Serialized forum list XML
+		 */
+		Utils.addFrameMessageListener("salastread:ForumListUpdate", (xmlstr) => {
+			// For now, just call the setter.
+			DB.forumListXml = xmlstr;
+		});
 		Utils.addFrameMessageListener("salastread:SetThreadTitle", setThreadTitleWrapper);
 		Utils.addFrameMessageListener("salastread:DoWeHaveForumList", () => DB.gotForumList);
 		Utils.addFrameMessageListener("salastread:GetUserId", DB.getUserId);
@@ -1255,16 +1284,6 @@ let DB = exports.DB =
 
 };
 DB.init();
-
-function forumListUpdate(xmlstr)
-{
-	let oDomParser = Cc["@mozilla.org/xmlextras/domparser;1"]
-						.createInstance(Ci.nsIDOMParser);
-	let forumsDoc = oDomParser.parseFromString(xmlstr, "text/xml");
-
-	DB.forumListXml = forumsDoc;
-	DB.gotForumList = true;
-}
 
 function setThreadTitleWrapper({threadid, title})
 {
