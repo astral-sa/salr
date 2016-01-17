@@ -394,7 +394,7 @@ let Styles = exports.Styles =
 		}
 		else if (Prefs.getPref('resizeCustomTitleText'))
 		{
-			CSSFile += 'dl.userinfo dd.title { width: 159px !important;  overflow: auto !important;}\n';
+			CSSFile += 'dl.userinfo dd.title { width: 159px !important; overflow: auto !important; line-height: normal !important; }\n';
 			if (Prefs.getPref('resizeAllCustomTitleText'))
 				CSSFile += 'dl.userinfo dd.title, dl.userinfo dd.title * { font-size:10px !important; }\n';
 			else
