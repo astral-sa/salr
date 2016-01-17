@@ -1113,7 +1113,7 @@
 			<image src="chrome://salastread/skin/salastread-large.png" maxwidth='96' maxheight='95'/>
 			<spacer flex="1"/>
 			<vbox>
-				<label id="forumlink" class="text-link" value= "SALR Thread" href="http://forums.somethingawful.com/showthread.php?threadid=2571027&amp;goto=lastpost" />
+				<label id="forumlink" class="text-link" value= "SALR Thread" href="http://forums.somethingawful.com/showthread.php?threadid=3760555&amp;goto=lastpost" />
 				<separator orient="vertical"/>
 				<label id="bslink" class="text-link" value= "SALR Project Page" href="https://github.com/astral-sa/salr" />
 			</vbox>

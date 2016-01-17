@@ -66,9 +66,10 @@ var gSALRAboutPane = {
 		document.getElementById("timespent").setAttribute("value", tsstr);
 	},
 
+	// Unused
 	openSALRThread: function()
 	{
-		var tab = gBrowser.addTab("http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost");
+		var tab = gBrowser.addTab("%SALR_THREADLINK%");
 		gBrowser.selectedTab = tab; 
 	},
 

@@ -25,7 +25,7 @@ let SupportHandler = exports.SupportHandler =
 		var newLink = doc.createElement('a');
 		emptyP.appendChild(newLink);
 		emptyP.style.textAlign = "center";
-		newLink.href = "http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost";
+		newLink.href = "%SALR_THREADLINK%";
 		newLink.textContent = "Click here to report a problem with SA Last Read instead";
 		var supportTable = doc.getElementById('content').getElementsByTagName('div')[1];
 		supportTable.parentNode.replaceChild(newImg, supportTable);
