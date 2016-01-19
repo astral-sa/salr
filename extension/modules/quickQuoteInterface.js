@@ -256,7 +256,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	// Quick quote / edit post util functions
 	convertPLTag: function(message)
 	{
-		return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=http://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
+		return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=https://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
 	},
 
 	quickQuoteSubmit: function(message, parseurl, subscribe, disablesmilies, signature, subtype, formkey, attachfile, form_cookie)
@@ -270,7 +270,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			var doc = QuickQuoteHelper.quickWindowParams.doc;
 			var newform = doc.createElement("FORM");
 				newform.style.display = "none";
-				newform.action = "http://forums.somethingawful.com/newreply.php";
+				newform.action = "https://forums.somethingawful.com/newreply.php";
 
 			newform.method = "post";
 			newform.enctype = "multipart/form-data";
@@ -278,7 +278,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 
 			if (QuickQuoteHelper.quickWindowParams.quicktype === "newthread")
 			{
-				newform.action = "http://forums.somethingawful.com/newthread.php";
+				newform.action = "https://forums.somethingawful.com/newthread.php";
 				PageUtils.addHiddenFormInput(doc, newform,"action", "postthread");
 				PageUtils.addHiddenFormInput(doc, newform, "forumid",  QuickQuoteHelper.quickWindowParams.forumid);
 				PageUtils.addHiddenFormInput(doc, newform, "iconid", QuickQuoteHelper.quickquotewin.document.getElementById('posticonbutton').iconid);
@@ -286,7 +286,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			}
 			else if (QuickQuoteHelper.quickWindowParams.quicktype === "editpost")
 			{
-				newform.action = "http://forums.somethingawful.com/editpost.php";
+				newform.action = "https://forums.somethingawful.com/editpost.php";
 				PageUtils.addHiddenFormInput(doc, newform,"action", "updatepost");
 				PageUtils.addHiddenFormInput(doc, newform, "postid", QuickQuoteHelper.quickWindowParams.postid);
 			}

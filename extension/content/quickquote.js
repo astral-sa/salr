@@ -148,7 +148,7 @@ var emoteGetter = null;
 function getEmoticonsFromServerASync()
 {
 	emoteGetter = new XMLHttpRequest();
-	emoteGetter.open("GET", "http://forums.somethingawful.com/misc.php?s=&action=showsmilies", true);
+	emoteGetter.open("GET", "https://forums.somethingawful.com/misc.php?s=&action=showsmilies", true);
 	emoteGetter.onreadystatechange = getEmoticonsCallback;
 	// Ensure this load flag is set to prevent issues with third-party cookies being disabled
 	emoteGetter.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
@@ -258,18 +258,18 @@ function startPostTextGrab(getFormKeyOnly, postid)
 	switch(getType)
 	{
 		case "quote":
-			targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&postid=" + postid;
+			targeturl = "https://forums.somethingawful.com/newreply.php?s=&action=newreply&postid=" + postid;
 			break;
 		case "reply":
-			targeturl = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" + quickParams.threadid;
+			targeturl = "https://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" + quickParams.threadid;
 			break;
 		case "editpost":
-			targeturl = "http://forums.somethingawful.com/editpost.php?s=&action=editpost&postid=" + postid;
+			targeturl = "https://forums.somethingawful.com/editpost.php?s=&action=editpost&postid=" + postid;
 			document.title = 'Quick Edit';
 			document.getElementById('qrtitle').setAttribute('value', 'Quick Edit');
 			break;
 		case "newthread":
-			targeturl = "http://forums.somethingawful.com/newthread.php?forumid=" + quickParams.forumid;
+			targeturl = "https://forums.somethingawful.com/newthread.php?forumid=" + quickParams.forumid;
 			document.title = 'Quick Post';
 			document.getElementById('qrtitle').setAttribute('value', 'Quick Post');
 			break;
@@ -788,7 +788,7 @@ function doPreview()
 			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/smile.gif"/>'] = /:\)/gi;
 			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/frown.gif"/>'] = /:\(/gi;
 			vbcode['<img src="http://forumimages.somethingawful.com/images/smilies/wink.gif"/>'] = /;\)/gi;
-			vbcode['<img src="http://i.somethingawful.com/mjolnir/images/livestock~01-14-04-whore.gif"/>'] = /;-\*/gi;
+			vbcode['<img src="https://i.somethingawful.com/mjolnir/images/livestock~01-14-04-whore.gif"/>'] = /;-\*/gi;
 
 			var matches = markup.match(/\:(\w+|\?)\:/gi);
 

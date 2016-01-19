@@ -636,7 +636,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		switch(searchType)
 		{
 			case "query":
-				newSearchForm.action = 'http://forums.somethingawful.com/query.php';
+				newSearchForm.action = 'https://forums.somethingawful.com/query.php';
 				PageUtils.addHiddenFormInput(doc, newSearchDiv, 'action', 'query');
 				PageUtils.addHiddenFormInput(doc, newSearchDiv, 'forums[]', forumid);
 				// Work some magic on submit
@@ -648,7 +648,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				}, false);
 				break;
 			case "search":
-				newSearchForm.action = 'http://forums.somethingawful.com/f/search/submit';
+				newSearchForm.action = 'https://forums.somethingawful.com/f/search/submit';
 				let searchInputs = {
 					'forumids': forumid,
 					'groupmode': '0',

@@ -7,8 +7,8 @@ The Something Awful Last Read (SALR) Extension for Firefox enhances the Somethin
 
 The latest release version of SALR can be downloaded [here](https://github.com/astral-sa/salr/releases/latest).
 
-News and release notes can always be found [in the SALR thread on Something Awful](http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost).
+News and release notes can always be found [in the SALR thread on Something Awful](https://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost).
 
 ## Troubleshooting / Contact
 
-Feel free to post in [the SALR thread on Something Awful](http://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost) or join our [![chat](https://img.shields.io/badge/chat-on%20hipchat-blue.svg)](https://www.hipchat.com/gyorZk2Yu).
+Feel free to post in [the SALR thread on Something Awful](httsp://forums.somethingawful.com/showthread.php?threadid=2571027&goto=lastpost) or join our [![chat](https://img.shields.io/badge/chat-on%20hipchat-blue.svg)](https://www.hipchat.com/gyorZk2Yu).

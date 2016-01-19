@@ -441,10 +441,10 @@ let Menus = exports.Menus =
 			// uncomment to use older search instead:
 	/*
 			if (el.getAttribute("forumnum") == "search")
-				Menus.menuItemGoToURL(event,"http://forums.somethingawful.com/f/search",target);
+				Menus.menuItemGoToURL(event,"https://forums.somethingawful.com/f/search",target);
 			else
 	*/
-				Menus.menuItemGoToURL(event,"http://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"));
+				Menus.menuItemGoToURL(event,"https://forums.somethingawful.com/forumdisplay.php?s=&forumid="+el.getAttribute("forumnum"));
 		}				
 		// Try to block Firefox's default right-click menu for this element, if applicable.
 		if (event.cancelable)
@@ -478,7 +478,7 @@ let Menus = exports.Menus =
 
 		try
 		{
-			Menus.menuItemGoToURL(event, "http://forums.somethingawful.com/showthread.php?threadid=" + threadid + "&goto=newpost");
+			Menus.menuItemGoToURL(event, "https://forums.somethingawful.com/showthread.php?threadid=" + threadid + "&goto=newpost");
 		}
 		catch(e)
 		{

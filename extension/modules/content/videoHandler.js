@@ -36,7 +36,7 @@ let VideoHandler = exports.VideoHandler =
 				this.getYTVideoTitle(link, ytTest[1]);
 			link.addEventListener('click', VideoHandler.videoClickHandler, false);
 		}
-		else if (link.href.search(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1)
+		else if (link.href.search(/^https?\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/i) > -1)
 		{
 			link.style.backgroundColor = videoEmbedderBG;
 			link.addEventListener('click', VideoHandler.videoClickHandler, false);
@@ -99,7 +99,7 @@ let VideoHandler = exports.VideoHandler =
 			return;
 		}
 
-		let matchGV = link.href.match(/^http\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/);
+		let matchGV = link.href.match(/^https?\:\/\/video\.google\.c(om|a|o\.uk)\/videoplay\?docid=([-0-9]+)/);
 		if (matchGV)
 		{
 			// videoTLD = matchGV[1];
@@ -147,7 +147,7 @@ let VideoHandler = exports.VideoHandler =
 		embedFrame.width = vidwidth;
 		embedFrame.height = vidheight;
 		embedFrame.className = 'salr_video';
-		embedFrame.src = "http://" + yt_subd + "youtube.com/embed/" + videoId + qualstring + yt_start;
+		embedFrame.src = "https://" + yt_subd + "youtube.com/embed/" + videoId + qualstring + yt_start;
 		embedFrame.setAttribute('frameborder', '0');
 		embedFrame.setAttribute('allowfullscreen', true);
 
@@ -174,7 +174,7 @@ let VideoHandler = exports.VideoHandler =
 		embed.className = 'salr_video';
 		embed.setAttribute('id', videoId);
 		embed.setAttribute('flashvars', '');
-		embed.setAttribute('src', 'http://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en&fs=true');
+		embed.setAttribute('src', 'https://video.google.c' + videoTLD + '/googleplayer.swf?docId=' + videoId + '&hl=en&fs=true');
 		embed.setAttribute('allowfullscreen', "true");
 
 		p.appendChild(embed);

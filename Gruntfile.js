@@ -52,7 +52,7 @@ module.exports = function(grunt)
 			threadlink: {
 				path: 'build/',
 				pattern: '%SALR_THREADLINK%',
-				replacement: 'http://forums.somethingawful.com/showthread.php?threadid=3760555&goto=lastpost',
+				replacement: 'https://forums.somethingawful.com/showthread.php?threadid=3760555&goto=lastpost',
 				recursive: true
 			}
 		},

@@ -213,7 +213,7 @@ var XBBCODE = (function() {
 					var matchQuote = params.match(/^="?([^"]+)"? post="?(\d+)"?/i);
 					if (matchQuote && matchQuote[1] && matchQuote[2])
 					{
-						return '<div class="sacode-quote"><h4><a class="sacode-quotelink" href="http://forums.somethingawful.com/showthread.php?goto=post&postid=' + matchQuote[2] + '#post' + matchQuote[2]+ '" target="_blank">' + matchQuote[1] + ' posted:</a></h4><blockquote>';
+						return '<div class="sacode-quote"><h4><a class="sacode-quotelink" href="https://forums.somethingawful.com/showthread.php?goto=post&postid=' + matchQuote[2] + '#post' + matchQuote[2]+ '" target="_blank">' + matchQuote[1] + ' posted:</a></h4><blockquote>';
 					}
 					else
 					{
@@ -221,7 +221,7 @@ var XBBCODE = (function() {
 						if (matchQuote && matchQuote[1])
 							return '<div class="sacode-quote"><h4>' + matchQuote[1] + ' posted:</h4><blockquote>';
 						else
-							return '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />VERY SERIOUS QUOTING PROBLEM<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />';
+							return '<img src="https://fi.somethingawful.com/images/smilies/emot-siren.gif" />VERY SERIOUS QUOTING PROBLEM<img src="https://fi.somethingawful.com/images/smilies/emot-siren.gif" />';
 					}
 				}
 				else
@@ -338,7 +338,7 @@ var XBBCODE = (function() {
 								switch(vidtype)
 								{
 									case "youtube":
-										vidurl = 'http://www.youtube.com/watch?v=' + content;
+										vidurl = 'https://www.youtube.com/watch?v=' + content;
 										break;
 
 									case "yahoo":
@@ -358,9 +358,9 @@ var XBBCODE = (function() {
 								}
 							}
 							if (vidurl)
-								vidreturn = '<img src="http://i.somethingawful.com/core/icon/fsilk/film_link.png" /><a href="' + vidurl + offset + '" target="_blank">' + vidurl + offset;
+								vidreturn = '<img src="https://i.somethingawful.com/core/icon/fsilk/film_link.png" /><a href="' + vidurl + offset + '" target="_blank">' + vidurl + offset;
 							else
-								vidreturn = '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />' + viderr + '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" /><a>';
+								vidreturn = '<img src="https://fi.somethingawful.com/images/smilies/emot-siren.gif" />' + viderr + '<img src="https://fi.somethingawful.com/images/smilies/emot-siren.gif" /><a>';
 							return vidreturn;
 						}
 					);
@@ -369,9 +369,9 @@ var XBBCODE = (function() {
 				{
 					// quick and extremely dirty check for approved domain words
 					if (content.match(/https?\:\/\/(?:[^\/]*?youtube\.com\/|video\.yahoo\.com\/|[^\/]*?foxnews\.com\/video\/|[^\/]*?cnn\.com\/video\/)/))
-						result = '<img src="http://i.somethingawful.com/core/icon/fsilk/film_link.png" /><a href="' + content + '" target="_blank">' + content;
+						result = '<img src="https://i.somethingawful.com/core/icon/fsilk/film_link.png" /><a href="' + content + '" target="_blank">' + content;
 					else
-						result = '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" />' + 'Unsupported domain for video tag.' + '<img src="http://fi.somethingawful.com/images/smilies/emot-siren.gif" /><a>';
+						result = '<img src="https://fi.somethingawful.com/images/smilies/emot-siren.gif" />' + 'Unsupported domain for video tag.' + '<img src="https://fi.somethingawful.com/images/smilies/emot-siren.gif" /><a>';
 				}
 				return result;
 			},
@@ -447,7 +447,7 @@ var XBBCODE = (function() {
 			closeTags = new RegExp("(\\[)(" + closeTagList.join("|") + ")(\\])", "gi");
 		})();
 
-	};
+	}
 	initTags();
 
 	// -----------------------------------------------------------------------------
@@ -597,7 +597,7 @@ var XBBCODE = (function() {
 	// API, Expose all available tags
 	me.tags = function() {
 		return tags;
-	}
+	};
 
 	// API
 	me.addTags = function(newtags) {
@@ -606,7 +606,7 @@ var XBBCODE = (function() {
 			tags[tag] = newtags[tag];
 		}
 		initTags();
-	}
+	};
 
 	me.process = function(config) {
 
@@ -642,7 +642,7 @@ var XBBCODE = (function() {
 
 		errQueue = checkParentChildRestrictions("bbcode", config.text, -1, "", "", config.text);
 
-		ret.html = parse(config);;
+		ret.html = parse(config);
 
 		if ( ret.html.indexOf("[") !== -1 || ret.html.indexOf("]") !== -1) {
 			errQueue.push("Some tags appear to be misaligned.");

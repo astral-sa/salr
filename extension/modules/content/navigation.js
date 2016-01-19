@@ -209,7 +209,7 @@ let Navigation = exports.Navigation =
 		if (hasAStar)
 		{
 			let starButton = doc.createElement("img");
-			starButton.src = "http://fi.somethingawful.com/images/buttons/button-bookmark.png";
+			starButton.src = "https://fi.somethingawful.com/images/buttons/button-bookmark.png";
 			starButton.className = 'thread_bookmark';
 			navDiv.appendChild(starButton);
 		}

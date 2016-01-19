@@ -435,10 +435,10 @@ let Styles = exports.Styles =
 
 		// Shrink posts by ignored users (and restore gradients)
 		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n' +
-					'#thread table.ignored tr.altcolor1 td.userinfo, #thread table.ignored tr.altcolor1 td.postbody { background-image: url("http://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
-					'#thread table.ignored tr.altcolor2 td.userinfo, #thread table.ignored tr.altcolor2 td.postbody { background-image: url("http://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
-					'#thread table.ignored tr.seen1 td.userinfo, #thread table.ignored tr.seen1 td.postbody { background-image: url("http://fi.somethingawful.com/images/forum-bg-alt-seen1.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
-					'#thread table.ignored tr.seen2 td.userinfo, #thread table.ignored tr.seen2 td.postbody { background-image: url("http://fi.somethingawful.com/images/forum-bg-alt-seen2.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
+					'#thread table.ignored tr.altcolor1 td.userinfo, #thread table.ignored tr.altcolor1 td.postbody { background-image: url("https://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
+					'#thread table.ignored tr.altcolor2 td.userinfo, #thread table.ignored tr.altcolor2 td.postbody { background-image: url("https://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
+					'#thread table.ignored tr.seen1 td.userinfo, #thread table.ignored tr.seen1 td.postbody { background-image: url("https://fi.somethingawful.com/images/forum-bg-alt-seen1.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
+					'#thread table.ignored tr.seen2 td.userinfo, #thread table.ignored tr.seen2 td.postbody { background-image: url("https://fi.somethingawful.com/images/forum-bg-alt-seen2.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n';
 
 		if (Prefs.getPref('quickPostJump'))
 		{

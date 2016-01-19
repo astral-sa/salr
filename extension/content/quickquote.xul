@@ -28,7 +28,7 @@
        <xul:label value="Subject:" />
        <xul:textbox id="subject" flex="10" />
        <xul:label value="Post icon:" />
-       <xul:button id='posticonbutton' class="qqbutton" image="http://fi.somethingawful.com/forums/posticons/byob-salt.gif" type="menu">
+       <xul:button id='posticonbutton' class="qqbutton" image="https://fi.somethingawful.com/forums/posticons/byob-salt.gif" type="menu">
         <xul:menupopup id="posticonmenu" class="salr_posticon_popup">
          <xul:hbox id='posticonmenuhbox' />
         </xul:menupopup>
@@ -127,7 +127,7 @@
       </xul:hbox>
      </xul:vbox>
 
-   <html:form id="floatsubmitter" method="get" action="http://forums.somethingawful.com/" target="_blank">
+   <html:form id="floatsubmitter" method="get" action="https://forums.somethingawful.com/" target="_blank">
    </html:form>
    <xul:iframe id="replypage" style="display: none" type="content" src="data:text/html;charset=iso-8859-1,%3Chtml%3E%3Cbody%3E%3C/body%3E%3C/html%3E"></xul:iframe>
 

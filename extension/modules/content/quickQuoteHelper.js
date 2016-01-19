@@ -159,7 +159,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	 */
 	convertPLTag: function(message)
 	{
-		return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=http://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
+		return message.replace(/\[PL=(.*?)\](.*?)\[\/PL\]/g,"[URL=https://forums.somethingawful.com/showthread.php?s=&postid=$1#post$1]$2[/URL]");
 	},
 
 	/**
@@ -234,7 +234,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		var regReplyLink = doc.createElement("A");
 		// TODO: This likely will need to be changed to an addeventlistener
 		regReplyLink.onclick = function() { QuickQuoteHelper.needRegReplyFill = true; };
-		regReplyLink.href = "http://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
+		regReplyLink.href = "https://forums.somethingawful.com/newreply.php?s=&action=newreply&threadid=" +
 			sendSyncMessage("salastread:QuickQuoteGetSavedQuickReplyThreadID");
 		regReplyLink.textContent = "here.";
 		reqMsg.appendChild(regReplyLink);
