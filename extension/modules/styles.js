@@ -214,8 +214,11 @@ let Styles = exports.Styles =
 	generateThreadListSSSCSS: function()
 	{
 		let CSSFile = '@-moz-document url-prefix("http://forums.somethingawful.com/forumdisplay.php"),\n' +
+						'url-prefix("https://forums.somethingawful.com/forumdisplay.php"),\n' +
 						'url-prefix("http://forums.somethingawful.com/usercp.php"),\n' +
-						'url-prefix("http://forums.somethingawful.com/bookmarkthreads.php") {\n';
+						'url-prefix("https://forums.somethingawful.com/usercp.php"),\n' +
+						'url-prefix("http://forums.somethingawful.com/bookmarkthreads.php"),\n' +
+						'url-prefix("https://forums.somethingawful.com/bookmarkthreads.php") {\n';
 
 		// Shrink 'Pages:' list in thread list
 		if (Prefs.getPref('shrinkThreadListTitlePages') === true)
@@ -360,7 +363,8 @@ let Styles = exports.Styles =
 	 */
 	generateShowThreadSSSCSS: function()
 	{
-		let CSSFile = '@-moz-document url-prefix("http://forums.somethingawful.com/showthread.php") {\n';
+		let CSSFile = '@-moz-document url-prefix("http://forums.somethingawful.com/showthread.php"),\n' +
+						'url-prefix("https://forums.somethingawful.com/showthread.php") {\n';
 
 		if (Prefs.getPref('highlightQuotes'))
 		{
