@@ -18,7 +18,7 @@ let DB = exports.DB =
 		DB.ProfileInit();
 
 		// Check if we need some SQL patches
-		if (DB.LastRunVersion != DB.SALRversion && DB.LastRunVersion !== "0.0.0")
+		if (DB.LastRunVersion !== DB.SALRversion && DB.LastRunVersion !== "0.0.0")
 		{
 			//DB.needToShowChangeLog = !DB.IsDevelopmentRelease;
 			DB.needToShowChangeLog = true;
@@ -328,9 +328,8 @@ let DB = exports.DB =
 				throw "file.create error ("+ex.name+") on "+fn;
 			}
 		}
-		var storageService = Components.classes["@mozilla.org/storage/service;1"]
-			.getService(Components.interfaces.mozIStorageService);
-		DB.mDBConn = storageService.openDatabase(file);
+
+		DB.mDBConn = Services.storage.openDatabase(file);
 		if (!DB.mDBConn.tableExists("threaddata"))
 		{
 			DB.mDBConn.executeSimpleSQL("CREATE TABLE `threaddata` (id INTEGER PRIMARY KEY, title VARCHAR(161), posted BOOLEAN, ignore BOOLEAN, star BOOLEAN, opview BOOLEAN)");
@@ -576,35 +575,35 @@ let DB = exports.DB =
 		return (DB.userDataCache[userid] != undefined);
 	},
 
-	// Adds a user to the DB and cache
-	// @param: (int) User ID
-	// @return: nothing
+	/**
+	 * Adds a user to the DB and cache.
+	 * @param {(number|string)} userid     Somebody's userid.
+	 * @param {string}          [username] Somebody's username.
+	 */
 	addUser: function(userid, username)
 	{
 		if (!DB.userExists(userid))
 		{
-			if (username == undefined)
-			{
+			if (typeof username === "undefined")
 				username = null;
-			}
+
 			DB.userDataCache[userid] = {};
 			DB.userDataCache[userid].userid = userid;
 			DB.userDataCache[userid].username = username;
 			DB.userDataCache[userid].mod = false;
 			DB.userDataCache[userid].admin = false;
-			DB.userDataCache[userid].color = 0;
-			DB.userDataCache[userid].background = 0;
+			DB.userDataCache[userid].color = '0';
+			DB.userDataCache[userid].background = '0';
 			DB.userDataCache[userid].status = 0;
 			DB.userDataCache[userid].notes = null;
 			DB.userDataCache[userid].ignored = false;
 			DB.userDataCache[userid].hideavatar = false;
-			//This is already below (and done more safely)
-			//DB.userIDCache[username] = userid;
+
 			var statement = DB.database.createStatement("INSERT INTO `userdata` (`userid`, `username`, `mod`, `admin`, `color`, `background`, `status`, `notes`, `ignored`, `hideavatar`) VALUES (?1, ?2, 0, 0, 0, 0, 0, null, 0, 0)");
 			statement.bindInt32Parameter(0, userid);
 			statement.bindStringParameter(1, username);
 			statement.execute();
-			if (username != null)
+			if (username !== null)
 			{
 				DB.userIDCache[username] = userid;
 			}

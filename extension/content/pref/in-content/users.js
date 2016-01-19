@@ -198,7 +198,7 @@ var gSALRUsersPane = {
 				{
 					var udata = DB.isUserIdColored(text.value);
 					// user is in the database, but has no info set
-					if (udata.color == 0 && udata.background == 0 && !DB.getPosterNotes(text.value))
+					if (udata.color === '0' && udata.background === '0' && !DB.getPosterNotes(text.value))
 					{
 						// Make sure we aren't already working with this id
 						var foundit = false;
