@@ -198,7 +198,7 @@ let Styles = exports.Styles =
 		if (Prefs.getPref('removeHeaderAndFooter'))
 		{
 			// global forum CSS
-			CSSFile += '@-moz-document url-prefix("http://forums.somethingawful.com/") {\n';
+			CSSFile += '@-moz-document domain("forums.somethingawful.com") {\n';
 			CSSFile += '#globalmenu, #nav_purchase, #navigation, #copyright { display:none; }\n';
 			// end global forum CSS
 			CSSFile += '}\n';
