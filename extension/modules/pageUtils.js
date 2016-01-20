@@ -16,12 +16,13 @@ let PageUtils = exports.PageUtils =
 
 	/**
 	 * Handle a message from Chrome to make a tab-modal prompt.
+	 * This function should only be called from a frame script.
 	 */
 	promptInTab: function(message)
 	{
 		let msg = message.data.msg;
 		let factory = Cc["@mozilla.org/prompter;1"].getService(Ci.nsIPromptFactory);
-		let prompt = factory.getPrompt(content, Ci.nsIPrompt);
+		let prompt = factory.getPrompt(content, Ci.nsIPrompt); // eslint-disable-line no-undef
 		let bag = prompt.QueryInterface(Ci.nsIWritablePropertyBag2);
 		bag.setPropertyAsBool("allowTabModal", true);
 		prompt.alert.apply(null, ["SALR Alert", msg]);
@@ -103,6 +104,10 @@ let PageUtils = exports.PageUtils =
 		return doc.title.replace(/( \- )?The Something ?Awful Forums( \- )?/i, '');
 	},
 
+	/**
+	 * Inserts "Configure SALR" link into a page header.
+	 * This function should only be called from a frame script.
+	 */
 	insertSALRConfigLink: function(doc)
 	{
 		var usercpnode = PageUtils.selectSingleNode(doc, doc.body, "//UL[@id='navigation']/LI/A[contains(@href,'usercp.php')]");
@@ -120,7 +125,7 @@ let PageUtils = exports.PageUtils =
 			{
 				e.stopPropagation();
 				e.preventDefault();
-				sendAsyncMessage("salastread:RunConfig");
+				sendAsyncMessage("salastread:RunConfig"); // eslint-disable-line no-undef
 			}, true);
 		}
 	},

@@ -7,6 +7,7 @@ let {Menus} = require("menus");
 let {Utils} = require("utils");
 let {ToolbarButton} = require("toolbarButton");
 let {ContextMenu} = require("contextMenu");
+// TODO: Move style loading code out of UI, properly call Styles.init
 let {Styles} = require("styles");
 
 var WindowListener =

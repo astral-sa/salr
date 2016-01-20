@@ -1,6 +1,7 @@
 node_modules/
 build/
 release/
+.idea/
 *.sublime-project
 *.sublime-workspace
 jsconfig.json

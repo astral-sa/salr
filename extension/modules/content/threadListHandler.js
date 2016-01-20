@@ -313,10 +313,10 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 	/**
 	 * Sets up thread sorting for a thread list page.
-	 * @param {Node}    doc               Node snapshot of document element.
-	 * @param {Element} firstThread       Place to insert our sort rows before.
-	 * @param {boolean} threadSortingInfo Various thread-sorting information.
-	 * @param {boolean} inUserCP          Whether we're in the user control panel.
+	 * @param {HTMLDocument} doc               Node snapshot of document element.
+	 * @param {HTMLElement}  firstThread       Place to insert our sort rows before.
+	 * @param {Object}       threadSortingInfo Various thread-sorting information.
+	 * @param {boolean}      inUserCP          Whether we're in the user control panel.
 	 */
 	threadSortingSetup: function(doc, firstThread, threadSortingInfo, inUserCP)
 	{
@@ -350,7 +350,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 	/**
 	 * Cleans up a thread list page after thread sorting.
-	 * @param {boolean} threadSortingInfo Various thread-sorting information.
+	 * @param {Object}  threadSortingInfo Various thread-sorting information.
 	 * @param {boolean} inUserCP          Whether we're in the user control panel.
 	 */
 	threadSortingCleanup: function(threadSortingInfo, inUserCP)
@@ -367,9 +367,9 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 	/**
 	 * Sorts an announcement thread into its proper category.
-	 * @param {Element} thread            Announcement thread row to sort.
-	 * @param {boolean} threadSortingInfo Various thread-sorting information.
-	 * @param {boolean} inUserCP          Whether we're in the user control panel.
+	 * @param {HTMLElement} thread            Announcement thread row to sort.
+	 * @param {Object}      threadSortingInfo Various thread-sorting information.
+	 * @param {boolean}     inUserCP          Whether we're in the user control panel.
 	 */
 	sortAnnouncement: function(thread, threadSortingInfo, inUserCP)
 	{
@@ -380,10 +380,10 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 	/**
 	 * Sorts a thread into its proper category.
-	 * @param {Node}    doc               Node snapshot of document element.
-	 * @param {Element} thread            Thread row to sort.
-	 * @param {boolean} threadSortingInfo Various thread-sorting information.
-	 * @param {boolean} inUserCP          Whether we're in the user control panel.
+	 * @param {HTMLDocument} doc               Node snapshot of document element.
+	 * @param {HTMLElement}  thread            Thread row to sort.
+	 * @param {Object}       threadSortingInfo Various thread-sorting information.
+	 * @param {boolean}      inUserCP          Whether we're in the user control panel.
 	 */
 	sortThread: function(doc, thread, threadSortingInfo, inUserCP)
 	{
@@ -418,9 +418,9 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 	/**
 	 * Applies user highlighting settings to a specified user in a specified TD.
-	 * @param {number} userId     ID of user to color.
-	 * @param {Node}   userBox    Node snapshot of TD with user name to color.
-	 * @param {Object} colorPrefs Color settings from preferences.
+	 * @param {number}      userId     ID of user to color.
+	 * @param {HTMLElement} userBox    Node snapshot of TD with user name to color.
+	 * @param {Object}      colorPrefs Color settings from preferences.
 	 */
 	colorUsernameBox: function(userId, userBox, colorPrefs)
 	{

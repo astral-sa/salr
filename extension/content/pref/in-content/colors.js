@@ -80,7 +80,9 @@ var gSALRColorsPane = {
 						Prefs.resetPref(handyName);
 						// Reset any unsaved color changes for the specified forum
 						pref.value = pref.valueFromPreferences;
-					} catch (e) {}
+					} catch (e) {
+						// do nothing
+					}
 				}
 			}
 		}

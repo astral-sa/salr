@@ -11,8 +11,8 @@ let Navigation = exports.Navigation =
 {
 	/**
 	 * Sets up navigation for a thread.
-	 * @param {Element} doc        Document element of thread to set up navigation for.
-	 * @param {boolean} singlePost Whether we're in single post view.
+	 * @param {HTMLDocument} doc        Document element of thread to set up navigation for.
+	 * @param {boolean}      singlePost Whether we're in single post view.
 	 */
 	setupThreadNavigation: function(doc, singlePost)
 	{
@@ -36,7 +36,8 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Adds the quick page jump paginator to a document.
-	 * @param {Element} doc Document element to add paginator to.
+	 * @param {HTMLDocument} doc   Document element to add paginator to.
+	 * @param {Object}       pages Object with current and total pages.
 	 */
 	addPagination: function(doc, pages)
 	{
@@ -94,13 +95,13 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Creates a button and adds it to the paginator.
-	 * @param {Element} doc        Document element to build in.
-	 * @param {Element} target     Paginator div to add to.
-	 * @param {Object}  buttonInfo Object with necessary button information:
-	 *                             title:     Tooltip for button.
-	 *                             image:     URL of image to use.
-	 *                             linkreq:   Whether or not we add URL. (optional)
-	 *                             page:      Page number to add URL for. (optional)
+	 * @param {HTMLDocument} doc        Document element to build in.
+	 * @param {HTMLElement}  target     Paginator div to add to.
+	 * @param {Object}       buttonInfo Object with necessary button information:
+	 *                                  title:     Tooltip for button.
+	 *                                  image:     URL of image to use.
+	 *                                  linkreq:   Whether or not we add URL. (optional)
+	 *                                  page:      Page number to add URL for. (optional)
 	 */
 	addPaginatorButton: function(doc, target, buttonInfo)
 	{
@@ -120,10 +121,10 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Create a button image for a paginator button.
-	 * @param  {Element} doc   Document element to build in.
-	 * @param  {string}  title Title for the image.
-	 * @param  {string}  src   Source URL for the image.
-	 * @return {Element} Newly created image element.
+	 * @param  {HTMLDocument} doc   Document element to build in.
+	 * @param  {string}       title Title for the image.
+	 * @param  {string}       src   Source URL for the image.
+	 * @return {HTMLImageElement} Newly created image element.
 	 */
 	createPaginatorButtonImg: function(doc, title, src)
 	{
@@ -135,10 +136,10 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Creates a link around a button image and appends it to a paginator.
-	 * @param {Element} doc    Document element to build in.
-	 * @param {string}  href   Target for link.
-	 * @param {Element} image  Image child to append.
-	 * @param {Element} target Paginator div.
+	 * @param {HTMLDocument}     doc    Document element to build in.
+	 * @param {string}           href   Target for link.
+	 * @param {HTMLImageElement} image  Image child to append.
+	 * @param {HTMLElement}      target Paginator div.
 	 */
 	addPaginatorButtonLink: function(doc, href, image, target)
 	{
@@ -150,9 +151,9 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Create and append the paginator select box.
-	 * @param {Element} doc    Document element to build in.
-	 * @param {Object}  pages  Object containing total number of pages and current page.
-	 * @param {Element} navDiv Paginator div.
+	 * @param {HTMLDocument} doc    Document element to build in.
+	 * @param {Object}       pages  Object containing total number of pages and current page.
+	 * @param {HTMLElement}  navDiv Paginator div.
 	 */
 	addPaginatorSelectBox: function(doc, pages, navDiv)
 	{
@@ -192,8 +193,8 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Create the paginator thread buttons (bookmark + last post)
-	 * @param {Element} doc    Document element to build thread buttons in.
-	 * @param {Element} navDiv Paginator div element to create children for.
+	 * @param {HTMLDocument} doc    Document element to build thread buttons in.
+	 * @param {HTMLElement}  navDiv Paginator div element to create children for.
 	 */
 	createPaginatorThreadButtons: function(doc, navDiv)
 	{
@@ -217,8 +218,8 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Helper function for addPagination()
-	 * @param  {Element} doc        Document element to edit URI of.
-	 * @param  {number}  newPageNum String to edit into URI.
+	 * @param  {HTMLDocument} doc        Document element to edit URI of.
+	 * @param  {number}       newPageNum String to edit into URI.
 	 * @return {string}  Edited URI.
 	 */
 	editPageNumIntoURI: function(doc, newPageNum)
@@ -355,7 +356,7 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Gets the post ID of the focused post.
-	 * @param {Element} doc Document element to look in.
+	 * @param {HTMLDocument} doc Document element to look in.
 	 * @return {string} ID of focused post.
 	 */
 	kbNavGetFocusedPostId: function(doc)
@@ -378,8 +379,8 @@ let Navigation = exports.Navigation =
 
 	/**
 	 * Fakes a click event on a quick button from keyboard navigation.
-	 * @param {Element} doc    Document element to 'click' in.
-	 * @param {Node}    target Node snapshot of quick button element to target.
+	 * @param {HTMLDocument} doc    Document element to 'click' in.
+	 * @param {HTMLElement}  target Node snapshot of quick button element to target.
 	 */
 	kbNavQuickClick: function(doc, target)
 	{

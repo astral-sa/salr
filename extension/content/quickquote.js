@@ -66,7 +66,7 @@ function reattach()
 
 function doWaffleImages() {
 	imageShackResult = null;
-	openDialog("chrome://salastread/content/waffleimages/waffleimages.xul", "_blank", "chrome, titlebar, modal");
+	window.openDialog("chrome://salastread/content/waffleimages/waffleimages.xul", "_blank", "chrome, titlebar, modal");
 	if(imageShackResult) {
 		insertTextAtCursor(imageShackResult);
 	}
@@ -183,7 +183,7 @@ function getEmoticonsCallback()
 
 function finalizeEmotesGrab(restext)
 {
-	DB.emoticons = new Array();
+	DB.emoticons = [];
 
 	let emotRe = /<li class="smilie">([\s\S]*?)<img.*?>/gi;
 	let emotArray = restext.match(emotRe);
@@ -679,20 +679,21 @@ function getvBcode(event, command) {
 	
 	switch(command) {
 		case "img":
-			var menuch = str.match(/^(http:\/\/)|(https:\/\/)|(ftp:\/\/)/i);
-			if(menuch) {
+			if (str.match(/^(http:\/\/)|(https:\/\/)/i))
+			{
 				insertTags("img", saveSel, str);
 			} else {
-				var url = prompt('Enter a URL to an image below.', ' ');
-				if(url) {
-					insertTags("img", saveSel, url);
+				var imageurl = prompt('Enter a URL to an image below.', ' ');
+				if (imageurl)
+				{
+					insertTags("img", saveSel, imageurl);
 				}
 			}
 			break;
 		
 		case "urltag":
-			var menuch = str.match(/^(http:\/\/)|(https:\/\/)|(ftp:\/\/)/i);
-			if(menuch) {
+			if (str.match(/^(http:\/\/)|(https:\/\/)|(ftp:\/\/)/i))
+			{
 				insertTags("url", saveSel, str);
 			} else {
 				var url = prompt('You have selected text that may not be a URL. Enter a URL to link to with the selected text or press cancel to make the selected text a link.', ' ');
@@ -770,7 +771,7 @@ function doPreview()
 	var vbcode = [];
 
 	// Process BBCode
-	markup = XBBCODE.process({text: markup, removeMisalignedTags: false, addInLineBreaks: false}).html;
+	markup = XBBCODE.process({text: markup, removeMisalignedTags: false, addInLineBreaks: false}).html; // eslint-disable-line no-undef
 
 	// Smileys
 	if (!document.getElementById("disablesmilies").checked)

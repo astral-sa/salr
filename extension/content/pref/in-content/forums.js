@@ -54,7 +54,9 @@ var gSALRForumsPane = {
 		try {
 			var pref = document.getElementById("goToLastReadPost");
 				pref.reset();
-		} catch(e) {}
+		} catch(e) {
+			// do nothing
+		}
 
 		pref.value = pref.valueFromPreferences;
 	},
@@ -64,7 +66,9 @@ var gSALRForumsPane = {
 		try {
 			var pref = document.getElementById("markThreadUnvisited");
 				pref.reset();
-		} catch(e) {}
+		} catch(e) {
+			// do nothing
+		}
 
 		pref.value = pref.valueFromPreferences;
 	}

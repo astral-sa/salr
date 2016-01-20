@@ -106,6 +106,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		// Loop through each post
 		for (i in postlist)
 		{
+			if (!postlist.hasOwnProperty(i))
+				continue;
 			var post = postlist[i];
 
 			if (post.className.indexOf("ignored") > -1)
@@ -296,7 +298,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			let postid = postIdLink.href.match(/#post(\d+)/i)[1];
 			if (threadFlags.insertPostTargetLink)
 			{
-				ShowThreadHandler.insertSinglePostLink(doc, threadFlags, postIdLink, postid, forumid);
+				ShowThreadHandler.insertSinglePostLink(doc, threadFlags, postIdLink, postid);
 			}
 
 			//grab this once up here to avoid repetition
@@ -335,7 +337,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				else
 					avAnch.textContent = "Hide Avatar";
 
-				avAnch.addEventListener("click", ShowThreadHandler.clickToggleAvatar.bind(null, posterId, posterName, postid), false);
+				avAnch.addEventListener("click", ShowThreadHandler.clickToggleAvatar.bind(null, posterId, posterName), false);
 				avLink.appendChild(avAnch);
 				userLinks.appendChild(doc.createTextNode(" "));
 				userLinks.appendChild(avLink);
@@ -388,17 +390,21 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		doc.addEventListener("load", ShowThreadHandler.pageFinishedLoading, true);
 	},
 
-	pageFinishedLoading: function(e)
+	/**
+	 * Event handler for 'load' event. Scrolls anchored post into view.
+	 * @param {Event} evt Load event
+	 */
+	pageFinishedLoading: function(evt)
 	{
 		// Only called for showthread pages
-		var doc = e.originalTarget.ownerDocument;
+		var doc = evt.target.ownerDocument;
 		doc.removeEventListener("load", ShowThreadHandler.pageFinishedLoading, true);
-// Probably ought to check for this _before_ adding the event listener instead.
+// TODO: Probably ought to check for this _before_ adding the event listener instead.
 		if (Prefs.getPref('reanchorThreadOnLoad'))
 		{
-			if (doc.location.href.match(/\#(.*)$/))
+			if (doc.location.href.match(/#(.*)$/))
 			{
-				var post = doc.getElementById(doc.location.href.match(/\#(.*)$/)[1]);
+				var post = doc.getElementById(doc.location.href.match(/#(.*)$/)[1]);
 				if (post)
 				{
 					post.scrollIntoView(true);
@@ -410,7 +416,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 	/**
 	 * Updates "postsPerPage" preference based on value seen in thread.
-	 * @param {Element} doc Document element to identify posts per page value in.
+	 * @param {HTMLDocument} doc Document element to identify posts per page value in.
 	 */
 	updatePostsPerPage: function(doc)
 	{
@@ -428,10 +434,10 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 	/**
 	 * Process quotes in a post to determine if we need to color or ignore them.
-	 * @param {Element} doc              Document element to process quotes for a post in.
-	 * @param {Node}    post             Node snapshot of post to check.
-	 * @param {string}  username         Logged-in user's username.
-	 * @param {boolean} superIgnoreUsers Whether super ignore is active.
+	 * @param {HTMLDocument} doc              Document element to process quotes for a post in.
+	 * @param {HTMLElement}  post             Node snapshot of post to check.
+	 * @param {string}       username         Logged-in user's username.
+	 * @param {boolean}      superIgnoreUsers Whether super ignore is active.
 	 */
 	processQuotes: function(doc, post, username, superIgnoreUsers)
 	{
@@ -462,10 +468,10 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 	/**
 	 * Inserts "1" link to single post view of the current post.
-	 * @param {Element} doc         Document element to insert "1" link for a post in.
-	 * @param {Object}  threadFlags Various thread-related information.
-	 * @param {Node}    postIdLink  Node snapshot of link to current post.
-	 * @param {string}  postid      The post ID.
+	 * @param {HTMLDocument} doc         Document element to insert "1" link for a post in.
+	 * @param {Object}       threadFlags Various thread-related information.
+	 * @param {HTMLElement}  postIdLink  Node snapshot of link to current post.
+	 * @param {string}       postid      The post ID.
 	 */
 	insertSinglePostLink: function(doc, threadFlags, postIdLink, postid)
 	{
@@ -485,12 +491,17 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		postIdLink.parentNode.insertBefore(doc.createTextNode(" "), postIdLink);
 	},
 
-	// Event catcher for clicking the "Hide Avatar" or "Unhide Avatar" links
-	clickToggleAvatar: function(idToToggle, nameToToggle, curPostId, event)
+	/**
+	 * Event handler for clicking the "Hide Avatar" or "Unhide Avatar" links
+	 * @param {string} idToToggle   User ID of poster to toggle avatar for.
+	 * @param {string} nameToToggle Username of poster to toggle avatar for.
+	 * @param {Event}  event        The click event to handle.
+	 */
+	clickToggleAvatar: function(idToToggle, nameToToggle, event)
 	{
 		event.stopPropagation();
 		event.preventDefault();
-		let clickedLink = event.originalTarget;
+		let clickedLink = event.target;
 		var doc = clickedLink.ownerDocument;
 		var alreadyHidden = DB.isAvatarHidden(idToToggle);
 		var posts = PageUtils.selectNodes(doc, doc, "//table[contains(@id,'post')]");
@@ -504,7 +515,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			if (!profileLink)
 				continue;
 			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
-			if (posterId == idToToggle)
+			if (posterId === idToToggle)
 			{
 				// Standard template
 				titleBox = PageUtils.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
@@ -537,19 +548,24 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		DB.toggleAvatarHidden(idToToggle, nameToToggle);
 	},
 
-	// add a user to the highlighting/note section by clicking on a post link
-	addHighlightedUser: function(userid, username, e)
+	/**
+	 * Add a user to the highlighting/note section from clicking on a post link.
+	 * @param {string} userid   Userid to add.
+	 * @param {string} username Username to add.
+	 * @param {Event}  evt      The click event.
+	 */
+	addHighlightedUser: function(userid, username, evt)
 	{
-		e.stopPropagation();
-		e.preventDefault();
+		evt.stopPropagation();
+		evt.preventDefault();
 		sendAsyncMessage("salastread:RunConfigAddUser", {userid, username});
 	},
 
 	/**
 	 * Adds 'Who posted?' and search box to thread table header.
-	 * @param {Element} doc      Document element to check in.
-	 * @param {number}  forumid  Forum ID.
-	 * @param {number}  threadid Thread ID.
+	 * @param {HTMLDocument} doc      Document element to check in.
+	 * @param {number}       forumid  Forum ID.
+	 * @param {number}       threadid Thread ID.
 	 */
 	addWhoPostedAndSearchBox: function(doc, forumid, threadid)
 	{
@@ -583,12 +599,12 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 	/**
 	 * Adds "Search Thread" box to document.
-	 * @param {Element}  doc        Document element.
-	 * @param {number}   forumid    Forum ID used for search params.
-	 * @param {number}   threadid   Thread ID used for search params.
-	 * @param {Element}  placeHere  Destination for our search box.
-	 * @param {string}   searchType Whether to use new search ('query')
-	 *     or old search ('search').
+	 * @param {HTMLDocument} doc        Document element.
+	 * @param {number}       forumid    Forum ID used for search params.
+	 * @param {number}       threadid   Thread ID used for search params.
+	 * @param {HTMLElement}  placeHere  Destination for our search box.
+	 * @param {string}       searchType Whether to use new search ('query')
+	 *                                      or old search ('search').
 	 */
 	addThreadSearchBox: function(doc, forumid, threadid, placeHere, searchType)
 	{
@@ -622,12 +638,12 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 	/**
 	 * Adds action+parameters to a search box based on type of search.
-	 * @param {Element}  doc           Document element.
-	 * @param {number}   forumid       Forum ID.
-	 * @param {number}   threadid      Thread ID.
-	 * @param {Element}  newSearchText The search box text input element.
-	 * @param {string}   searchType    Whether to use new search ('query')
-	 *     or old search ('search').
+	 * @param {HTMLDocument}      doc           Document element.
+	 * @param {number}           forumid       Forum ID.
+	 * @param {number}           threadid      Thread ID.
+	 * @param {HTMLInputElement} newSearchText The search box text input element.
+	 * @param {string}           searchType    Whether to use new search ('query')
+	 *                                         or old search ('search').
 	 */
 	addSearchParams: function(doc, forumid, threadid, newSearchText, searchType)
 	{
@@ -674,9 +690,11 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		}
 	},
 
-	// Convert links pointing at image/videos in threads to inline images/videos
-	// @param: post body (td), document body
-	// @return: nothing
+	/**
+	 * Convert links pointing at image/videos in threads to inline images/videos
+	 * @param {HTMLElement}  postbody Node snapshot of post body TD.
+	 * @param {HTMLDocument} doc      Document element we're working in.
+	 */
 	convertSpecialLinks: function(postbody, doc)
 	{
 		var newImg, imgNum, imgLink;
@@ -714,6 +732,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		// Iterate over link snapshot from before we unconverted
 		for (let i in linksInPost)
 		{
+			if (!linksInPost.hasOwnProperty(i))
+				continue;
 			let link = linksInPost[i];
 
 			if (convertImages && (link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?(%3C\/a%3E)?$/i) > -1))
@@ -834,8 +854,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 	/**
 	 * Converts images in the body of a post to links.
-	 * @param {Node}    postbody Node snapshot of post body TD.
-	 * @param {Element} doc      Document element we're working in.
+	 * @param {HTMLElement}  postbody Node snapshot of post body TD.
+	 * @param {HTMLDocument} doc      Document element we're working in.
 	 */
 	imagesToLinks: function(postbody, doc)
 	{
@@ -937,7 +957,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 	/**
 	 * Replace old, unworking links to waffleimages with randomwaffle links.
-	 * @param {Node} image Node snapshot of image element to check.
+	 * @param {HTMLImageElement} image Node snapshot of image element to check.
 	 */
 	replaceWaffleImage: function(image)
 	{

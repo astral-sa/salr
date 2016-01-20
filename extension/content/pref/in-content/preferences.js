@@ -4,6 +4,7 @@
 
 "use strict";
 
+/* eslint-disable no-unused-vars */
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
@@ -26,6 +27,7 @@ let {PageUtils} = require("pageUtils");
 let {Notifications} = require("notifications");
 let {UI} = require("ui");
 let {Menus} = require("menus");
+/* eslint-enable no-unused-vars */
 
 let gLastHash = "";
 
@@ -60,6 +62,7 @@ function init_all() {
   document.documentElement.instantApply = true;
 
   gSubDialog.init();
+/* eslint-disable no-undef */
   register_module("paneGeneral", gSALRGeneralPane);
   register_module("paneForums", gSALRForumsPane);
   register_module("paneThreads", gSALRThreadsPane);
@@ -70,12 +73,13 @@ function init_all() {
   register_module("paneMenus", gSALRMenusPane);
   register_module("paneUsers", gSALRUsersPane);
   register_module("paneAbout", gSALRAboutPane);
+/* eslint-enable no-undef */
 
   let categories = document.getElementById("categories");
   categories.addEventListener("select", event => gotoPref(event.target.value));
 
   document.documentElement.addEventListener("keydown", function(event) {
-    if (event.keyCode == KeyEvent.DOM_VK_TAB) {
+    if (event.keyCode == KeyEvent.DOM_VK_TAB) { // eslint-disable-line
       categories.setAttribute("keyboard-navigation", "true");
     }
   });
@@ -176,7 +180,7 @@ function helpButtonCommand() {
   let categories = document.getElementById("categories");
   let helpTopic = categories.querySelector(".category[value=" + pane + "]")
                             .getAttribute("helpTopic");
-  openHelpLink(helpTopic);
+  openHelpLink(helpTopic); // eslint-disable-line no-undef
 }
 
 function friendlyPrefCategoryNameToInternalName(aName) {

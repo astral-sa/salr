@@ -2,7 +2,7 @@
  * @fileOverview Passes preference requests to chrome code.
  */
 
-let Prefs = exports.Prefs =
+let Prefs = exports.Prefs = // eslint-disable-line no-unused-vars
 {
 	setPref: function(prefName, prefValue)
 	{

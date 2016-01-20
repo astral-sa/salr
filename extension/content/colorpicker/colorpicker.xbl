@@ -46,7 +46,7 @@
 			
 			<xbl:method name="showPopup">
 				<xbl:body>
-					var pobj = new Object();
+					var pobj = {};
 						pobj.value = this.value;
 						pobj.accepted = false;
 					window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "modal,chrome",pobj);

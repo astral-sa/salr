@@ -8,7 +8,6 @@ module.exports = function(grunt)
 		clean: {
 			main: [
 				'build',
-				'release',
 				'salastread*.xpi'
 			],
 			src: ['build']
@@ -17,7 +16,7 @@ module.exports = function(grunt)
 			main: {
 				files: [
 					{expand: true, cwd: 'extension', src: ['salr.rdf'], dest: 'build/'},
-					{expand: true, cwd: 'extension', src: ['**','!salr.rdf'], dest: 'build/src/'}
+					{expand: true, cwd: 'extension', src: ['**','!salr.rdf','!**/.eslintrc.json'], dest: 'build/src/'}
 				]
 			},
 			update: {

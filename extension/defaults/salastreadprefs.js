@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 pref('extensions.salastread.currentVersion', '%SALR_VERSION%');
 pref('extensions.salastread.disabled', false);
 pref('extensions.salastread.postsPerPage', 0);

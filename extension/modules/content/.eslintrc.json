@@ -1,0 +1,12 @@
+{
+	"globals": {
+		"content": false,
+		"addMessageListener": false,
+		"removeMessageListener": false,
+		"sendSyncMessage": true,
+		"sendAsyncMessage": true,
+		"dump": false,
+		"Menus": true,
+		"gSubDialog": true
+	}
+}

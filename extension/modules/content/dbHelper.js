@@ -2,7 +2,7 @@
  * @fileOverview Passes db requests to chrome code.
  */
 
-let DB = exports.DB =
+let DB = exports.DB = // eslint-disable-line no-unused-vars
 {
 	setThreadTitle: function(threadid, title)
 	{
@@ -134,44 +134,20 @@ let DB = exports.DB =
 };
 
 
-/* Any DB attrs to access we need to make functions for?
-*/
-/* Relevant DB functions
-		doWeHaveForumList: function()
-		getUserId: function(username)
-		setUserName: function(userid, username)
+/* Unimplemented DB functions
 	threadExists: function(threadid)
 	addThread: function(threadid)
 	userExists: function(userid)
 	addUser: function(userid, username)
-		addMod: function(userid, username)
-		removeMod: function(userid)
-		addAdmin: function(userid, username)
-		removeAdmin: function(userid)
 	addSuperIgnored: function (userid, username)
 	removeSuperIgnored: function(userid)
-		toggleAvatarHidden: function(userid, username)
-		isMod: function(userid)
-		isAdmin: function(userid)
-		isUserIgnored: function(userid)
-		isAvatarHidden: function(userid)
-		isUserIdColored: function(userid)
-		isUsernameColored: function(username)
 //	getCustomizedPosters: function()
 	getPosterColor: function(userid)
 //	setPosterColor: function(userid, color)
 	getPosterBackground: function(userid)
 //	setPosterBackground: function(userid, color)
-		getPosterNotes: function(userid)
 //	setPosterNotes: function(userid, note)
 	getThreadTitle: function(threadid)
-		setThreadTitle: function(threadid, title)
-		didIPostHere: function(threadid)
-		iPostedHere: function(threadid)
-		isThreadStarred: function(threadid)
-		isThreadIgnored: function(threadid)
 	isThreadOPView: function(threadid)
 	toggleThreadOPView: function(threadid)
-		toggleThreadStar: function(threadid)
-		toggleThreadIgnore: function(threadid)
 */

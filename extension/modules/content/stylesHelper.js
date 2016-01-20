@@ -2,7 +2,7 @@
  * @fileOverview Passes content style requests to chrome code.
  */
 
-let Styles = exports.Styles =
+let Styles = exports.Styles = // eslint-disable-line no-unused-vars
 {
 	// This function should be removed if SALR ever allows more detailed color settings (backgrounds, font colors, etc)
 	// It's (no longer?) used by the context menu.

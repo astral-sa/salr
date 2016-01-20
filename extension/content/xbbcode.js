@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 "use strict";
 
-var XBBCODE = (function() {
+var XBBCODE = (function() { // eslint-disable-line no-unused-vars
 
 	// -----------------------------------------------------------------------------
 	// Set up private variables
@@ -439,7 +439,7 @@ var XBBCODE = (function() {
 			var closeTagList = [];
 			for (var ii = 0; ii < tagList.length; ii++) {
 				if ( tagList[ii] !== "\\*" ) { // the * tag doesn't have an offical closing tag
-					closeTagList.push ( "/" + tagList[ii] );
+					closeTagList.push( "/" + tagList[ii] );
 				}
 			}
 
@@ -603,6 +603,8 @@ var XBBCODE = (function() {
 	me.addTags = function(newtags) {
 		var tag;
 		for (tag in newtags) {
+			if (!newtags.hasOwnProperty(tag))
+				continue;
 			tags[tag] = newtags[tag];
 		}
 		initTags();

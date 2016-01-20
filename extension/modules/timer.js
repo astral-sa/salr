@@ -61,7 +61,14 @@ let Timer = exports.Timer =
 	init: function()
 	{
 		// Get Initial Timer Value
-		try { this._TimerValue = Prefs.getPref("timeSpentOnForums"); } catch(xx) { }
+		try
+		{
+			this._TimerValue = Prefs.getPref("timeSpentOnForums");
+		}
+		catch(xx)
+		{
+			// do nothing
+		}
 		if ( ! this._TimerValue ) {
 			this._TimerValue = 0;
 		}

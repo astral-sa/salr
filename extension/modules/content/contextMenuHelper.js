@@ -107,8 +107,8 @@ let ContextMenuHelper = exports.ContextMenuHelper =
 
 	/**
 	 * Helper function to get a thread title.
-	 * @param {Element} doc       Document element to work in.
-	 * @param {Element} threadRow Thread row to search in.
+	 * @param {HTMLDocument} doc       Document element to work in.
+	 * @param {HTMLElement}  threadRow Thread row to search in.
 	 * @return {(string|boolean)} String thread title if found; false if not.
 	 */
 	getThreadTitleFromThreadRow: function(doc, threadRow)

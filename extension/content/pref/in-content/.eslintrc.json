@@ -1,0 +1,12 @@
+{
+	"globals": {
+		"Prefs": true,
+		"DB": true,
+		"Styles": true,
+		"PageUtils": true,
+		"Notifications": true,
+		"UI": true,
+		"Menus": true,
+		"gSubDialog": true
+	}
+}

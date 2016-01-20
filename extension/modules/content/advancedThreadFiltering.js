@@ -347,7 +347,7 @@ let AdvancedThreadFiltering = exports.AdvancedThreadFiltering =
 
 	/**
 	 * Searches a thread icon's source to find its icon number.
-	 * @param {Element} threadIcon Thread icon element to examine.
+	 * @param {HTMLImageElement} threadIcon Thread icon element to examine.
 	 * @return {boolean|string} False if icon has no icon number, else the number as string.
 	 */
 	getThreadIconNum: function(threadIcon)
@@ -363,8 +363,8 @@ let AdvancedThreadFiltering = exports.AdvancedThreadFiltering =
 
 	/**
 	 * Checks if a thread icon is icon-filtered by advanced thread filtering.
-	 * @param {Element} threadIcon       Thread icon element to examine.
-	 * @param {string}  ignoredPostIcons Ignored icons from preferences.
+	 * @param {HTMLImageElement} threadIcon       Thread icon element to examine.
+	 * @param {string}           ignoredPostIcons Ignored icons from preferences.
 	 * @return {boolean} Whether the thread icon is ignored.
 	 */
 	isThreadIconFiltered: function(threadIcon, ignoredPostIcons)

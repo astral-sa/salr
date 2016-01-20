@@ -23,8 +23,10 @@ var gSALRIgnoredPane = {
 			list.removeChild(list.firstChild);
 
 		var threads = DB.ignoreList;
-		for(var id in threads)
+		for (var id in threads)
 		{
+			if (!threads.hasOwnProperty(id))
+				continue;
 			var title = threads[id];
 			this.addThreadToList(id, title);
 		}

@@ -19,6 +19,7 @@ var prefTypeMap = (function()
     return map;
 })();
 
+/* eslint-disable no-unused-vars */
 function getIntPref(branch, pref) { return branch.getIntPref(pref); }
 function setIntPref(branch, pref, newValue) { return branch.setIntPref(pref, newValue); }
 
@@ -35,6 +36,7 @@ function setCharPref(branch, pref, newValue)
 
 function getJSONPref(branch, pref) { return JSON.parse(getCharPref(branch, pref)); }
 function setJSONPref(branch, pref, newValue) { return setCharPref(branch, pref, JSON.stringify(newValue)); }
+/* eslint-enable no-unused-vars */
 
 // Expose functions to get&set preferences
 let Prefs = exports.Prefs =

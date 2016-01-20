@@ -1,4 +1,4 @@
-var gSALRAboutPane = {
+var gSALRAboutPane = { // eslint-disable-line no-unused-vars
 	// Initialization
 	init: function ()
 	{
@@ -11,8 +11,8 @@ var gSALRAboutPane = {
 		var tsstr = "none";
 		
 		if(timeSpent) {
-			var res = new Array();
-			
+			var res = [];
+
 			//calculate # of days
 			if(timeSpent >= 60 * 60 * 24 ) {
 				var days = Math.floor(timeSpent / (60 * 60 * 24));
@@ -24,7 +24,7 @@ var gSALRAboutPane = {
 					res.push(days+" day");
 				}
 			}
-			
+
 			//calculate # of hours
 			if(timeSpent >= 60 * 60 ) {
 				var hours = Math.floor(timeSpent / (60 * 60));
@@ -36,7 +36,7 @@ var gSALRAboutPane = {
 					res.push(hours + " hour");
 				}
 			}
-			
+
 			//calculate # of minutes
 			if(timeSpent >= 60 ) {
 				var mins = Math.floor(timeSpent / 60);
@@ -48,7 +48,7 @@ var gSALRAboutPane = {
 					res.push(mins + " minute");
 				}
 			}
-			
+
 			//calculate # of seconds
 			if(timeSpent > 0) {
 				if(timeSpent > 1) {
@@ -57,11 +57,11 @@ var gSALRAboutPane = {
 					res.push(timeSpent + " second");
 				}
 			}
-			
+
 			//mash it all together
 			tsstr = res.join(", ");
 		}
-		
+
 		//update the element
 		document.getElementById("timespent").setAttribute("value", tsstr);
 	},
