@@ -35,7 +35,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			inGasChamber: PageUtils.inGasChamber(forumid),
 			singlePost: (doc.location.search.search(/action=showpost/i) > -1),
 			inArchives: PageUtils.isThreadInArchives(doc),
-			useQuickQuote: Prefs.getPref('useQuickQuote'),
 			threadClosed: PageUtils.isThreadClosed(doc),
 		};
 
@@ -44,8 +43,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		{
 			return;
 		}
-
-		var username = unescape(Prefs.getPref('username'));
 
 		// Add our ShowThread CSS
 		PageUtils.insertDynamicCSS(doc, Styles.generateDynamicShowThreadCSS(forumid, threadid, threadFlags.singlePost));
@@ -68,8 +65,48 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 		ShowThreadHandler.updatePostsPerPage(doc);
 
+		// Super grouped pref calls to avoid message passing overhead
+		let prefsToGet = [
+			'username',
+			'useQuickQuote',
+			'insertPostTargetLink',
+			'highlightUsernames',
+			'hideCustomTitles',
+			'modColor',
+			'modBackground',
+			'modSubText',
+			'adminColor',
+			'adminBackground',
+			'adminSubText',
+			'opColor',
+			'opBackground',
+			'opSubText',
+			'superIgnore',
+			'cancerTreatment',
+			'highlightQuotes',
+			'reanchorThreadOnLoad',
+			// for convertSpecialLinks:
+			'maxWidthOfConvertedImages',
+			'maxHeightOfConvertedImages',
+			'thumbnailAllImages',
+			'convertTextToImage',
+			'dontConvertReadImages',
+			'unconvertReadImages',
+			'dontTextToImageIfMayBeNws',
+			'dontTextToImageInSpoilers',
+			'dontConvertQuotedImages',
+			'enableVideoEmbedder',
+			// for processImages:
+			'thumbnailAllImages',
+			'convertGifToVideo'
+		];
+		let gotPrefs = Prefs.getMultiplePrefs(prefsToGet);
+
+		var username = unescape(gotPrefs.username);
+		threadFlags.insertPostTargetLink = gotPrefs.insertPostTargetLink && !threadFlags.inArchives;
+
 		// Replace post/reply buttons if we need to.
-		if (threadFlags.useQuickQuote && !threadFlags.inGasChamber)
+		if (gotPrefs.useQuickQuote && !threadFlags.inGasChamber)
 		{
 			QuickQuoteHelper.makeQuickPostReplyButtons(doc, forumid, threadid, threadFlags.threadClosed);
 		}
@@ -82,24 +119,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		var curPostId, postIdLink, profileLink, posterId, postbody;
 		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, quotebutton, editbutton;
 		var userPosterNote;
-
-		// Group calls to the prefs up here so we aren't repeating them, should help speed things up a bit
-		threadFlags.insertPostTargetLink = Prefs.getPref("insertPostTargetLink") && !threadFlags.inArchives;
-		var highlightUsernames = Prefs.getPref("highlightUsernames");
-		let hideCustomTitles = Prefs.getPref('hideCustomTitles');
-
-		//standard user colors
-		var modColor = Prefs.getPref("modColor");
-		var modBackground = Prefs.getPref("modBackground");
-		var modSubText = Prefs.getPref("modSubText");
-		var adminColor = Prefs.getPref("adminColor");
-		var adminBackground = Prefs.getPref("adminBackground");
-		var adminSubText = Prefs.getPref("adminSubText");
-		var opColor = Prefs.getPref("opColor");
-		var opBackground = Prefs.getPref("opBackground");
-		var opSubText = Prefs.getPref("opSubText");
-		var superIgnoreUsers = Prefs.getPref("superIgnore");
-		var cancerTreatment = Prefs.getPref("cancerTreatment");
 
 		var threadMarkedPostedIn = false;
 
@@ -119,7 +138,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 					ignoredPostLink.href = ignoredPostLink.href.replace(/#/, '&forumid=' + forumid + '#');
 				}
 				// Check if we need to super ignore
-				if (superIgnoreUsers)
+				if (gotPrefs.superIgnore)
 				{
 					// Temporarily reuse these variables since we'll be moving on shortly
 					profileLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'userid=')]");
@@ -141,7 +160,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			if (!profileLink)
 				continue;
 			posterId = profileLink.href.match(/userid=(\d+)/i)[1];
-			if (superIgnoreUsers && DB.isUserIgnored(posterId))
+			if (gotPrefs.superIgnore && DB.isUserIgnored(posterId))
 			{
 				// They're ignored but not by the system
 				post.className += ' salrPostIgnored';
@@ -207,18 +226,18 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			//apply custom user coloring
 			if (userNameBox.className.search(/\bop/) > -1)
 			{
-				posterColor = opColor;
-				posterBG = opBackground;
-				posterNote = opSubText;
+				posterColor = gotPrefs.opColor;
+				posterBG = gotPrefs.opBackground;
+				posterNote = gotPrefs.opSubText;
 				post.className += " salrPostByOP";
 			}
 			if (DB.isMod(posterId))
 			{
 				if (posterImg === "Moderator" || posterImg === "Internet Knight" || threadFlags.inArchives)
 				{
-					posterColor = modColor;
-					posterBG = modBackground;
-					posterNote = modSubText;
+					posterColor = gotPrefs.modColor;
+					posterBG = gotPrefs.modBackground;
+					posterNote = gotPrefs.modSubText;
 					post.className += " salrPostByMod";
 				}
 				else if (!threadFlags.inArchives)
@@ -230,9 +249,9 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			{
 				if (posterImg === "Administrator" || threadFlags.inArchives)
 				{
-					posterColor = adminColor;
-					posterBG = adminBackground;
-					posterNote = adminSubText;
+					posterColor = gotPrefs.adminColor;
+					posterBG = gotPrefs.adminBackground;
+					posterNote = gotPrefs.adminSubText;
 					post.className += " salrPostByAdmin";
 				}
 				else if (!threadFlags.inArchives)
@@ -263,13 +282,13 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			}
 
 			// Check for quotes that need to be colored or superIgnored
-			if (Prefs.getPref('highlightQuotes') || superIgnoreUsers)
+			if (gotPrefs.highlightQuotes || gotPrefs.superIgnore)
 			{
-				ShowThreadHandler.processQuotes(doc, post, username, superIgnoreUsers);
+				ShowThreadHandler.processQuotes(doc, post, username, gotPrefs.superIgnore);
 			}
 
 			userPosterNote = DB.getPosterNotes(posterId);
-			if (highlightUsernames && posterColor !== false && posterColor !== "0")
+			if (gotPrefs.highlightUsernames && posterColor !== false && posterColor !== "0")
 			{
 				userNameBox.style.color = posterColor;
 			}
@@ -302,12 +321,12 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			}
 
 			//grab this once up here to avoid repetition
-			if (threadFlags.useQuickQuote)
+			if (gotPrefs.useQuickQuote)
 			{
 				editbutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
 			}
 
-			if (threadFlags.useQuickQuote && !threadFlags.threadClosed)
+			if (gotPrefs.useQuickQuote && !threadFlags.threadClosed)
 			{
 				quotebutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
 				if (quotebutton)
@@ -323,7 +342,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			var userLinks = profileLink.parentNode.parentNode;
 
 			// Add a link to hide/unhide the user's avatar
-			if (!hideCustomTitles)
+			if (!gotPrefs.hideCustomTitles)
 			{
 				let avLink = doc.createElement("li");
 				avLink.setAttribute('style', '-moz-user-select: none;');
@@ -345,7 +364,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 			// Add user coloring/note links
 			// Note: this is added after, but appears to the left thanks to CSS floats.
-			if (highlightUsernames)
+			if (gotPrefs.highlightUsernames)
 			{
 				var li = doc.createElement("li");
 				li.setAttribute('style', '-moz-user-select: none;');
@@ -366,28 +385,28 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 			postbody = PageUtils.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
 
-			if (cancerTreatment)
+			if (gotPrefs.cancerTreatment)
 			{
-				var cancerDiv = PageUtils.selectSingleNode(doc, postbody, "DIV[contains(@class,'cancerous')]");
+				let cancerDiv = PageUtils.selectSingleNode(doc, postbody, "DIV[contains(@class,'cancerous')]");
 				if (cancerDiv)
 				{
 					//Apply our alternate style:
-					if (cancerTreatment === 1)
+					if (gotPrefs.cancerTreatment === 1)
 					{
 						postbody.style.backgroundImage = 'url("chrome://salastread/skin/biohazard.png")';
 						postbody.style.backgroundRepeat = "repeat";
 					}
 					//Hide entirely:
-					else if (cancerTreatment === 2)
+					else if (gotPrefs.cancerTreatment === 2)
 						post.style.display = "none";
 				}
 			}
-			ShowThreadHandler.convertSpecialLinks(postbody, doc);
-			ShowThreadHandler.processImages(postbody, doc);
+			ShowThreadHandler.convertSpecialLinks(postbody, doc, gotPrefs);
+			ShowThreadHandler.processImages(postbody, doc, gotPrefs);
 		}
 
-		doc.__salastread_loading = true;
-		doc.addEventListener("load", ShowThreadHandler.pageFinishedLoading, true);
+		if (gotPrefs.reanchorThreadOnLoad)
+			doc.addEventListener("load", ShowThreadHandler.pageFinishedLoading, true);
 	},
 
 	/**
@@ -396,22 +415,14 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	 */
 	pageFinishedLoading: function(evt)
 	{
-		// Only called for showthread pages
-		var doc = evt.target.ownerDocument;
+		let doc = evt.target.ownerDocument;
 		doc.removeEventListener("load", ShowThreadHandler.pageFinishedLoading, true);
-// TODO: Probably ought to check for this _before_ adding the event listener instead.
-		if (Prefs.getPref('reanchorThreadOnLoad'))
+		if (doc.location.href.match(/#(.*)$/))
 		{
-			if (doc.location.href.match(/#(.*)$/))
-			{
-				var post = doc.getElementById(doc.location.href.match(/#(.*)$/)[1]);
-				if (post)
-				{
-					post.scrollIntoView(true);
-				}
-			}
+			let post = doc.getElementById(doc.location.href.match(/#(.*)$/)[1]);
+			if (post)
+				post.scrollIntoView(true);
 		}
-		doc.__salastread_loading = false;
 	},
 
 	/**
@@ -691,40 +702,29 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	},
 
 	/**
+	 * Called for every post.
 	 * Convert links pointing at image/videos in threads to inline images/videos
 	 * @param {HTMLElement}  postbody Node snapshot of post body TD.
 	 * @param {HTMLDocument} doc      Document element we're working in.
+	 * @param {Object}       gotPrefs Preloaded preferences from main function.
 	 */
-	convertSpecialLinks: function(postbody, doc)
+	convertSpecialLinks: function(postbody, doc, gotPrefs)
 	{
 		var newImg, imgNum, imgLink;
 		// Snapshot links before doing any image unconverting
 		var linksInPost = PageUtils.selectNodes(doc, postbody, "descendant::A");
 
 		// Get preferences for imgur workaround
-		let maxWidth = Prefs.getPref("maxWidthOfConvertedImages");
-		let maxHeight = Prefs.getPref("maxHeightOfConvertedImages");
 		let optionsForImgurWorkaround = {
-			thumbnailAllImages: Prefs.getPref("thumbnailAllImages"),
-			maxWidth: maxWidth ? maxWidth + "px" : null,
-			maxHeight: maxHeight ? maxHeight + "px" : null
+			thumbnailAllImages: gotPrefs.thumbnailAllImages,
+			maxWidth: gotPrefs.maxWidthOfConvertedImages ? gotPrefs.maxWidthOfConvertedImages + "px" : null,
+			maxHeight: gotPrefs.maxHeightOfConvertedImages ? gotPrefs.maxHeightOfConvertedImages + "px" : null
 		};
 
-		var convertImages = Prefs.getPref("convertTextToImage");
-		var dontConvertReadImages = Prefs.getPref("dontConvertReadImages");
-		var unconvertImages = Prefs.getPref("unconvertReadImages");
 		var readPost = (postbody.parentNode.className.search(/seen/) > -1);
-		convertImages = (convertImages && !(dontConvertReadImages && readPost));
-		if (convertImages)
-		{
-			var dontTtiNWS = Prefs.getPref("dontTextToImageIfMayBeNws");
-			var dontTtiSpoilers = Prefs.getPref("dontTextToImageInSpoilers");
-			var dontTtiQuotedImages = Prefs.getPref("dontConvertQuotedImages");
-		}
-		unconvertImages = (unconvertImages && readPost);
-		let enableVideoEmbeds = Prefs.getPref("enableVideoEmbedder");
+		var convertImages = (gotPrefs.convertTextToImage && !(gotPrefs.dontConvertReadImages && readPost));
 
-		if (unconvertImages)
+		if (gotPrefs.unconvertReadImages && readPost)
 		{
 			ShowThreadHandler.imagesToLinks(postbody, doc);
 		}
@@ -748,12 +748,12 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				{
 					continue;
 				}
-				if (dontTtiNWS &&
+				if (gotPrefs.dontTextToImageIfMayBeNws &&
 					link.parentNode.innerHTML.search(/(nsfw|nws|nms|t work safe|t safe for work)/i) > -1)
 				{
 					continue;
 				}
-				if (dontTtiSpoilers &&
+				if (gotPrefs.dontTextToImageInSpoilers &&
 					(link.parentNode.className.search(/spoiler/i) > -1 ||
 					link.textContent.search(/spoiler/i) > -1))
 				{
@@ -793,7 +793,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				{
 					link.href = link.href.replace('%3C/a%3E', '');
 				}
-				if (dontTtiQuotedImages)
+				if (gotPrefs.dontConvertQuotedImages)
 				{
 					// Check if it's in a blockquote
 					if (link.parentNode.parentNode.className.search(/bbc-block/i) > -1 ||
@@ -845,7 +845,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				}
 			}
 
-			if (enableVideoEmbeds)
+			if (gotPrefs.enableVideoEmbedder)
 			{
 				VideoHandler.processVideoLink(link);
 			}
@@ -907,17 +907,19 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		}
 	},
 
-	// Called right after convertSpecialLinks; does thumbnailing & waffle
-	// Process images in posts, consolidated into one function for speed
-	// @param: body of the post, document body
-	// @return: nothing
-	processImages: function(postbody, doc)
+	/**
+	 * Called right after convertSpecialLinks; does thumbnailing & waffle
+	 * Process images in posts, consolidated into one function for speed
+	 * @param {HTMLElement}  postbody Node snapshot of post body TD.
+	 * @param {HTMLDocument} doc      Document element we're working in.
+	 * @param {Object}       gotPrefs Preloaded preferences from main function.
+	 */
+	processImages: function(postbody, doc, gotPrefs)
 	{
-		var thumbnailAllImages = Prefs.getPref("thumbnailAllImages");
-		if (thumbnailAllImages)
+		if (gotPrefs.thumbnailAllImages)
 		{
-			var maxWidth = Prefs.getPref("maxWidthOfConvertedImages");
-			var maxHeight = Prefs.getPref("maxHeightOfConvertedImages");
+			var maxWidth = gotPrefs.maxWidthOfConvertedImages;
+			var maxHeight = gotPrefs.maxHeightOfConvertedImages;
 
 			if (maxHeight)
 				maxHeight += "px";
@@ -929,7 +931,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		for (let image of images)
 		{
 			// Scale all images in the post body to the user-specified size
-			if (thumbnailAllImages && image.className.search(/timg/i) === -1 && (image.parentNode === postbody || image.parentNode.nodeName.toLowerCase() === 'blockquote'))
+			if (gotPrefs.thumbnailAllImages && image.className.search(/timg/i) === -1 && (image.parentNode === postbody || image.parentNode.nodeName.toLowerCase() === 'blockquote'))
 			{
 				if (!image.src.match(/forumimages\.somethingawful\.com/i))
 				{
@@ -949,7 +951,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 						}, false);
 				}
 			}
-			if (Prefs.getPref('convertGifToVideo'))
+			if (gotPrefs.convertGifToVideo)
 				ImgurHandler.checkImgurGif(image);
 			ShowThreadHandler.replaceWaffleImage(image);
 		}

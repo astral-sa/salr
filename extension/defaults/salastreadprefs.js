@@ -54,7 +54,7 @@ pref('extensions.salastread.convertGifToVideo', false);
 
 //TEXT-TO-IMAGE OPTIONS
 pref('extensions.salastread.convertTextToImage', true);
-pref('extensions.salastread.dontConvertQuotedImages', true);
+pref('extensions.salastread.dontConvertQuotedImages', true); //undocumented
 pref('extensions.salastread.dontConvertReadImages', true);
 pref('extensions.salastread.unconvertReadImages', false);
 pref('extensions.salastread.thumbnailQuotedImagesInThreads', false);
