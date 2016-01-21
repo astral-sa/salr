@@ -82,6 +82,19 @@ function resetPrefWrapper(prefName)
 	return Prefs.resetPref(prefName);
 }
 
+/**
+ * Message handler for GetMultiplePrefs
+ * @param {Array.string} prefArray Array of prefs to get.
+ * @return {Object} Object with preference values.
+ */
+function getMultiplePrefs(prefArray)
+{
+	let prefObject = {};
+	for (let prefName of prefArray)
+		prefObject[prefName] = Prefs.getPref(prefName);
+	return prefObject;
+}
+
 function init()
 {
 	// Load default preferences and set up properties for them
@@ -112,6 +125,7 @@ function init()
 	Utils.addFrameMessageListener("salastread:SetPref", setPrefWrapper);
 	Utils.addFrameMessageListener("salastread:GetPref", getPrefWrapper);
 	Utils.addFrameMessageListener("salastread:ResetPref", resetPrefWrapper);
+	Utils.addFrameMessageListener("salastread:GetMultiplePrefs", getMultiplePrefs);
 }
 
 init();

@@ -15,5 +15,16 @@ let Prefs = exports.Prefs = // eslint-disable-line no-unused-vars
 	resetPref: function(prefName)
 	{
 		return sendSyncMessage("salastread:ResetPref", prefName);
-	}
+	},
+
+	/**
+	 * Get multiple preferences in one sync message.
+	 * @param {Array.string} prefArray Array of prefs to get.
+	 * @return {Object} Object with preference values.
+	 */
+	getMultiplePrefs: function(prefArray)
+	{
+		return sendSyncMessage("salastread:GetMultiplePrefs", prefArray);
+	},
+
 };
