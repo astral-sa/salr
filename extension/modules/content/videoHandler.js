@@ -80,7 +80,7 @@ let VideoHandler = exports.VideoHandler =
 	embedVideo: function(link)
 	{
 		// Figure out the video type
-		let videoIdSearch = link.href.match(/^https?\:\/\/((?:www|m|[a-z]{2})\.)?(?:youtube\.com\/(?:#\/)?watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:.*?t=(?:(\d*)h)?(?:(\d*)m)?(?:(\d*)s?)?)?/);
+		let videoIdSearch = link.href.match(/^https?\:\/\/((?:www|m|[a-z]{2})\.)?(?:youtube\.com\/(?:#\/)?watch\?(?:feature=.*?&)?v=|youtu\.be\/)([-_0-9a-zA-Z]+)(?:.*?t=(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?)?/);
 		if (videoIdSearch)
 		{
 			let yt_subd = (videoIdSearch[1] == null || videoIdSearch[1] === 'm.') ? "www." : videoIdSearch[1];
