@@ -276,8 +276,8 @@ let ContextMenu = exports.ContextMenu =
 		let xhr = new XMLHttpRequest();
 		let xhrparams = "json=1&action=resetseen&threadid="+threadid;
 		xhr.open("POST", "https://forums.somethingawful.com/showthread.php", true);
-		// Ensure this load flag is set to prevent issues with third-party cookies being disabled
-		xhr.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
+		// Ensure this flag is set to prevent issues with third-party cookies being disabled
+		xhr.channel.QueryInterface(Ci.nsIHttpChannelInternal).forceAllowThirdPartyCookie = true;
 		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 		xhr.setRequestHeader("Content-length", xhrparams.length);
 		xhr.setRequestHeader("Connection", "close");

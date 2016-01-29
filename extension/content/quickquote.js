@@ -150,8 +150,8 @@ function getEmoticonsFromServerASync()
 	emoteGetter = new XMLHttpRequest();
 	emoteGetter.open("GET", "https://forums.somethingawful.com/misc.php?s=&action=showsmilies", true);
 	emoteGetter.onreadystatechange = getEmoticonsCallback;
-	// Ensure this load flag is set to prevent issues with third-party cookies being disabled
-	emoteGetter.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
+	// Ensure this flag is set to prevent issues with third-party cookies being disabled
+	emoteGetter.channel.QueryInterface(Components.interfaces.nsIHttpChannelInternal).forceAllowThirdPartyCookie = true;
 	emoteGetter.send(null);
 }
 
@@ -281,8 +281,8 @@ function startPostTextGrab(getFormKeyOnly, postid)
 
 	pageGetter.open("GET", targeturl, true);
 	pageGetter.onreadystatechange = postTextGrabCallback;
-	// Ensure this load flag is set to prevent issues with third-party cookies being disabled
-	pageGetter.channel.loadFlags |= Components.interfaces.nsIChannel.LOAD_DOCUMENT_URI;
+	// Ensure this flag is set to prevent issues with third-party cookies being disabled
+	pageGetter.channel.QueryInterface(Components.interfaces.nsIHttpChannelInternal).forceAllowThirdPartyCookie = true;
 	pageGetter.send(null);
 }
 
