@@ -1,8 +1,6 @@
-/*
-
-	Handler for thread lists (forum + usercp/bookmarks).
-
-*/
+/**
+ * @fileoverview Handler for thread lists (forum + usercp/bookmarks).
+ */
 
 let {DB} = require("content/dbHelper");
 let {Prefs} = require("content/prefsHelper");
@@ -11,39 +9,44 @@ let {AdvancedThreadFiltering} = require("content/advancedThreadFiltering");
 
 let ThreadListHandler = exports.ThreadListHandler =
 {
-	//handle highlighting of user cp/forum listings
+	/**
+	 * Handles highlighting of user cp/forum listings
+	 * @param {HTMLDocument} doc     Document we're working in.
+	 * @param {number}       forumid The ID of the forum we're in. Do we always have this?
+	 * @param {Object}       flags   Flags for this thread list set by the caller.
+	 */
 	handleThreadList: function(doc, forumid, flags)
 	{
-		//get preferences once
-		var dontHighlightThreads = Prefs.getPref("dontHighlightThreads");
-		var disableNewReCount = Prefs.getPref("disableNewReCount");
-		var newPostCountUseOneLine = Prefs.getPref("newPostCountUseOneLine");
-		var showUnvisitIcon = Prefs.getPref("showUnvisitIcon");
-		var swapIconOrder = Prefs.getPref("swapIconOrder");
-		var showGoToLastIcon = Prefs.getPref("showGoToLastIcon");
-		var alwaysShowGoToLastIcon = Prefs.getPref("alwaysShowGoToLastIcon");
-		let goToLastInBlank = Prefs.getPref("goToLastInBlank");
+		// Super grouped pref calls to avoid message passing overhead
+		let prefsToGet = [
+			'dontHighlightThreads',
+			'disableNewReCount',
+			'newPostCountUseOneLine',
+			'showUnvisitIcon',
+			'swapIconOrder',
+			'showGoToLastIcon',
+			'alwaysShowGoToLastIcon',
+			'goToLastInBlank',
+			'highlightUsernames',
+			'modColor',
+			'modBackground',
+			'adminColor',
+			'adminBackground',
+			'dontBoldNames',
+			'postsPerPage',
+			'advancedThreadFiltering',
+			'ignoredPostIcons',
+			'ignoredKeywords',
+			'superIgnore'
+		];
+		let gotPrefs = Prefs.getMultiplePrefs(prefsToGet);
 
-		var highlightUsernames = Prefs.getPref("highlightUsernames");
-		let userHighlightingPrefs = {
-			modColor: Prefs.getPref("modColor"),
-			modBackground: Prefs.getPref("modBackground"),
-			adminColor: Prefs.getPref("adminColor"),
-			adminBackground: Prefs.getPref("adminBackground"),
-			dontBoldNames: Prefs.getPref("dontBoldNames")
-		};
-
+		// We add some other keys to this object
 		let threadSortingInfo = {
 			showTWNP: Prefs.getPref('showThreadsWithNewPostsFirst'),
 			showTWNPCP: Prefs.getPref('showThreadsWithNewPostsFirstCP'),
 			showTWNPCPS: Prefs.getPref('showThreadsWithNewPostsFirstCPStickies')
 		};
-
-		var postsPerPage = Prefs.getPref('postsPerPage');
-		var advancedThreadFiltering = Prefs.getPref("advancedThreadFiltering");
-		var ignoredPostIcons = Prefs.getPref("ignoredPostIcons");
-		var ignoredKeywords = Prefs.getPref("ignoredKeywords");
-		var superIgnoreUsers = Prefs.getPref("superIgnore");
 
 		// This should eventually be redone and moved to the flags section.
 		if (typeof(flags.inUserCP) === typeof undefined)
@@ -60,8 +63,9 @@ let ThreadListHandler = exports.ThreadListHandler =
 		if (!forumTable) // something is very wrong; abort!
 			return;
 
+// TODO: fix the pref use below - issue #97
 		// We need to reset this every time the page is fully loaded
-		if (advancedThreadFiltering)
+		if (gotPrefs.advancedThreadFiltering)
 			Prefs.setPref("filteredThreadCount",0);
 
 		// Here be where we work on the thread rows
@@ -120,17 +124,17 @@ let ThreadListHandler = exports.ThreadListHandler =
 			if (threadOPId)
 			{
 				// If it was started by someone ignored, hide the thread
-				if (superIgnoreUsers && DB.isUserIgnored(threadOPId))
+				if (gotPrefs.superIgnore && DB.isUserIgnored(threadOPId))
 				{
 					thread.parentNode.removeChild(thread);
 					continue;
 				}
 			}
 
-			if (advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP)
+			if (gotPrefs.advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP)
 			{
 				// Check for ignored keywords
-				let threadBeGone = AdvancedThreadFiltering.isThreadTitleKeywordFiltered(threadTitle, ignoredKeywords);
+				let threadBeGone = AdvancedThreadFiltering.isThreadTitleKeywordFiltered(threadTitle, gotPrefs.ignoredKeywords);
 				if (threadBeGone && thread.style.visibility !== "hidden")
 				{
 					PageUtils.toggleVisibility(thread, false);
@@ -139,10 +143,10 @@ let ThreadListHandler = exports.ThreadListHandler =
 			}
 
 			lastLink = PageUtils.selectSingleNode(doc, threadTitleBox, "DIV/DIV/DIV/A[./text() = 'Last']");
-			if (lastLink && postsPerPage > 0)
+			if (lastLink && gotPrefs.postsPerPage > 0)
 			{
 				let threadReCount = parseInt(threadRepliesBox.textContent, 10) + 1;
-				let lastPageNum = Math.ceil(threadReCount / postsPerPage);
+				let lastPageNum = Math.ceil(threadReCount / gotPrefs.postsPerPage);
 				lastLink.textContent += ' (' + lastPageNum + ')';
 			}
 
@@ -151,9 +155,9 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 			// Is this icon ignored?
 			threadIconBox = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
-			if (flags && forumid && advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.firstChild.src.search(/posticons\/(.*)/i) > -1)
+			if (flags && forumid && gotPrefs.advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.firstChild.src.search(/posticons\/(.*)/i) > -1)
 			{
-				if (AdvancedThreadFiltering.isThreadIconFiltered(threadIconBox.firstChild.firstChild, ignoredPostIcons) && thread.style.visibility !== "hidden")
+				if (AdvancedThreadFiltering.isThreadIconFiltered(threadIconBox.firstChild.firstChild, gotPrefs.ignoredPostIcons) && thread.style.visibility !== "hidden")
 				{
 					PageUtils.toggleVisibility(thread,false);
 					AdvancedThreadFiltering.filteredThreadCount(doc,1);
@@ -170,7 +174,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 				// Experimental: open in new window/tab with preference
 				// TODO: options to do so only in ucp and/or forums +
 				// option for open-in-background similar to middleclicking
-				if (goToLastInBlank && iconJumpLastRead)
+				if (gotPrefs.goToLastInBlank && iconJumpLastRead)
 				{
 					iconJumpLastRead.setAttribute('target', '_blank');
 				}
@@ -188,7 +192,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 				}
 
 				// Thread highlighting
-				if (!dontHighlightThreads)
+				if (!gotPrefs.dontHighlightThreads)
 				{
 					if (iconJumpLastRead)
 					{
@@ -202,7 +206,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 							thread.className += ' seen';
 						}
 						// And to make sure it removes the post count properly
-						if (!disableNewReCount)
+						if (!gotPrefs.disableNewReCount)
 						{
 							iconMarkUnseen.addEventListener("click", ThreadListHandler.clickMarkUnseen, false);
 						}
@@ -210,14 +214,14 @@ let ThreadListHandler = exports.ThreadListHandler =
 				}
 
 				//SALR replacing forums buttons
-				if (!disableNewReCount && iconJumpLastRead)
+				if (!gotPrefs.disableNewReCount && iconJumpLastRead)
 				{
 					threadRe = PageUtils.selectSingleNode(doc, iconJumpLastRead, "B");
 					threadRe = threadRe.cloneNode(true);
 					threadRe.style.fontWeight = "normal";
 					threadRe.style.fontSize = "9px";
 					threadRe.textContent = "(" + threadRe.textContent + ")";
-					if (newPostCountUseOneLine)
+					if (gotPrefs.newPostCountUseOneLine)
 					{
 						threadRepliesBox.innerHTML += "&nbsp;";
 					}
@@ -229,13 +233,13 @@ let ThreadListHandler = exports.ThreadListHandler =
 					threadRepliesBox.appendChild(threadRe);
 				}
 
-				if (alwaysShowGoToLastIcon && !iconJumpLastRead)
+				if (gotPrefs.alwaysShowGoToLastIcon && !iconJumpLastRead)
 				{
 					iconJumpLastRead = doc.createElement("a");
 					iconJumpLastRead.title = "Jump to last read post";
 					iconJumpLastRead.href = "/showthread.php?threadid=" + threadId + "&goto=newpost";
 					iconJumpLastRead.className = "count";
-					if (disableNewReCount)
+					if (gotPrefs.disableNewReCount)
 					{
 						threadRe = doc.createElement("b");
 						threadRe.textContent = "0";
@@ -244,14 +248,14 @@ let ThreadListHandler = exports.ThreadListHandler =
 					divLastSeen.appendChild(iconJumpLastRead);
 				}
 
-				if (showUnvisitIcon && !showGoToLastIcon && iconJumpLastRead)
+				if (gotPrefs.showUnvisitIcon && !gotPrefs.showGoToLastIcon && iconJumpLastRead)
 				{
 					// Fix up the background gradient on the default Jump To Last link
 					divLastSeen.style.background = 'url(chrome://salastread/skin/lastseen-gradient.gif)';
 				}
 
 				// Switch the Mark as Unseen and Jump to Last Read icon order
-				if (swapIconOrder && iconMarkUnseen && iconJumpLastRead)
+				if (gotPrefs.swapIconOrder && iconMarkUnseen && iconJumpLastRead)
 				{
 					divLastSeen.insertBefore(iconJumpLastRead, iconMarkUnseen);
 				}
@@ -265,14 +269,14 @@ let ThreadListHandler = exports.ThreadListHandler =
 				threadTitleBox.className += ' starred';
 			}
 
-			if (highlightUsernames)
+			if (gotPrefs.highlightUsernames)
 			{
 				var lastPostId;
 
 				// First color the Author column
 				if (threadOPId)
 				{
-					ThreadListHandler.colorUsernameBox(threadOPId, threadAuthorBox, userHighlightingPrefs);
+					ThreadListHandler.colorUsernameBox(threadOPId, threadAuthorBox, gotPrefs);
 				}
 
 				// Then color the Killed By column
@@ -290,7 +294,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 				if (lastPostId)
 				{
-					ThreadListHandler.colorUsernameBox(lastPostId, threadLastPostBox, userHighlightingPrefs);
+					ThreadListHandler.colorUsernameBox(lastPostId, threadLastPostBox, gotPrefs);
 				}
 			}
 		}

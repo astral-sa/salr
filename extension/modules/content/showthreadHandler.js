@@ -649,7 +649,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 	/**
 	 * Adds action+parameters to a search box based on type of search.
-	 * @param {HTMLDocument}      doc           Document element.
+	 * @param {HTMLDocument}     doc           Document element.
 	 * @param {number}           forumid       Forum ID.
 	 * @param {number}           threadid      Thread ID.
 	 * @param {HTMLInputElement} newSearchText The search box text input element.
