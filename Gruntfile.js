@@ -114,8 +114,9 @@ module.exports = function(grunt)
 		}
 	});
 
-	grunt.registerTask('default', ['build', 'clean:src']);
-	grunt.registerTask('build', ['clean:main', 'copy:main', 'saveRevision', 'sed', 'compress', 'copy:update']);
+	grunt.registerTask('default', 'build');
+	grunt.registerTask('build_noclean', ['clean:main', 'copy:main', 'saveRevision', 'sed', 'compress', 'copy:update']);
+	grunt.registerTask('build', ['build_noclean', 'clean:src']);
 	grunt.registerTask('rel', ['github-release:rel']);
 	grunt.registerTask('pre', ['github-release:pre']);
 
