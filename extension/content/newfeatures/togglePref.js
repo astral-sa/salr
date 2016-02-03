@@ -1,4 +1,5 @@
 // <script>
+/*
 var persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
 					.getService().wrappedJSObject;
 
@@ -27,3 +28,4 @@ function toggleFeature() {
 
 var tpOldLoad = typeof(window.onload)=="function" ? window.onload : function(){};
 window.onload = function() { tpOnLoad(); tpOldLoad(); };
+*/

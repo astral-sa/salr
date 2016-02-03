@@ -14,48 +14,7 @@ let {Services, atob, btoa} = Cu.import("resource://gre/modules/Services.jsm", nu
 let XMLHttpRequest = Components.Constructor("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
 
 let addonData = null;
-function startup(data,reason) {
-	addonData = data;
-
-	Services.obs.addObserver(RequireObserver, "salr-require", true);
-	onShutdown.add(function() { Services.obs.removeObserver(RequireObserver, "salr-require"); });
-
-	require("main");
-}
 let shutdownHandlers = [];
-function shutdown(data,reason) {
-	if (reason == APP_SHUTDOWN)
-		return;
-	onShutdown.done = true;
-	for (let i = shutdownHandlers.length - 1; i >= 0; i --)
-	{
-		try
-		{
-			shutdownHandlers[i]();
-		}
-		catch (e)
-		{
-			Cu.reportError(e);
-		}
-	}
-	shutdownHandlers = null;
-
-	// Release our ties to the modules
-	for (let key in require.scopes)
-	{
-		let scope = require.scopes[key];
-		let list = Object.keys(scope);
-		for (let i = 0; i < list.length; i++)
-			scope[list[i]] = null;
-	}
-	require.scopes = null;
-	addonData = null;
-	// HACK WARNING: The Addon Manager does not properly clear all addon related caches on update;
-	//							 in order to fully update images and locales, their caches need clearing here
-	Services.obs.notifyObservers(null, "chrome-flush-caches", null);
-}
-function install(data,reason) { }
-function uninstall(data,reason) { }
 
 let onShutdown =
 {
@@ -133,3 +92,46 @@ let RequireObserver =
 	},
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupportsWeakReference, Ci.nsIObserver])
 };
+
+function startup(data,reason) {
+	addonData = data;
+
+	Services.obs.addObserver(RequireObserver, "salr-require", true);
+	onShutdown.add(function() { Services.obs.removeObserver(RequireObserver, "salr-require"); });
+
+	require("main");
+}
+
+function shutdown(data,reason) {
+	if (reason == APP_SHUTDOWN) // eslint-disable-line no-undef
+		return;
+	onShutdown.done = true;
+	for (let i = shutdownHandlers.length - 1; i >= 0; i --)
+	{
+		try
+		{
+			shutdownHandlers[i]();
+		}
+		catch (e)
+		{
+			Cu.reportError(e);
+		}
+	}
+	shutdownHandlers = null;
+
+	// Release our ties to the modules
+	for (let key in require.scopes) // eslint-disable-line guard-for-in
+	{
+		let scope = require.scopes[key];
+		let list = Object.keys(scope);
+		for (let i = 0; i < list.length; i++)
+			scope[list[i]] = null;
+	}
+	require.scopes = null;
+	addonData = null;
+	// HACK WARNING: The Addon Manager does not properly clear all addon related caches on update;
+	//							 in order to fully update images and locales, their caches need clearing here
+	Services.obs.notifyObservers(null, "chrome-flush-caches", null);
+}
+function install(data,reason) { }
+function uninstall(data,reason) { }

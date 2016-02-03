@@ -6,7 +6,8 @@ engines:
     config:
       languages:
       - javascript
-      - php
+    exclude_fingerprints:
+    - 2b4a128ee12814f53c4c67e5a14182d4
   eslint:
     enabled: true
   fixme:

@@ -1,4 +1,5 @@
 // <script>
+/*
 var persistObject = Components.classes['@evercrest.com/salastread/persist-object;1']  
 					.getService().wrappedJSObject;
 
@@ -290,3 +291,4 @@ function importOldData()
 		persistObject.pref.deleteBranch("salastread.toggle.removeTargetNewFromTorrentLinks");
 	} catch(e) { dump(e); }
 }
+*/
