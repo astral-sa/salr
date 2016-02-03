@@ -10,4 +10,4 @@ notifications:
     on_failure: always # [always|never|change] default: always
 before_script:
   - npm install -g grunt-cli
-script: grunt build
+script: npm test && grunt build
