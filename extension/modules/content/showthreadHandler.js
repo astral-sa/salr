@@ -16,8 +16,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 {
 	handleShowThread: function(doc)
 	{
-		var i; // Little variables that'll get reused
-
 		// If there is no thread div then abort since something's not right
 		if (doc.getElementById('thread') === null)
 			return;
@@ -36,6 +34,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			singlePost: (doc.location.search.search(/action=showpost/i) > -1),
 			inArchives: PageUtils.isThreadInArchives(doc),
 			threadClosed: PageUtils.isThreadClosed(doc),
+			threadMarkedPostedIn: false,
 		};
 
 		// Bail if we're in FYAD and FYAD support has been turned off
@@ -102,7 +101,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		];
 		let gotPrefs = Prefs.getMultiplePrefs(prefsToGet);
 
-		var username = unescape(gotPrefs.username);
+		gotPrefs.username = unescape(gotPrefs.username);
 		threadFlags.insertPostTargetLink = gotPrefs.insertPostTargetLink && !threadFlags.inArchives;
 
 		// Replace post/reply buttons if we need to.
@@ -114,21 +113,18 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		ShowThreadHandler.addWhoPostedAndSearchBox(doc, forumid, threadid);
 
 		// get the posts to iterate through
-		var postlist = PageUtils.selectNodes(doc, doc, "//table[contains(@id,'post')]");
+		var postlist = doc.querySelectorAll("#thread table.post");
 
-		var curPostId, postIdLink, profileLink, posterId, postbody;
-		var posterColor, posterBG, userNameBox, posterNote, posterImg, posterName, quotebutton, editbutton;
-		var userPosterNote;
-
-		var threadMarkedPostedIn = false;
+		var curPostId, postIdLink, profileLink, postbody;
+		var userNameBox;
+		/** @type {string} */
+		var posterName;
+		/** @type {string} */
+		var posterId;
 
 		// Loop through each post
-		for (i in postlist)
+		for (let post of postlist)
 		{
-			if (!postlist.hasOwnProperty(i))
-				continue;
-			var post = postlist[i];
-
 			if (post.className.indexOf("ignored") > -1)
 			{
 				// Need to pass a forumid to enable SALR features in the linked post
@@ -174,6 +170,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				PageUtils.logToConsole("SALR error: can't find a user name box for post " + curPostId + " in thread " + threadid);
 				continue;
 			}
+			posterName = userNameBox.textContent.trim();
 
 			// Standard template - should work for all thread types nowadays. (05/21/2015)
 			let titleBox = PageUtils.selectSingleNode(doc, post, "tbody//dl[contains(@class,'userinfo')]//dd[contains(@class,'title')]");
@@ -190,120 +187,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 				}
 			}
 
-			// Check to see if there's a mod or admin star
-			posterImg = false;
-			posterName = userNameBox.textContent.replace(/^\s+|\s+$/, '');
-			if (userNameBox.title.length > 0 && !threadFlags.inArchives)
-			{
-				posterImg = userNameBox.title;
-				if (posterImg === 'Administrator')
-				{
-					DB.addAdmin(posterId, posterName);
-				}
-				else if (posterImg === 'Moderator')
-				{
-					DB.addMod(posterId, posterName);
-				}
-			}
-
-			posterColor = false;
-			posterBG = false;
-			posterNote = false;
-			userPosterNote = false;
-
-			//apply this to every post
-			post.className += " salrPostBy" + posterId + " salrPostBy" + escape(posterName);
-			if (posterName === username)
-			{
-				post.className += " salrPostOfSelf";
-				if (threadMarkedPostedIn === false)
-				{
-					DB.iPostedHere(threadid);
-					threadMarkedPostedIn = true;
-				}
-			}
-
-			//apply custom user coloring
-			if (userNameBox.className.search(/\bop/) > -1)
-			{
-				posterColor = gotPrefs.opColor;
-				posterBG = gotPrefs.opBackground;
-				posterNote = gotPrefs.opSubText;
-				post.className += " salrPostByOP";
-			}
-			if (DB.isMod(posterId))
-			{
-				if (posterImg === "Moderator" || posterImg === "Internet Knight" || threadFlags.inArchives)
-				{
-					posterColor = gotPrefs.modColor;
-					posterBG = gotPrefs.modBackground;
-					posterNote = gotPrefs.modSubText;
-					post.className += " salrPostByMod";
-				}
-				else if (!threadFlags.inArchives)
-				{
-					DB.removeMod(posterId);
-				}
-			}
-			if (DB.isAdmin(posterId))
-			{
-				if (posterImg === "Administrator" || threadFlags.inArchives)
-				{
-					posterColor = gotPrefs.adminColor;
-					posterBG = gotPrefs.adminBackground;
-					posterNote = gotPrefs.adminSubText;
-					post.className += " salrPostByAdmin";
-				}
-				else if (!threadFlags.inArchives)
-				{
-					DB.removeAdmin(posterId);
-				}
-			}
-			var dbUser = DB.isUserIdColored(posterId);
-			if (dbUser)
-			{
-				if (!dbUser.username || dbUser.username !== posterName)
-				{
-					DB.setUserName(posterId, posterName);
-				}
-				if (dbUser.color && dbUser.color !== "0")
-				{
-					posterColor = dbUser.color;
-				}
-				if (dbUser.background && dbUser.background !== "0")
-				{
-					posterBG = dbUser.background;
-				}
-			}
-
-			if (posterBG !== "0")
-			{
-				ShowThreadHandler.colorPost(doc, posterBG, posterId);
-			}
-
-			// Check for quotes that need to be colored or superIgnored
-			if (gotPrefs.highlightQuotes || gotPrefs.superIgnore)
-			{
-				ShowThreadHandler.processQuotes(doc, post, username, gotPrefs.superIgnore);
-			}
-
-			userPosterNote = DB.getPosterNotes(posterId);
-			if (gotPrefs.highlightUsernames && posterColor !== false && posterColor !== "0")
-			{
-				userNameBox.style.color = posterColor;
-			}
-			if (posterNote || userPosterNote)
-			{
-				let newNoteBox = doc.createElement("p");
-				newNoteBox.style.fontSize = "80%";
-				newNoteBox.style.margin = "0";
-				newNoteBox.style.padding = "0";
-				newNoteBox.innerHTML = posterNote ? posterNote : '';
-				newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
-				newNoteBox.style.color = userNameBox.style.color;
-				newNoteBox.style.fontWeight = "bold";
-				userNameBox.parentNode.insertBefore(newNoteBox, userNameBox.nextSibling);
-			}
+			ShowThreadHandler.applyUserHighlightingToPost(doc, post, userNameBox, posterId, threadFlags, gotPrefs);
 
 			postIdLink = PageUtils.selectSingleNode(doc, post, "tbody//td[contains(@class,'postdate')]//a[contains(@href,'#post')]");
 			if (!postIdLink)
@@ -313,75 +197,14 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			if (!postIdLink)
 				continue;
 
-// Is this duplicating getting curPostId?
-			let postid = postIdLink.href.match(/#post(\d+)/i)[1];
-			if (threadFlags.insertPostTargetLink)
-			{
-				ShowThreadHandler.insertSinglePostLink(doc, threadFlags, postIdLink, postid);
-			}
-
-			//grab this once up here to avoid repetition
-			if (gotPrefs.useQuickQuote)
-			{
-				editbutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
-			}
+			ShowThreadHandler.insertSinglePostLink(doc, threadFlags, postIdLink, curPostId);
 
 			if (gotPrefs.useQuickQuote && !threadFlags.threadClosed)
 			{
-				quotebutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
-				if (quotebutton)
-				{
-					QuickQuoteHelper.turnIntoQuickButton(doc, quotebutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
-				}
-				if (editbutton)
-				{
-					QuickQuoteHelper.turnIntoQuickButton(doc, editbutton, forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, forumid, threadid), true);
-				}
+				QuickQuoteHelper.makeQuickQuoteEditButtons(doc, post, threadFlags);
 			}
 
-			var userLinks = profileLink.parentNode.parentNode;
-
-			// Add a link to hide/unhide the user's avatar
-			if (!gotPrefs.hideCustomTitles)
-			{
-				let avLink = doc.createElement("li");
-				avLink.setAttribute('style', '-moz-user-select: none;');
-				avLink.style.cssFloat = 'right';
-				avLink.style.marginLeft = '4px';
-				let avAnch = doc.createElement("a");
-				avAnch.href = "#";
-				avAnch.title = "Toggle displaying this poster's avatar.";
-				if (DB.isAvatarHidden(posterId))
-					avAnch.textContent = "Show Avatar";
-				else
-					avAnch.textContent = "Hide Avatar";
-
-				avAnch.addEventListener("click", ShowThreadHandler.clickToggleAvatar.bind(null, posterId, posterName), false);
-				avLink.appendChild(avAnch);
-				userLinks.appendChild(doc.createTextNode(" "));
-				userLinks.appendChild(avLink);
-			}
-
-			// Add user coloring/note links
-			// Note: this is added after, but appears to the left thanks to CSS floats.
-			if (gotPrefs.highlightUsernames)
-			{
-				var li = doc.createElement("li");
-				li.setAttribute('style', '-moz-user-select: none;');
-				li.style.cssFloat = 'right';
-				li.style.marginLeft = '4px';
-				var a = doc.createElement("a");
-				a.href = "#";
-				a.textContent = "Add Coloring/Note";
-				a.title = "Add coloring and/or a note for this poster.";
-				a.addEventListener("click", ShowThreadHandler.addHighlightedUser.bind(null,posterId,posterName), true);
-				li.appendChild(a);
-				userLinks.appendChild(doc.createTextNode(" "));
-				userLinks.appendChild(li);
-			}
-
-			// Add a space for the Rap Sheet link added afterwards by forum JS:
-			userLinks.appendChild(doc.createTextNode(" "));
+			ShowThreadHandler.addUserLinksToPost(doc, profileLink, posterId, posterName, gotPrefs);
 
 			postbody = PageUtils.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
 
@@ -482,10 +305,12 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	 * @param {HTMLDocument} doc         Document element to insert "1" link for a post in.
 	 * @param {Object}       threadFlags Various thread-related information.
 	 * @param {HTMLElement}  postIdLink  Node snapshot of link to current post.
-	 * @param {string}       postid      The post ID.
+	 * @param {number}       postid      The post ID.
 	 */
 	insertSinglePostLink: function(doc, threadFlags, postIdLink, postid)
 	{
+		if (!threadFlags.insertPostTargetLink)
+			return;
 		let slink = doc.createElement("a");
 		if (threadFlags.singlePost)
 		{
@@ -730,12 +555,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		}
 
 		// Iterate over link snapshot from before we unconverted
-		for (let i in linksInPost)
+		for (let link of linksInPost)
 		{
-			if (!linksInPost.hasOwnProperty(i))
-				continue;
-			let link = linksInPost[i];
-
 			if (convertImages && (link.href.search(/\.(gif|jpg|jpeg|png)(#.*)?(%3C\/a%3E)?$/i) > -1))
 			{
 				if (link.href.search(/paintedover\.com/i) > -1 || // PaintedOver sucks, we can't embed them
@@ -978,6 +799,142 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		}
 	},
 
+	/**
+	 * Adds user highlighting/notes to a post.
+	 * Updates mod/admin status in DB.
+	 * @param {HTMLDocument} doc         Document element we're working in.
+	 * @param {HTMLElement}  post        Node snapshot of current post's table element.
+	 * @param {HTMLElement}  userNameBox Node snapshot of current post's user name box element.
+	 * @param {string}       posterId    User ID of poster.
+	 * @param {Object}       threadFlags Various thread-related information.
+	 * @param {Object}       gotPrefs    Preloaded preferences from main function.
+	 */
+	applyUserHighlightingToPost: function(doc, post, userNameBox, posterId, threadFlags, gotPrefs)
+	{
+		/** @type {string} */
+		var posterName = userNameBox.textContent.trim();
+		/** @type {(string|boolean)} */
+		var posterColor = false;
+		/** @type {(string|boolean)} */
+		var posterBG = false;
+		/** @type {(string|boolean)} */
+		var posterNote = false;
+		/** @type {(string|boolean)} */
+		var userPosterNote = false;
+
+		//apply this to every post
+		post.className += " salrPostBy" + posterId + " salrPostBy" + escape(posterName);
+		if (posterName === gotPrefs.username)
+		{
+			post.className += " salrPostOfSelf";
+			if (threadFlags.threadMarkedPostedIn === false)
+			{
+				DB.iPostedHere(threadFlags.threadid);
+				threadFlags.threadMarkedPostedIn = true;
+			}
+		}
+
+		//apply custom user coloring
+		if (userNameBox.className.search(/\bop/) > -1)
+		{
+			posterColor = gotPrefs.opColor;
+			posterBG = gotPrefs.opBackground;
+			posterNote = gotPrefs.opSubText;
+			post.className += " salrPostByOP";
+		}
+
+		// Check to see if there's a mod or admin star
+		/** @type {(string|boolean)} */
+		let posterImg = false;
+
+		if (userNameBox.title.length > 0 && !threadFlags.inArchives)
+		{
+			posterImg = userNameBox.title;
+			if (posterImg === 'Administrator')
+			{
+				DB.addAdmin(posterId, posterName);
+			}
+			else if (posterImg === 'Moderator')
+			{
+				DB.addMod(posterId, posterName);
+			}
+		}
+
+		if (DB.isMod(posterId))
+		{
+			if (posterImg === "Moderator" || posterImg === "Internet Knight" || threadFlags.inArchives)
+			{
+				posterColor = gotPrefs.modColor;
+				posterBG = gotPrefs.modBackground;
+				posterNote = gotPrefs.modSubText;
+				post.className += " salrPostByMod";
+			}
+			else if (!threadFlags.inArchives)
+			{
+				DB.removeMod(posterId);
+			}
+		}
+		if (DB.isAdmin(posterId))
+		{
+			if (posterImg === "Administrator" || threadFlags.inArchives)
+			{
+				posterColor = gotPrefs.adminColor;
+				posterBG = gotPrefs.adminBackground;
+				posterNote = gotPrefs.adminSubText;
+				post.className += " salrPostByAdmin";
+			}
+			else if (!threadFlags.inArchives)
+			{
+				DB.removeAdmin(posterId);
+			}
+		}
+		var dbUser = DB.isUserIdColored(posterId);
+		if (dbUser)
+		{
+			if (!dbUser.username || dbUser.username !== posterName)
+			{
+				DB.setUserName(posterId, posterName);
+			}
+			if (dbUser.color && dbUser.color !== "0")
+			{
+				posterColor = dbUser.color;
+			}
+			if (dbUser.background && dbUser.background !== "0")
+			{
+				posterBG = dbUser.background;
+			}
+		}
+
+		if (posterBG !== "0")
+		{
+			ShowThreadHandler.colorPost(doc, posterBG, posterId);
+		}
+
+		// Check for quotes that need to be colored or superIgnored
+		if (gotPrefs.highlightQuotes || gotPrefs.superIgnore)
+		{
+			ShowThreadHandler.processQuotes(doc, post, gotPrefs.username, gotPrefs.superIgnore);
+		}
+
+		userPosterNote = DB.getPosterNotes(posterId);
+		if (gotPrefs.highlightUsernames && posterColor !== false && posterColor !== "0")
+		{
+			userNameBox.style.color = posterColor;
+		}
+		if (posterNote || userPosterNote)
+		{
+			let newNoteBox = doc.createElement("p");
+			newNoteBox.style.fontSize = "80%";
+			newNoteBox.style.margin = "0";
+			newNoteBox.style.padding = "0";
+			newNoteBox.innerHTML = posterNote ? posterNote : '';
+			newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
+			newNoteBox.style.color = userNameBox.style.color;
+			newNoteBox.style.fontWeight = "bold";
+			userNameBox.parentNode.insertBefore(newNoteBox, userNameBox.nextSibling);
+		}
+	},
+
 	// Colors a post based on details passed to it
 	// @param: (html doc) document, (string) color to use for the post, (int) userid of poster
 	// @return: nothing
@@ -1007,6 +964,62 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		CSSFile += colorToUse;
 		CSSFile += ' !important; };\n';
 		PageUtils.insertDynamicCSS(doc, CSSFile);
+	},
+
+	/**
+	 * Adds User Highlighting/Notes and Toggle Avatar buttons to a post.
+	 * @param {HTMLDocument} doc         Document element we're working in.
+	 * @param {HTMLElement}  profileLink Node snapshot of profile link anchor.
+	 * @param {string}       posterId    User ID of poster.
+	 * @param {string}       posterName  Username of poster.
+	 * @param {Object}       gotPrefs    Preloaded preferences from main function.
+	 * @param {boolean}      gotPrefs.hideCustomTitles   Whether we are hiding all custom titles.
+	 * @param {boolean}      gotPrefs.highlightUsernames Whether we are highlighting interesting users.
+	 */
+	addUserLinksToPost: function(doc, profileLink, posterId, posterName, gotPrefs)
+	{
+		var userLinks = profileLink.parentNode.parentNode;
+		// Add a link to hide/unhide the user's avatar
+		if (!gotPrefs.hideCustomTitles)
+		{
+			let avLink = doc.createElement("li");
+			avLink.setAttribute('style', '-moz-user-select: none;');
+			avLink.style.cssFloat = 'right';
+			avLink.style.marginLeft = '4px';
+			let avAnch = doc.createElement("a");
+			avAnch.href = "#";
+			avAnch.title = "Toggle displaying this poster's avatar.";
+			if (DB.isAvatarHidden(posterId))
+				avAnch.textContent = "Show Avatar";
+			else
+				avAnch.textContent = "Hide Avatar";
+
+			avAnch.addEventListener("click", ShowThreadHandler.clickToggleAvatar.bind(null, posterId, posterName), false);
+			avLink.appendChild(avAnch);
+			userLinks.appendChild(doc.createTextNode(" "));
+			userLinks.appendChild(avLink);
+		}
+
+		// Add user coloring/note links
+		// Note: this is added after, but appears to the left thanks to CSS floats.
+		if (gotPrefs.highlightUsernames)
+		{
+			var li = doc.createElement("li");
+			li.setAttribute('style', '-moz-user-select: none;');
+			li.style.cssFloat = 'right';
+			li.style.marginLeft = '4px';
+			var a = doc.createElement("a");
+			a.href = "#";
+			a.textContent = "Add Coloring/Note";
+			a.title = "Add coloring and/or a note for this poster.";
+			a.addEventListener("click", ShowThreadHandler.addHighlightedUser.bind(null,posterId,posterName), true);
+			li.appendChild(a);
+			userLinks.appendChild(doc.createTextNode(" "));
+			userLinks.appendChild(li);
+		}
+
+		// Add a space for the Rap Sheet link added afterwards by forum JS:
+		userLinks.appendChild(doc.createTextNode(" "));
 	},
 
 };

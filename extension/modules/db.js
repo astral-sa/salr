@@ -619,7 +619,7 @@ let DB = exports.DB =
 		{
 			// We already know it's a mod
 			// ...but we might have to update the username to reflect a name change.
-			if (DB.userDataCache[userid].username != username)
+			if (DB.userDataCache[userid].username !== username)
 			{
 				DB.setUserName(userid, username);
 			}
@@ -664,7 +664,7 @@ let DB = exports.DB =
 		{
 			// We already know it's an admin
 			// ...but we might have to update the username to reflect a name change.
-			if (DB.userDataCache[userid].username != username)
+			if (DB.userDataCache[userid].username !== username)
 			{
 				DB.setUserName(userid, username);
 			}
@@ -846,7 +846,7 @@ let DB = exports.DB =
 	{
 		if (DB.userExists(userid))
 		{
-			if (DB.userDataCache[userid].color != color)
+			if (DB.userDataCache[userid].color !== color)
 			{
 				var statement = DB.database.createStatement("UPDATE `userdata` SET `color` = ?1 WHERE `userid` = ?2");
 				statement.bindStringParameter(0, color);
@@ -877,7 +877,7 @@ let DB = exports.DB =
 	{
 		if (DB.userExists(userid))
 		{
-			if (DB.userDataCache[userid].background != color)
+			if (DB.userDataCache[userid].background !== color)
 			{
 				var statement = DB.database.createStatement("UPDATE `userdata` SET `background` = ?1 WHERE `userid` = ?2");
 				statement.bindStringParameter(0, color);
@@ -941,7 +941,7 @@ let DB = exports.DB =
 	setThreadTitle: function(threadid, title)
 	{
 		var result = false;
-		if (DB.threadExists(threadid) && DB.threadDataCache[threadid].title != title)
+		if (DB.threadExists(threadid) && DB.threadDataCache[threadid].title !== title)
 		{
 			DB.threadDataCache[threadid].title = title;
 			var statement = DB.database.createStatement("UPDATE `threaddata` SET `title` = ?1 WHERE `id` = ?2");

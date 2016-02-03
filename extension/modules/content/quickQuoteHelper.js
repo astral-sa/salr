@@ -21,12 +21,36 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	 * @type {boolean}
 	 */
 	needRegReplyFill: false,
+
+	/**
+	 * Converts quote and edit buttons into quick buttons.
+	 * @param {HTMLDocument} doc                      Document in which to convert buttons.
+	 * @param {HTMLElement}  post                     Node snapshot of current post's table element.
+	 * @param {Object}       threadFlags              Various thread-related flags:
+	 * @param {number}       threadFlags.forumid      Forum ID.
+	 * @param {number}       threadFlags.threadid     Thread ID.
+	 * @param {boolean}      threadFlags.threadClosed Whether the thread is closed.
+	 */
+	makeQuickQuoteEditButtons: function(doc, post, threadFlags)
+	{
+		let editbutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=editpost')]");
+		if (editbutton)
+		{
+			QuickQuoteHelper.turnIntoQuickButton(doc, editbutton, threadFlags.forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, threadFlags.forumid, threadFlags.threadid), true);
+		}
+		let quotebutton = PageUtils.selectSingleNode(doc, post, "tbody//ul[contains(@class,'postbuttons')]//li//a[contains(@href,'action=newreply')]");
+		if (quotebutton)
+		{
+			QuickQuoteHelper.turnIntoQuickButton(doc, quotebutton, threadFlags.forumid).addEventListener("click", QuickQuoteHelper.quickButtonClicked.bind(null, threadFlags.forumid, threadFlags.threadid), true);
+		}
+	},
+
 	/**
 	 * Converts post and reply buttons into quick buttons.
-	 * @param {Element} doc          Document in which to convert buttons.
-	 * @param {number}  forumid      Forum ID.
-	 * @param {number}  threadid     Thread ID.
-	 * @param {boolean} threadClosed Whether the thread is closed.
+	 * @param {HTMLDocument} doc          Document in which to convert buttons.
+	 * @param {number}       forumid      Forum ID.
+	 * @param {number}       threadid     Thread ID.
+	 * @param {boolean}      threadClosed Whether the thread is closed.
 	 */
 	makeQuickPostReplyButtons: function(doc, forumid, threadid, threadClosed)
 	{
