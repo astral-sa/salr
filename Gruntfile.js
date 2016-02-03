@@ -88,7 +88,10 @@ module.exports = function(grunt)
 		},
 		'github-release': {
 			options: {
-				auth: grunt.file.readJSON('../gh-cred.json'),
+				auth: {
+					user: '<%= ghcred.user %>',
+					password: '<%= ghcred.password %>',
+				},
 				repository: 'astral-sa/salr',
 			},
 			rel: {
@@ -117,8 +120,12 @@ module.exports = function(grunt)
 	grunt.registerTask('default', 'build');
 	grunt.registerTask('build_noclean', ['clean:main', 'copy:main', 'saveRevision', 'sed', 'compress', 'copy:update']);
 	grunt.registerTask('build', ['build_noclean', 'clean:src']);
-	grunt.registerTask('rel', ['github-release:rel']);
-	grunt.registerTask('pre', ['github-release:pre']);
+
+	if (grunt.file.exists('../gh-cred.json'))
+		grunt.config('ghcred', grunt.file.readJSON('../gh-cred.json'));
+
+	grunt.registerTask('rel', 'github-release:rel');
+	grunt.registerTask('pre', 'github-release:pre');
 
 	grunt.registerTask('saveRevision', function() {
 		grunt.event.once('git-describe', function (rev) {
