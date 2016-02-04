@@ -10,11 +10,11 @@ let {Gestures} = require("content/gestures");
 let Navigation = exports.Navigation = 
 {
 	/**
-	 * Sets up navigation for a thread.
-	 * @param {HTMLDocument} doc        Document element of thread to set up navigation for.
-	 * @param {boolean}      singlePost Whether we're in single post view.
+	 * Sets up navigation for a thread or forum.
+	 * @param {HTMLDocument} doc          Document element to set up navigation for.
+	 * @param {boolean}      [singlePost] Whether we're in single post view.
 	 */
-	setupThreadNavigation: function(doc, singlePost)
+	setupTFNavigation: function(doc, singlePost)
 	{
 		let pages = PageUtils.getPagesForDoc(doc);
 		doc.__SALR_curPage = pages.current;

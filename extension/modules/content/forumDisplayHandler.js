@@ -1,16 +1,12 @@
-/*
+/**
+ * @fileoverview Handler for forum thread lists. 
+ */
 
-	Handler for forum thread lists.
-
-*/
-
-// Called from old Overlay
 let {DB} = require("content/dbHelper");
 let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
 let {MenuHelper} = require("content/menuHelper");
 let {Navigation} = require("content/navigation");
-let {Gestures} = require("content/gestures");
 let {ThreadListHandler} = require("content/threadListHandler");
 let {Styles} = require("content/stylesHelper");
 let {AdvancedThreadFiltering} = require("content/advancedThreadFiltering");
@@ -63,55 +59,7 @@ let ForumDisplayHandler = exports.ForumDisplayHandler =
 			DB.beginTransaction();
 		}
 
-		var pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-		var numPages;
-		var curPage;
-		if (pageList)
-		{
-			if (pageList.length > 1)
-			{
-				pageList = pageList[pageList.length-1];
-			}
-			else
-			{
-				pageList = pageList[0];
-			}
-			if (pageList.childNodes.length > 1) // Are there pages
-			{
-				numPages = pageList.lastChild.textContent.match(/(\d+)/);
-				curPage = PageUtils.selectSingleNode(doc, pageList, "//OPTION[@selected='selected']");
-				// Suppress a page-load error - possibly unnecessary with revised logic
-				if (!numPages)
-					return;
-				numPages = parseInt(numPages[1], 10);
-				curPage = parseInt(curPage.textContent, 10);
-			}
-			else
-			{
-				numPages = 1;
-				curPage = 1;
-			}
-		}
-
-		doc.__SALR_curPage = curPage;
-		doc.__SALR_maxPage = numPages;
-
-		let pages = {'total': numPages, 'current': curPage};
-		// Insert the forums paginator
-		if (Prefs.getPref("enableForumNavigator"))
-		{
-			Navigation.addPagination(doc, pages);
-		}
-		if (Prefs.getPref("gestureEnable"))
-		{
-			Gestures.addGestureListeners(doc, pages);
-		}
-
-		// Turn on keyboard navigation
-		if (Prefs.getPref('quickPostJump'))
-		{
-			doc.addEventListener('keypress', Navigation.quickPostJump, false);
-		}
+		Navigation.setupTFNavigation(doc);
 
 		// Replace post button
 		if (Prefs.getPref("useQuickQuote") && !flags.inGasChamber)

@@ -60,7 +60,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			MenuHelper.grabForumList(doc);
 		}
 
-		Navigation.setupThreadNavigation(doc, threadFlags.singlePost);
+		Navigation.setupTFNavigation(doc, threadFlags.singlePost);
 
 		ShowThreadHandler.updatePostsPerPage(doc);
 

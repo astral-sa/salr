@@ -282,19 +282,19 @@ let PageUtils = exports.PageUtils =
 	 */
 	getPagesForDoc: function(doc)
 	{
-		let pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pages')]");
-		pageList = pageList[pageList.length-1];
+		// For some reason the last child of pages top and pages bottom is different in threads
+		let pageList = doc.querySelector("div.pages.bottom");
 		// Handle no page list
 		if (!pageList)
 			return {'total': 1, 'current': 1};
 		// Check if there's only one page
 		if (pageList.childNodes.length <= 1)
 			return {'total': 1, 'current': 1};
-		if (!pageList.lastChild || !pageList.lastChild.innerHTML)
+		if (!pageList.lastChild || !pageList.lastChild.textContent)
 			return {'total': 1, 'current': 1};
-		let numPages = pageList.lastChild.innerHTML.match(/(\d+)/);
+		let numPages = pageList.lastChild.textContent.match(/(\d+)/);
 		let curPage = PageUtils.selectSingleNode(doc, pageList, ".//OPTION[@selected='selected']");
-		return {'total': parseInt(numPages[1], 10), 'current': parseInt(curPage.innerHTML, 10)};
+		return {'total': parseInt(numPages[1], 10), 'current': parseInt(curPage.textContent, 10)};
 	},
 
 	/**
