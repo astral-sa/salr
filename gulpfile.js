@@ -79,6 +79,14 @@ gulp.task('bump:pre', () => {
 	return bumpVersion('prerelease');
 });
 
+gulp.task('bump:preminor', () => {
+	return bumpVersion('preminor');
+});
+
+gulp.task('bump:premajor', () => {
+	return bumpVersion('preminor');
+});
+
 gulp.task('changelog', function () {
 	return gulp.src('CHANGELOG.md', {
 		buffer: false
