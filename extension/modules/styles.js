@@ -1,9 +1,6 @@
-/*
-
-	(Most) everything to do with styling
-	May need to eventually break this up into chrome/content modules.
-
-*/
+/**
+ * @fileoverview (Most) everything to do with styling
+ */
 
 let {DB} = require("db");
 let {Prefs} = require("prefs");
@@ -309,6 +306,12 @@ let Styles = exports.Styles =
 						'#forum tr.thread.category0 td.views, #forum tr.thread.category0 td.lastpost { background-color:' +
 						Prefs.getPref('readWithNewDark') +
 						'; }\n';
+
+//tan completely unread - forums only
+			CSSFile += '#content > #forum tr.thread.category0 td.title, #content > #forum tr.thread.category0 td.star, #content > #forum tr.thread.category0 td.replies, #content > #forum tr.thread.category0 td.rating, #content > #forum tr.thread.category0 td.button_remove { background-color:#ffe1b7; }\n';
+			CSSFile += '#content > #forum tr.thread.category0 td.icon, #content > #forum tr.thread.category0 td.icon2, #content > #forum tr.thread.category0 td.author,' +
+						'#content > #forum tr.thread.category0 td.views, #content > #forum tr.thread.category0 td.lastpost { background-color:#fad6a3; }\n';
+
 //red completely unread
 			CSSFile += '#forum tr.thread.category1 td.title, #forum tr.thread.category1 td.star, #forum tr.thread.category1 td.replies, #forum tr.thread.category1 td.rating, #forum tr.thread.category1 td.button_remove { background-color:#f2dcdc; }\n' +
 						'#forum tr.thread.category1 td.icon, #forum tr.thread.category1 td.icon2, #forum tr.thread.category1 td.author,' +
@@ -326,6 +329,16 @@ let Styles = exports.Styles =
 						'#forum tr.thread.seen td.views, #forum tr.thread.seen td.lastpost { background-color:' +
 						Prefs.getPref('readDark') +
 						'; }\n';
+
+// tan with no new posts (forums only)
+			CSSFile += '#content > #forum tr.thread.category0.seen td.title, #content > #forum tr.thread.category0.seen td.star, #content > #forum tr.thread.category0.seen td.replies, #content > #forum tr.thread.category0.seen td.rating, #content > #forum tr.thread.category0.seen td.button_remove { background-color:' +
+						Prefs.getPref('readLight') +
+						'; }\n' +
+						'#content > #forum tr.thread.category0.seen td.icon, #content > #forum tr.thread.category0.seen td.icon2, #content > #forum tr.thread.category0.seen td.author,' +
+						'#content > #forum tr.thread.category0.seen td.views, #content > #forum tr.thread.category0.seen td.lastpost { background-color:' +
+						Prefs.getPref('readDark') +
+						'; }\n';
+
 // generic new posts
 			CSSFile += '#forum tr.thread.seen.newposts td.title, #forum tr.thread.seen.newposts td.star, #forum tr.thread.seen.newposts td.replies, #forum tr.thread.seen.newposts td.rating, #forum tr.thread.seen.newposts td.button_remove { background-color:' +
 						Prefs.getPref('readWithNewLight') +
@@ -335,6 +348,10 @@ let Styles = exports.Styles =
 						Prefs.getPref('readWithNewDark') +
 						'; }\n';
 
+//tan with new - so it doesn't get overwritten by generic new (forums only)
+			CSSFile += '#content > #forum tr.thread.category0.newposts td.title, #content > #forum tr.thread.category0.newposts td.star, #content > #forum tr.thread.category0.newposts td.replies, #content > #forum tr.thread.category0.newposts td.rating, #content > #forum tr.thread.category0.newposts td.button_remove { background-color:#ffe1b7; }\n' +
+						'#content > #forum tr.thread.category0.newposts td.icon, #content > #forum tr.thread.category0.newposts td.icon2, #content > #forum tr.thread.category0.newposts td.author,' +
+						'#content > #forum tr.thread.category0.newposts td.views, #content > #forum tr.thread.category0.newposts td.lastpost { background-color:#fad6a3; }\n';
 //red with new - so it doesn't get overwritten by generic new
 			CSSFile += '#forum tr.thread.category1.newposts td.title, #forum tr.thread.category1.newposts td.star, #forum tr.thread.category1.newposts td.replies, #forum tr.thread.category1.newposts td.rating, #forum tr.thread.category1.newposts td.button_remove { background-color:#f2dcdc; }\n' +
 						'#forum tr.thread.category1.newposts td.icon, #forum tr.thread.category1.newposts td.icon2, #forum tr.thread.category1.newposts td.author,' +
