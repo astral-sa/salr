@@ -9,5 +9,5 @@ notifications:
     on_success: always # [always|never|change] default: always
     on_failure: always # [always|never|change] default: always
 before_script:
-  - npm install -g grunt-cli
-script: npm test && grunt build
+  - npm install -g gulp
+script: npm test && gulp build
