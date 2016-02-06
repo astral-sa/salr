@@ -46,10 +46,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		// Add our ShowThread CSS
 		PageUtils.insertDynamicCSS(doc, Styles.generateDynamicShowThreadCSS(forumid, threadid, threadFlags.singlePost));
 
-		doc.body.className += " salastread_forum" + forumid;
-		// used by the context menu to allow options for this thread
-		doc.body.className += " salastread_thread_" + threadid;
-
 		// Grab the thread title
 		// Note: Only updates if the thread's already in the cache.
 		DB.setThreadTitle(threadid, PageUtils.getCleanPageTitle(doc));

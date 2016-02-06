@@ -188,9 +188,11 @@ let PageUtils = exports.PageUtils =
 		return false;
 	},
 
-	// Try to figure out the current thread we're in
-	// @param: (document) The current page being viewed
-	// @return: (int) Thread ID, or (bool) false if unable to determine
+	/**
+	 * Tries to find the thread ID of a (thread) document.
+	 * @param {HTMLDocument} doc Document to check.
+	 * @return {(number|boolean)} Thread ID, or false if unable to determine.
+	 */
 	getThreadId: function(doc)
 	{
 		let tid;
@@ -253,8 +255,8 @@ let PageUtils = exports.PageUtils =
 		if (inhash)
 		{
 			tid = PageUtils.validateId(inhash[1]);
-				if (tid)
-					return tid;
+			if (tid)
+				return tid;
 		}
 
 		return false;

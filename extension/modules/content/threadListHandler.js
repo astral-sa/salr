@@ -150,9 +150,6 @@ let ThreadListHandler = exports.ThreadListHandler =
 				lastLink.textContent += ' (' + lastPageNum + ')';
 			}
 
-			// So right click star/ignore works
-			thread.className += " salastread_thread_" + threadId;
-
 			// Is this icon ignored?
 			threadIconBox = PageUtils.selectSingleNode(doc, thread, "TD[contains(@class,'icon')]");
 			if (flags && forumid && gotPrefs.advancedThreadFiltering && !flags.inArchives && !flags.inDump && !flags.inUserCP && threadIconBox.firstChild.firstChild.src.search(/posticons\/(.*)/i) > -1)

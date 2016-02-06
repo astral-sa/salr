@@ -4,6 +4,7 @@
 
 let {DB} = require("db");
 let {Prefs} = require("prefs");
+let {PageUtils} = require("pageUtils");
 
 let ContextMenu = exports.ContextMenu = 
 {
@@ -169,12 +170,19 @@ let ContextMenu = exports.ContextMenu =
 	 */
 	contextVis: function(popup)
 	{
-		// e10s - CPOW
 		let document = popup.ownerDocument;
 		let window = document.defaultView;
-		let target = window.gContextMenu.target;
 
-		let threadid = ContextMenu.getThreadIdFromElementOrAncestor(target);
+		let target = window.gContextMenu.target;
+		let pageName = window.gContextMenuContentData.documentURIObject.path.match(/^\/(\w+)\.php/i);
+		if (!pageName)
+			return;
+
+		let threadid;
+		if (pageName[1] === "showthread")
+			threadid = PageUtils.getThreadId(target.ownerDocument);
+		else
+			threadid = ContextMenu.getThreadIdFromElementOrAncestor(target);
 		if (!threadid)
 			return;
 
@@ -183,20 +191,16 @@ let ContextMenu = exports.ContextMenu =
 		ignoreThread.setAttribute('label','Ignore This Thread (' + threadid + ')');
 		let starThread = document.getElementById("salastread-context-starthread");
 		starThread.data = threadid;
-		starThread.target = target;
 		starThread.setAttribute('label',(DB.isThreadStarred(threadid) ? 'Unstar' : 'Star') + ' This Thread (' + threadid + ')');
 		let unreadThread = document.getElementById("salastread-context-unreadthread");
 		unreadThread.data = threadid;
 		unreadThread.setAttribute('label','Mark This Thread Unread (' + threadid + ')');
-		let pageName = target.ownerDocument.location.pathname.match(/^\/(\w+)\.php/i);
-		if (!pageName)
-			return;
 
 		ContextMenu.showContextMenuItems(document, (pageName[1] === "showthread") ? true : false);
 	},
 
 	/**
-	 * Checks for a thread ID class in an element and its ancestors.
+	 * Checks for a thread ID element ID in an element and its ancestors.
 	 * @param {Element} element Target element to check.
 	 * @return {boolean|string} Returns false if no thread ID, else thread ID as string.
 	 */
@@ -205,7 +209,7 @@ let ContextMenu = exports.ContextMenu =
 		let threadid = false;
 		while (element)
 		{
-			threadid = ContextMenu.getThreadIdFromClass(element);
+			threadid = ContextMenu.getThreadIdFromId(element);
 			if (!threadid)
 			{
 				element = element.parentNode;
@@ -217,16 +221,16 @@ let ContextMenu = exports.ContextMenu =
 	},
 
 	/**
-	 * Examines an element's class to determine if it has a thread ID.
-	 * @param {Element} element Target element to check.
+	 * Examines an element's id to determine if it has a thread ID.
+	 * @param {HTMLElement} element Target element to check.
 	 * @return {boolean|string} Returns false if no thread ID, else thread ID as string.
 	 */
-	getThreadIdFromClass: function(element)
+	getThreadIdFromId: function(element)
 	{
-		if (!element.className)
+		if (!element.id)
 			return false;
 
-		let tidmatch = element.className.match(/salastread_thread_(\d+)/);
+		let tidmatch = element.id.match(/thread(\d+)/);
 		if (!tidmatch)
 			return false;
 
