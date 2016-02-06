@@ -836,7 +836,6 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			posterColor = gotPrefs.opColor;
 			posterBG = gotPrefs.opBackground;
 			posterNote = gotPrefs.opSubText;
-			post.className += " salrPostByOP";
 		}
 
 		// Check to see if there's a mod or admin star

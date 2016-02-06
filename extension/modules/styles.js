@@ -95,7 +95,7 @@ let Styles = exports.Styles =
 		// Op/Mods view
 		if (DB.isThreadOPView(threadid) && !singlePost)
 		{
-			CSSFile += '#thread table.post:not(.salrPostByOP):not(.salrPostByMod):not(.salrPostByAdmin):not(.salrPostOfSelf) { display: none !important; }\n';
+			CSSFile += '#thread table.post:not(.op):not(.salrPostByMod):not(.salrPostByAdmin):not(.salrPostOfSelf) { display: none !important; }\n';
 		}
 		if (!Prefs.getPref('dontHighlightPosts'))
 		{
