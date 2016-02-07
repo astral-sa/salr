@@ -277,7 +277,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 				// First color the Author column
 				if (threadOPId)
 				{
-					ThreadListHandler.colorUsernameBox(threadOPId, threadAuthorBox, gotPrefs);
+					ThreadListHandler.colorUsernameBox(threadOPId, threadAuthorBox);
 				}
 
 				// Then color the Killed By column
@@ -295,7 +295,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 
 				if (lastPostId)
 				{
-					ThreadListHandler.colorUsernameBox(lastPostId, threadLastPostBox, gotPrefs);
+					ThreadListHandler.colorUsernameBox(lastPostId, threadLastPostBox);
 				}
 			}
 		}
@@ -425,47 +425,29 @@ let ThreadListHandler = exports.ThreadListHandler =
 	 * Applies user highlighting settings to a specified user in a specified TD.
 	 * @param {number}      userId     ID of user to color.
 	 * @param {HTMLElement} userBox    Node snapshot of TD with user name to color.
-	 * @param {Object}      colorPrefs Color settings from preferences.
 	 */
-	colorUsernameBox: function(userId, userBox, colorPrefs)
+	colorUsernameBox: function(userId, userBox)
 	{
-		let posterColor = false;
-		let posterBG = false;
-
-		if (DB.isMod(userId))
-		{
-			posterColor = colorPrefs.modColor;
-			posterBG = colorPrefs.modBackground;
-		}
-		if (DB.isAdmin(userId))
-		{
-			posterColor = colorPrefs.adminColor;
-			posterBG = colorPrefs.adminBackground;
-		}
+		let userRole = DB.getUserRole(userId);
+		if (userRole === 'admin')
+			userBox.classList.add('salradmin');
+		else if (userRole === 'mod')
+			userBox.classList.add('salrmod');
 
 		let userColoring = DB.isUserIdColored(userId);
 		if (userColoring)
 		{
 			if (userColoring.color && userColoring.color !== "0")
 			{
-				posterColor = userColoring.color;
+				userBox.classList.add('salrcustomhighlight');
+				let userLink = userBox.getElementsByTagName("a")[0];
+				// Important to override mod/admin colors.
+				userLink.style.setProperty('color', userColoring.color, 'important');
 			}
 			if (userColoring.background && userColoring.background !== "0")
 			{
-				posterBG = userColoring.background;
-			}
-		}
-
-		if (posterBG !== false && posterBG !== "0")
-		{
-			userBox.style.backgroundColor = posterBG;
-		}
-		if (posterColor !== false && posterColor !== "0")
-		{
-			userBox.getElementsByTagName("a")[0].style.color = posterColor;
-			if (!colorPrefs.dontBoldNames)
-			{
-				userBox.getElementsByTagName("a")[0].style.fontWeight = "bold";
+				// Important to override mod/admin colors.
+				userBox.style.setProperty('background-color', userColoring.background, 'important');
 			}
 		}
 	},

@@ -766,6 +766,24 @@ let DB = exports.DB =
 		return (DB.userExists(userid) && DB.userDataCache[userid].admin);
 	},
 
+	/**
+	 * Gets the mod/admin status of a user. Used in Threadlists.
+	 * @param {number} userid ID to check
+	 * @return {string} User role.
+	 */
+	getUserRole: function(userid)
+	{
+		if (DB.userExists(userid))
+		{
+			// For some reason these are mutually exclusive booleans:
+			if (DB.userDataCache[userid].admin)
+				return 'admin';
+			if (DB.userDataCache[userid].mod)
+				return 'mod';
+		}
+		return 'user';
+	},
+
 	// Checks if a user id is flagged to be ignored
 	// @param: (int) User ID
 	// @return: (boolean) Ignored or not
@@ -790,6 +808,7 @@ let DB = exports.DB =
 		var user = false;
 		if (DB.userExists(userid))
 		{
+// Do we need to add checks to see if there's coloring specified?
 			user = {};
 			user.userid = userid;
 			user.username = DB.userDataCache[userid].username;
@@ -1275,6 +1294,7 @@ let DB = exports.DB =
 		Utils.addFrameMessageListener("salastread:ToggleThreadIgnore", DB.toggleThreadIgnore);
 		Utils.addFrameMessageListener("salastread:ToggleThreadStar", DB.toggleThreadStar);
 		Utils.addFrameMessageListener("salastread:GetThreadDBFlags", DB.getThreadDBFlags);
+		Utils.addFrameMessageListener("salastread:GetUserRole", DB.getUserRole);
 		// Temporary wrappers to request transaction for forumdisplay
 		// will be removed upon conversion to SQLite.jsm
 		Utils.addFrameMessageListener("salastread:RequestTransactionState", () => DB.database.transactionInProgress);

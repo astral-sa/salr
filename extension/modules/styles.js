@@ -286,6 +286,30 @@ let Styles = exports.Styles =
 							'}\n';
 			}
 		}
+		if (Prefs.getPref('highlightUsernames'))
+		{
+			// These classes are added by SALR for username coloring in thread lists
+			let modColor = Prefs.getPref('modColor');
+			if (modColor !== "0")
+				CSSFile += '.salrmod a { color: ' + modColor + ' !important; }\n';
+			let modBackground = Prefs.getPref('modBackground');
+			if (modBackground !== "0")
+				CSSFile += '.salrmod { background-color: ' + modBackground + ' !important; }\n';
+
+			let adminColor = Prefs.getPref('adminColor');
+			if (adminColor !== "0")
+				CSSFile += '.salradmin a { color: ' + adminColor + ' !important; }\n';
+			let adminBackground = Prefs.getPref('adminBackground');
+			if (adminBackground !== "0")
+				CSSFile += '.salradmin { background-color: ' + adminBackground + ' !important; }\n';
+
+			// Note - this pref affects thread lists and misc.php, but we're only covering
+			//          thread lists here.
+			if (!Prefs.getPref('dontBoldNames'))
+			{
+				CSSFile += '.salrmod a, .salradmin a, .salrcustomhighlight a { font-weight: bold; }\n';
+			}
+		}
 		if (!Prefs.getPref('dontHighlightThreads'))
 		{
 // gray threads
