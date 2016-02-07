@@ -114,6 +114,11 @@ let DB = exports.DB = // eslint-disable-line no-unused-vars
 		sendAsyncMessage("salastread:ToggleThreadStar", threadid);
 	},
 
+	getThreadDBFlags: function(threadid)
+	{
+		return sendSyncMessage("salastread:GetThreadDBFlags", threadid);
+	},
+
 	// Temporary wrappers to request transaction for forumdisplay
 	// will be removed upon conversion to SQLite.jsm
 	requestTransactionState: function()

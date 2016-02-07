@@ -985,6 +985,24 @@ let DB = exports.DB =
 		}
 	},
 
+	/**
+	 * Get various flags about a thread for thread lists.
+	 * @param {number} threadid	ID of thread to check.
+	 * @return {Object} Object with thread flags from the DB.
+	 */
+	getThreadDBFlags: function(threadid)
+	{
+		var threadFlags = false;
+		if (DB.threadExists(threadid))
+		{
+			threadFlags = {};
+			threadFlags.ignore = DB.threadDataCache[threadid].ignore;
+			threadFlags.posted = DB.threadDataCache[threadid].posted;
+			threadFlags.star = DB.threadDataCache[threadid].star;
+		}
+		return threadFlags;
+	},
+
 	// Check to see if the thread is starred
 	// @param: (int) Thread ID
 	// @return: (bool) thread's star status
@@ -1256,6 +1274,7 @@ let DB = exports.DB =
 		Utils.addFrameMessageListener("salastread:IsThreadStarred", DB.isThreadStarred);
 		Utils.addFrameMessageListener("salastread:ToggleThreadIgnore", DB.toggleThreadIgnore);
 		Utils.addFrameMessageListener("salastread:ToggleThreadStar", DB.toggleThreadStar);
+		Utils.addFrameMessageListener("salastread:GetThreadDBFlags", DB.getThreadDBFlags);
 		// Temporary wrappers to request transaction for forumdisplay
 		// will be removed upon conversion to SQLite.jsm
 		Utils.addFrameMessageListener("salastread:RequestTransactionState", () => DB.database.transactionInProgress);

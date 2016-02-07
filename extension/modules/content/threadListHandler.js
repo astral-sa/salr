@@ -99,7 +99,11 @@ let ThreadListHandler = exports.ThreadListHandler =
 				continue;
 			threadId = parseInt(threadTitleLink.href.match(/threadid=(\d+)/i)[1], 10);
 			threadTitle = threadTitleLink.textContent;
-			if (DB.isThreadIgnored(threadId))
+			/**
+			 * @type {{ignore: boolean, posted: boolean, star: boolean}} threadDBFlags Flags for thread from DB.
+			 */
+			let threadDBFlags = DB.getThreadDBFlags(threadId);
+			if (threadDBFlags.ignore)
 			{
 				// If thread is ignored might as well remove it and stop now
 				thread.parentNode.removeChild(thread);
@@ -183,7 +187,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 					thread.className += ' moveup';
 				}
 
-				if (DB.didIPostHere(threadId))
+				if (threadDBFlags.posted)
 				{
 					threadRepliesBox.className += ' salrPostedIn';
 				}
@@ -261,7 +265,7 @@ let ThreadListHandler = exports.ThreadListHandler =
 			// Sort the threads, new stickies, then stickies, then new threads, then threads
 			ThreadListHandler.sortThread(doc, thread, threadSortingInfo, flags.inUserCP);
 
-			if (DB.isThreadStarred(threadId))
+			if (threadDBFlags.star)
 			{
 				threadTitleBox.className += ' starred';
 			}
