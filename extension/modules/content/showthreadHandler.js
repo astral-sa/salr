@@ -14,6 +14,10 @@ let {QuickQuoteHelper} = require("content/quickQuoteHelper");
 
 let ShowThreadHandler = exports.ShowThreadHandler =
 {
+	/**
+	 * Handler for thread loads.
+	 * @param {HTMLDocument} doc Thread document.
+	 */
 	handleShowThread: function(doc)
 	{
 		// If there is no thread div then abort since something's not right
@@ -93,7 +97,9 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			'enableVideoEmbedder',
 			// for processImages:
 			'thumbnailAllImages',
-			'convertGifToVideo'
+			'convertGifToVideo',
+			// for stopping gif videos:
+			'dontAutoplayGifVideos'
 		];
 		let gotPrefs = Prefs.getMultiplePrefs(prefsToGet);
 
@@ -222,6 +228,12 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			}
 			ShowThreadHandler.convertSpecialLinks(postbody, doc, gotPrefs);
 			ShowThreadHandler.processImages(postbody, doc, gotPrefs);
+		}
+
+		if (gotPrefs.dontAutoplayGifVideos)
+		{
+			let mutationObs = ShowThreadHandler.setupMutationObserver(doc.getElementById('thread'));
+			content.setTimeout(() => ShowThreadHandler.stopObservingMutations(mutationObs), 10000);
 		}
 
 		if (gotPrefs.reanchorThreadOnLoad)
@@ -1015,6 +1027,63 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 		// Add a space for the Rap Sheet link added afterwards by forum JS:
 		userLinks.appendChild(doc.createTextNode(" "));
+	},
+
+	/**
+	 * Sorta hacky workaround to stop videos embedded by forum JS from autoplaying.
+	 * @param {HTMLElement} target Thread div to observe.
+	 * @return {MutationObserver} Our observer.
+	 */
+	setupMutationObserver: function(target)
+	{
+		if (!target)
+			return;
+		var MutationObserver = content.MutationObserver;
+		var observer = new MutationObserver(ShowThreadHandler.checkMutations);
+		// configuration of the observer:
+		var config = { childList: true, subtree: true };
+
+		// pass in the target node, as well as the observer options
+		observer.observe(target, config);
+		return observer;
+	},
+
+	/**
+	 * Look for mutations that add videos; stop them!
+	 * @param {MutationRecord[]} mutations Array of mutations to check.
+	 */
+	checkMutations: function(mutations)
+	{
+		/** @type {HTMLElement} */
+		var newNode;
+		/** @type {HTMLVideoElement} */
+		var newVideo;
+		mutations.forEach(function(mutation) {
+			if (mutation.type !== "childList")
+				return;
+			for (let i = 0; i < mutation.addedNodes.length; i++)
+			{
+				newNode = mutation.addedNodes[i];
+				if (!newNode.classList)
+					continue;
+				if (newNode.classList.contains('gifv_video') || newNode.classList.contains('gfy_video'))
+				{
+					newVideo = newNode.firstChild;
+					newVideo.autoplay = false;
+					newVideo.preload = 'none';
+					newVideo.controls = true;
+				}
+			}
+		});
+	},
+
+	/**
+	 * Cleanup function to stop observing DOM Mutations
+	 * @param {MutationObserver} observer Our observer.
+	 */
+	stopObservingMutations: function(observer)
+	{
+		observer.disconnect();
 	},
 
 };
