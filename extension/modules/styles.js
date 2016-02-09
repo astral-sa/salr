@@ -17,7 +17,7 @@ let Styles = exports.Styles =
 		Styles.updateStyles();
 		// ...and remove it upon shutdown
 		onShutdown.add(function() { Styles.unloadStyles(); });
-		Utils.addFrameMessageListener("salastread:GenDTLCSS", genDTLCSSWrapper);
+		Utils.addFrameMessageListener("salastread:GenDTLCSS", Styles.generateDynamicThreadListCSS);
 		Utils.addFrameMessageListener("salastread:GenDSTCSS", genDSTCSSWrapper);
 	},
 
@@ -95,7 +95,7 @@ let Styles = exports.Styles =
 		// Op/Mods view
 		if (DB.isThreadOPView(threadid) && !singlePost)
 		{
-			CSSFile += '#thread table.post:not(.op):not(.salrPostByMod):not(.salrPostByAdmin):not(.salrPostOfSelf) { display: none !important; }\n';
+			CSSFile += '#thread table.post:not(.salrPostByOP):not(.salrPostByMod):not(.salrPostByAdmin):not(.salrPostOfSelf) { display: none !important; }\n';
 		}
 		if (!Prefs.getPref('dontHighlightPosts'))
 		{
@@ -482,6 +482,33 @@ let Styles = exports.Styles =
 		// Style user notes
 		CSSFile += '.salrUserNote { font-size: 80%; font-weight: bold; margin: 0; padding: 0; }\n';
 
+		// Username coloring
+		if (Prefs.getPref('highlightUsernames'))
+		{
+			// Note: The foreground colors override YOSPOS but not FYAD/byob.
+			let opColor = Prefs.getPref('opColor');
+			if (opColor !== "0")
+				CSSFile += 'dt.author.op, dt.author.op + p.salrUserNote { color: ' + opColor + ' !important; }\n';
+			let opBackground = Prefs.getPref('opBackground');
+			if (opBackground !== "0")
+				CSSFile += 'table.salrPostByOp td { background-color: ' + opBackground + ' !important; }\n';
+
+			let modColor = Prefs.getPref('modColor');
+			if (modColor !== "0")
+				CSSFile += 'dt.author.role-mod, dt.author.role-mod + p.salrUserNote { color: ' + modColor + ' !important; }\n';
+			let modBackground = Prefs.getPref('modBackground');
+			if (modBackground !== "0")
+				CSSFile += 'table.salrPostByMod td { background-color: ' + modBackground + ' !important; }\n';
+
+			let adminColor = Prefs.getPref('adminColor');
+			if (adminColor !== "0")
+				CSSFile += 'dt.author.role-admin, dt.author.role-admin + p.salrUserNote { color: ' + adminColor + ' !important; }\n';
+			let adminBackground = Prefs.getPref('adminBackground');
+			if (adminBackground !== "0")
+				CSSFile += 'table.salrPostByAdmin td { background-color: ' + adminBackground + ' !important; }\n';
+
+		}
+
 		// Shrink posts by ignored users (and restore gradients)
 		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n' +
 					'#thread table.ignored tr.altcolor1 td.userinfo, #thread table.ignored tr.altcolor1 td.postbody { background-image: url("https://i.somethingawful.com/images/forum-bg-alt.png"); background-repeat: repeat-x; background-position: center bottom; padding-bottom: 6px;}\n' +
@@ -536,11 +563,6 @@ let Styles = exports.Styles =
 	},
 
 };
-
-function genDTLCSSWrapper(forumid)
-{
-	return Styles.generateDynamicThreadListCSS(forumid);
-}
 
 function genDSTCSSWrapper({forumid, threadid, singlePost})
 {

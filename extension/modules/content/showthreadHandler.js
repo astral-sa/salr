@@ -144,7 +144,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 					{
 						posterId = profileLink.href.match(/userid=(\d+)/i)[1];
 						if (posterId && DB.isUserIgnored(posterId))
-							post.className += ' salrPostIgnored';
+							post.classList.add('salrPostIgnored');
 					}
 				}
 				// User is ignored by the system so skip doing anything else
@@ -161,7 +161,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			if (gotPrefs.superIgnore && DB.isUserIgnored(posterId))
 			{
 				// They're ignored but not by the system
-				post.className += ' salrPostIgnored';
+				post.classList.add('salrPostIgnored');
 			}
 
 			// Should work for all thread types nowadays. (05/21/2015)
@@ -263,7 +263,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	 * Process quotes in a post to determine if we need to color or ignore them.
 	 * @param {HTMLDocument} doc              Document element to process quotes for a post in.
 	 * @param {HTMLElement}  post             Node snapshot of post to check.
-	 * @param {string}       username         Logged-in user's username.
+	 * @param {string}       username         Logged-in user's username (unescaped).
 	 * @param {boolean}      superIgnoreUsers Whether super ignore is active.
 	 */
 	processQuotes: function(doc, post, username, superIgnoreUsers)
@@ -278,16 +278,18 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			userQuoted = userQuoted[1];
 			if (userQuoted === username) // self-quotes handled by forum JS now
 				continue;
-			let userQuotedDetails = DB.isUsernameColored(userQuoted);
 			let userQuotedId = DB.getUserId(userQuoted);
+			if (!userQuotedId) // bail if they're not in the database
+				continue;
+			let userQuotedDetails = DB.isUserIdColored(userQuoted);
 			if (superIgnoreUsers && DB.isUserIgnored(userQuotedId))
 			{
 				// They're quoting someone ignored, lets remove the entire post
-				post.className += ' salrPostIgnored';
+				post.classList.add('salrPostIgnored');
 			}
 			if (userQuotedDetails)
 			{
-				quote.className += ' salrQuoteOf' + userQuotedDetails.userid;
+				quote.classList.add('salrQuoteOf' + userQuotedDetails.userid);
 				ShowThreadHandler.colorQuote(doc, userQuotedDetails.background, userQuotedDetails.userid);
 			}
 		}
@@ -774,79 +776,60 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		/** @type {string} */
 		var posterName = userNameBox.textContent.trim();
 		/** @type {(string|boolean)} */
-		var posterColor = false;
-		/** @type {(string|boolean)} */
-		var posterBG = false;
-		/** @type {(string|boolean)} */
 		var posterNote = false;
 		/** @type {(string|boolean)} */
 		var userPosterNote = false;
 
-		//apply this to every post
-		post.className += " salrPostBy" + posterId + " salrPostBy" + escape(posterName);
+		// Apply ID and name classes to each post
+		post.classList.add('salrPostBy' + posterId, 'salrPostBy' + escape(posterName));
+		// Apply self class
 		if (posterName === gotPrefs.username)
 		{
-			post.className += " salrPostOfSelf";
+			post.classList.add('salrPostOfSelf');
 			if (threadFlags.threadMarkedPostedIn === false)
 			{
 				DB.iPostedHere(threadFlags.threadid);
 				threadFlags.threadMarkedPostedIn = true;
 			}
 		}
-
-		//apply custom user coloring
+		// Apply OP class (for background)
 		if (userNameBox.className.search(/\bop/) > -1)
 		{
-			posterColor = gotPrefs.opColor;
-			posterBG = gotPrefs.opBackground;
+			post.classList.add('salrPostByOp');
 			posterNote = gotPrefs.opSubText;
 		}
 
+		let dbRole = DB.getUserRole(posterId);
 		// Check to see if there's a mod or admin star
-		/** @type {(string|boolean)} */
-		let posterImg = false;
+		/** @type {string} */
+		let posterIconTitle;
 
-		if (userNameBox.title.length > 0 && !threadFlags.inArchives)
+		if (userNameBox.title.length > 0)
+			posterIconTitle = userNameBox.title;
+
+		if (posterIconTitle === 'Administrator')
 		{
-			posterImg = userNameBox.title;
-			if (posterImg === 'Administrator')
-			{
+			if (dbRole !== 'admin')
 				DB.addAdmin(posterId, posterName);
-			}
-			else if (posterImg === 'Moderator')
-			{
+			posterNote = gotPrefs.adminSubText;
+			post.classList.add('salrPostByAdmin');
+		}
+		else if (posterIconTitle === 'Moderator')
+		{
+			if (dbRole !== 'mod')
 				DB.addMod(posterId, posterName);
-			}
+			posterNote = gotPrefs.modSubText;
+			post.classList.add('salrPostByMod');
+		}
+		else
+		{
+			// Clear old statuses
+			if (dbRole === 'admin')
+				DB.removeAdmin(posterId);
+			else if (dbRole === 'mod')
+				DB.removeMod(posterId);
 		}
 
-		if (DB.isMod(posterId))
-		{
-			if (posterImg === "Moderator" || posterImg === "Internet Knight" || threadFlags.inArchives)
-			{
-				posterColor = gotPrefs.modColor;
-				posterBG = gotPrefs.modBackground;
-				posterNote = gotPrefs.modSubText;
-				post.className += " salrPostByMod";
-			}
-			else if (!threadFlags.inArchives)
-			{
-				DB.removeMod(posterId);
-			}
-		}
-		if (DB.isAdmin(posterId))
-		{
-			if (posterImg === "Administrator" || threadFlags.inArchives)
-			{
-				posterColor = gotPrefs.adminColor;
-				posterBG = gotPrefs.adminBackground;
-				posterNote = gotPrefs.adminSubText;
-				post.className += " salrPostByAdmin";
-			}
-			else if (!threadFlags.inArchives)
-			{
-				DB.removeAdmin(posterId);
-			}
-		}
 		var dbUser = DB.isUserIdColored(posterId);
 		if (dbUser)
 		{
@@ -854,19 +837,17 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			{
 				DB.setUserName(posterId, posterName);
 			}
-			if (dbUser.color && dbUser.color !== "0")
+			if (gotPrefs.highlightUsernames)
 			{
-				posterColor = dbUser.color;
+				if (dbUser.color && dbUser.color !== "0")
+				{
+					userNameBox.style.setProperty('color', dbUser.color, 'important');
+				}
+				if (dbUser.background && dbUser.background !== "0")
+				{
+					ShowThreadHandler.colorPost(doc, dbUser.background, posterId);
+				}
 			}
-			if (dbUser.background && dbUser.background !== "0")
-			{
-				posterBG = dbUser.background;
-			}
-		}
-
-		if (posterBG && posterBG !== "0")
-		{
-			ShowThreadHandler.colorPost(doc, posterBG, posterId);
 		}
 
 		// Check for quotes that need to be colored or superIgnored
@@ -876,17 +857,14 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		}
 
 		userPosterNote = DB.getPosterNotes(posterId);
-		if (gotPrefs.highlightUsernames && posterColor !== false && posterColor !== "0")
-		{
-			userNameBox.style.color = posterColor;
-		}
 		if (posterNote || userPosterNote)
 		{
 			let newNoteBox = doc.createElement("p");
 			newNoteBox.className = "salrUserNote";
 			newNoteBox.innerHTML = posterNote ? posterNote : '';
 			newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
-			newNoteBox.style.color = userNameBox.style.color;
+			if (gotPrefs.highlightUsernames && dbUser.color && dbUser.color !== "0")
+				newNoteBox.style.setProperty('color', dbUser.color, 'important');
 			userNameBox.parentNode.insertBefore(newNoteBox, userNameBox.nextSibling);
 		}
 	},
