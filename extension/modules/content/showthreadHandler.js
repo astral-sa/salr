@@ -864,7 +864,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			}
 		}
 
-		if (posterBG !== "0")
+		if (posterBG && posterBG !== "0")
 		{
 			ShowThreadHandler.colorPost(doc, posterBG, posterId);
 		}
@@ -883,13 +883,10 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		if (posterNote || userPosterNote)
 		{
 			let newNoteBox = doc.createElement("p");
-			newNoteBox.style.fontSize = "80%";
-			newNoteBox.style.margin = "0";
-			newNoteBox.style.padding = "0";
+			newNoteBox.className = "salrUserNote";
 			newNoteBox.innerHTML = posterNote ? posterNote : '';
 			newNoteBox.innerHTML += userPosterNote ? (((posterNote && userPosterNote) ? '<br />':'') + userPosterNote):'';
 			newNoteBox.style.color = userNameBox.style.color;
-			newNoteBox.style.fontWeight = "bold";
 			userNameBox.parentNode.insertBefore(newNoteBox, userNameBox.nextSibling);
 		}
 	},
@@ -899,7 +896,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	// @return: nothing
 	colorPost: function(doc, colorToUse, userid)
 	{
-		if (colorToUse == 0)
+		if (colorToUse === '0')
 		{
 			return;
 		}
@@ -914,7 +911,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	// @return: nothing
 	colorQuote: function(doc, colorToUse, userid)
 	{
-		if (colorToUse == 0)
+		if (colorToUse === '0')
 		{
 			return;
 		}

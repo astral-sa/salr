@@ -477,8 +477,10 @@ let Styles = exports.Styles =
 			::-moz-placeholder - Firefox 19+ */
 		CSSFile += 'div.threadbar.top { overflow: hidden; }\n' +
 					'#salrsearchdiv { margin-left: 6px; line-height: 22px; }\n' +
-					':-moz-placeholder { font-style: italic; color: #999; }\n' +
 					'#salrsearchbox::-moz-placeholder { font-style: italic; color: #999; }\n';
+
+		// Style user notes
+		CSSFile += '.salrUserNote { font-size: 80%; font-weight: bold; margin: 0; padding: 0; }\n';
 
 		// Shrink posts by ignored users (and restore gradients)
 		CSSFile += '#thread table.ignored dd.registered, #thread table.ignored dd.title, #thread table.ignored td.postdate, #thread table.ignored td.postlinks { display: none !important; }\n' +
