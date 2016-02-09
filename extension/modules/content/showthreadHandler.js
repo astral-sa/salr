@@ -210,22 +210,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 			postbody = PageUtils.selectSingleNode(doc, post, "TBODY//TD[contains(@class,'postbody')]");
 
-			if (gotPrefs.cancerTreatment)
-			{
-				let cancerDiv = PageUtils.selectSingleNode(doc, postbody, "DIV[contains(@class,'cancerous')]");
-				if (cancerDiv)
-				{
-					//Apply our alternate style:
-					if (gotPrefs.cancerTreatment === 1)
-					{
-						postbody.style.backgroundImage = 'url("chrome://salastread/skin/biohazard.png")';
-						postbody.style.backgroundRepeat = "repeat";
-					}
-					//Hide entirely:
-					else if (gotPrefs.cancerTreatment === 2)
-						post.style.display = "none";
-				}
-			}
+			ShowThreadHandler.applyCancerTreatment(doc, post, gotPrefs);
 			ShowThreadHandler.convertSpecialLinks(postbody, doc, gotPrefs);
 			ShowThreadHandler.processImages(postbody, doc, gotPrefs);
 		}
@@ -994,6 +979,22 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 
 		// Add a space for the Rap Sheet link added afterwards by forum JS:
 		userLinks.appendChild(doc.createTextNode(" "));
+	},
+
+	/**
+	 * Applies an alternate representation of a user's forum cancer.
+	 * @param {HTMLDocument} doc         Document element we're working in.
+	 * @param {HTMLElement}  post        Node snapshot of current post's table element.
+	 * @param {Object}       gotPrefs    Preloaded preferences from main function.
+	 */
+	applyCancerTreatment: function(doc, post, gotPrefs)
+	{
+		// 0 - do nothing; 1 - restore opacity and add biohazard BG; 2 - hide post entirely
+		if (gotPrefs.cancerTreatment === 0)
+			return;
+		if (!post.querySelector('.cancerous'))
+			return;
+		post.classList.add('salrbiohazard');
 	},
 
 	/**

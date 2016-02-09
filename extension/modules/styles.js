@@ -453,10 +453,16 @@ let Styles = exports.Styles =
 		{
 			CSSFile += 'table.salrPostIgnored { display:none !important; }\n';
 		}
-		if (Prefs.getPref('cancerTreatment') === 1)
+		let cancerTreatment = Prefs.getPref('cancerTreatment');
+		if (cancerTreatment === 1)
 		{
 			// 0 - do nothing; 1 - restore opacity and add biohazard BG; 2 - hide post entirely
 			CSSFile += 'td.postbody .cancerous { opacity: 1; }\n';
+			CSSFile += 'table.post.salrbiohazard td { background-image: url("chrome://salastread/skin/biohazard.png") !important; background-repeat: repeat !important; }\n';
+		}
+		else if (cancerTreatment === 2)
+		{
+			CSSFile += 'table.post.salrbiohazard { display: none !important; }\n';
 		}
 
 		// Hide timgs in spoilers - workaround forum bug
