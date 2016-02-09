@@ -39,12 +39,7 @@ let PageLoadHandler = exports.PageLoadHandler = {
 			var pageHandler;
 			var pageName = doc.location.pathname.match(/^\/(\w+)\.php/i);
 			if (!pageName)
-			{
-				// Search results are the only non-.php page we handle
-				if (doc.location.pathname !== '/f/search/result')
-					return;
-				pageHandler = PageLoadHandler.SearchHandler.handleSearch;
-			}
+				return;
 
 			/**
 			 * Object mapping (key).php -> handler
@@ -60,7 +55,6 @@ let PageLoadHandler = exports.PageLoadHandler = {
 				editpost: PageLoadHandler.handleEditPost,
 				misc: PageLoadHandler.handleMisc,
 				query: PageLoadHandler.handleQuery,
-				search: PageLoadHandler.handleOldSearch,
 				member: PageLoadHandler.handleProfileView,
 				account: PageLoadHandler.handleAccount,
 				supportmail: PageLoadHandler.handleSupport,
@@ -219,12 +213,6 @@ let PageLoadHandler = exports.PageLoadHandler = {
 	{
 		let {SearchHandler} = require("content/searchHandler");
 		return SearchHandler.handleQuery(doc);
-	},
-
-	handleOldSearch: function(doc)
-	{
-		let {SearchHandler} = require("content/searchHandler");
-		return SearchHandler.handleOldSearch(doc);
 	},
 
 	handleProfileView: function(doc)

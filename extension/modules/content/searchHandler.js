@@ -1,8 +1,6 @@
-/*
-
-	Handler for search and old search.
-
-*/
+/**
+ * @fileoverview Handler for search (query.php)
+ */
 
 let {Prefs} = require("content/prefsHelper");
 let {PageUtils} = require("pageUtils");
@@ -10,6 +8,10 @@ let {Gestures} = require("content/gestures");
 
 let SearchHandler = exports.SearchHandler =
 {
+	/**
+	 * The search handler.
+	 * @param {HTMLDocument} doc Document to handle.
+	 */
 	handleQuery: function(doc)
 	{
 		// Add support for mouse gestures / pagination
@@ -37,45 +39,6 @@ let SearchHandler = exports.SearchHandler =
 			let pages = {'total': numPages, 'current': curPage};
 			Gestures.addGestureListeners(doc, pages);
 		}
-	},
-
-	handleSearch: function(doc)
-	{
-		// Add support for mouse gestures / pagination
-		if (Prefs.getPref("gestureEnable"))
-		{
-			var pageList = PageUtils.selectNodes(doc, doc, "//DIV[contains(@class,'pager')]");
-			var numPages;
-			var curPage;
-			if (pageList)
-			{
-				if (pageList.length >= 1)
-					pageList = pageList[pageList.length-1];
-				else
-					return;
-				numPages = pageList.textContent.match(/\((\d+)\)/);
-				if (!numPages)
-					return;
-				curPage = PageUtils.selectSingleNode(doc, doc, "//a[contains(@class,'current')]");
-				if (pageList.childNodes.length > 1) // Are there pages
-				{
-					numPages = parseInt(numPages[1], 10);
-					curPage = parseInt(curPage.textContent, 10);
-				}
-				else
-				{
-					numPages = 1;
-					curPage = 1;
-				}
-			}
-
-			let pages = {'total': numPages, 'current': curPage};
-			Gestures.addGestureListeners(doc, pages);
-		}
-	},
-
-	handleOldSearch: function(doc)
-	{
 	},
 
 };

@@ -437,7 +437,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		// SA's "Search thread" box is disabled; add our own
 		if (!Prefs.getPref("hideThreadSearchBox") && searchThis.firstChild.nodeName === '#text')
 		{
-			ShowThreadHandler.addThreadSearchBox(doc, forumid, threadid, placeHere, 'query');
+			ShowThreadHandler.addThreadSearchBox(doc, forumid, threadid, placeHere);
 		}
 	},
 
@@ -447,10 +447,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	 * @param {number}       forumid    Forum ID used for search params.
 	 * @param {number}       threadid   Thread ID used for search params.
 	 * @param {HTMLElement}  placeHere  Destination for our search box.
-	 * @param {string}       searchType Whether to use new search ('query')
-	 *                                      or old search ('search').
 	 */
-	addThreadSearchBox: function(doc, forumid, threadid, placeHere, searchType)
+	addThreadSearchBox: function(doc, forumid, threadid, placeHere)
 	{
 		let newSearchBox = doc.createElement('li');
 		let newSearchForm = doc.createElement('form');
@@ -471,8 +469,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		newSearchButton.value = 'Search thread';
 		newSearchDiv.appendChild(newSearchButton);
 
-		// Add specific parameters based on our searchType
-		ShowThreadHandler.addSearchParams(doc, forumid, threadid, newSearchText, searchType);
+		// Add specific parameters
+		ShowThreadHandler.addSearchParams(doc, forumid, threadid, newSearchText);
 
 		// Don't accidentally trigger keyboard navigation
 		newSearchText.addEventListener("keypress", function(e) { e.stopPropagation(); }, true);
@@ -486,52 +484,21 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 	 * @param {number}           forumid       Forum ID.
 	 * @param {number}           threadid      Thread ID.
 	 * @param {HTMLInputElement} newSearchText The search box text input element.
-	 * @param {string}           searchType    Whether to use new search ('query')
-	 *                                         or old search ('search').
 	 */
-	addSearchParams: function(doc, forumid, threadid, newSearchText, searchType)
+	addSearchParams: function(doc, forumid, threadid, newSearchText)
 	{
 		let newSearchDiv = newSearchText.parentNode;
 		let newSearchForm = newSearchDiv.parentNode;
-		switch(searchType)
+		newSearchForm.action = 'https://forums.somethingawful.com/query.php';
+		PageUtils.addHiddenFormInput(doc, newSearchDiv, 'action', 'query');
+		PageUtils.addHiddenFormInput(doc, newSearchDiv, 'forums[]', forumid);
+		// Work some magic on submit
+		newSearchForm.addEventListener('submit', function(event)
 		{
-			case "query":
-				newSearchForm.action = 'https://forums.somethingawful.com/query.php';
-				PageUtils.addHiddenFormInput(doc, newSearchDiv, 'action', 'query');
-				PageUtils.addHiddenFormInput(doc, newSearchDiv, 'forums[]', forumid);
-				// Work some magic on submit
-				newSearchForm.addEventListener('submit', function(event)
-				{
-					event.preventDefault();
-					PageUtils.addHiddenFormInput(doc,newSearchDiv,'q','threadid:'+threadid+' '+newSearchText.value);
-					newSearchForm.submit();
-				}, false);
-				break;
-			case "search":
-				newSearchForm.action = 'https://forums.somethingawful.com/f/search/submit';
-				let searchInputs = {
-					'forumids': forumid,
-					'groupmode': '0',
-					'opt_search_posts': 'on',
-					'perpage': '20',
-					'search_mode': 'ext',
-					'show_post_previews': '1',
-					'sortmode': '1'
-				};
-				for (let p in searchInputs)
-				{
-					if (searchInputs.hasOwnProperty(p))
-						PageUtils.addHiddenFormInput(doc, newSearchDiv, p, searchInputs[p]);
-				}
-				// Work some magic on submit
-				newSearchForm.addEventListener('submit', function(event)
-				{
-					event.preventDefault();
-					PageUtils.addHiddenFormInput(doc,newSearchDiv,'keywords','threadid:'+threadid+' '+newSearchText.value);
-					newSearchForm.submit();
-				}, false);
-				break;
-		}
+			event.preventDefault();
+			PageUtils.addHiddenFormInput(doc,newSearchDiv,'q','threadid:'+threadid+' '+newSearchText.value);
+			newSearchForm.submit();
+		}, false);
 	},
 
 	/**
@@ -1058,7 +1025,8 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		var newNode;
 		/** @type {HTMLVideoElement} */
 		var newVideo;
-		mutations.forEach(function(mutation) {
+		mutations.forEach(function(mutation)
+		{
 			if (mutation.type !== "childList")
 				return;
 			for (let i = 0; i < mutation.addedNodes.length; i++)
