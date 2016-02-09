@@ -2,15 +2,15 @@
  * @fileOverview Handler for inside threads.
  */
 
-let {DB} = require("content/dbHelper");
-let {Prefs} = require("content/prefsHelper");
-let {PageUtils} = require("pageUtils");
-let {MenuHelper} = require("content/menuHelper");
-let {ImgurHandler} = require("content/imgurHandler");
-let {VideoHandler} = require("content/videoHandler");
-let {Styles} = require("content/stylesHelper");
-let {Navigation} = require("content/navigation");
-let {QuickQuoteHelper} = require("content/quickQuoteHelper");
+let {DB} = require("./dbHelper");
+let {Prefs} = require("./prefsHelper");
+let {PageUtils} = require("../pageUtils");
+let {MenuHelper} = require("./menuHelper");
+let {ImgurHandler} = require("./imgurHandler");
+let {VideoHandler} = require("./videoHandler");
+let {Styles} = require("./stylesHelper");
+let {Navigation} = require("./navigation");
+let {QuickQuoteHelper} = require("./quickQuoteHelper");
 
 let ShowThreadHandler = exports.ShowThreadHandler =
 {

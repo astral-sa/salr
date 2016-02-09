@@ -2,8 +2,8 @@
  * @fileoverview Everything to do with embedding video links.
  */
 
-let {Prefs} = require("content/prefsHelper");
-let {PageUtils} = require("pageUtils");
+let {Prefs} = require("./prefsHelper");
+let {PageUtils} = require("../pageUtils");
 
 let VideoHandler = exports.VideoHandler =
 {

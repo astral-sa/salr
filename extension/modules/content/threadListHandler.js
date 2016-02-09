@@ -2,10 +2,10 @@
  * @fileoverview Handler for thread lists (forum + usercp/bookmarks).
  */
 
-let {DB} = require("content/dbHelper");
-let {Prefs} = require("content/prefsHelper");
-let {PageUtils} = require("pageUtils");
-let {AdvancedThreadFiltering} = require("content/advancedThreadFiltering");
+let {DB} = require("./dbHelper");
+let {Prefs} = require("./prefsHelper");
+let {PageUtils} = require("../pageUtils");
+let {AdvancedThreadFiltering} = require("./advancedThreadFiltering");
 
 let ThreadListHandler = exports.ThreadListHandler =
 {

@@ -4,11 +4,11 @@
 
 Cu.import("resource://gre/modules/Services.jsm");
 
-let {PageUtils} = require("pageUtils");
-let {Prefs} = require("content/prefsHelper");
-let {Styles} = require("content/stylesHelper");
+let {PageUtils} = require("../pageUtils");
+let {Prefs} = require("./prefsHelper");
+let {Styles} = require("./stylesHelper");
 // Used for optimization for page unload checking to detach quick windows:
-let {QuickQuoteHelper} = require("content/quickQuoteHelper");
+let {QuickQuoteHelper} = require("./quickQuoteHelper");
 
 let PageLoadHandler = exports.PageLoadHandler = {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -169,67 +169,67 @@ let PageLoadHandler = exports.PageLoadHandler = {
 
 	handleIndex: function(doc)
 	{
-		let {IndexHandler} = require("content/indexHandler");
+		let {IndexHandler} = require("./indexHandler");
 		return IndexHandler.handleIndex(doc);
 	},
 
 	handleBookmarkedThreads: function(doc)
 	{
-		let {BookmarkedThreadsHandler} = require("content/bookmarkedThreadsHandler");
+		let {BookmarkedThreadsHandler} = require("./bookmarkedThreadsHandler");
 		return BookmarkedThreadsHandler.handleBookmarkedThreads(doc);
 	},
 
 	handleForumDisplay: function(doc)
 	{
-		let {ForumDisplayHandler} = require("content/forumDisplayHandler");
+		let {ForumDisplayHandler} = require("./forumDisplayHandler");
 		return ForumDisplayHandler.handleForumDisplay(doc);
 	},
 
 	handleShowThread: function(doc)
 	{
-		let {ShowThreadHandler} = require("content/showthreadHandler");
+		let {ShowThreadHandler} = require("./showthreadHandler");
 		return ShowThreadHandler.handleShowThread(doc);	
 	},
 
 	handleNewReply: function(doc)
 	{
-		let {QuickQuoteHelper} = require("content/quickQuoteHelper");
+		let {QuickQuoteHelper} = require("./quickQuoteHelper");
 		return QuickQuoteHelper.handleNewReply(doc);	
 	},
 
 	handleEditPost: function(doc)
 	{
-		let {QuickQuoteHelper} = require("content/quickQuoteHelper");
+		let {QuickQuoteHelper} = require("./quickQuoteHelper");
 		return QuickQuoteHelper.handleEditPost(doc);	
 	},
 
 	handleMisc: function(doc)
 	{
-		let {MiscHandler} = require("content/miscHandler");
+		let {MiscHandler} = require("./miscHandler");
 		return MiscHandler.handleMisc(doc);	
 	},
 
 	handleQuery: function(doc)
 	{
-		let {SearchHandler} = require("content/searchHandler");
+		let {SearchHandler} = require("./searchHandler");
 		return SearchHandler.handleQuery(doc);
 	},
 
 	handleProfileView: function(doc)
 	{
-		let {ProfileViewHandler} = require("content/profileViewHandler");
+		let {ProfileViewHandler} = require("./profileViewHandler");
 		return ProfileViewHandler.handleProfileView(doc);
 	},
 
 	handleAccount: function(doc)
 	{
-		let {AccountHandler} = require("content/accountHandler");
+		let {AccountHandler} = require("./accountHandler");
 		return AccountHandler.handleAccount(doc);
 	},
 
 	handleSupport: function(doc)
 	{
-		let {SupportHandler} = require("content/supportHandler");
+		let {SupportHandler} = require("./supportHandler");
 		return SupportHandler.handleSupport(doc);
 	},
 

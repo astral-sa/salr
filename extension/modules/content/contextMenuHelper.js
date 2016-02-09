@@ -2,8 +2,8 @@
  * @fileOverview Frame side of the context menu.
  */
 
-let {PageUtils} = require("pageUtils");
-let {DB} = require("content/dbHelper");
+let {PageUtils} = require("../pageUtils");
+let {DB} = require("./dbHelper");
 
 let ContextMenuHelper = exports.ContextMenuHelper = 
 {

@@ -35,7 +35,7 @@ gulp.task('clean', () => {
 
 // Split out install.rdf from here if we want a separate dev channel.
 gulp.task('xpi', () => {
-	gulp.src(['extension/**/!(salr.rdf|.eslintrc.json)'])
+	gulp.src(['extension/**/!(salr.rdf|.eslintrc.json|jsconfig.json)'])
 		.pipe(replace('%SALR_VERSION%', config.version, {skipBinary: true}))
 		.pipe(replace('%SALR_UPDATELINK%', getUpdateLink(), {skipBinary: true}))
 		.pipe(replace('%SALR_THREADLINK%', config.threadLink, {skipBinary: true}))

@@ -75,7 +75,7 @@
 		// May need to add docShell here later.
 		loader = Loader({
 			paths: {
-				"": info.addonRoot + "modules/"
+				"": info.addonRoot + "modules/content/"
 			},
 			globals: {
 				Components, Cc, Ci, Cu, Cr, atob, btoa, dump, onShutdown,
@@ -89,7 +89,7 @@
 		});
 		onShutdown.add(() => unload(loader, "disable"));
 
-		main(loader, "content/main");
+		main(loader, "./main");
 	}
 
 	function shutdown(message)

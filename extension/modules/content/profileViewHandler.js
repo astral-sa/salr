@@ -2,7 +2,7 @@
  * @fileOverview Handles User Profile page
  */
 
-let {PageUtils} = require("pageUtils");
+let {PageUtils} = require("../pageUtils");
 
 let ProfileViewHandler = exports.ProfileViewHandler = 
 {

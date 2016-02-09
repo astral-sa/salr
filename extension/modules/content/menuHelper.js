@@ -2,7 +2,7 @@
  * @fileOverview Grabs and stores forum list from content.
  */
 
-let {PageUtils} = require("pageUtils");
+let {PageUtils} = require("../pageUtils");
 
 let MenuHelper = exports.MenuHelper =
 {

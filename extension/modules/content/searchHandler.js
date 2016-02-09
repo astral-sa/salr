@@ -2,9 +2,9 @@
  * @fileoverview Handler for search (query.php)
  */
 
-let {Prefs} = require("content/prefsHelper");
-let {PageUtils} = require("pageUtils");
-let {Gestures} = require("content/gestures");
+let {Prefs} = require("./prefsHelper");
+let {PageUtils} = require("../pageUtils");
+let {Gestures} = require("./gestures");
 
 let SearchHandler = exports.SearchHandler =
 {

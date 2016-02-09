@@ -2,9 +2,9 @@
  * @fileOverview Page-related functions that support quick quote.
  */
 
-let {PageUtils} = require("pageUtils");
-let {Prefs} = require("content/prefsHelper");
-let {DB} = require("content/dbHelper");
+let {PageUtils} = require("../pageUtils");
+let {Prefs} = require("./prefsHelper");
+let {DB} = require("./dbHelper");
 
 let QuickQuoteHelper = exports.QuickQuoteHelper = 
 {

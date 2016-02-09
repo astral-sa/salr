@@ -2,7 +2,7 @@
  * @fileOverview Everything to do with imgur.
  */
 
-let {PageUtils} = require("pageUtils");
+let {PageUtils} = require("../pageUtils");
 
 let ImgurHandler = exports.ImgurHandler =
 {

@@ -2,15 +2,15 @@
  * @fileoverview Handler for forum thread lists. 
  */
 
-let {DB} = require("content/dbHelper");
-let {Prefs} = require("content/prefsHelper");
-let {PageUtils} = require("pageUtils");
-let {MenuHelper} = require("content/menuHelper");
-let {Navigation} = require("content/navigation");
-let {ThreadListHandler} = require("content/threadListHandler");
-let {Styles} = require("content/stylesHelper");
-let {AdvancedThreadFiltering} = require("content/advancedThreadFiltering");
-let {QuickQuoteHelper} = require("content/quickQuoteHelper");
+let {DB} = require("./dbHelper");
+let {Prefs} = require("./prefsHelper");
+let {PageUtils} = require("../pageUtils");
+let {MenuHelper} = require("./menuHelper");
+let {Navigation} = require("./navigation");
+let {ThreadListHandler} = require("./threadListHandler");
+let {Styles} = require("./stylesHelper");
+let {AdvancedThreadFiltering} = require("./advancedThreadFiltering");
+let {QuickQuoteHelper} = require("./quickQuoteHelper");
 
 let ForumDisplayHandler = exports.ForumDisplayHandler =
 {

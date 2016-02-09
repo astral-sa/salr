@@ -1,5 +1,5 @@
-let {Prefs} = require("content/prefsHelper");
-let {PageUtils} = require("pageUtils");
+let {Prefs} = require("./prefsHelper");
+let {PageUtils} = require("../pageUtils");
 
 let Gestures = exports.Gestures =
 {

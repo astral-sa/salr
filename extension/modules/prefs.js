@@ -84,7 +84,7 @@ function resetPrefWrapper(prefName)
 
 /**
  * Message handler for GetMultiplePrefs
- * @param {Array.string} prefArray Array of prefs to get.
+ * @param {string[]} prefArray Array of prefs to get.
  * @return {Object} Object with preference values.
  */
 function getMultiplePrefs(prefArray)

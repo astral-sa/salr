@@ -4,10 +4,21 @@
 
 let Prefs = exports.Prefs = // eslint-disable-line no-unused-vars
 {
+	/**
+	 * Helper function to set a preference.
+	 * Make sure to exclude 'extensions.salastread.'
+	 * @param {string} prefName Preference name to set.
+	 */
 	setPref: function(prefName, prefValue)
 	{
 		return sendSyncMessage("salastread:SetPref", {prefName, prefValue});
 	},
+
+	/**
+	 * Helper function to get a preference.
+	 * Make sure to exclude 'extensions.salastread.'
+	 * @param {string} prefName Preference name to get.
+	 */
 	getPref: function(prefName)
 	{
 		return sendSyncMessage("salastread:GetPref", prefName);
@@ -19,7 +30,7 @@ let Prefs = exports.Prefs = // eslint-disable-line no-unused-vars
 
 	/**
 	 * Get multiple preferences in one sync message.
-	 * @param {Array.string} prefArray Array of prefs to get.
+	 * @param {string[]} prefArray Array of prefs to get.
 	 * @return {Object} Object with preference values.
 	 */
 	getMultiplePrefs: function(prefArray)

@@ -2,10 +2,10 @@
  * @fileOverview Functions dealing with navigation (excluding gestures).
  */
 
-let {Prefs} = require("content/prefsHelper");
-let {PageUtils} = require("pageUtils");
-let {QuickQuoteHelper} = require("content/quickQuoteHelper");
-let {Gestures} = require("content/gestures");
+let {Prefs} = require("./prefsHelper");
+let {PageUtils} = require("../pageUtils");
+let {QuickQuoteHelper} = require("./quickQuoteHelper");
+let {Gestures} = require("./gestures");
 
 let Navigation = exports.Navigation = 
 {

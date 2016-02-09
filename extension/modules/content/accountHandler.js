@@ -4,8 +4,8 @@
 
 */
 
-let {Prefs} = require("content/prefsHelper");
-let {PageUtils} = require("pageUtils");
+let {Prefs} = require("./prefsHelper");
+let {PageUtils} = require("../pageUtils");
 
 let AccountHandler = exports.AccountHandler =
 {
