@@ -335,17 +335,18 @@
 	src="chrome://salastread/content/pref/in-content/threads.js"/>
 
 <preferences>
-	<preference id="reanchorThreadOnLoad" 	name="extensions.salastread.reanchorThreadOnLoad" 	type="bool"/>
-	<preference id="hideReportButtons" 		name="extensions.salastread.hideReportButtons" 		type="bool"/>
-	<preference id="enableVideoEmbedder" 	name="extensions.salastread.enableVideoEmbedder" 	type="bool"/>
-	<preference id="videoEmbedQuality" 	name="extensions.salastread.videoEmbedQuality" 	type="string"/>
-	<preference id="videoEmbedSize" 	name="extensions.salastread.videoEmbedSize" 	type="string"/>
-	<preference id="videoEmbedCustomWidth" 	name="extensions.salastread.videoEmbedCustomWidth" 	type="int"/>
-	<preference id="videoEmbedCustomHeight" 	name="extensions.salastread.videoEmbedCustomHeight" 	type="int"/>
-	<preference id="videoEmbedderGetTitles" 	name="extensions.salastread.videoEmbedderGetTitles" 	type="bool"/>
-	<preference id="enablePageNavigator"	name="extensions.salastread.enablePageNavigator" 	type="bool"/>
-	<preference id="enableKeyboardControls"	name="extensions.salastread.quickPostJump"			type="bool"/>
-	<preference id="hideThreadSearchBox"	name="extensions.salastread.hideThreadSearchBox"			type="bool" inverted="true"/>
+	<preference id="reanchorThreadOnLoad"   name="extensions.salastread.reanchorThreadOnLoad"   type="bool"/>
+	<preference id="hideReportButtons"      name="extensions.salastread.hideReportButtons"      type="bool"/>
+	<preference id="enableVideoEmbedder"    name="extensions.salastread.enableVideoEmbedder"    type="bool"/>
+	<preference id="videoEmbedQuality"      name="extensions.salastread.videoEmbedQuality"      type="string"/>
+	<preference id="videoEmbedSize"         name="extensions.salastread.videoEmbedSize"         type="string"/>
+	<preference id="videoEmbedCustomWidth"  name="extensions.salastread.videoEmbedCustomWidth"  type="int"/>
+	<preference id="videoEmbedCustomHeight" name="extensions.salastread.videoEmbedCustomHeight" type="int"/>
+	<preference id="videoEmbedderGetTitles" name="extensions.salastread.videoEmbedderGetTitles" type="bool"/>
+	<preference id="dontAutoplayGifVideos"  name="extensions.salastread.dontAutoplayGifVideos"  type="bool"/>
+	<preference id="enablePageNavigator"    name="extensions.salastread.enablePageNavigator"    type="bool"/>
+	<preference id="enableKeyboardControls" name="extensions.salastread.quickPostJump"          type="bool"/>
+	<preference id="hideThreadSearchBox"    name="extensions.salastread.hideThreadSearchBox"    type="bool" inverted="true"/>
 </preferences>
 
 <hbox id="header-threads"
@@ -379,6 +380,7 @@
 	hidden="true">
 <caption label="Video Embed Options"/>
 	<vbox>
+		<checkbox preference="dontAutoplayGifVideos" label="Prevent the forums from autoplaying gifv + gfy videos." />
 		<checkbox id="enableVideoEmbedderCheckbox" preference="enableVideoEmbedder" label="Enable converting of video links to embeddable video:" />
 		<checkbox id="videoEmbedderGetTitlesCheckbox" preference="videoEmbedderGetTitles" label="Fetch YouTube video titles" style="margin-left: 20px;"/>
 		<separator class="thin" />
