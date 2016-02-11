@@ -22,7 +22,7 @@ function require(module)
 }
 let {Prefs} = require("prefs");
 let {DB} = require("db");
-let {Styles} = require("styles");
+var {Styles} = require("styles");
 let {PageUtils} = require("pageUtils");
 let {Notifications} = require("notifications");
 let {UI} = require("ui");

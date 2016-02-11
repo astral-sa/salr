@@ -39,7 +39,7 @@
 					} else {
 						el.style.backgroundColor = 'transparent';
 					}
-					
+
 					if (this.onchange) { this.onchange(); }
 				</xbl:setter>
 			</xbl:property>
@@ -52,6 +52,7 @@
 					window.openDialog("chrome://salastread/content/colorpicker/colorpickerdialog.xul", "colorpickerdialog", "modal,chrome",pobj);
 					if (pobj.accepted) {
 						this.value = pobj.value;
+						setTimeout(() => { Styles.updateStyles(); }, 10);
 					}
 				</xbl:body>
 			</xbl:method>
