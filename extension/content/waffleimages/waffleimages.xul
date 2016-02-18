@@ -38,7 +38,7 @@
  </vbox>
 
  <html:form class="uploaderform" id="uploaderform" method="post"
-            action="http://api.imgur.com/2/upload "
+            action="https://api.imgur.com/2/upload"
             enctype="multipart/form-data" target="submitframe"> 
   <html:input type="hidden" name="key" value="6f2b34324045e696c14fc78913544b6a" />
   <html:input type="hidden" name="type" id="urlopt"/>
