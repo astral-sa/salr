@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Imgur upload tool
+ */
+
+/**
+ * Drag handler for the image upload tool window
+ * @param {Event} event The drag event
+ */
 function checkDrag(event)
 {
 	// Enable dropping if something valid is dragged onto our window
@@ -6,6 +14,10 @@ function checkDrag(event)
 		event.preventDefault();
 }
 
+/**
+ * Drop handler for the image upload tool window
+ * @param {Event} event The drop event
+ */
 function doDrop(event)
 {
 	try
@@ -15,23 +27,9 @@ function doDrop(event)
 		{
 			var allowed = [ 'jpg', 'jpeg', 'png', 'gif', 'apng', 'tiff', 'tif', 'bmp' ];
 			var testExt = dropFile.path.split('.');
-			if (allowed.indexOf(testExt[testExt.length - 1]) != -1)
+			if (allowed.indexOf(testExt[testExt.length - 1]) !== -1)
 			{
-				var uploadmode = document.getElementById("urlopt");
-				uploadmode.value = "file";
-				var ufile = document.getElementById("img");
-				//alert("filename = " + dropFile.path);
-				ufile.type = "file";
-				ufile.value = dropFile.path;
-				//alert("ufilename = " + ufile.value);
-				document.getElementById("uploaderform").submit();
-				document.getElementById("choosebtn").label = "Please wait...";
-				document.getElementById("choosebtn").disabled = true;
-				document.getElementById("choosehttpbtn").disabled = true;
-
-				//document.getElementById("imgTag").src = fp.file.path;
-
-				document.getElementById("submitframe").addEventListener("DOMContentLoaded", iframeDCL, false);
+				imgurUpload(event.dataTransfer.files[0]);
 			}
 			else
 			{
@@ -49,66 +47,18 @@ function doDrop(event)
 	}
 }
 
-function chooseImage()
-{
-	try
-	{
-		var nsIFilePicker = Components.interfaces.nsIFilePicker;
-		var fp = Components.classes["@mozilla.org/filepicker;1"]
-				.createInstance(nsIFilePicker);
-		fp.init(window, "Select an Image to Upload", nsIFilePicker.modeOpen);
-		fp.appendFilters( nsIFilePicker.filterImages );
-		var res = fp.show();
-		if ( res == nsIFilePicker.returnOK ) {
-			var uploadmode = document.getElementById("urlopt");
-			uploadmode.value = "file";
-			var ufile = document.getElementById("img");
-			//alert("filename = " + fp.file.target);
-			ufile.type = "file";
-			ufile.value = fp.file.path;
-			//alert("ufilename = " + ufile.value);
-			document.getElementById("uploaderform").submit();
-			document.getElementById("choosebtn").label = "Please wait...";
-			document.getElementById("choosebtn").disabled = true;
-			document.getElementById("choosehttpbtn").disabled = true;
-
-			//document.getElementById("imgTag").src = fp.file.path;
-
-			document.getElementById("submitframe").addEventListener("DOMContentLoaded", iframeDCL, false);
-		}
-		//alert("uploaded!?");
-	}
-	catch (e)
-	{
-		alert( e + "\nLine: "+ e.lineNumber );
-	}
-}
-
+/**
+ * Requests user input for a transloaded image URL
+ */
 function chooseHttpImage()
 {
 	try
 	{
 		var transloadurl = prompt('Please enter the location of the image you would like to copy to Imgur.', '');
-   
 		if (transloadurl)
 		{
-			var uploadmode = document.getElementById("urlopt");
-			uploadmode.value = "url";
-
-			var formurl = document.getElementById("img");
-			formurl.type = "url";
-			formurl.value = transloadurl;
-			//alert("transloadurl = " + transloadurl);
-			document.getElementById("uploaderform").submit();
-			document.getElementById("choosehttpbtn").label = "Please wait...";
-			document.getElementById("choosebtn").disabled = true;
-			document.getElementById("choosehttpbtn").disabled = true;
-
-			//document.getElementById("imgTag").src = fp.file.path;
-
-			document.getElementById("submitframe").addEventListener("DOMContentLoaded", iframeDCL, false);
+			imgurUpload(transloadurl);
 		}
-		//alert("uploaded!?");
 	}
 	catch (e)
 	{
@@ -116,19 +66,64 @@ function chooseHttpImage()
 	}
 }
 
-function iframeDCL()
+/**
+ * Uploads a file to imgur.
+ * @param {(File|string)} file File or string URL to upload
+ */
+function imgurUpload(file)
 {
-	var cdoc = document.getElementById("submitframe").contentDocument;
-	//var imgTag = document.getElementById("imgTag");
+	if (!file || (typeof file !== 'string' && !file.type.match(/image.*/)))
+	{
+		uploadFailed();
+		return;
+	}
 
-	var useThumb = false; 
+	document.getElementById("choosebtn").label = "Please wait...";
+	document.getElementById("choosebtn").disabled = true;
+	document.getElementById("choosehttpbtn").disabled = true;
 
-	var imageurl = selectSingleNode(cdoc, cdoc, "//original");
-	if (imageurl && imageurl.firstChild)
-		imageurl = imageurl.firstChild.nodeValue;
-	else
-		imageurl = null;
+	var fd = new FormData();
+	fd.append("image", file);
+	fd.append("key", "6f2b34324045e696c14fc78913544b6a");
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", "https://api.imgur.com/2/upload.json");
+	// Ensure this flag is set to prevent issues with third-party cookies being disabled
+	xhr.channel.QueryInterface(Components.interfaces.nsIHttpChannelInternal).forceAllowThirdPartyCookie = true;
+	xhr.onload = function() {
+		//window.alert("Got: " + xhr.responseText);
+		processResult(xhr.responseText);
+	};
+	xhr.onerror = function() {
+		uploadFailed();
+	};
+	var progressBar = document.getElementById('progressbar');
+	progressBar.value = 0;
+	progressBar.textContent = progressBar.value; // Fallback for unsupported browsers.
+	xhr.upload.onprogress = function(e) {
+		if (e.lengthComputable) {
+			progressBar.value = (e.loaded / e.total) * 100;
+			progressBar.textContent = progressBar.value; // Fallback for unsupported browsers.
+		}
+	};
 
+	xhr.send(fd);
+}
+
+/**
+ * Handler for imgur upload result
+ * @param {string} respText Response text from imgur.
+ */
+function processResult(respText)
+{
+	var imgurResponse = JSON.parse(respText);
+	if (!imgurResponse.upload || !imgurResponse.upload.links || !imgurResponse.upload.links.original)
+	{
+		uploadFailed();
+		return;
+	}
+
+	var useThumb;
+	var imageurl = imgurResponse.upload.links.original;
 	if (imageurl)
 	{
 		// This version of the imgur API returns only http: URLs, so:
@@ -146,12 +141,15 @@ function iframeDCL()
 	}
 	else
 	{
-		alert("Upload failed.");
-		window.close();
+		uploadFailed();
 	}
 }
 
-function selectSingleNode(doc, context, xpath) {
-	var nodeList = doc.evaluate(xpath, context, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-	return nodeList.singleNodeValue;
+/**
+ * Handler for failed image upload
+ */
+function uploadFailed()
+{
+	alert("Upload failed.");
+	window.close();
 }

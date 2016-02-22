@@ -5,7 +5,7 @@
 <window id="salastread_waffleimages"
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:html="http://www.w3.org/1999/xhtml"
-        style="width: 350px; height: 200px; padding: 7px; margin: 7px;"
+        style="width: 350px; height: 256px; padding: 7px; margin: 7px;"
         title="Imgur Image Upload"
         ondragenter="return checkDrag(event)"
         ondragover="return checkDrag(event)"
@@ -27,31 +27,19 @@
   <spacer flex="1"/>
   <hbox>
    <spacer flex="1"/>
-   <button id="choosebtn" label="Load from file..." onclick="chooseImage();"/>
-   <button id="choosehttpbtn" label="Load from URL..." onclick="chooseHttpImage();"/>
+   <html:input id="chooser" style="visibility: collapse; width: 0px;" type="file" onchange="imgurUpload(this.files[0]);" />
+   <button id="choosebtn" label="Load from file..." oncommand="document.getElementById('chooser').click();" />
+   <button id="choosehttpbtn" label="Load from URL..." onclick="chooseHttpImage();" />
    <spacer flex="1"/>
   </hbox>
+  <spacer flex="1"/>
+  <hbox pack="center" align="center">
+   <html:progress id="progressbar" min="0" max="100" value="0">0% complete</html:progress>
+  </hbox>
+  <spacer flex="1"/>
   <hbox pack="center" align="center">
   <button label="Cancel" onclick="window.close();"/>
   </hbox>
-  <spacer flex="1"/>
  </vbox>
-
- <html:form class="uploaderform" id="uploaderform" method="post"
-            action="https://api.imgur.com/2/upload"
-            enctype="multipart/form-data" target="submitframe"> 
-  <html:input type="hidden" name="key" value="6f2b34324045e696c14fc78913544b6a" />
-  <html:input type="hidden" name="type" id="urlopt"/>
-  <html:input type="hidden" name="image" id="img" />
-  <html:input type="hidden" name="tg_format" value="xml" />
-  <html:submit value="Host"/>
- </html:form>
-<!--
- <html:img id="imgTag" src="about:blank" style="position:absolute;left:0;top:0;visibility:hidden"/>
--->
- 
- <box id="sfcontainer">
- <html:iframe name="submitframe" id="submitframe" />
- </box>
 
 </window>
