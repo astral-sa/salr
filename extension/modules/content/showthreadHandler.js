@@ -921,7 +921,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			avLink.style.cssFloat = 'right';
 			avLink.style.marginLeft = '4px';
 			let avAnch = doc.createElement("a");
-			avAnch.href = "#";
+			avAnch.style.cursor = 'pointer';
 			avAnch.title = "Toggle displaying this poster's avatar.";
 			if (DB.isAvatarHidden(posterId))
 				avAnch.textContent = "Show Avatar";
@@ -943,10 +943,10 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			li.style.cssFloat = 'right';
 			li.style.marginLeft = '4px';
 			var a = doc.createElement("a");
-			a.href = "#";
+			a.style.cursor = 'pointer';
 			a.textContent = "Add Coloring/Note";
 			a.title = "Add coloring and/or a note for this poster.";
-			a.addEventListener("click", ShowThreadHandler.addHighlightedUser.bind(null,posterId,posterName), true);
+			a.addEventListener("click", ShowThreadHandler.addHighlightedUser.bind(null,posterId,posterName), false);
 			li.appendChild(a);
 			userLinks.appendChild(doc.createTextNode(" "));
 			userLinks.appendChild(li);

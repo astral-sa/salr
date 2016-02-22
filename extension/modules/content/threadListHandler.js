@@ -201,6 +201,9 @@ let ThreadListHandler = exports.ThreadListHandler =
 					}
 					if (iconMarkUnseen)
 					{
+						// Prevent accidental middle clicks opening a pointless tab (forum bug)
+						iconMarkUnseen.removeAttribute('href');
+						iconMarkUnseen.style.cursor = 'pointer';
 						// Ask/Tell and maybe other forums forget this at times
 						if (thread.className.match(/(^|\s)seen(\s|$)/i) === null)
 						{
