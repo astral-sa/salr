@@ -131,6 +131,8 @@ function iframeDCL()
 
 	if (imageurl)
 	{
+		// This version of the imgur API returns only http: URLs, so:
+		imageurl = imageurl.replace(/^http:/, 'https:');
 		if (confirm("Click OK to insert a thumbnail linked to the full image, or Cancel to insert the full sized image."))
 			useThumb = true;
 
