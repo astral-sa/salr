@@ -480,7 +480,7 @@ let Styles = exports.Styles =
 					'#salrsearchbox::-moz-placeholder { font-style: italic; color: #999; }\n';
 
 		// Style user notes
-		CSSFile += '.salrUserNote { font-size: 80%; font-weight: bold; margin: 0; padding: 0; }\n';
+		CSSFile += '.salrUserNote { font-size: 80%; font-weight: bold; line-height: 1.4em; margin: 0; padding: 0; }\n';
 
 		// Username coloring
 		if (Prefs.getPref('highlightUsernames'))
