@@ -409,7 +409,7 @@ let Styles = exports.Styles =
 
 		if (Prefs.getPref('highlightQuotes'))
 		{
-			var selfColor = 0;
+			var selfColor = "0";
 			var quotedColor = Prefs.getPref("highlightQuotePost");
 			var selfDetails = DB.isUsernameColored(Prefs.getPref('username'));
 
