@@ -479,6 +479,10 @@ let Styles = exports.Styles =
 					'#salrsearchdiv { margin-left: 6px; line-height: 22px; }\n' +
 					'#salrsearchbox::-moz-placeholder { font-style: italic; color: #999; }\n';
 
+		// Stop post date from wrapping (13 -> 13.5em)
+		CSSFile += '#thread td.userinfo { width: 13.5em; }\n';
+		CSSFile += '#thread table.post td.postdate { white-space: nowrap; }\n';
+
 		// Style user notes
 		CSSFile += '.salrUserNote { font-size: 80%; font-weight: bold; line-height: 1.4em; margin: 0; padding: 0; }\n';
 
