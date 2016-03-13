@@ -458,7 +458,7 @@ let Styles = exports.Styles =
 		{
 			// 0 - do nothing; 1 - restore opacity and add biohazard BG; 2 - hide post entirely
 			CSSFile += 'td.postbody .cancerous { opacity: 1; }\n';
-			CSSFile += 'table.post.salrbiohazard td { background-image: url("chrome://salastread/skin/biohazard.png") !important; background-repeat: repeat !important; }\n';
+			CSSFile += 'table.post.salrbiohazard td.postbody { background-image: url("chrome://salastread/skin/biohazard.png") !important; background-repeat: repeat !important; }\n';
 		}
 		else if (cancerTreatment === 2)
 		{
