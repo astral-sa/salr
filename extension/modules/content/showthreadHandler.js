@@ -795,7 +795,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		// Apply OP class (for background)
 		if (userNameBox.className.search(/\bop/) > -1)
 		{
-			post.classList.add('salrPostByOp');
+			post.classList.add('salrPostByOP');
 			posterNote = gotPrefs.opSubText;
 		}
 
