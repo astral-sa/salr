@@ -13,8 +13,17 @@ AboutSALR.prototype = {
 	getURIFlags: function(aURI) {
 		return Ci.nsIAboutModule.ALLOW_SCRIPT;
 	},
-	newChannel: function(aURI) {
-		let channel = Services.io.newChannel("chrome://salastread/content/pref/in-content/salrpref.xul", null, null);
+	newChannel: function(aURI, aSecurity_or_aLoadInfo) {
+		var channel;
+		var aboutPage_page = "chrome://salastread/content/pref/in-content/salrpref.xul";
+		if (Services.vc.compare(Services.appinfo.version, '47.*') > 0) {
+			let uri = Services.io.newURI(aboutPage_page, null, null);
+			// greater than or equal to firefox48 so aSecurity_or_aLoadInfo is aLoadInfo
+			channel = Services.io.newChannelFromURIWithLoadInfo(uri, aSecurity_or_aLoadInfo); 
+		} else {
+			// less then firefox48 aSecurity_or_aLoadInfo is aSecurity
+			channel = Services.io.newChannel(aboutPage_page, null, null);
+		}
 		channel.originalURI = aURI;
 		return channel;
 	}
