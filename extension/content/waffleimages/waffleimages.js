@@ -84,9 +84,9 @@ function imgurUpload(file)
 
 	var fd = new FormData();
 	fd.append("image", file);
-	fd.append("key", "6f2b34324045e696c14fc78913544b6a");
 	var xhr = new XMLHttpRequest();
-	xhr.open("POST", "https://api.imgur.com/2/upload.json");
+	xhr.open("POST", "https://api.imgur.com/3/upload.json");
+	xhr.setRequestHeader('Authorization', "Client-ID " + atob("YjU2OTk5NDhkMTJiN2Rj"));
 	// Ensure this flag is set to prevent issues with third-party cookies being disabled
 	xhr.channel.QueryInterface(Components.interfaces.nsIHttpChannelInternal).forceAllowThirdPartyCookie = true;
 	xhr.onload = function() {
@@ -116,19 +116,24 @@ function imgurUpload(file)
 function processResult(respText)
 {
 	var imgurResponse = JSON.parse(respText);
-	if (!imgurResponse.upload || !imgurResponse.upload.links || !imgurResponse.upload.links.original)
+	if (!imgurResponse.data || !imgurResponse.data.link)
 	{
 		uploadFailed();
 		return;
 	}
 
 	var useThumb;
-	var imageurl = imgurResponse.upload.links.original;
+	var imageurl = imgurResponse.data.link;
 	if (imageurl)
 	{
-		// This version of the imgur API returns only http: URLs, so:
+		if (imgurResponse.data.deletehash)
+			Components.classes["@mozilla.org/consoleservice;1"]
+				.getService(Components.interfaces.nsIConsoleService)
+				.logStringMessage("Imgur upload success! If for some reason you need to delete it, " +
+					"the deletion link is: https://imgur.com/delete/" + imgurResponse.data.deletehash);
+		// The imgur API returns only http: URLs, so:
 		imageurl = imageurl.replace(/^http:/, 'https:');
-		if (confirm("Click OK to insert a thumbnail linked to the full image, or Cancel to insert the full sized image."))
+		if (confirm("Click OK to insert a thumbnail of the full image, or Cancel to insert the full sized image."))
 			useThumb = true;
 
 		var result = "";

@@ -43,9 +43,10 @@ let ImgurHandler = exports.ImgurHandler =
 		else
 		{
 			ImgurHandler._addPendingGifItem(imgurGif[1], image);
-			let imgurApiTarg = "https://api.imgur.com/2/image/" + imgurGif[1] + ".json";
+			let imgurApiTarg = "https://api.imgur.com/3/image/" + imgurGif[1] + ".json";
 			let imgurChecker = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 			imgurChecker.open("GET", imgurApiTarg, true);
+			imgurChecker.setRequestHeader('Authorization', "Client-ID " + atob("YjU2OTk5NDhkMTJiN2Rj"));
 			imgurChecker.onreadystatechange = ImgurHandler.imgurGifCallback.bind(imgurChecker, imgurGif[1]);
 			imgurChecker.ontimeout = function()
 			{
@@ -96,11 +97,12 @@ let ImgurHandler = exports.ImgurHandler =
 		}
 		if (this.status === 200)
 		{
+			// Model: https://api.imgur.com/models/image
 			let imgurResponse = JSON.parse(this.responseText);
-			if (!imgurResponse || !imgurResponse.image || !imgurResponse.image.image)
+			if (!imgurResponse || !imgurResponse.data || !imgurResponse.data.id)
 				return;
-			let animated = imgurResponse.image.image.animated;
-			if (!animated || animated !== "true")
+// data.size, data.nsfw
+			if (!imgurResponse.data.animated)
 			{
 				ImgurHandler.resolvePendingGifs(imgurId, false);
 				return;
@@ -260,11 +262,10 @@ let ImgurHandler = exports.ImgurHandler =
 				link.parentNode.replaceChild(newImg, link);
 				break;
 			default:
-				let imgurApiTarg = "https://api.imgur.com/2/image/" + imgurImageInLink[1] + ".json";
+				let imgurApiTarg = "https://api.imgur.com/3/image/" + imgurImageInLink[1] + ".json";
 				let imgurChecker = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
-				//let linktoCheck = link;
-				//let newImgtoCheck = newImg;
 				imgurChecker.open("GET", imgurApiTarg, true);
+				imgurChecker.setRequestHeader('Authorization', "Client-ID " + atob("YjU2OTk5NDhkMTJiN2Rj"));
 				imgurChecker.onreadystatechange = function() { ImgurHandler.imgurWorkaroundCallback(this, link, newImg, imgurImageInLink[1], options); };
 				imgurChecker.send(null);
 				break;
