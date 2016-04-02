@@ -491,7 +491,7 @@ let Styles = exports.Styles =
 				CSSFile += 'dt.author.op, dt.author.op + p.salrUserNote { color: ' + opColor + ' !important; }\n';
 			let opBackground = Prefs.getPref('opBackground');
 			if (opBackground !== "0")
-				CSSFile += 'table.salrPostByOp td { background-color: ' + opBackground + ' !important; }\n';
+				CSSFile += 'table.salrPostByOP td { background-color: ' + opBackground + ' !important; }\n';
 
 			let modColor = Prefs.getPref('modColor');
 			if (modColor !== "0")
