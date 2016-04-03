@@ -143,7 +143,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		catch(ex)
 		{
 			//alert("Error communicating with the quick window: " + ex);
-			QuickQuoteHelper.quickquotewin = window.openDialog("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, dialog=no, width=800, height=400");
+			QuickQuoteHelper._openQuickQuoteWin(window);
 		}
 
 		if (QuickQuoteHelper.quickquotewin)
@@ -207,7 +207,16 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			onShutdown.add(function() { QuickQuoteHelper.cleanupCheck(); });
 		}
 		QuickQuoteHelper.setQuickWindowParameters(newParams);
-		QuickQuoteHelper.quickquotewin = window.openDialog("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, dialog=no, width=800, height=400");
+		QuickQuoteHelper._openQuickQuoteWin(window);
+	},
+
+	/**
+	 * Opens the quick quote window.
+	 * @param {Window} window Window from which to open the dialog.
+	 */
+	_openQuickQuoteWin: function(window)
+	{
+		QuickQuoteHelper.quickquotewin = window.openDialog("chrome://salastread/content/quickquote.xul", "quickquote", "chrome, resizable=yes, dialog=no, width=800, height=400, left=" + window.screenX + ", top=" + window.screenY);
 	},
 
 	/**
