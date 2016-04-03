@@ -1,6 +1,6 @@
 {
   "name": "salr",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "SA Last Read Forum Enhancements",
   "scripts": {
     "test": "eslint extension"
