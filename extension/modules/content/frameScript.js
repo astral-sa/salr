@@ -75,6 +75,7 @@
 		// May need to add docShell here later.
 		loader = Loader({
 			paths: {
+				'sdk/': 'resource://gre/modules/commonjs/sdk/',
 				"": info.addonRoot + "modules/content/"
 			},
 			globals: {
