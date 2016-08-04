@@ -23,6 +23,17 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	needRegReplyFill: false,
 
 	/**
+	 * Sets up listeners for quick quote messages from chrome.
+	 */
+	init: function()
+	{
+		addMessageListener("salastread:QuickWindowSubmit", QuickQuoteHelper.quickSubmit);
+		onShutdown.add(() => {
+			removeMessageListener("salastread:QuickWindowSubmit", QuickQuoteHelper.quickSubmit);
+		});
+	},
+
+	/**
 	 * Converts quote and edit buttons into quick buttons.
 	 * @param {HTMLDocument} doc                      Document in which to convert buttons.
 	 * @param {HTMLElement}  post                     Node snapshot of current post's table element.
@@ -75,9 +86,9 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 
 	/**
 	 * Takes a button and turns it into a quick button.
-	 * @param {Element} doc     Document element to work in.
-	 * @param {Node}    button  Node snapshot of button to convert.
-	 * @param {number}  forumid Forum ID.
+	 * @param {HTMLDocument} doc     Document element to work in.
+	 * @param {Node}         button  Node snapshot of button to convert.
+	 * @param {number}       forumid Forum ID.
 	 * @return {Element} quick button
 	 */
 	turnIntoQuickButton: function(doc, button, forumid)
@@ -123,29 +134,31 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	quickButtonClicked: function(forumid, threadid, evt)
 	{
 		let quickbutton = evt.originalTarget;
+		let doc = quickbutton.ownerDocument;
 
 		let newParams = {
 			forumid: forumid,
 			threadid: threadid,
 		};
-		QuickQuoteHelper.setNewParamsFromLink(quickbutton.nextSibling.href, newParams);
+		QuickQuoteHelper.setNewParamsFromLink(doc, quickbutton.nextSibling.href, newParams);
 
-//content.alert("Clicked: quicktype: " + newParams.quicktype + " threadid " + newParams.threadid + " forumid " + newParams.forumid + " postid " + newParams.postid);
-		// e10s - CPOW
-		sendAsyncMessage("salastread:QuickButtonClicked", newParams, {doc: evt.originalTarget.ownerDocument});
+//content.alert("Clicked: quicktype: " + newParams.quicktype + " threadid " + newParams.threadid + " forumid " + newParams.forumid + " postid " + newParams.postid + " Was bookmarked? " + newParams.wasBookmarked);
+		sendAsyncMessage("salastread:QuickButtonClicked", newParams);
 		QuickQuoteHelper.pageWasAttached = true;
 	},
 
 	/**
 	 * Determines type of quick button clicked + sets postid param if needed.
-	 * @param {string} link      Link from normal version of button.
-	 * @param {Object} newParams Parameters for handling the clicked button.
+	 * @param {HTMLDocument} doc       Document element we're working in.
+	 * @param {string}       link      Link from normal version of button.
+	 * @param {Object}       newParams Parameters for handling the clicked button.
 	 */
-	setNewParamsFromLink: function(link, newParams)
+	setNewParamsFromLink: function(doc, link, newParams)
 	{
 		newParams.quicktype = link.match(/action=(\w+)/i)[1];
 		if (newParams.quicktype === 'newthread')
 			return;
+		newParams.wasBookmarked = !!PageUtils.selectSingleNode(doc,doc,"//ul[contains(@class, 'postbuttons')]//img[contains(@class, 'unbookmark')]");
 		if (newParams.quicktype === 'newreply')
 		{
 			if (link.match(/threadid=(\d+)/i))
@@ -164,7 +177,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 
 	/**
 	 * Handler for edit post pages.
-	 * @param {Element} doc Document element to handle.
+	 * @param {HTMLDocument} doc Document element to handle.
 	 */
 	handleEditPost: function(doc)
 	{
@@ -198,7 +211,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 
 	/**
 	 * Handler for reply and quote pages.
-	 * @param {Element} doc Document element to handle.
+	 * @param {HTMLDocument} doc Document element to handle.
 	 */
 	handleNewReply: function(doc)
 	{
@@ -231,7 +244,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 
 	/**
 	 * Potentially not-working function to handle SA's forged post check.
-	 * @param {Element} doc Document element to handle.
+	 * @param {HTMLDocument} doc Document element to handle.
 	 */
 	handleNewReplyForgeAlert: function(doc)
 	{
@@ -265,4 +278,51 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		forgeCheck.parentNode.insertBefore(reqMsg, forgeCheck);
 	},
 
+	/**
+	 * Frame message handler for submit post messages.
+	 *     Submits the quick editor post.
+	 * @param {Object} message                          Submit message.
+	 * @param {string} message.data.quickFormAction     Form action for the submit message.
+	 * @param {string} message.data.quickFormOptions    Form options for the submit message.
+	 * @param {File}   message.data.quickAttachFile     Attached file chosen by user.
+	 */
+	quickSubmit: function(message)
+	{
+		let doc = content.document;
+		let quickFormAction = message.data.quickFormAction;
+		let quickFormOptions = message.data.quickFormOptions;
+		let quickAttachFile = message.data.quickAttachFile;
+
+		let newform = doc.createElement("FORM");
+			newform.style.display = "none";
+			newform.action = quickFormAction;
+
+		newform.method = "post";
+		newform.enctype = "multipart/form-data";
+
+		// Add form options from quickFormOptions
+		for (let formOption in quickFormOptions)
+		{
+			if (quickFormOptions.hasOwnProperty(formOption))
+				PageUtils.addHiddenFormInput(doc, newform, formOption, quickFormOptions[formOption]);
+		}
+
+		if (quickAttachFile)
+		{
+			var newel = doc.createElement("INPUT");
+			newel.type = "file";
+			newel.name = "attachment";
+
+			// Attach the file sent from chrome code
+			newel.mozSetFileArray([quickAttachFile]);
+			newform.appendChild(newel);
+		}
+
+		newform.__submit = newform.submit; // Is this still needed?
+		doc.body.appendChild(newform);
+		newform.__submit();
+	},
+
 };
+
+QuickQuoteHelper.init();

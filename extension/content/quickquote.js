@@ -461,8 +461,7 @@ function importData()
 		messagearea.focus();
 
 		if (Prefs.getPref('quickQuoteSubscribeDefault') || 
-			(quickParams.quicktype !== "newthread" && 
-				PageUtils.selectSingleNode(quickParams.doc,quickParams.doc,"//ul[contains(@class, 'postbuttons')]//img[contains(@class, 'unbookmark')]")))
+			(quickParams.quicktype !== "newthread" && quickParams.wasBookmarked === true))
 		{
 			document.getElementById("subscribe").setAttribute("checked",true);
 		}

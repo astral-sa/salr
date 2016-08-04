@@ -38,7 +38,8 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		threadid: null,
 		forumid: null,
 		postid: null,
-		doc: null,
+		targetMM: null,
+		wasBookmarked: null
 	},
 
 	needCleanupCheck: false,
@@ -53,9 +54,9 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	 */
 	quickButtonClicked: function(message)
 	{
+		let target = message.target.messageManager;
 		let newParams = message.data.data;
-		// e10s - CPOW
-		newParams.doc = message.objects.doc;
+		newParams.targetMM = target;
 
 		let window = Utils.getRecentWindow();
 //window.alert("Received: quicktype: " + newParams.quicktype + " threadid " + newParams.threadid + " forumid " + newParams.forumid + " postid " + newParams.postid);
@@ -84,7 +85,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 					if (QuickQuoteHelper.quickWindowParams.postid && QuickQuoteHelper.quickWindowParams.postid === newParams.postid)
 					{
 						// Attempt to reattach
-						QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
+						QuickQuoteHelper.reattachQuickQuoteWindow(newParams.targetMM);
 					}
 					else
 					{
@@ -102,7 +103,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 					}
 					else
 					{
-						QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
+						QuickQuoteHelper.reattachQuickQuoteWindow(newParams.targetMM);
 						QuickQuoteHelper.quickquotewin.addQuoteFromPost(newParams.postid);
 					}
 				}
@@ -111,7 +112,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			else if (newParams.quicktype === 'quote')
 			{
 				// Always add quotes when quote is clicked
-				QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
+				QuickQuoteHelper.reattachQuickQuoteWindow(newParams.targetMM);
 				QuickQuoteHelper.quickquotewin.addQuoteFromPost(newParams.postid);
 			}
 			// Clicked a 'reply' button
@@ -120,7 +121,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 				// Check if we need to reattach, otherwise offer to convert
 				if (QuickQuoteHelper.quickWindowParams.quicktype && QuickQuoteHelper.quickWindowParams.quicktype === 'reply' && QuickQuoteHelper.quickWindowParams.threadid && QuickQuoteHelper.quickWindowParams.threadid === newParams.threadid)
 				{
-					QuickQuoteHelper.reattachQuickQuoteWindow(newParams.doc);
+					QuickQuoteHelper.reattachQuickQuoteWindow(newParams.targetMM);
 				}
 				else
 				{
@@ -156,12 +157,12 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 	/**
 	 * Message handler for checking if a page was attached before it unloads.
 	 *     This is used to detach the quick quote window, if necessary.
-	 * @param {Object} message Message from frame script containing doc CPOW.
+	 * @param {Object} message Message from current tab's message manager.
 	 */
 	checkUnload: function(message)
 	{
-		let doc = message.objects.doc;
-		if (QuickQuoteHelper.quickWindowParams.doc && doc === QuickQuoteHelper.quickWindowParams.doc)
+		let curTarget = message.target.messageManager;
+		if (QuickQuoteHelper.quickWindowParams.targetMM && (curTarget === QuickQuoteHelper.quickWindowParams.targetMM))
 		{
 			// Bail if we're just submitting.
 			if (QuickQuoteHelper.quickQuoteSubmitting)
@@ -241,19 +242,20 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		QuickQuoteHelper.quickWindowParams.threadid = newParams.threadid;
 		QuickQuoteHelper.quickWindowParams.forumid = newParams.forumid;
 		QuickQuoteHelper.quickWindowParams.postid = newParams.postid;
-		QuickQuoteHelper.quickWindowParams.doc = newParams.doc;
+		QuickQuoteHelper.quickWindowParams.targetMM = newParams.targetMM;
+		QuickQuoteHelper.quickWindowParams.wasBookmarked = newParams.wasBookmarked;
 	},
 
 	/**
-	 * Reattaches a detached quick quote window to a new document without
+	 * Reattaches a detached quick quote window to a browser tab without
 	 *     changing any other parameters.
-	 * @param {Element} doc Document to attach to.
+	 * @param {Object} targetMM Message manager to attach to.
 	 */
-	reattachQuickQuoteWindow: function(doc)
+	reattachQuickQuoteWindow: function(targetMM)
 	{
 		if (!QuickQuoteHelper.quickquotewin.isDetached)
 			return;
-		QuickQuoteHelper.quickWindowParams.doc = doc;
+		QuickQuoteHelper.quickWindowParams.targetMM = targetMM;
 		QuickQuoteHelper.quickquotewin.reattach();
 	},
 
@@ -276,72 +278,76 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 			QuickQuoteHelper.savedQuickReply = message;
 			QuickQuoteHelper.savedQuickReplyThreadId = QuickQuoteHelper.quickWindowParams.threadid;
 
-			var doc = QuickQuoteHelper.quickWindowParams.doc;
-			var newform = doc.createElement("FORM");
-				newform.style.display = "none";
-				newform.action = "https://forums.somethingawful.com/newreply.php";
-
-			newform.method = "post";
-			newform.enctype = "multipart/form-data";
-			PageUtils.addHiddenFormInput(doc,newform,"s","");
+			let quickFormAction = "https://forums.somethingawful.com/newreply.php";
+			let quickFormOptions = {
+				s: ""
+			};
+			let quickAttachFile = null;
 
 			if (QuickQuoteHelper.quickWindowParams.quicktype === "newthread")
 			{
-				newform.action = "https://forums.somethingawful.com/newthread.php";
-				PageUtils.addHiddenFormInput(doc, newform,"action", "postthread");
-				PageUtils.addHiddenFormInput(doc, newform, "forumid",  QuickQuoteHelper.quickWindowParams.forumid);
-				PageUtils.addHiddenFormInput(doc, newform, "iconid", QuickQuoteHelper.quickquotewin.document.getElementById('posticonbutton').iconid);
-				PageUtils.addHiddenFormInput(doc, newform, "subject", QuickQuoteHelper.quickquotewin.document.getElementById('subject').value);
+				quickFormAction = "https://forums.somethingawful.com/newthread.php";
+				quickFormOptions.action = "postthread";
+				quickFormOptions.forumid = QuickQuoteHelper.quickWindowParams.forumid;
+				quickFormOptions.iconid = QuickQuoteHelper.quickquotewin.document.getElementById('posticonbutton').iconid;
+				quickFormOptions.subject = QuickQuoteHelper.quickquotewin.document.getElementById('subject').value;
 			}
 			else if (QuickQuoteHelper.quickWindowParams.quicktype === "editpost")
 			{
-				newform.action = "https://forums.somethingawful.com/editpost.php";
-				PageUtils.addHiddenFormInput(doc, newform,"action", "updatepost");
-				PageUtils.addHiddenFormInput(doc, newform, "postid", QuickQuoteHelper.quickWindowParams.postid);
+				quickFormAction = "https://forums.somethingawful.com/editpost.php";
+				quickFormOptions.action = "updatepost";
+				quickFormOptions.postid = QuickQuoteHelper.quickWindowParams.postid;
 			}
 			else if (QuickQuoteHelper.quickWindowParams.quicktype === "quote" || QuickQuoteHelper.quickWindowParams.quicktype === "reply")
 			{
-				PageUtils.addHiddenFormInput(doc, newform,"action", "postreply");
-				PageUtils.addHiddenFormInput(doc, newform,"threadid", QuickQuoteHelper.quickWindowParams.threadid);
+				quickFormOptions.action = "postreply";
+				quickFormOptions.threadid = QuickQuoteHelper.quickWindowParams.threadid;
 			}
 
-			PageUtils.addHiddenFormInput(doc, newform,"parseurl", parseurl ? "yes" : "");
-			PageUtils.addHiddenFormInput(doc, newform,"bookmark", subscribe ? "yes" : "");
-			PageUtils.addHiddenFormInput(doc, newform,"disablesmilies", disablesmilies ? "yes" : "");
-			PageUtils.addHiddenFormInput(doc, newform,"signature", signature ? "yes" : "");
-			PageUtils.addHiddenFormInput(doc, newform,"message", message);
-			PageUtils.addHiddenFormInput(doc, newform,"MAX_FILE_SIZE", "2097152");
-			PageUtils.addHiddenFormInput(doc, newform,"formkey", formkey);
+			quickFormOptions.parseurl = parseurl ? "yes" : "";
+			quickFormOptions.bookmark = subscribe ? "yes" : "";
+			quickFormOptions.disablesmilies = disablesmilies ? "yes" : "";
+			quickFormOptions.signature = signature ? "yes" : "";
+			quickFormOptions.message = message;
+			quickFormOptions.MAX_FILE_SIZE = "2097152";
+			quickFormOptions.formkey = formkey;
 
 			if (form_cookie !== "")
 			{
-				PageUtils.addHiddenFormInput(doc, newform,"form_cookie", form_cookie);
+				quickFormOptions.form_cookie = form_cookie;
 			}
 			if (attachfile !== "")
 			{
-				QuickQuoteHelper.quickQuoteAddFile(doc, newform,"attachment", attachfile);
+				// Create a file object in chrome scope to send to content
+				Cu.importGlobalProperties( [ "File" ] );
+				quickAttachFile = new File(attachfile);
 			}
-			newform.__submit = newform.submit;
 
 			if (QuickQuoteHelper.quickWindowParams.quicktype !== "newthread")
 			{
 				if (subtype==="submit")
 				{
-					PageUtils.addHiddenFormInput(doc,newform,"submit","Submit Reply");
+					quickFormOptions.submit = "Submit Reply";
 					DB.iPostedHere(QuickQuoteHelper.quickWindowParams.threadid);
 				}
 				else
 				{
-					PageUtils.addHiddenFormInput(doc,newform,"preview","Preview Reply");
+					quickFormOptions.preview = "Preview Reply";
 				}
 			}
 			else
 			{
-				PageUtils.addHiddenFormInput(doc,newform,"preview","Preview Post");
+				quickFormOptions.preview = "Preview Post";
 			}
-			doc.body.appendChild(newform);
+
 			QuickQuoteHelper.quickQuoteSubmitting = true;
-			newform.__submit();
+
+			// Send message to frame script to submit with information
+			QuickQuoteHelper.quickWindowParams.targetMM.sendAsyncMessage("salastread:QuickWindowSubmit", {
+				quickFormAction: quickFormAction,
+				quickFormOptions: quickFormOptions,
+				quickAttachFile: quickAttachFile
+			});
 			QuickQuoteHelper.quickquotewin.close();
 		}
 		catch(ex)
@@ -352,22 +358,14 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		}
 	},
 
-	quickQuoteAddFile: function(doc,form,name,value)
-	{
-	   var newel = doc.createElement("INPUT");
-	   newel.type = "file";
-	   newel.name = name;
-	   newel.value = value;
-	   form.appendChild(newel);
-	},
-
 	releaseQuickQuoteVars: function()
 	{
 		QuickQuoteHelper.quickWindowParams.quicktype = null;
 		QuickQuoteHelper.quickWindowParams.threadid = null;
 		QuickQuoteHelper.quickWindowParams.forumid = null;
 		QuickQuoteHelper.quickWindowParams.postid = null;
-		QuickQuoteHelper.quickWindowParams.doc = null;
+		QuickQuoteHelper.quickWindowParams.targetMM = null;
+		QuickQuoteHelper.quickWindowParams.wasBookmarked = null;
 		QuickQuoteHelper.quickQuoteSubmitting = false;
 		QuickQuoteHelper.quickquotewin = null;
 	},

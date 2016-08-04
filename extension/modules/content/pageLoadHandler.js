@@ -154,11 +154,10 @@ let PageLoadHandler = exports.PageLoadHandler = {
 		if (e.originalTarget.__salastread_processed)
 			sendAsyncMessage("salastread:TimerCountDec");
 
-		// Check if this page was still attached to a Quick Quote window, but
-		// make sure we only send a CPOW if the tab was previously attached.
+		// Check if this page was still attached to a Quick Quote window
 		if (QuickQuoteHelper.pageWasAttached === true)
 		{
-			sendAsyncMessage("salastread:QuickQuoteCheckUnload", null, {doc: e.originalTarget});
+			sendAsyncMessage("salastread:QuickQuoteCheckUnload", null);
 			QuickQuoteHelper.pageWasAttached = false;
 		}
 	},
