@@ -66,7 +66,7 @@ function reattach()
 
 function doWaffleImages() {
 	imageShackResult = null;
-	window.openDialog("chrome://salastread/content/waffleimages/waffleimages.xul", "_blank", "chrome, titlebar, modal");
+	window.openDialog("chrome://salastread/content/waffleimages/waffleimages.xul", "_blank", "chrome, titlebar, modal, left=" + window.screenX + ", top=" + window.screenY);
 	if(imageShackResult) {
 		insertTextAtCursor(imageShackResult);
 	}
