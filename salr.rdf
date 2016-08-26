@@ -5,7 +5,7 @@
 			<r:Seq>
 				<r:li>
 					<r:Description>
-						<version>4.1.0</version>
+						<version>4.1.1</version>
 
 						<!-- Firefox -->
 						<targetApplication>
@@ -13,7 +13,7 @@
 								<id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
 								<minVersion>30.0</minVersion>
 								<maxVersion>45.*</maxVersion>
-								<updateLink>https://github.com/astral-sa/salr/releases/download/4.1.0/salastread_v4.1.0_signed.xpi</updateLink>
+								<updateLink>https://github.com/astral-sa/salr/releases/download/4.1.1/salastread_v4.1.1_signed.xpi</updateLink>
 							</r:Description>
 						</targetApplication>
 
@@ -23,14 +23,14 @@
 								<id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</id>
 								<minVersion>2.29</minVersion>
 								<maxVersion>2.42</maxVersion>
-								<updateLink>https://github.com/astral-sa/salr/releases/download/4.1.0/salastread_v4.1.0_signed.xpi</updateLink>
+								<updateLink>https://github.com/astral-sa/salr/releases/download/4.1.1/salastread_v4.1.1_signed.xpi</updateLink>
 							</r:Description>
 						</targetApplication>
 					</r:Description>
 				</r:li>
 			</r:Seq>
 		</updates>
-		<version>4.1.0</version>
-		<updateLink>https://github.com/astral-sa/salr/releases/download/4.1.0/salastread_v4.1.0_signed.xpi</updateLink>
+		<version>4.1.1</version>
+		<updateLink>https://github.com/astral-sa/salr/releases/download/4.1.1/salastread_v4.1.1_signed.xpi</updateLink>
 	</r:Description>
 </r:RDF>
