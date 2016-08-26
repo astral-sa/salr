@@ -281,7 +281,7 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 			let userQuotedId = DB.getUserId(userQuoted);
 			if (!userQuotedId) // bail if they're not in the database
 				continue;
-			let userQuotedDetails = DB.isUserIdColored(userQuoted);
+			let userQuotedDetails = DB.isUserIdColored(userQuotedId);
 			if (superIgnoreUsers && DB.isUserIgnored(userQuotedId))
 			{
 				// They're quoting someone ignored, lets remove the entire post
