@@ -261,7 +261,7 @@ let ImgurHandler = exports.ImgurHandler =
 				link.textContent = '';
 				link.parentNode.replaceChild(newImg, link);
 				break;
-			default:
+			default: {
 				let imgurApiTarg = "https://api.imgur.com/3/image/" + imgurImageInLink[1] + ".json";
 				let imgurChecker = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 				imgurChecker.open("GET", imgurApiTarg, true);
@@ -269,6 +269,7 @@ let ImgurHandler = exports.ImgurHandler =
 				imgurChecker.onreadystatechange = function() { ImgurHandler.imgurWorkaroundCallback(this, link, newImg, imgurImageInLink[1], options); };
 				imgurChecker.send(null);
 				break;
+			}
 		}
 	},
 

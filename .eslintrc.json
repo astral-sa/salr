@@ -7,10 +7,10 @@
         "no-use-before-define": [2, "nofunc"],
         "no-eval": 2,
         "guard-for-in": 2,
-		"no-array-constructor": 1,
-		"no-new-object": 1,
-		"no-new-wrappers": 2,
-		"no-spaced-func": 2,
+        "no-array-constructor": 1,
+        "no-new-object": 1,
+        "no-new-wrappers": 2,
+        "no-spaced-func": 2,
         /* style rules */
         "comma-dangle": [0, "always-multiline"],
         "no-empty": 1,
@@ -19,7 +19,8 @@
         "indent": 0,
         "quotes": 0,
         "linebreak-style": 0,
-        "semi": [2, "always"]
+        "semi": [2, "always"],
+        "keyword-spacing": 0
     },
     "env": {
         "es6": true,

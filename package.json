@@ -15,14 +15,14 @@
   "homepage": "https://github.com/astral-sa/salr",
   "devDependencies": {
     "del": "^2.2.0",
-    "eslint": "^1.10.3",
+    "eslint": "^3.4.0",
     "gulp": "^3.9.0",
     "gulp-replace": "^0.5.4",
     "gulp-zip": "^3.1.0",
     "run-sequence": "^1.1.5"
   },
   "optionalDependencies": {
-    "gulp-bump": "^1.0.0",
+    "gulp-bump": "^2.4.0",
     "gulp-conventional-changelog": "^0.7.0",
     "gulp-git": "^1.7.0",
     "gulp-github-release": "^1.1.1"
