@@ -131,7 +131,7 @@ gulp.task('pre', function() {
 gulp.task('commit-changes', function () {
 	return gulp.src('.')
 		.pipe(git.add())
-		.pipe(git.commit('Bumped version number to ' + getPackageJsonVersion()));
+		.pipe(git.commit('Bump version to ' + getPackageJsonVersion()));
 });
 
 gulp.task('push-changes', function (cb) {
