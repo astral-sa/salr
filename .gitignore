@@ -6,3 +6,4 @@ release/
 *.sublime-workspace
 jsconfig.json
 *.xpi
+.vscode/
