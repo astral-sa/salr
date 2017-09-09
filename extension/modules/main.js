@@ -16,6 +16,9 @@ AboutSALR.prototype = {
 	newChannel: function(aURI, aSecurity_or_aLoadInfo) {
 		var channel;
 		var aboutPage_page = "chrome://salastread/content/pref/in-content/salrpref.xul";
+		// greater than or equal to firefox55 so use updated pref file
+		if (Services.vc.compare(Services.appinfo.version, '54.*') > 0)
+			aboutPage_page = "chrome://salastread/content/pref/in-content/salrpref55.xul";
 		if (Services.vc.compare(Services.appinfo.version, '47.*') > 0) {
 			let uri = Services.io.newURI(aboutPage_page, null, null);
 			// greater than or equal to firefox48 so aSecurity_or_aLoadInfo is aLoadInfo
