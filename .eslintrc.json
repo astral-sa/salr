@@ -11,6 +11,7 @@
         "no-new-object": 1,
         "no-new-wrappers": 2,
         "no-spaced-func": 2,
+        "no-useless-escape": 1,        
         /* style rules */
         "comma-dangle": [0, "always-multiline"],
         "no-empty": 1,
