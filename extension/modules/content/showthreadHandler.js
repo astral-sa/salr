@@ -408,13 +408,17 @@ let ShowThreadHandler = exports.ShowThreadHandler =
 		if (Prefs.getPref("replyCountLinkinThreads"))
 		{
 			var replyCountLi = doc.createElement('li');
+// Dirty hack to undo weird CSS (2017/10/09)
+			replyCountLi.style.cssFloat = "none";
+			replyCountLi.style.marginTop = "0";
+// End dirty hack
 			var replyCountLink = doc.createElement("A");
 			replyCountLi.appendChild(replyCountLink);
 			replyCountLink.href = "/misc.php?action=whoposted&threadid=" + threadid + "#fromthread";
 			replyCountLink.target = "_blank";
 			replyCountLink.textContent = "Who posted?";
 			replyCountLink.style.fontSize = "10px";
-			replyCountLink.style.cssFloat = "left";
+			replyCountLink.style.cssFloat = "none";
 			replyCountLink.style.marginLeft = "8px";
 			replyCountLink.style.color = "#FFFFFF";
 			// Plug it in right after the "Search thread:" form

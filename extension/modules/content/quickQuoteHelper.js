@@ -120,6 +120,7 @@ let QuickQuoteHelper = exports.QuickQuoteHelper =
 		quickbutton.title = "Quick " + oldalt;
 		quickbutton.border = "0";
 		quickbutton.style.cursor = "pointer";
+		quickbutton.style.verticalAlign = "middle";
 
 		button.parentNode.insertBefore(quickbutton, button);
 		return quickbutton;

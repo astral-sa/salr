@@ -521,6 +521,9 @@ let Styles = exports.Styles =
 			CSSFile += '#thread table.post.focused { outline: 2px dashed #c1c1c1 !important; }\n';
 		}
 
+		// Fix quick button alignment (2017/10/09)
+		CSSFile += '#thread ul.postbuttons li a, .showthread .threadbar.top ul.postbuttons li a, .showthread div.threadbar.bottom ul.postbuttons li a { vertical-align: initial; }\n;';
+
 		// Restore Arial font to date/time and postlinks
 		CSSFile += '#thread table.post td.postdate, #thread table.post td.postlinks { font-family: Arial, Helvetica, sans-serif; }\n';
 		// The margin between the ? and the postdate is a little wide. Slim it down:
